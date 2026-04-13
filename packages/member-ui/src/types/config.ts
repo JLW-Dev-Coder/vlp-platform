@@ -2,7 +2,7 @@ export interface NavItem {
   label: string;
   href: string;
   icon: string; // lucide-react icon name
-  children?: { label: string; href: string }[];
+  children?: { label: string; href: string; icon?: string }[];
 }
 
 export interface NavSection {
