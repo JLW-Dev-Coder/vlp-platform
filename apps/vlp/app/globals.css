@@ -1,0 +1,46 @@
+@import '@vlp/member-ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #070a10;
+    --fg: rgba(255, 255, 255, 0.92);
+    --muted: rgba(255, 255, 255, 0.66);
+    --card: rgba(255, 255, 255, 0.06);
+    --line: rgba(255, 255, 255, 0.12);
+
+    /* VLP brand overrides for member-ui shared tokens */
+    --member-accent: rgba(249, 115, 22, 0.1);
+    --member-accent-strong: rgba(249, 115, 22, 0.2);
+    --member-hero-bg: #451a03;
+    --member-hero-bg-end: #1c0a00;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-raleway), Inter, system-ui, sans-serif;
+    background-color: #070a10;
+    color: rgba(255, 255, 255, 0.92);
+    overflow-x: hidden;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
