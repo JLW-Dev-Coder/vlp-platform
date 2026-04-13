@@ -1,0 +1,815 @@
+<!--/app/pages/flows/intake/offer.html -->
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tax Monitor Pro — Offer</title>
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="apple-touch-icon" href="/assets/favicon.ico" />
+  <link rel="icon" href="/assets/favicon.ico" />
+
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: 'DM Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+
+    .noise-bg {
+      background-image: url('data:image/svg+xml;utf8,\
+        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">\
+          <filter id="n">\
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/>\
+          </filter>\
+          <rect width="120" height="120" filter="url(%23n)" opacity="0.18"/>\
+        </svg>');
+    }
+
+    .aurora {
+      position: absolute;
+      inset: -40% -30% auto -30%;
+      height: 80vh;
+      pointer-events: none;
+      filter: blur(40px);
+      opacity: 0.55;
+      background:
+        radial-gradient(closest-side, rgba(245,158,11,0.35), transparent 65%),
+        radial-gradient(closest-side, rgba(56,189,248,0.18), transparent 60%),
+        radial-gradient(closest-side, rgba(168,85,247,0.14), transparent 62%);
+      transform: translate3d(0,0,0);
+    }
+
+    .glass-card {
+      background: rgba(2,6,23,0.55);
+      border: 1px solid rgba(148,163,184,0.16);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+    }
+
+    .glass-card-light {
+      background: rgba(2,6,23,0.35);
+      border: 1px solid rgba(148,163,184,0.12);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+    }
+
+    .gradient-border { position: relative; }
+
+    .gradient-border:before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: 24px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(245,158,11,0.55), rgba(14,165,233,0.20), rgba(168,85,247,0.20));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .fade-in-up { animation: fadeInUp 520ms ease-out both; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stepper (match intake flow page) */
+    .progress-glow {
+      background: linear-gradient(90deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95));
+      box-shadow: 0 0 20px rgba(245,158,11,0.35);
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(245,158,11,0.22); }
+      50% { box-shadow: 0 0 40px rgba(245,158,11,0.42); }
+    }
+
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+    .stepper-locked { opacity: 0.55; }
+
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 15px;
+      border: 1px solid rgba(148,163,184,0.16);
+      background: rgba(2,6,23,0.35);
+      color: rgba(226,232,240,0.92);
+      transition: transform 140ms ease, opacity 140ms ease;
+      user-select: none;
+      width: 100%;
+    }
+
+    .tm-btn:hover { opacity: 0.96; transform: translateY(-1px); }
+
+    .tm-btn-primary {
+      background: linear-gradient(135deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95));
+      border-color: rgba(245,158,11,0.35);
+      color: rgba(2,6,23,0.98);
+      box-shadow: 0 18px 35px rgba(245,158,11,0.18);
+    }
+
+    .tm-error {
+      display: none;
+      border: 1px solid rgba(248,113,113,0.25);
+      background: rgba(248,113,113,0.10);
+      color: rgba(254,202,202,0.95);
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+    }
+
+    .tm-error[aria-hidden="false"] { display: block; }
+
+    .sidebar-shell {
+      border-right: 1px solid rgba(148,163,184,0.10);
+      background: rgba(2,6,23,0.40);
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar-shell {
+      border-bottom: 1px solid rgba(148,163,184,0.10);
+      background: rgba(2,6,23,0.38);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Offer page extras (kept minimal, still on-brand) */
+    .package-card { cursor: pointer; transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; position: relative; }
+    .package-card:hover { transform: translateY(-2px); }
+    .package-card.selected { border-color: rgba(245,158,11,0.65) !important; box-shadow: 0 0 30px rgba(245, 158, 11, 0.22); }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95));
+      border: 1px solid rgba(245,158,11,0.35);
+      color: rgba(2,6,23,0.98);
+      box-shadow: 0 18px 35px rgba(245,158,11,0.18);
+      transition: transform 140ms ease, opacity 140ms ease;
+    }
+
+    .btn-gradient:hover { opacity: 0.96; transform: translateY(-1px); }
+
+    .glow-amber { box-shadow: 0 0 40px rgba(245, 158, 11, 0.18); }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.45); }
+    ::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.28); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(245, 158, 11, 0.45); }
+  </style>
+</head>
+
+<body class="h-full bg-slate-950 text-slate-100 noise-bg overflow-hidden">
+  <div class="relative h-full overflow-hidden">
+    <div class="aurora" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute inset-0 noise-bg opacity-50" aria-hidden="true"></div>
+
+    <!-- Hidden contract fields (Form 2 — Offer Accepted) -->
+    <form id="tm-offer" class="hidden" action="https://api.virtuallaunch.pro/forms/offer" method="POST" novalidate>
+      <input type="hidden" name="accountId" id="accountId" value="" />
+      <input type="hidden" name="code" id="code" value="" />
+      <input type="hidden" name="eventId" id="eventId" value="" />
+      <input type="hidden" name="item" id="item" value="" />
+      <input type="hidden" name="orderId" id="orderId" value="" />
+      <input type="hidden" name="sessionToken" id="sessionToken" value="" />
+      <input type="hidden" name="viewport" id="viewport" value="" />
+    </form>
+
+    <div class="relative z-10 flex h-full">
+      <!-- App Sidebar (partial injection target) -->
+      <aside class="hidden lg:block w-[280px] shrink-0 sidebar-shell">
+        <div id="tm-sidebar" class="h-full"></div>
+      </aside>
+
+      <div class="flex-1 flex flex-col min-w-0">
+        <!-- App Topbar (partial injection target) -->
+        <div class="topbar-shell sticky top-0 z-30">
+          <div id="tm-topbar"></div>
+        </div>
+
+        <!-- Page Header (match intake flow page) -->
+        <header class="px-6 pt-6">
+          <div class="mx-auto max-w-5xl">
+            <div class="glass-card rounded-[24px] p-5 border border-white/10">
+              <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 font-bold">TM</span>
+                  <div>
+                    <div class="font-semibold">Tax Monitor Pro</div>
+                    <div class="text-xs text-slate-400">Offer</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 sm:gap-4">
+                  <div class="flex items-center gap-2" data-step="intake">
+                    <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-emerald-400">Intake</span>
+                  </div>
+
+                  <div class="w-8 h-0.5 bg-white/10"></div>
+
+                  <div class="flex items-center gap-2" data-step="offer">
+                    <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center animate-pulse-glow">
+                      <span class="text-xs font-bold text-slate-950">2</span>
+                    </div>
+                    <span class="text-sm font-semibold text-amber-400">Offer</span>
+                  </div>
+
+                  <div class="w-8 h-0.5 bg-white/10"></div>
+
+                  <div class="flex items-center gap-2 stepper-locked" data-step="agreement">
+                    <div class="w-8 h-8 rounded-full bg-slate-900/40 border border-white/10 flex items-center justify-center">
+                      <span class="text-xs text-slate-400">3</span>
+                    </div>
+                    <span class="text-sm text-slate-500 hidden sm:inline">Agreement</span>
+                  </div>
+
+                  <div class="w-8 h-0.5 bg-white/10"></div>
+
+                  <div class="flex items-center gap-2 stepper-locked" data-step="payment">
+                    <div class="w-8 h-8 rounded-full bg-slate-900/40 border border-white/10 flex items-center justify-center">
+                      <span class="text-xs text-slate-400">4</span>
+                    </div>
+                    <span class="text-sm text-slate-500 hidden sm:inline">Payment</span>
+                  </div>
+                </div>
+
+                <div>
+                  <button id="back-btn" type="button" class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-amber-300 hover:border-amber-500/30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-4 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div class="h-full w-2/4 progress-glow rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-auto">
+          <div class="mx-auto max-w-5xl px-6 py-10">
+            <section class="gradient-border rounded-[24px] fade-in-up">
+              <div class="glass-card rounded-[24px] p-6 md:p-8">
+                <div class="flex flex-col gap-2">
+                  <h1 class="text-2xl md:text-3xl font-bold">Your Monitoring Offer</h1>
+                  <p class="text-slate-300">Hello <span id="client-name" class="text-amber-400 font-semibold">Client</span>, select your monitoring plan to continue.</p>
+                </div>
+
+                <div id="form-error" class="tm-error mt-5" aria-hidden="true"></div>
+
+                <!-- Packages (matches /app/offer.html structure, wrapped in app-view chrome) -->
+                <div class="mt-8 space-y-6">
+                  <div class="grid md:grid-cols-3 gap-5" id="packages-container">
+                    <div class="package-card glass-card-light p-6 border border-white/10 rounded-[18px]" data-package="bronze" role="button" tabindex="0">
+                      <div class="text-center mb-6">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-white/5 border border-white/10 text-slate-300 mb-3">BRONZE</span>
+                        <div class="text-4xl font-bold text-white mb-1" data-price="$275">$275</div>
+                        <div class="text-slate-400 text-sm" data-term="6-week plan">6-week plan</div>
+                      </div>
+                      <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Monitoring during the plan term</li>
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Plain-English updates</li>
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Basic alerting for major changes</li>
+                      </ul>
+                      <div class="text-center"><span class="text-slate-500 text-sm">Best for short-term visibility</span></div>
+                    </div>
+
+                    <div class="package-card glass-card-light p-6 border border-white/10 rounded-[18px] relative" data-package="silver" role="button" tabindex="0">
+                      <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span class="px-4 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 shadow-lg">MOST POPULAR</span>
+                      </div>
+                      <div class="text-center mb-6 mt-2">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-amber-500/15 border border-amber-500/25 text-amber-300 mb-3">SILVER</span>
+                        <div class="text-4xl font-bold text-white mb-1" data-price="$325">$325</div>
+                        <div class="text-slate-400 text-sm" data-term="8-week plan">8-week plan</div>
+                      </div>
+                      <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Everything in Bronze</li>
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• More frequent monitoring</li>
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Deeper alerting for common changes</li>
+                      </ul>
+                      <div class="text-center"><span class="text-amber-300 text-sm font-medium">Recommended for most clients</span></div>
+                    </div>
+
+                    <div class="package-card glass-card-light p-6 border border-white/10 rounded-[18px]" data-package="gold" role="button" tabindex="0">
+                      <div class="text-center mb-6">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/12 border border-emerald-500/25 text-emerald-300 mb-3">GOLD</span>
+                        <div class="text-4xl font-bold text-white mb-1" data-price="$425">$425</div>
+                        <div class="text-slate-400 text-sm" data-term="12-week plan">12-week plan</div>
+                      </div>
+                      <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Everything in Silver</li>
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Longest term coverage</li>
+                        <li class="flex items-start gap-3 text-sm text-slate-300">• Highest alerting depth</li>
+                      </ul>
+                      <div class="text-center"><span class="text-emerald-300 text-sm font-medium">Best for ongoing visibility</span></div>
+                    </div>
+                  </div>
+
+                  <div class="grid md:grid-cols-2 gap-5">
+                    <div class="package-card glass-card-light p-6 border border-white/10 rounded-[18px]" data-package="one_time" role="button" tabindex="0">
+                      <div class="flex items-start justify-between gap-4">
+                        <div>
+                          <div class="text-lg font-bold text-white">One-Time Snapshot</div>
+                          <div class="mt-1 text-sm text-slate-400">Best for a quick baseline check</div>
+                        </div>
+                        <div class="text-right">
+                          <div class="text-3xl font-extrabold text-white" data-price="$299">$299</div>
+                          <div class="text-xs text-slate-400" data-term="one-time">one-time</div>
+                        </div>
+                      </div>
+                      <div class="mt-5 rounded-[16px] border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+                        <div class="font-semibold mb-2">Includes</div>
+                        <ul class="space-y-2 text-slate-400">
+                          <li>• Initial transcript pull + baseline summary</li>
+                          <li>• One status update</li>
+                          <li>• No ongoing monitoring term</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div class="package-card glass-card-light p-6 border border-white/10 rounded-[18px]" data-package="mfj" role="button" tabindex="0">
+                      <div class="flex items-start justify-between gap-4">
+                        <div>
+                          <div class="text-lg font-bold text-white">MFJ Add-On</div>
+                          <div class="mt-1 text-sm text-slate-400">Enables MFJ-year monitoring visibility</div>
+                        </div>
+                        <div class="text-right">
+                          <div class="text-3xl font-extrabold text-white" data-price="+$79">+$79</div>
+                          <div class="text-xs text-slate-400" data-term="add-on">add-on</div>
+                        </div>
+                      </div>
+                      <div class="mt-5 rounded-[16px] border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+                        <div class="font-semibold mb-2">Applies to</div>
+                        <ul class="space-y-2 text-slate-400">
+                          <li>• Any term plan (Bronze, Gold, Silver)</li>
+                          <li>• Each spouse must enroll independently</li>
+                          <li>• MFJ visibility requires both spouses enrolled + authorized</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="package-summary" class="hidden rounded-[18px] border border-amber-500/25 bg-amber-500/10 p-5">
+                    <div class="font-semibold text-amber-300">Selected package</div>
+                    <div class="mt-2 grid gap-3 sm:grid-cols-3">
+                      <div class="rounded-[16px] border border-white/10 bg-white/5 p-4">
+                        <div class="text-xs text-slate-400">Package</div>
+                        <div id="summary-package" class="mt-1 font-bold text-amber-300">—</div>
+                      </div>
+                      <div class="rounded-[16px] border border-white/10 bg-white/5 p-4">
+                        <div class="text-xs text-slate-400">Price</div>
+                        <div id="summary-price" class="mt-1 font-bold text-slate-100">—</div>
+                      </div>
+                      <div class="rounded-[16px] border border-white/10 bg-white/5 p-4">
+                        <div class="text-xs text-slate-400">Term</div>
+                        <div id="summary-term" class="mt-1 font-bold text-emerald-300">—</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-[18px] border border-amber-500/25 bg-amber-500/10 p-5">
+                    <div class="font-semibold text-amber-300">Important notice</div>
+                    <p class="mt-2 text-sm text-slate-200">Approving this offer selects your monitoring plan. Monitoring is informational and does not create IRS representation. If you later need representation, resolution work, or negotiations, that requires a separate written agreement and (when applicable) Form 2848.</p>
+                  </div>
+
+                  <div class="rounded-[24px] border border-white/10 bg-white/5 p-6 glow-amber">
+                    <div class="text-center">
+                      <h2 class="text-xl md:text-2xl font-bold">Review &amp; Approve</h2>
+                      <p class="mt-1 text-slate-300">Ready to move to the service agreement?</p>
+                    </div>
+
+                    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                      <button id="approve-btn" class="tm-btn tm-btn-primary" type="button" disabled>Approve Offer</button>
+                      <button id="continue-btn" class="tm-btn" type="button" disabled>Continue to Agreement</button>
+                    </div>
+                  </div>
+
+                  <footer class="text-center py-6">
+                    <p class="text-sm text-slate-500">© <span id="footer-year"></span> Tax Monitor Pro. All rights reserved.</p>
+                    <p class="text-xs text-slate-600 mt-1">
+                      Encrypted in transit using industry-standard
+                      <a href="https://www.cloudflare.com/learning/ssl/what-is-tls/" target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-400">TLS</a>
+                    </p>
+                  </footer>
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var y = document.getElementById('footer-year');
+      if (y) y.textContent = String(new Date().getFullYear());
+    })();
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // --- Overlay mode detection ---
+      var qs = new URLSearchParams(window.location.search || '');
+      var isOverlay = qs.get('overlay') === '1';
+
+      // --- tmCommon helpers (use global if present; otherwise local fallbacks) ---
+      var tmCommon = window.tmCommon || {};
+
+      function safeText(v) {
+        return String(v || '').replace(/[<>]/g, '').trim();
+      }
+
+      function setViewportHidden() {
+        var el = document.getElementById('viewport');
+        if (!el) return;
+        el.value = [window.innerWidth || 0, window.innerHeight || 0].join('x');
+      }
+
+      function ensureEventId() {
+        if (typeof tmCommon.ensureEventId === 'function') {
+          try { tmCommon.ensureEventId('eventId'); return; } catch (_) {}
+        }
+        var el = document.getElementById('eventId');
+        if (!el) return;
+        if (el.value && el.value.length >= 8) return;
+        el.value = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2));
+      }
+
+      function syncSessionToken() {
+        if (typeof tmCommon.syncSessionToken === 'function') {
+          try { tmCommon.syncSessionToken('sessionToken'); return; } catch (_) {}
+        }
+        var params = new URLSearchParams(window.location.search || '');
+        var q = safeText(params.get('sessionToken') || '');
+        var el = document.getElementById('sessionToken');
+        if (!el) return;
+        if (q) {
+          el.value = q;
+          try { localStorage.setItem('tm_sessionToken', q); } catch (_) {}
+          return;
+        }
+        var st = '';
+        try { st = safeText(localStorage.getItem('tm_sessionToken') || ''); } catch (_) {}
+        el.value = st;
+      }
+
+      function disableSubmit(btn) {
+        if (typeof tmCommon.disableSubmit === 'function') {
+          try { tmCommon.disableSubmit(btn); return; } catch (_) {}
+        }
+        if (!btn) return;
+        btn.disabled = true;
+        btn.dataset.tmLabel = btn.textContent;
+        btn.textContent = 'Submitting…';
+        btn.classList.add('opacity-80', 'cursor-not-allowed');
+      }
+
+      function restoreSubmit(btn, fallback) {
+        if (typeof tmCommon.restoreSubmit === 'function') {
+          try { tmCommon.restoreSubmit(btn); return; } catch (_) {}
+        }
+        if (!btn) return;
+        btn.disabled = false;
+        btn.textContent = btn.dataset.tmLabel || (fallback || 'Submit');
+        btn.classList.remove('opacity-80', 'cursor-not-allowed');
+      }
+
+      function showError(msg) {
+        if (typeof tmCommon.showError === 'function') {
+          try { tmCommon.showError(msg); return; } catch (_) {}
+        }
+        var box = document.getElementById('form-error');
+        if (!box) return;
+        box.textContent = String(msg || 'Something went wrong.');
+        box.setAttribute('aria-hidden', 'false');
+      }
+
+      function clearError() {
+        var box = document.getElementById('form-error');
+        if (!box) return;
+        box.textContent = '';
+        box.setAttribute('aria-hidden', 'true');
+      }
+
+      // --- App partial injection ---
+      function injectPartial(targetId, url) {
+        var el = document.getElementById(targetId);
+        if (!el) return;
+        fetch(url, { credentials: 'same-origin' })
+          .then(function (r) { return r.ok ? r.text() : ''; })
+          .then(function (html) { if (html) el.innerHTML = html; })
+          .catch(function () {});
+      }
+
+      // --- Canonical state lookup (read-only; R2 remains authority) ---
+      function getCanonicalOrder() {
+        return (
+          window.TM_ORDER ||
+          (window.TM_APP_STATE && window.TM_APP_STATE.order) ||
+          (window.TM_APP_STATE && window.TM_APP_STATE.orders && window.TM_APP_STATE.orders[0]) ||
+          null
+        );
+      }
+
+      function getCanonicalAccount() {
+        return (
+          window.TM_ACCOUNT ||
+          (window.TM_APP_STATE && window.TM_APP_STATE.account) ||
+          null
+        );
+      }
+
+      function isOfferAccepted(order) {
+        return !!(order && order.stepBooleans && order.stepBooleans.offerAccepted === true);
+      }
+
+      function withQuery(url) {
+        var qs = window.location.search || '';
+        return url + (qs ? qs : '');
+      }
+
+      // --- Contract-required hidden fields ---
+      function hydrateHiddenFieldsFromQueryAndState() {
+        var params = new URLSearchParams(window.location.search || '');
+
+        var accountId = safeText(params.get('accountId') || '');
+        var orderId = safeText(params.get('orderId') || '');
+        var code = safeText(params.get('code') || '');
+
+        var order = getCanonicalOrder();
+        var account = getCanonicalAccount();
+
+        if (!accountId && account && account.accountId) accountId = safeText(account.accountId);
+        if (!orderId && order && order.orderId) orderId = safeText(order.orderId);
+        if (!code && order && order.offer && order.offer.code) code = safeText(order.offer.code);
+
+        var codeEl = document.getElementById('code');
+        var accountEl = document.getElementById('accountId');
+        var orderEl = document.getElementById('orderId');
+
+        if (codeEl) codeEl.value = code;
+        if (accountEl) accountEl.value = accountId;
+        if (orderEl) orderEl.value = orderId;
+
+        setViewportHidden();
+        ensureEventId();
+        syncSessionToken();
+
+        var nameEl = document.getElementById('client-name');
+        var nm = safeText(params.get('clientFirstName') || params.get('firstName') || params.get('first_name') || '');
+        if (!nm && account && account.firstName) nm = safeText(account.firstName);
+        if (nameEl) nameEl.textContent = nm || 'Client';
+
+        return { code: code, order: order };
+      }
+
+      // --- Package selection ---
+      var packages = {
+        bronze: { name: 'Bronze', price: '$275', term: '6-week plan' },
+        gold: { name: 'Gold', price: '$425', term: '12-week plan' },
+        mfj: { name: 'MFJ Add-On', price: '+$79', term: 'add-on' },
+        one_time: { name: 'One-Time Snapshot', price: '$299', term: 'one-time' },
+        silver: { name: 'Silver', price: '$325', term: '8-week plan' }
+      };
+
+      function setButtons(state) {
+        var approveBtn = document.getElementById('approve-btn');
+        var continueBtn = document.getElementById('continue-btn');
+        if (approveBtn) approveBtn.disabled = !!state.approveDisabled;
+        if (continueBtn) continueBtn.disabled = !!state.continueDisabled;
+      }
+
+      function selectPackage(packageId, opts) {
+        opts = opts || {};
+
+        document.querySelectorAll('.package-card').forEach(function (card) {
+          var cardPackage = card.dataset.package;
+          if (cardPackage === packageId) {
+            card.classList.add('selected');
+          } else {
+            card.classList.remove('selected');
+          }
+        });
+
+        var pkg = packages[packageId];
+        var summary = document.getElementById('package-summary');
+        if (summary && pkg) {
+          summary.classList.remove('hidden');
+          document.getElementById('summary-package').textContent = pkg.name;
+          document.getElementById('summary-price').textContent = pkg.price;
+          document.getElementById('summary-term').textContent = pkg.term;
+        }
+
+        var itemEl = document.getElementById('item');
+        if (itemEl) itemEl.value = packageId;
+
+        if (!opts.silent) {
+          setButtons({ approveDisabled: false, continueDisabled: true });
+        }
+      }
+
+      function preselectFromOrder(order) {
+        var itemFromOrder = order && order.offer && order.offer.item ? safeText(order.offer.item) : '';
+        if (itemFromOrder && packages[itemFromOrder]) {
+          selectPackage(itemFromOrder, { silent: true });
+          return itemFromOrder;
+        }
+        return '';
+      }
+
+      // --- Actions ---
+      function handleProceed() {
+        clearError();
+        hydrateHiddenFieldsFromQueryAndState();
+
+        var code = safeText(document.getElementById('code').value);
+        var item = safeText(document.getElementById('item').value);
+        var accountId = safeText(document.getElementById('accountId').value);
+        var orderId = safeText(document.getElementById('orderId').value);
+        var sessionToken = safeText(document.getElementById('sessionToken').value);
+
+        if (!code || !item) return showError('Missing code or selected package.');
+
+        var u = new URL('/app/agreement.html', window.location.origin);
+        var qs = new URLSearchParams(window.location.search || '');
+        qs.forEach(function (v, k) { u.searchParams.set(k, v); });
+
+        u.searchParams.set('code', code);
+        u.searchParams.set('item', item);
+        if (accountId) u.searchParams.set('accountId', accountId);
+        if (orderId) u.searchParams.set('orderId', orderId);
+        if (sessionToken) u.searchParams.set('sessionToken', sessionToken);
+
+        window.location.href = u.toString();
+      }
+
+      function handleApprove() {
+        clearError();
+
+        var approveBtn = document.getElementById('approve-btn');
+        var continueBtn = document.getElementById('continue-btn');
+
+        var state = hydrateHiddenFieldsFromQueryAndState();
+        var code = safeText(state.code);
+        var sessionToken = safeText(document.getElementById('sessionToken').value);
+        var item = safeText(document.getElementById('item').value);
+
+        if (!item) return showError('Select a package to continue.');
+        if (!code) return showError('Missing code. Return to the start and retry.');
+        if (!sessionToken) return showError('Missing sessionToken. Return to the start and retry.');
+
+        disableSubmit(approveBtn);
+        if (continueBtn) continueBtn.disabled = true;
+
+        var form = document.getElementById('tm-offer');
+        if (!form) {
+          restoreSubmit(approveBtn, 'Approve Offer');
+          return showError('Offer form missing.');
+        }
+
+        setViewportHidden();
+        ensureEventId();
+        syncSessionToken();
+
+        fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'include' })
+          .then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (data) {
+              return { ok: r.ok, data: data, status: r.status };
+            });
+          })
+          .then(function (res) {
+            if (!res.ok || (res.data && res.data.ok === false)) {
+              var msg = (res.data && (res.data.error || res.data.details)) ? (res.data.error || res.data.details) : ('Offer submission failed (HTTP ' + res.status + ').');
+              throw new Error(String(msg).slice(0, 240));
+            }
+
+            if (approveBtn) {
+              approveBtn.textContent = 'Approved';
+              approveBtn.disabled = true;
+              approveBtn.classList.remove('tm-btn-primary');
+              approveBtn.classList.add('bg-emerald-600', 'text-white');
+            }
+
+            if (continueBtn) continueBtn.disabled = false;
+          })
+          .catch(function (err) {
+            restoreSubmit(approveBtn, 'Approve Offer');
+            if (continueBtn) continueBtn.disabled = true;
+            showError((err && err.message) ? err.message : 'Offer submission failed.');
+          });
+      }
+
+      function wireCards() {
+        document.querySelectorAll('.package-card').forEach(function (card) {
+          card.addEventListener('click', function () { selectPackage(card.dataset.package); });
+          card.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectPackage(card.dataset.package);
+            }
+          });
+        });
+      }
+
+      function wireNav() {
+        var backBtn = document.getElementById('back-btn');
+        if (backBtn) {
+          backBtn.addEventListener('click', function () {
+            if (isOverlay) {
+              if (window.parent) window.parent.postMessage({ type: 'TM_OVERLAY_CLOSE' }, '*');
+              return;
+            }
+
+            var u = new URL('/app/pages/flows/intake/intake.html', window.location.origin);
+            var qs2 = new URLSearchParams(window.location.search || '');
+            qs2.forEach(function (v, k) { u.searchParams.set(k, v); });
+            window.location.href = u.toString();
+          });
+        }
+
+        var approveBtn = document.getElementById('approve-btn');
+        if (approveBtn) approveBtn.addEventListener('click', handleApprove);
+
+        var continueBtn = document.getElementById('continue-btn');
+        if (continueBtn) continueBtn.addEventListener('click', handleProceed);
+      }
+
+      function init() {
+        // App chrome partials (only in standalone mode)
+        if (!isOverlay) {
+          injectPartial('tm-sidebar', '/app/partials/sidebar.html');
+          injectPartial('tm-topbar', '/app/partials/topbar.html');
+        } else {
+          // Hide chrome when inside dashboard overlay
+          var sidebarShell = document.querySelector('.sidebar-shell');
+          var topbarShell = document.querySelector('.topbar-shell');
+          if (sidebarShell) sidebarShell.style.display = 'none';
+          if (topbarShell) topbarShell.style.display = 'none';
+
+                  }
+
+        wireCards();
+        wireNav();
+
+        var state = hydrateHiddenFieldsFromQueryAndState();
+        var order = state.order;
+
+        // If canonical order already shows accepted, lock approve + enable continue.
+        if (isOfferAccepted(order)) {
+          preselectFromOrder(order);
+          setButtons({ approveDisabled: true, continueDisabled: false });
+          var approveBtn = document.getElementById('approve-btn');
+          if (approveBtn) {
+            approveBtn.textContent = 'Approved';
+            approveBtn.disabled = true;
+            approveBtn.classList.remove('tm-btn-primary');
+            approveBtn.classList.add('bg-emerald-600', 'text-white');
+          }
+          return;
+        }
+
+        // Otherwise require URL identifiers.
+        var code = safeText(state.code);
+        var st = safeText(document.getElementById('sessionToken').value);
+        if (!code || !st) {
+          setButtons({ approveDisabled: true, continueDisabled: true });
+          showError('Missing required code/sessionToken in the URL.');
+          return;
+        }
+
+        // If state has an offer item, preselect it and allow approval.
+        var pre = preselectFromOrder(order);
+        if (pre) setButtons({ approveDisabled: false, continueDisabled: true });
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

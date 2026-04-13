@@ -1,0 +1,951 @@
+<!-- directory/profile-template.html -->
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tax Monitor Pro • Directory Profile</title>
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          boxShadow: {
+            soft: '0 0 0 1px rgba(148,163,184,.06), 0 30px 80px rgba(0,0,0,.35)'
+          },
+          fontFamily: {
+            sans: ['DM Sans', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { box-sizing: border-box; overflow-x: hidden; }
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .hero-glow {
+      background:
+        radial-gradient(circle at top right, rgba(245, 158, 11, 0.14), transparent 28%),
+        radial-gradient(circle at top left, rgba(251, 191, 36, 0.08), transparent 20%);
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(51, 65, 85, 0.75);
+      box-shadow: 0 0 0 1px rgba(148,163,184,.04), 0 35px 120px rgba(0,0,0,.30);
+    }
+
+    .soft-card {
+      background: rgba(15, 23, 42, 0.42);
+      border: 1px solid rgba(51, 65, 85, 0.70);
+    }
+
+    .featured-badge {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #0f172a;
+    }
+
+    .verified-badge {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #86efac;
+    }
+
+    .badge-attorney { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .badge-cpa { background: linear-gradient(135deg, #10b981, #059669); }
+    .badge-ea { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+    .animated-section {
+      animation: fadeInUp 0.8s ease-out both;
+    }
+
+    .animated-section:nth-of-type(1) { animation-delay: 0.08s; }
+    .animated-section:nth-of-type(2) { animation-delay: 0.14s; }
+    .animated-section:nth-of-type(3) { animation-delay: 0.20s; }
+    .animated-section:nth-of-type(4) { animation-delay: 0.26s; }
+    .animated-section:nth-of-type(5) { animation-delay: 0.32s; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    @view-transition { navigation: auto; }
+  </style>
+</head>
+
+<body class="h-full bg-slate-950 text-slate-100 font-sans overflow-auto">
+  <div class="min-h-full w-full flex flex-col">
+    <!-- PARTIAL:header -->
+
+    <header class="sticky top-0 z-40 border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+        <button id="back-button" class="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors font-medium">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          <span id="back-button-text">Back to Directory</span>
+        </button>
+
+        <div class="flex items-center gap-3 text-sm">
+          <span id="profile-status-badge" class="verified-badge px-3 py-1.5 rounded-full font-medium">Verified</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <section class="animated-section relative overflow-hidden hero-glow border-b border-slate-800/70">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.08),_transparent_42%)]"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+          <div class="flex flex-col lg:flex-row lg:items-end gap-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-end gap-6 flex-1 min-w-0">
+              <div id="profile-avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-5xl sm:text-6xl font-extrabold text-slate-950 shadow-soft border border-amber-300/20 flex-shrink-0 overflow-hidden">
+                <span id="profile-avatar-initials">SM</span>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                  <h1 id="profile-name" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">Sarah Mitchell</h1>
+                  <div id="hero-badges" class="flex gap-2 flex-wrap"></div>
+                </div>
+
+                <p id="profile-headline" class="text-xl text-slate-400 mb-4">Tax Litigation and IRS Audit Defense Specialist</p>
+
+                <div class="flex flex-wrap gap-4 text-sm text-slate-300">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-amber-400"></i>
+                    <span id="hero-location">Los Angeles, California</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="briefcase" class="w-4 h-4 text-amber-400"></i>
+                    <span id="hero-experience">20+ Years Experience</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
+                    <span id="hero-rating">4.9/5 (48 reviews)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full lg:w-auto lg:min-w-[240px] flex flex-col gap-3">
+              <button id="contact-button" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl font-semibold transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+                <i data-lucide="mail" class="w-5 h-5"></i>
+                <span id="contact-button-text">Get In Touch</span>
+              </button>
+              <button id="schedule-button" class="px-6 py-3 bg-slate-900/60 border border-slate-700 hover:border-amber-500/40 hover:bg-slate-800 rounded-xl font-semibold transition-all flex items-center justify-center gap-2">
+                <i data-lucide="calendar" class="w-5 h-5 text-amber-400"></i>
+                <span id="schedule-button-text">Schedule Consultation</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="quick-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8"></div>
+        </div>
+      </section>
+
+      <section class="animated-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2 space-y-8">
+            <div class="glass-card rounded-3xl p-8">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-1 h-8 bg-gradient-to-b from-amber-500 to-amber-600 rounded-full"></div>
+                <h2 class="text-2xl font-bold">About</h2>
+              </div>
+              <div id="about-paragraphs" class="space-y-4 text-slate-300 leading-relaxed"></div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-8">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-1 h-8 bg-gradient-to-b from-amber-500 to-amber-600 rounded-full"></div>
+                <h2 class="text-2xl font-bold">Credentials and Experience</h2>
+              </div>
+
+              <div class="space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-amber-300">Licenses and Certifications</h3>
+                  <div id="licenses-list" class="space-y-3"></div>
+                </div>
+
+                <div>
+                  <h3 class="text-lg font-semibold mb-4 text-amber-300">Professional Background</h3>
+                  <div id="background-list" class="space-y-4"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-8">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-1 h-8 bg-gradient-to-b from-amber-500 to-amber-600 rounded-full"></div>
+                <h2 class="text-2xl font-bold">Services Offered</h2>
+              </div>
+
+              <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-8">
+              <h3 class="text-xl font-bold mb-6 flex items-center gap-3">
+                <i data-lucide="users-2" class="w-5 h-5 text-amber-400"></i>
+                Specializations and Client Types
+              </h3>
+              <div id="specializations-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-1 space-y-6">
+            <div class="glass-card rounded-3xl p-6 sticky top-24">
+              <h3 class="font-bold text-lg mb-6">Contact Information</h3>
+              <div class="space-y-5">
+                <div>
+                  <div class="text-xs font-semibold text-slate-500 mb-1">Email</div>
+                  <a id="contact-email-link" href="#" class="text-amber-400 hover:text-amber-300 break-all"></a>
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-500 mb-1">Phone</div>
+                  <a id="contact-phone-link" href="#" class="text-amber-400 hover:text-amber-300"></a>
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-500 mb-1">Location</div>
+                  <div id="contact-location" class="text-slate-100"></div>
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-500 mb-1">Availability</div>
+                  <div id="contact-availability" class="text-slate-100"></div>
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-500 mb-1">Languages</div>
+                  <div id="contact-languages" class="text-slate-100"></div>
+                </div>
+              </div>
+              <button id="contact-sidebar-button" class="w-full mt-6 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl font-semibold transition-colors">Contact Now</button>
+            </div>
+
+            <div class="glass-card rounded-3xl p-6">
+              <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i data-lucide="star" class="w-5 h-5 text-amber-400 fill-amber-400"></i>
+                Reviews
+              </h3>
+              <div class="mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="text-2xl font-bold" id="review-average">4.9</div>
+                  <div class="flex gap-0.5" id="review-stars-display"></div>
+                </div>
+                <div class="text-sm text-slate-400">Based on <span id="review-count">48</span> client reviews</div>
+              </div>
+
+              <button id="add-review-btn" class="w-full px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg text-sm font-semibold text-amber-300 transition-colors mb-4 flex items-center justify-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span id="review-button-text">Add Your Review</span>
+              </button>
+
+              <div class="space-y-3 max-h-96 overflow-y-auto pr-2" id="reviews-container"></div>
+            </div>
+
+            <div class="rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-slate-900 p-6 shadow-soft">
+              <div class="flex items-start gap-3">
+                <i data-lucide="calendar" class="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                <div>
+                  <h4 class="font-semibold mb-2">Ready to Schedule?</h4>
+                  <p id="schedule-description" class="text-sm text-slate-300 mb-4">Book a consultation to discuss your tax situation.</p>
+                  <button id="schedule-cta" class="w-full px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-lg text-sm font-semibold transition-colors">Schedule Now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- PARTIAL:footer -->
+  </div>
+
+  <div id="review-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-3xl border border-slate-700 bg-slate-900 p-8 shadow-soft">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold">Leave a Review</h2>
+        <button id="close-modal" class="text-slate-400 hover:text-white transition-colors">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <form id="review-form">
+        <div class="mb-6">
+          <label class="block text-sm font-semibold mb-2">Your Name</label>
+          <input type="text" id="reviewer-name" placeholder="Your name" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors" required />
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-semibold mb-3">Rating</label>
+          <div class="flex gap-2 justify-center" id="star-rating">
+            <button type="button" data-rating="1" class="star-btn p-2 hover:scale-110 transition-transform"><i data-lucide="star" class="w-8 h-8 text-slate-600 hover:text-amber-400 transition-colors"></i></button>
+            <button type="button" data-rating="2" class="star-btn p-2 hover:scale-110 transition-transform"><i data-lucide="star" class="w-8 h-8 text-slate-600 hover:text-amber-400 transition-colors"></i></button>
+            <button type="button" data-rating="3" class="star-btn p-2 hover:scale-110 transition-transform"><i data-lucide="star" class="w-8 h-8 text-slate-600 hover:text-amber-400 transition-colors"></i></button>
+            <button type="button" data-rating="4" class="star-btn p-2 hover:scale-110 transition-transform"><i data-lucide="star" class="w-8 h-8 text-slate-600 hover:text-amber-400 transition-colors"></i></button>
+            <button type="button" data-rating="5" class="star-btn p-2 hover:scale-110 transition-transform"><i data-lucide="star" class="w-8 h-8 text-slate-600 hover:text-amber-400 transition-colors"></i></button>
+          </div>
+          <input type="hidden" id="star-count" value="0" />
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-semibold mb-2">Your Review</label>
+          <textarea id="reviewer-text" placeholder="Share your experience..." class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors resize-none" rows="4" required></textarea>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" id="cancel-review" class="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold transition-colors">Cancel</button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-lg font-semibold transition-colors">Submit Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const defaultConfig = {
+      back_button_text: 'Back to Directory',
+      background_color: '#020617'
+    };
+
+    const EMBEDDED_FALLBACK_PROFILE = {
+      profile: {
+        avatar: {
+          display_dimensions: { height: 128, width: 128 },
+          file: { file_type: 'png', height: 512, width: 512 },
+          initials_fallback: true,
+          upload_type: 'profile_photo'
+        },
+        initials: 'SM',
+        name: 'Sarah Mitchell',
+        profile_type: 'sample',
+        slug: 'sample-sarah-mitchell',
+        status: 'featured',
+        status_badge_label: 'Verified'
+      },
+      hero: {
+        credential_badges: [
+          { label: 'Attorney', style_key: 'attorney' },
+          { label: 'CPA', style_key: 'cpa' },
+          { label: 'Featured', style_key: 'featured' }
+        ],
+        headline: 'Tax Litigation and IRS Audit Defense Specialist',
+        location_label: 'Los Angeles, California',
+        rating_label: '4.9/5 (48 reviews)',
+        years_experience_label: '20+ Years Experience'
+      },
+      bio: {
+        bio_full_paragraphs: [
+          'Sarah Mitchell is a dual-credentialed tax professional with more than twenty years of experience in tax controversy, audit defense, and complex litigation support.',
+          'She has represented individuals and businesses before the IRS and state taxing authorities, combining legal strategy with deep accounting knowledge.',
+          'Her practice focuses on giving clients clear direction in high-pressure situations where timing, documentation, and advocacy matter.'
+        ],
+        bio_short: 'Dual-credentialed tax controversy professional serving audit defense and litigation clients.'
+      },
+      contact: {
+        availability_display: 'Mon-Fri, 9AM-6PM PT',
+        contact_email: 'sarah@mitchelltaxlaw.com',
+        languages: ['English', 'Spanish'],
+        phone: '(213) 555-1234',
+        timezone: 'America/Los_Angeles',
+        website: 'https://example.com/sarah-mitchell',
+        weekly_availability: [
+          { day: 'Monday', enabled: true, start_time: '09:00', end_time: '18:00' },
+          { day: 'Tuesday', enabled: true, start_time: '09:00', end_time: '18:00' },
+          { day: 'Wednesday', enabled: true, start_time: '09:00', end_time: '18:00' },
+          { day: 'Thursday', enabled: true, start_time: '09:00', end_time: '18:00' },
+          { day: 'Friday', enabled: true, start_time: '09:00', end_time: '18:00' },
+          { day: 'Saturday', enabled: false, start_time: null, end_time: null },
+          { day: 'Sunday', enabled: false, start_time: null, end_time: null }
+        ]
+      },
+      location: {
+        city: 'Los Angeles',
+        country: 'United States',
+        state: 'California',
+        zip: '90012'
+      },
+      professional: {
+        credentials: ['CPA (California)', 'Juris Doctor', 'Board Certified Tax Specialist'],
+        firm_name: 'Mitchell Tax Law',
+        profession: ['Attorney', 'CPA'],
+        years_experience: 20
+      },
+      credentials_experience: {
+        background_items: [
+          { date_label: '2008 - Present', description: 'Founder and principal of a practice focused on tax controversy, litigation, and audit defense.', title: 'Founder and Principal, Mitchell Tax Law' },
+          { date_label: '2003 - 2008', description: 'Led tax controversy matters for business and individual clients at a major accounting firm.', title: 'Senior Tax Attorney, Major Accounting Firm' },
+          { date_label: '2001 - 2003', description: 'Built firsthand knowledge of IRS examination procedures and enforcement workflows.', title: 'Revenue Agent, IRS' }
+        ],
+        licenses_certifications: [
+          { subtitle: 'California, active since 2003', title: 'CPA (Certified Public Accountant)' },
+          { subtitle: 'Licensed to practice in California', title: 'Juris Doctor (J.D.)' },
+          { subtitle: 'Authorized to represent clients before the IRS', title: 'IRS Form 2848 Power of Attorney' },
+          { subtitle: 'State Bar of California certification', title: 'Board Certified Tax Specialist' }
+        ]
+      },
+      services_offered: {
+        items: [
+          { description: 'Representation in Tax Court and federal district court proceedings.', icon: 'shield-check', title: 'Tax Litigation' },
+          { description: 'Comprehensive IRS audit representation and negotiation.', icon: 'file-check', title: 'Audit Defense' },
+          { description: 'Strategic tax planning to reduce liability and improve readiness.', icon: 'target', title: 'Tax Planning' },
+          { description: 'IRS Appeals Office and administrative review representation.', icon: 'scale-3', title: 'Appeals' },
+          { description: 'Tax compliance and audit readiness consulting.', icon: 'book-open', title: 'Compliance' },
+          { description: 'Expert witness and litigation support services.', icon: 'users', title: 'Consulting' }
+        ]
+      },
+      specializations: {
+        client_types: ['Individuals', 'Businesses', 'C Corporations', 'S Corporations', 'Partnerships', 'LLCs', 'Nonprofits', 'Executives']
+      },
+      quick_stats: [
+        { label: 'Years of Experience', value: '20+' },
+        { label: 'Cases Handled', value: '500+' },
+        { label: 'Success Rate', value: '98%' },
+        { label: 'Client Reviews', value: '48' }
+      ],
+      reviews: {
+        allow_submission: true,
+        enabled: true,
+        items: [
+          { name: 'John D.', rating: 5, text: 'Exceptional representation during my audit. Sarah\'s expertise saved me thousands.' },
+          { name: 'Michael R.', rating: 5, text: 'Highly recommended. Professional, knowledgeable, and results-oriented.' }
+        ],
+        summary: { average_rating: 4.9, review_count: 48 }
+      },
+      buttons: {
+        contact_button: {
+          active: true,
+          label: 'Get In Touch',
+          mode: 'email',
+          show: true,
+          url: 'mailto:sarah@mitchelltaxlaw.com'
+        },
+        review_button: {
+          active: true,
+          label: 'Add Your Review',
+          mode: 'modal',
+          show: true,
+          url: null
+        },
+        schedule_button: {
+          active: true,
+          behavior_phrase: 'Yes, I have created/connected my Cal.com account, use my Cal.com link',
+          description: 'Book a free 30-minute consultation to discuss your tax situation.',
+          description_mode: 'derived',
+          event_type_duration_minutes: 30,
+          event_type_label: 'Free Consultation',
+          label: 'Schedule Consultation',
+          mode: 'custom_booking_link',
+          provider_label: 'Custom',
+          show: true,
+          url: 'https://example.com/sarah-mitchell/schedule'
+        }
+      }
+    };
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async function(config) {
+          const backBtnText = document.getElementById('back-button-text');
+          if (backBtnText) backBtnText.textContent = config.back_button_text || defaultConfig.back_button_text;
+          document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
+        },
+        mapToCapabilities: function(config) {
+          return {
+            recolorables: [
+              {
+                get: function() { return config.background_color || defaultConfig.background_color; },
+                set: function(value) { window.elementSdk.setConfig({ background_color: value }); }
+              }
+            ],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          };
+        },
+        mapToEditPanelValues: function(config) {
+          return new Map([
+            ['back_button_text', config.back_button_text || defaultConfig.back_button_text]
+          ]);
+        }
+      });
+    }
+
+    let reviews = [];
+    let currentProfileData = null;
+
+    function safeText(value, fallback) {
+      if (value === undefined || value === null || value === '') return fallback || '';
+      return value;
+    }
+
+    function buildMailTo(email) {
+      if (!email) return '#';
+      return 'mailto:' + email;
+    }
+
+    function buildTel(phone) {
+      if (!phone) return '#';
+      let cleaned = '';
+      for (let i = 0; i < phone.length; i += 1) {
+        const ch = phone[i];
+        if ((ch >= '0' && ch <= '9') || ch === '+') cleaned += ch;
+      }
+      return cleaned ? 'tel:' + cleaned : '#';
+    }
+
+    function badgeClass(styleKey) {
+      const map = {
+        attorney: 'badge-attorney',
+        cpa: 'badge-cpa',
+        ea: 'badge-ea',
+        featured: 'featured-badge',
+        custom: 'soft-card text-slate-100'
+      };
+      return map[styleKey] || 'soft-card text-slate-100';
+    }
+
+    function renderStars(rating, container, size) {
+      container.innerHTML = '';
+      const iconSize = size || 'w-3.5 h-3.5';
+      for (let i = 1; i <= 5; i += 1) {
+        const starIcon = document.createElement('i');
+        starIcon.setAttribute('data-lucide', 'star');
+        starIcon.className = iconSize + ' ' + (i <= rating ? 'text-amber-400 fill-amber-400' : 'text-slate-600');
+        container.appendChild(starIcon);
+      }
+      lucide.createIcons();
+    }
+
+    function updateReviewsDisplay() {
+      const average = reviews.length ? (reviews.reduce(function(sum, review) { return sum + review.rating; }, 0) / reviews.length).toFixed(1) : '0.0';
+      document.getElementById('review-average').textContent = average;
+      document.getElementById('review-count').textContent = String(reviews.length);
+      renderStars(Math.round(Number(average)), document.getElementById('review-stars-display'), 'w-4 h-4');
+
+      const container = document.getElementById('reviews-container');
+      container.innerHTML = '';
+
+      reviews.forEach(function(review) {
+        const reviewDiv = document.createElement('div');
+        reviewDiv.className = 'border-t border-slate-700 pt-3';
+        reviewDiv.innerHTML = '<div class="flex items-center justify-between mb-1"><div class="font-medium"></div><div class="review-stars flex gap-0.5"></div></div><p class="text-sm text-slate-400"></p>';
+        reviewDiv.querySelector('.font-medium').textContent = review.name;
+        reviewDiv.querySelector('p').textContent = '"' + review.text + '"';
+        renderStars(review.rating, reviewDiv.querySelector('.review-stars'));
+        container.appendChild(reviewDiv);
+      });
+    }
+
+    function renderAvatar(data) {
+      const avatar = document.getElementById('profile-avatar');
+      const initials = document.getElementById('profile-avatar-initials');
+      const avatarMeta = (data.profile && data.profile.avatar) || {};
+      const slug = safeText(data.profile && data.profile.slug, '');
+      const type = safeText(avatarMeta.upload_type, 'initials_only');
+      const fileType = avatarMeta.file && avatarMeta.file.file_type ? avatarMeta.file.file_type : 'png';
+      const src = '/assets/directory/' + slug + '/avatar.' + fileType;
+
+      // Clear any previous image
+      avatar.querySelectorAll('img').forEach(function(img) { img.remove(); });
+
+      // Always ensure initials text is correct
+      initials.textContent = safeText(data.profile && data.profile.initials, 'TM');
+
+      if (type !== 'initials_only' && slug) {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = safeText(data.profile && data.profile.name, 'Profile image');
+        img.className = 'w-full h-full object-cover';
+
+        img.onload = function() {
+          initials.classList.add('hidden');
+        };
+
+        img.onerror = function() {
+          // Remove broken image and show initials fallback
+          img.remove();
+          initials.classList.remove('hidden');
+        };
+
+        avatar.prepend(img);
+      }
+
+      // If initials mode or image fails, initials remain visible (SM etc.)
+      if (type === 'initials_only' || !slug) {
+        initials.classList.remove('hidden');
+      }
+    }
+
+    function renderHeroBadges(items) {
+      const container = document.getElementById('hero-badges');
+      container.innerHTML = '';
+      items.forEach(function(item) {
+        const badge = document.createElement('span');
+        badge.className = badgeClass(item.style_key) + ' px-3 py-1 rounded-full text-sm font-semibold';
+        badge.textContent = item.label;
+        container.appendChild(badge);
+      });
+    }
+
+    function renderQuickStats(items) {
+      const container = document.getElementById('quick-stats');
+      container.innerHTML = '';
+      items.forEach(function(item) {
+        const card = document.createElement('div');
+        card.className = 'glass-card rounded-2xl p-4';
+        card.innerHTML = '<div class="text-2xl font-bold text-amber-400 mb-1"></div><div class="text-xs sm:text-sm text-slate-400"></div>';
+        const parts = card.querySelectorAll('div');
+        parts[0].textContent = item.value;
+        parts[1].textContent = item.label;
+        container.appendChild(card);
+      });
+    }
+
+    function renderAbout(paragraphs) {
+      const container = document.getElementById('about-paragraphs');
+      container.innerHTML = '';
+      paragraphs.forEach(function(text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        container.appendChild(p);
+      });
+    }
+
+    function renderLicenses(items) {
+      const container = document.getElementById('licenses-list');
+      container.innerHTML = '';
+      items.forEach(function(item) {
+        const row = document.createElement('div');
+        row.className = 'flex items-start gap-3';
+        row.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5"></i><div><div class="font-medium"></div><div class="text-sm text-slate-400"></div></div>';
+        row.querySelector('.font-medium').textContent = item.title;
+        row.querySelector('.text-sm').textContent = safeText(item.subtitle, '');
+        container.appendChild(row);
+      });
+    }
+
+    function renderBackground(items) {
+      const container = document.getElementById('background-list');
+      container.innerHTML = '';
+      items.forEach(function(item, index) {
+        const row = document.createElement('div');
+        row.className = 'flex gap-4';
+        const showLine = index < items.length - 1;
+        row.innerHTML = '<div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full bg-amber-500 ' + (showLine ? 'mt-2' : '') + '"></div>' + (showLine ? '<div class="w-0.5 h-12 bg-slate-700"></div>' : '') + '</div><div><div class="font-medium"></div><div class="text-sm text-slate-400 mb-1"></div><p class="text-sm text-slate-300"></p></div>';
+        row.querySelector('.font-medium').textContent = item.title;
+        row.querySelector('.text-sm.text-slate-400').textContent = item.date_label;
+        row.querySelector('p').textContent = item.description;
+        container.appendChild(row);
+      });
+    }
+
+    function renderServices(items) {
+      const container = document.getElementById('services-grid');
+      container.innerHTML = '';
+      items.forEach(function(item) {
+        const card = document.createElement('div');
+        card.className = 'soft-card rounded-2xl p-4';
+        card.innerHTML = '<div class="flex items-start gap-3"><i data-lucide="' + item.icon + '" class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"></i><div><div class="font-semibold mb-1"></div><div class="text-sm text-slate-400"></div></div></div>';
+        card.querySelector('.font-semibold').textContent = item.title;
+        card.querySelector('.text-sm').textContent = item.description;
+        container.appendChild(card);
+      });
+    }
+
+    function renderSpecializations(items) {
+      const container = document.getElementById('specializations-grid');
+      container.innerHTML = '';
+      items.forEach(function(item) {
+        const chip = document.createElement('div');
+        chip.className = 'soft-card rounded-xl p-3 text-center text-sm font-medium';
+        chip.textContent = item;
+        container.appendChild(chip);
+      });
+    }
+
+    function disableButton(id) {
+      const btn = document.getElementById(id);
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    function resetButtonState(id) {
+      const btn = document.getElementById(id);
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    function hydrateProfile(data) {
+      currentProfileData = data;
+      document.title = 'Tax Monitor Pro • ' + safeText(data.profile.name, 'Directory Profile');
+      document.getElementById('profile-name').textContent = safeText(data.profile.name, 'Unknown Profile');
+      document.getElementById('profile-avatar-initials').textContent = safeText(data.profile.initials, 'TM');
+      document.getElementById('profile-headline').textContent = safeText(data.hero.headline, 'Tax professional profile');
+      document.getElementById('hero-location').textContent = safeText(data.hero.location_label, safeText(data.location.city, '') + (data.location.state ? ', ' + data.location.state : ''));
+      document.getElementById('hero-experience').textContent = safeText(data.hero.years_experience_label, 'Experience available');
+      document.getElementById('hero-rating').textContent = safeText(data.hero.rating_label, 'No reviews yet');
+      const statusBadge = document.getElementById('profile-status-badge');
+      statusBadge.textContent = safeText(data.profile.status_badge_label, 'Verified');
+
+      // Sample profile indicator
+      if (data.profile && data.profile.profile_type === 'sample') {
+        const sampleBadge = document.createElement('span');
+        sampleBadge.className = 'px-3 py-1.5 rounded-full font-medium text-xs bg-amber-500/15 border border-amber-500/30 text-amber-300';
+        sampleBadge.textContent = 'Sample Profile';
+        statusBadge.parentElement.appendChild(sampleBadge);
+      }
+
+      renderAvatar(data);
+      renderHeroBadges(data.hero.credential_badges || []);
+      renderQuickStats(data.quick_stats || []);
+      renderAbout(data.bio.bio_full_paragraphs || []);
+      renderLicenses(data.credentials_experience.licenses_certifications || []);
+      renderBackground(data.credentials_experience.background_items || []);
+      renderServices(data.services_offered.items || []);
+      renderSpecializations((data.specializations && data.specializations.client_types) || []);
+
+      const email = document.getElementById('contact-email-link');
+      const phone = document.getElementById('contact-phone-link');
+      email.textContent = safeText(data.contact.contact_email, '');
+      email.href = buildMailTo(data.contact.contact_email);
+      phone.textContent = safeText(data.contact.phone, '');
+      phone.href = buildTel(data.contact.phone);
+      document.getElementById('contact-location').textContent = safeText(data.location.city, '') + (data.location.state ? ', ' + data.location.state : '') + (data.location.zip ? ' ' + data.location.zip : '');
+      document.getElementById('contact-availability').textContent = safeText(data.contact.availability_display, '');
+      document.getElementById('contact-languages').textContent = ((data.contact && data.contact.languages) || []).join(', ');
+
+      document.getElementById('contact-button-text').textContent = safeText(data.buttons.contact_button.label, 'Get In Touch');
+      document.getElementById('contact-sidebar-button').textContent = safeText(data.buttons.contact_button.label, 'Contact Now');
+      document.getElementById('review-button-text').textContent = safeText(data.buttons.review_button.label, 'Add Your Review');
+      document.getElementById('schedule-button-text').textContent = safeText(data.buttons.schedule_button.label, 'Schedule Consultation');
+      document.getElementById('schedule-cta').textContent = 'Schedule Now';
+      document.getElementById('schedule-description').textContent = safeText(data.buttons.schedule_button.description, 'Book a consultation to discuss your tax situation.');
+
+      reviews = (data.reviews && data.reviews.items) ? data.reviews.items.slice() : [];
+      updateReviewsDisplay();
+      lucide.createIcons();
+
+      resetButtonState('contact-button');
+      resetButtonState('contact-sidebar-button');
+      resetButtonState('schedule-button');
+      resetButtonState('schedule-cta');
+      resetButtonState('add-review-btn');
+
+      const contactAction = function() {
+        if (!data.buttons.contact_button.active || !data.buttons.contact_button.show) return;
+        if (data.buttons.contact_button.url) window.location.href = data.buttons.contact_button.url;
+      };
+
+      const scheduleAction = function() {
+        if (!data.buttons.schedule_button.active || !data.buttons.schedule_button.show) return;
+        if (data.buttons.schedule_button.url) window.open(data.buttons.schedule_button.url, '_blank', 'noopener');
+      };
+
+      document.getElementById('contact-button').onclick = contactAction;
+      document.getElementById('contact-sidebar-button').onclick = contactAction;
+      document.getElementById('schedule-button').onclick = scheduleAction;
+      document.getElementById('schedule-cta').onclick = scheduleAction;
+
+      if (!data.buttons.contact_button.active || !data.buttons.contact_button.show) {
+        disableButton('contact-button');
+        disableButton('contact-sidebar-button');
+      }
+
+      if (!data.buttons.schedule_button.active || !data.buttons.schedule_button.show) {
+        disableButton('schedule-button');
+        disableButton('schedule-cta');
+      }
+
+      if (!data.buttons.review_button.active || !data.buttons.review_button.show || !data.reviews.allow_submission) {
+        disableButton('add-review-btn');
+      }
+    }
+
+    const modal = document.getElementById('review-modal');
+    const addReviewBtn = document.getElementById('add-review-btn');
+    const closeBtn = document.getElementById('close-modal');
+    const cancelBtn = document.getElementById('cancel-review');
+    const reviewForm = document.getElementById('review-form');
+    const starButtons = document.querySelectorAll('.star-btn');
+    const starCountInput = document.getElementById('star-count');
+
+    addReviewBtn.addEventListener('click', function() {
+      if (addReviewBtn.disabled) return;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    });
+
+    function closeReviewModal() {
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+      reviewForm.reset();
+      starCountInput.value = 0;
+      starButtons.forEach(function(btn) {
+        const icon = btn.querySelector('i');
+        icon.classList.remove('fill-amber-400', 'text-amber-400');
+        icon.classList.add('text-slate-600');
+      });
+      lucide.createIcons();
+    }
+
+    closeBtn.addEventListener('click', closeReviewModal);
+    cancelBtn.addEventListener('click', closeReviewModal);
+
+    starButtons.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const rating = parseInt(btn.dataset.rating, 10);
+        starCountInput.value = rating;
+
+        starButtons.forEach(function(button, index) {
+          const icon = button.querySelector('i');
+          if (index < rating) {
+            icon.classList.remove('text-slate-600');
+            icon.classList.add('fill-amber-400', 'text-amber-400');
+          } else {
+            icon.classList.remove('fill-amber-400', 'text-amber-400');
+            icon.classList.add('text-slate-600');
+          }
+        });
+      });
+    });
+
+    reviewForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('reviewer-name').value.trim();
+      const rating = parseInt(starCountInput.value, 10);
+      const text = document.getElementById('reviewer-text').value.trim();
+      if (!rating) return;
+      reviews.unshift({ name: name, rating: rating, text: text });
+      updateReviewsDisplay();
+      closeReviewModal();
+    });
+
+    document.getElementById('back-button').addEventListener('click', function() {
+      if (document.referrer) window.history.back();
+      else window.location.href = '/directory/';
+    });
+
+    function normalizeCandidate(url) {
+      try {
+        return new URL(url, window.location.href).toString();
+      } catch {
+        return null;
+      }
+    }
+
+    function buildDataCandidates() {
+      const params = new URLSearchParams(window.location.search);
+      const candidates = [];
+      const seen = new Set();
+
+      function add(url) {
+        const normalized = normalizeCandidate(url);
+        if (!normalized || seen.has(normalized)) return;
+        seen.add(normalized);
+        candidates.push(normalized);
+      }
+
+      const explicitData = params.get('data');
+      const explicitSlug = params.get('slug');
+      const pathname = window.location.pathname;
+      const parts = pathname.split('/').filter(Boolean);
+      const lastPart = parts.length ? parts[parts.length - 1] : '';
+      const secondLastPart = parts.length > 1 ? parts[parts.length - 2] : '';
+      const isHtmlFile = lastPart.endsWith('.html');
+      const folderSlug = isHtmlFile ? secondLastPart : lastPart;
+      const inDirectory = parts.indexOf('directory') !== -1;
+      const currentFile = pathname.split('/').pop() || '';
+
+      if (explicitData) add(explicitData);
+      if (explicitSlug) add('/directory/' + explicitSlug + '/data.json');
+
+      add('./data.json');
+      add('data.json');
+
+      if (inDirectory && folderSlug && folderSlug !== 'directory' && folderSlug !== 'profile-template.html') {
+        add('/directory/' + folderSlug + '/data.json');
+      }
+
+      if (currentFile === 'profile-template.html' || folderSlug === 'directory' || !folderSlug) {
+        add('/directory/sample-sarah-mitchell/data.json');
+      }
+
+      return candidates;
+    }
+
+    async function fetchFirstJson(candidates) {
+      let lastError = null;
+      for (let i = 0; i < candidates.length; i += 1) {
+        const url = candidates[i];
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) {
+            lastError = new Error('Failed to load profile data: ' + response.status + ' (' + url + ')');
+            continue;
+          }
+          const data = await response.json();
+          return { data: data, source: 'remote', url: url };
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      return { data: EMBEDDED_FALLBACK_PROFILE, source: 'embedded', url: null, error: lastError };
+    }
+
+    async function loadProfileData() {
+      const candidates = buildDataCandidates();
+      const result = await fetchFirstJson(candidates);
+      hydrateProfile(result.data);
+
+      if (result.source === 'embedded') {
+        const about = document.getElementById('about-paragraphs');
+        if (about) {
+          const note = document.createElement('p');
+          note.className = 'text-xs text-slate-500 pt-2';
+          note.textContent = 'You are viewing the fallback sample profile as no specific profile data could be found.';
+          about.appendChild(note);
+        }
+      }
+
+      return result;
+    }
+
+    loadProfileData().catch(function(error) {
+      console.error(error);
+      hydrateProfile(EMBEDDED_FALLBACK_PROFILE);
+      const about = document.getElementById('about-paragraphs');
+      if (about) {
+        const note = document.createElement('p');
+        note.className = 'text-xs text-slate-500 pt-2';
+        note.textContent = 'Template preview fell back to embedded sample data after a loading error.';
+        about.appendChild(note);
+      }
+    });
+
+    if (window.location.search.indexOf('runTemplateSmokeTests=1') !== -1) {
+      console.assert(Array.isArray(buildDataCandidates()), 'Smoke test failed: candidates should be an array.');
+      console.assert(buildMailTo('test@example.com') === 'mailto:test@example.com', 'Smoke test failed: mailto builder incorrect.');
+      console.assert(buildTel('(213) 555-1234') === 'tel:2135551234', 'Smoke test failed: tel builder incorrect.');
+      console.assert(EMBEDDED_FALLBACK_PROFILE.profile.slug === 'sample-sarah-mitchell', 'Smoke test failed: embedded fallback slug incorrect.');
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

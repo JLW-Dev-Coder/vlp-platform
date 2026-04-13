@@ -1,0 +1,641 @@
+<!--/app/offer.html-->
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tax Monitor Pro - Offer</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+
+    html, body { height: 100%; }
+    body { background-color: #0f172a; }
+
+    .glass-input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      color: #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .glass-input:focus {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(245, 158, 11, 0.6);
+      outline: none;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    }
+
+    .glass-input::placeholder { color: rgba(148, 163, 176, 0.6); }
+
+    .button-primary {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #0f172a;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .button-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .button-secondary {
+      background: rgba(51, 65, 85, 0.5);
+      color: #e2e8f0;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .button-secondary:hover {
+      background: rgba(71, 85, 105, 0.6);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    .package-card {
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(248, 250, 252, 0.10);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .package-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 34px rgba(2, 6, 23, 0.55);
+    }
+
+    .package-card.selected {
+      border-color: rgba(245, 158, 11, 0.65);
+      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25), 0 18px 44px rgba(245, 158, 11, 0.15);
+    }
+
+    .glass-card-light {
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(248, 250, 252, 0.08);
+      border-radius: 12px;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.3); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(245, 158, 11, 0.5); }
+
+    /* Toast Animation */
+    @keyframes slide-up { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .animate-slide-up { animation: slide-up 0.3s ease-out; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+</head>
+
+<body class="h-full bg-slate-950 text-slate-100">
+  <div class="relative z-10 min-h-screen w-full flex flex-col">
+
+    <!-- Hidden contract fields (Offer form) -->
+    <form id="tm-offer" class="hidden" action="https://api.virtuallaunch.pro/forms/offer" method="POST" novalidate>
+      <input type="hidden" name="accountId" id="accountId" value="" />
+      <input type="hidden" name="code" id="code" value="" />
+      <input type="hidden" name="eventId" id="eventId" value="" />
+      <input type="hidden" name="item" id="item" value="" />
+      <input type="hidden" name="orderId" id="orderId" value="" />
+      <input type="hidden" name="sessionToken" id="sessionToken" value="" />
+      <input type="hidden" name="viewport" id="viewport" value="" />
+    </form>
+
+    <!-- Sticky Header with Stepper (match intake.html) -->
+    <header class="sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+          <!-- Brand -->
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
+              <span class="font-black text-slate-950">TM</span>
+            </div>
+            <div>
+              <div class="font-bold text-slate-100">Tax Monitor Pro</div>
+              <div class="text-xs text-slate-400">Offer</div>
+            </div>
+          </div>
+
+          <!-- Stepper -->
+          <div class="flex items-center gap-2 sm:gap-4">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span class="text-sm font-semibold text-emerald-400">Intake</span>
+            </div>
+
+            <div class="w-8 h-0.5 bg-slate-700"></div>
+
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                <span class="text-xs font-bold text-slate-950">2</span>
+              </div>
+              <span class="text-sm font-semibold text-amber-400">Offer</span>
+            </div>
+
+            <div class="w-8 h-0.5 bg-slate-700"></div>
+
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                <span class="text-xs text-slate-400">3</span>
+              </div>
+              <span class="text-sm text-slate-500 hidden sm:inline">Agreement</span>
+            </div>
+
+            <div class="w-8 h-0.5 bg-slate-700"></div>
+
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                <span class="text-xs text-slate-400">4</span>
+              </div>
+              <span class="text-sm text-slate-500 hidden sm:inline">Payment</span>
+            </div>
+          </div>
+
+          <!-- Back -->
+          <a href="/app/index.html" class="inline-flex items-center gap-2 rounded-full border border-slate-800/70 bg-black/20 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-amber-300 hover:border-amber-500/30">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </a>
+        </div>
+
+        <!-- Progress bar (step 2 of 4) -->
+        <div class="mt-4 h-1 bg-slate-900/60 rounded-full overflow-hidden">
+          <div class="h-full w-2/4 rounded-full" style="background: linear-gradient(90deg, #f59e0b, #d97706); box-shadow: 0 0 20px rgba(245,158,11,0.45);"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col px-4 sm:px-6 py-8 sm:py-10">
+      <div class="max-w-5xl mx-auto space-y-6">
+
+        <!-- Hero Header -->
+        <div class="text-center pt-6 sm:pt-8">
+          <h1 id="hero-title" class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">Tax Monitoring Offer</h1>
+          <p id="hero-subtitle" class="mt-3 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto">Choose the monitoring plan that fits your situation.</p>
+          <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent mt-6"></div>
+        </div>
+
+        <!-- Choose Your Package -->
+        <div class="space-y-6">
+          <div class="text-center">
+            <h2 class="text-2xl font-bold text-white mb-2">Choose Your Package</h2>
+            <p class="text-slate-400">Select the monitoring level that fits your needs</p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-6" id="packages-container">
+
+            <!-- Bronze -->
+            <div class="package-card p-6 border-2 border-transparent" data-package="bronze" onclick="selectPackage('bronze')" role="button" tabindex="0">
+              <div class="text-center mb-6">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-slate-700 text-slate-300 mb-3">BRONZE</span>
+                <div class="text-4xl font-bold text-white mb-1">$275</div>
+                <div class="text-slate-400 text-sm">6-week plan</div>
+              </div>
+              <ul class="space-y-3 mb-6">
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Monitoring during the plan term
+                </li>
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Plain-English updates
+                </li>
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Basic alerting for major changes
+                </li>
+              </ul>
+              <div class="text-center"><span class="text-slate-500 text-sm">Best for short-term visibility</span></div>
+            </div>
+
+            <!-- Silver -->
+            <div class="package-card p-6 border-2 border-transparent relative" data-package="silver" onclick="selectPackage('silver')" role="button" tabindex="0">
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span class="px-4 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg">MOST POPULAR</span>
+              </div>
+              <div class="text-center mb-6 mt-2">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 mb-3">SILVER</span>
+                <div class="text-4xl font-bold text-white mb-1">$325</div>
+                <div class="text-slate-400 text-sm">8-week plan</div>
+              </div>
+              <ul class="space-y-3 mb-6">
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Everything in Bronze
+                </li>
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  More frequent monitoring
+                </li>
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Deeper alerting for common changes
+                </li>
+              </ul>
+              <div class="text-center"><span class="text-amber-400 text-sm font-medium">Recommended for most clients</span></div>
+            </div>
+
+            <!-- Gold -->
+            <div class="package-card p-6 border-2 border-transparent" data-package="gold" onclick="selectPackage('gold')" role="button" tabindex="0">
+              <div class="text-center mb-6">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 mb-3">GOLD</span>
+                <div class="text-4xl font-bold text-white mb-1">$425</div>
+                <div class="text-slate-400 text-sm">12-week plan</div>
+              </div>
+              <ul class="space-y-3 mb-6">
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Everything in Silver
+                </li>
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Longest term coverage
+                </li>
+                <li class="flex items-start gap-3 text-sm text-slate-300">
+                  <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                  Highest alerting depth
+                </li>
+              </ul>
+              <div class="text-center"><span class="text-emerald-400 text-sm font-medium">Best for ongoing visibility</span></div>
+            </div>
+          </div>
+
+          <!-- Add-ons -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="package-card p-6 border-2 border-transparent" data-package="one_time" onclick="selectPackage('one_time')" role="button" tabindex="0">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <div class="text-lg font-bold text-white">One-Time Snapshot</div>
+                  <div class="mt-1 text-sm text-slate-400">Best for a quick baseline check</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-extrabold text-white">$299</div>
+                  <div class="text-xs text-slate-400">one-time</div>
+                </div>
+              </div>
+              <div class="mt-5 rounded-xl bg-slate-950/40 border border-slate-800 p-4 text-sm text-slate-300">
+                <div class="font-semibold mb-2">Includes</div>
+                <ul class="space-y-2 text-slate-400">
+                  <li>• Initial transcript pull + baseline summary</li>
+                  <li>• One status update</li>
+                  <li>• No ongoing monitoring term</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="package-card p-6 border-2 border-transparent" data-package="mfj" onclick="selectPackage('mfj')" role="button" tabindex="0">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <div class="text-lg font-bold text-white">MFJ Add-On</div>
+                  <div class="mt-1 text-sm text-slate-400">Enables MFJ-year monitoring visibility</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-extrabold text-white">+$79</div>
+                  <div class="text-xs text-slate-400">add-on</div>
+                </div>
+              </div>
+              <div class="mt-5 rounded-xl bg-slate-950/40 border border-slate-800 p-4 text-sm text-slate-300">
+                <div class="font-semibold mb-2">Applies to</div>
+                <ul class="space-y-2 text-slate-400">
+                  <li>• Any term plan (Bronze, Gold, Silver)</li>
+                  <li>• Each spouse must enroll independently</li>
+                  <li>• MFJ visibility requires both spouses enrolled + authorized</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Package Summary -->
+          <div id="package-summary" class="mt-2 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 hidden">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Selected Package</h3>
+                <p class="text-slate-400 text-sm">Your chosen monitoring level</p>
+              </div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="glass-card-light p-4 text-center">
+                <div class="text-slate-400 text-sm mb-1">Package</div>
+                <div id="summary-package" class="text-amber-400 font-bold text-lg">—</div>
+              </div>
+              <div class="glass-card-light p-4 text-center">
+                <div class="text-slate-400 text-sm mb-1">Price</div>
+                <div id="summary-price" class="text-white font-bold text-lg">—</div>
+              </div>
+              <div class="glass-card-light p-4 text-center">
+                <div class="text-slate-400 text-sm mb-1">Term</div>
+                <div id="summary-term" class="text-emerald-400 font-bold text-lg">—</div>
+              </div>
+            </div>
+            <div class="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <p class="text-amber-400 text-sm flex items-start gap-2">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span id="mfj-note">Monitoring is not IRS representation. If MFJ years apply, each spouse must enroll and authorize independently for joint-year visibility.</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Important Notice -->
+          <div class="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-amber-400 mb-2">Important Notice</h3>
+                <p class="text-slate-300 leading-relaxed">Approving this offer selects your monitoring plan. Monitoring is informational and does not create IRS representation. If you later need representation, resolution work, or negotiations, that requires a separate written agreement and (when applicable) Form 2848.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Approval Panel -->
+          <div class="rounded-2xl border border-slate-700/50 bg-slate-900/40 p-8">
+            <div class="text-center mb-6">
+              <h2 class="text-2xl font-bold text-white mb-2">Review &amp; Approve</h2>
+              <p class="text-slate-400">Ready to move to the service agreement?</p>
+            </div>
+
+            <div class="glass-card-light p-4 mb-6">
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                <p class="text-slate-300 text-sm">Your information is protected. We don’t share your data with third parties except as needed to deliver the service.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <button id="approve-btn" class="button-primary px-8 py-4 rounded-xl text-slate-950 font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled onclick="handleApprove()">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                Approve Offer
+              </button>
+              <button id="continue-btn" class="button-secondary px-8 py-4 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled onclick="handleProceed()">
+                Continue to Agreement
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </button>
+            </div>
+
+            <div id="form-error" class="hidden mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200"></div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Disclaimer (match intake.html) -->
+    <div class="text-center text-sm text-slate-600 pt-6 mt-8 mb-10 px-6">
+      Monitoring does not create IRS representation. Representation, filing, and resolution are separate engagements.
+    </div>
+
+    <!-- Footer (match intake.html) -->
+    <footer class="px-6 py-4 mt-2">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-slate-500 text-sm">© <span id="footer-year"></span> Tax Monitor Pro. All rights reserved.</p>
+        <div class="flex items-center gap-6">
+          <a href="/legal/privacy.html" class="text-slate-400 hover:text-amber-400 text-sm transition-colors">Privacy Policy</a>
+          <a href="/legal/terms.html" class="text-slate-400 hover:text-amber-400 text-sm transition-colors">Terms of Service</a>
+          <a href="/site/contact.html" class="text-slate-400 hover:text-amber-400 text-sm transition-colors">Contact Support</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    (function () {
+      var y = document.getElementById('footer-year');
+      if (y) y.textContent = String(new Date().getFullYear());
+    })();
+  </script>
+
+  <script>
+    // Offer page logic (contract-safe payload only)
+    const packages = {
+      bronze: { name: 'Bronze', price: '$275', term: '6 Weeks' },
+      gold: { name: 'Gold', price: '$425', term: '12 Weeks' },
+      mfj: { name: 'MFJ Add-On', price: '+$79', term: 'Add-on' },
+      one_time: { name: 'One-Time Snapshot', price: '$299', term: 'One-time' },
+      silver: { name: 'Silver', price: '$325', term: '8 Weeks' }
+    };
+
+    let selectedPackage = null;
+
+    function safeText(v) {
+      return String(v || '').replace(/[<>]/g, '').trim();
+    }
+
+    function setError(msg) {
+      const box = document.getElementById('form-error');
+      if (!box) return;
+      box.textContent = String(msg || 'Something went wrong.');
+      box.classList.remove('hidden');
+    }
+
+    function clearError() {
+      const box = document.getElementById('form-error');
+      if (!box) return;
+      box.classList.add('hidden');
+      box.textContent = '';
+    }
+
+    function setButtons(approveDisabled, continueDisabled) {
+      const approveBtn = document.getElementById('approve-btn');
+      const continueBtn = document.getElementById('continue-btn');
+      if (approveBtn) approveBtn.disabled = !!approveDisabled;
+      if (continueBtn) continueBtn.disabled = !!continueDisabled;
+    }
+
+    function ensureHiddenFields() {
+      const params = new URLSearchParams(window.location.search || '');
+
+      const code = safeText(params.get('code') || '');
+      const accountId = safeText(params.get('accountId') || '');
+      const orderId = safeText(params.get('orderId') || '');
+      const sessionTokenQ = safeText(params.get('sessionToken') || '');
+      const eventIdQ = safeText(params.get('eventId') || '');
+
+      document.getElementById('code').value = code;
+      document.getElementById('accountId').value = accountId;
+      document.getElementById('orderId').value = orderId;
+      document.getElementById('viewport').value = String(window.innerWidth || '');
+
+      document.getElementById('eventId').value = eventIdQ || ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+
+      const st = sessionTokenQ || safeText(localStorage.getItem('tm_sessionToken') || '');
+      document.getElementById('sessionToken').value = st;
+
+      // Cosmetic client name
+      const clientNameEl = document.getElementById('client-name');
+      const nm = safeText(params.get('clientFirstName') || params.get('firstName') || params.get('first_name') || '');
+      if (clientNameEl && nm) clientNameEl.textContent = nm;
+
+      return { code, sessionToken: st };
+    }
+
+    function selectPackage(packageId) {
+      selectedPackage = packageId;
+
+      document.querySelectorAll('.package-card').forEach(function (card) {
+        const cardPackage = card.dataset.package;
+        if (cardPackage === packageId) card.classList.add('selected');
+        else card.classList.remove('selected');
+      });
+
+      const summary = document.getElementById('package-summary');
+      const pkg = packages[packageId];
+
+      if (summary && pkg) {
+        summary.classList.remove('hidden');
+        document.getElementById('summary-package').textContent = pkg.name;
+        document.getElementById('summary-price').textContent = pkg.price;
+        document.getElementById('summary-term').textContent = pkg.term;
+      }
+
+      document.getElementById('item').value = packageId;
+      setButtons(false, true);
+
+      if (window.elementSdk) window.elementSdk.setConfig({ selected_package: packageId });
+    }
+
+    async function handleApprove() {
+      clearError();
+      if (!selectedPackage) return;
+
+      const approveBtn = document.getElementById('approve-btn');
+      const continueBtn = document.getElementById('continue-btn');
+      const originalApprove = approveBtn ? approveBtn.innerHTML : '';
+
+      const { code, sessionToken } = ensureHiddenFields();
+
+      if (!code) { setError('Missing code. Return to the start and retry.'); return; }
+      if (!sessionToken) { setError('Missing sessionToken. Return to the start and retry.'); return; }
+
+      setButtons(true, true);
+
+      if (approveBtn) {
+        approveBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing…';
+      }
+
+      try {
+        const form = document.getElementById('tm-offer');
+        if (!form) throw new Error('Offer form missing.');
+
+        ensureHiddenFields();
+
+        const res = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+
+        let data = null;
+        try { data = await res.json(); } catch (_) {}
+
+        if (!res.ok || (data && data.ok === false)) {
+          const msg = (data && (data.error || data.details)) ? (data.error || data.details) : 'Offer submission failed.';
+          throw new Error(safeText(msg).slice(0, 240));
+        }
+
+        if (approveBtn) {
+          approveBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Approved';
+        }
+
+        if (continueBtn) continueBtn.disabled = false;
+        showToast('Offer saved. Continue to agreement.', 'success');
+
+        try { localStorage.setItem('tm_sessionToken', sessionToken); } catch (_) {}
+
+      } catch (err) {
+        if (approveBtn) approveBtn.innerHTML = originalApprove;
+        setButtons(false, true);
+        setError((err && err.message) ? err.message : 'Something went wrong.');
+      }
+    }
+
+    function handleProceed() {
+      clearError();
+
+      const code = safeText(document.getElementById('code').value);
+      const item = safeText(document.getElementById('item').value);
+      const accountId = safeText(document.getElementById('accountId').value);
+      const orderId = safeText(document.getElementById('orderId').value);
+      const sessionToken = safeText(document.getElementById('sessionToken').value);
+
+      if (!code || !item) { setError('Missing code or selected package.'); return; }
+
+      const u = new URL('/app/agreement.html', window.location.origin);
+      u.searchParams.set('code', code);
+      u.searchParams.set('item', item);
+      if (accountId) u.searchParams.set('accountId', accountId);
+      if (orderId) u.searchParams.set('orderId', orderId);
+      if (sessionToken) u.searchParams.set('sessionToken', sessionToken);
+      window.location.href = u.toString();
+    }
+
+    function showToast(message, type) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-4 right-4 px-6 py-4 rounded-xl shadow-lg z-50 flex items-center gap-3 animate-slide-up ' + (type === 'success' ? 'bg-emerald-600' : 'bg-slate-700');
+      toast.innerHTML = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
+        (type === 'success'
+          ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
+          : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+        ) +
+        '</svg><span class="text-white font-medium">' + safeText(message) + '</span>';
+
+      document.body.appendChild(toast);
+
+      setTimeout(function () {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(function () { toast.remove(); }, 300);
+      }, 3000);
+    }
+
+    // Initialize
+    (function init() {
+      const { code, sessionToken } = ensureHiddenFields();
+      if (!code || !sessionToken) {
+        setButtons(true, true);
+        setError('Missing required code/sessionToken in the URL.');
+      }
+
+      document.querySelectorAll('.package-card').forEach(function (card) {
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const id = card.dataset.package;
+            if (id) selectPackage(id);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

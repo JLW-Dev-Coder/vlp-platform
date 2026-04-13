@@ -1,0 +1,68 @@
+{
+  "clickupProjection": [],
+  "contract": {
+    "authority": ["R2 Canonical"],
+    "governs": "Form — Post-payment — Compliance Report",
+    "path": "app/contracts/forms/post-payment/compliance-report.contract.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Form Contract — Post-payment — Compliance Report",
+    "validation": {
+      "enumStrict": true,
+      "normalizeCheckboxToBoolean": true,
+      "rejectUnknownValues": true
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/forms/post-payment/compliance-report",
+    "method": "POST",
+    "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+    "receiptSource": "form"
+  },
+  "effects": {
+    "dedupeKey": "payload.eventId",
+    "writes": ["orders"],
+    "writeOrder": ["receiptAppend", "canonicalUpsert", "clickupProjection"],
+    "receiptAppend": {
+      "to": "receipts/{source}/{eventId}.json"
+    },
+    "canonicalUpsert": {
+      "target": "orders/{orderId}.json",
+      "patch": {
+        "stepBooleans": {
+          "complianceSubmitted": true
+        }
+      }
+    }
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {
+      "accountId": {
+        "type": ["string", "null"]
+      },
+      "eventId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "orderId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "reportAction": {
+        "type": "string",
+        "enum": ["Generate", "Refresh"]
+      },
+      "sessionToken": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": ["eventId", "orderId", "reportAction", "sessionToken"],
+    "type": "object"
+  },
+  "schema": {
+    "name": "tm_form_post_payment_compliance_report",
+    "version": 1
+  }
+}

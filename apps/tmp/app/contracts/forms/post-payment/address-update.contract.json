@@ -1,0 +1,82 @@
+{
+  "auth": {
+    "required": false,
+    "trustClientIdentityFields": false,
+    "type": "none"
+  },
+  "contract": {
+    "authority": [
+      "R2_BUCKET"
+    ],
+    "governs": "Address update submission",
+    "path": "forms/post-payment/address-update.contract.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Address Update",
+    "usedOnPages": [
+      "/app/pages/flows/post-payment/address-update.html"
+    ],
+    "validation": {
+      "enumStrict": true,
+      "rejectUnknownValues": true,
+      "requireJsonContentType": true
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/v1/forms/post-payment/address-update",
+    "method": "POST",
+    "receiptKeyPattern": "",
+    "receiptSource": "tm_address_update",
+    "signature": {
+      "header": null,
+      "required": false,
+      "secretEnvVar": null
+    },
+    "writes": [
+      "address_updates"
+    ]
+  },
+  "effects": {
+    "dedupeKey": "payload.eventId",
+    "eventIdFrom": "payload.eventId",
+    "receiptAppend": {
+      "to": ""
+    },
+    "canonicalUpsert": {
+      "target": ""
+    },
+    "writeOrder": [
+      "receiptAppend",
+      "canonicalUpsert"
+    ],
+    "writes": [
+      "address_updates"
+    ]
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "response": {
+    "deduped": {
+      "deduped": true,
+      "eventId": "{effects.eventIdFrom}",
+      "ok": true
+    },
+    "error": {
+      "error": "validation_failed",
+      "ok": false
+    },
+    "success": {
+      "eventId": "{effects.eventIdFrom}",
+      "ok": true,
+      "status": "submitted"
+    }
+  },
+  "schema": {
+    "name": "tm_address_update",
+    "version": 1
+  }
+}

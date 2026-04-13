@@ -1,0 +1,131 @@
+{
+  "clickupProjection": [
+    {
+      "action": "createTask",
+      "list": "orders",
+      "note": "Create a Phase 2 task to complete representative (staff) e-signature and finalize IRS submission.",
+      "taskTitleTemplate": "Form 2848 Submitted (Client eSigned) — Next: Phase 2 Staff eSign"
+    }
+  ],
+  "contract": {
+    "authority": [
+      "R2 Canonical"
+    ],
+    "governs": "Form — Post-payment — eSign 2848",
+    "path": "app/contracts/forms/post-payment/esign-2848.contract.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Form Contract — Post-payment — eSign 2848",
+    "validation": {
+      "enumStrict": true,
+      "normalizeCheckboxToBoolean": true,
+      "rejectUnknownValues": true
+    },
+    "version": 2
+  },
+  "delivery": {
+    "endpoint": "/forms/post-payment/esign-2848",
+    "method": "POST",
+    "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+    "receiptSource": "form"
+  },
+  "effects": {
+    "dedupeKey": "payload.eventId",
+    "writes": [
+      "orders"
+    ],
+    "writeOrder": [
+      "receiptAppend",
+      "canonicalUpsert",
+      "clickupProjection"
+    ],
+    "receiptAppend": {
+      "to": "receipts/{source}/{eventId}.json"
+    },
+    "canonicalUpsert": {
+      "target": "orders/{orderId}.json",
+      "patch": {
+        "stepBooleans": {
+          "esign2848Submitted": true
+        }
+      }
+    }
+  },
+  "note": "Representative (rep) values are not submitted by the client on this page. Rep details and staff e-signature are generated/completed in Phase 2, after the client submission is recorded.",
+  "payload": {
+    "additionalProperties": false,
+    "properties": {
+      "accountId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 200
+      },
+      "consentElectronicSignature": {
+        "type": "boolean"
+      },
+      "eventId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "orderId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "sessionToken": {
+        "type": "string",
+        "minLength": 1
+      },
+      "signatureDate": {
+        "type": "string",
+        "format": "date"
+      },
+      "signatureName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "taxpayerAddress": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 500
+      },
+      "taxpayerId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 50
+      },
+      "taxpayerName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 300
+      },
+      "taxpayerPhone": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 50
+      }
+    },
+    "required": [
+      "consentElectronicSignature",
+      "eventId",
+      "orderId",
+      "sessionToken",
+      "signatureDate",
+      "signatureName"
+    ],
+    "type": "object"
+  },
+  "schema": {
+    "name": "tm_form_post_payment_esign_2848",
+    "version": 2
+  }
+}

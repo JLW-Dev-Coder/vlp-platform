@@ -1,0 +1,189 @@
+﻿{
+  "clickupProjection": [
+    {
+      "list": "Support",
+      "createTask": {
+        "name": "Support — {payload.support.subject}",
+        "status": "open / new"
+      },
+      "updates": [
+        {
+          "fieldName": "Support Action Required",
+          "from": "effects.supportPatch.actionRequired"
+        },
+        {
+          "fieldName": "Support Email",
+          "from": "effects.supportPatch.email"
+        },
+        {
+          "fieldName": "Support Priority",
+          "from": "effects.supportPatch.priority"
+        },
+        {
+          "fieldName": "Support Related Order ID",
+          "from": "effects.supportPatch.relatedOrderId"
+        },
+        {
+          "fieldName": "Support Type",
+          "from": "effects.supportPatch.type"
+        }
+      ]
+    }
+  ],
+  "contract": {
+    "authority": ["R2 Canonical"],
+    "governs": "Form — Support — Support Ticket",
+    "path": "app/contracts/forms/support/support-ticket.contract.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Form Contract — Support — Support Ticket Submitted",
+    "validation": {
+      "enumStrict": true,
+      "normalizeCheckboxToBoolean": true,
+      "rejectUnknownValues": true
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/forms/support/support-ticket",
+    "method": "POST",
+    "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+    "receiptSource": "form"
+  },
+  "effects": {
+    "dedupeKey": "payload.eventId",
+    "writes": ["support"],
+    "writeOrder": ["receiptAppend", "canonicalUpsert", "clickupProjection"],
+    "receiptAppend": {
+      "to": "receipts/{source}/{eventId}.json"
+    },
+    "canonicalUpsert": {
+      "target": "support/{supportId}.json",
+      "supportIdFrom": "payload.eventId",
+      "patchFrom": "effects.supportPatch"
+    },
+    "supportPatch": {
+      "accountId": "{payload.accountId}",
+      "actionRequired": "{payload.support.actionRequired}",
+      "email": "{payload.support.email}",
+      "message": "{payload.support.message}",
+      "priority": "{payload.support.priority}",
+      "relatedOrderId": "{payload.support.relatedOrderId}",
+      "status": "open / new",
+      "subject": "{payload.support.subject}",
+      "type": "{payload.support.type}",
+      "uploads": "{payload.support.uploads}"
+    }
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "minLength": 6
+      },
+      "eventId": {
+        "type": "string",
+        "minLength": 8
+      },
+      "submittedAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "support": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "actionRequired": {
+            "type": "string",
+            "enum": ["Acknowledge", "Close", "Resolve", "Triage"]
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8000
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "🟥 Critical — Today",
+              "🟧 High — 48 Hours",
+              "🟦 Low — As Scheduled",
+              "🟨 Normal — 3–5 Days"
+            ]
+          },
+          "relatedOrderId": {
+            "type": ["string", "null"],
+            "minLength": 1
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Appt - Demo",
+              "Appt - Exit / Offboarding",
+              "Appt - Intro",
+              "Appt - Onboarding",
+              "Appt - Support",
+              "Ticket - Address Update",
+              "Ticket - Agreement",
+              "Ticket - Client Exit Survey",
+              "Ticket - Compliance Report",
+              "Ticket - Esign 2848",
+              "Ticket - Filing Status",
+              "Ticket - Intake",
+              "Ticket - Offer",
+              "Ticket - Payment",
+              "Ticket - Welcome",
+              "Ticket - Wet Sign 2848"
+            ]
+          },
+          "uploads": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "contentType": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "filename": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "r2Key": {
+                  "type": "string",
+                  "minLength": 10
+                },
+                "sha256": {
+                  "type": ["string", "null"],
+                  "minLength": 16
+                },
+                "sizeBytes": {
+                  "type": "number",
+                  "minimum": 1
+                }
+              },
+              "required": ["contentType", "filename", "r2Key", "sizeBytes"]
+            }
+          }
+        },
+        "required": ["actionRequired", "email", "message", "priority", "subject", "type"]
+      }
+    },
+    "required": ["accountId", "eventId", "submittedAt", "support"],
+    "type": "object"
+  },
+  "schema": {
+    "name": "tm_form_support_ticket",
+    "version": 1
+  }
+}

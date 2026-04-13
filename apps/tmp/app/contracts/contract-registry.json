@@ -1,0 +1,137 @@
+{
+  "contracts": [
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/intake/agreement",
+      "id": "form_intake_agreement",
+      "method": "POST",
+      "path": "app/contracts/forms/intake/agreement.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/intake/intake",
+      "id": "form_intake_intake",
+      "method": "POST",
+      "path": "app/contracts/forms/intake/intake.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["accounts","orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/intake/offer",
+      "id": "form_intake_offer",
+      "method": "POST",
+      "path": "app/contracts/forms/intake/offer.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "stripeSessionId",
+      "endpoint": "https://api.virtuallaunch.pro/webhooks/stripe.checkout_session_completed",
+      "id": "stripe_checkout_session_completed",
+      "method": "POST",
+      "path": "app/contracts/webhooks/stripe.checkout_session_completed.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "stripe",
+      "signatureRequired": true,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "stripeSessionId",
+      "endpoint": "https://api.virtuallaunch.pro/webhooks/stripe.payment_intent_succeeded",
+      "id": "stripe_payment_intent_succeeded",
+      "method": "POST",
+      "path": "app/contracts/webhooks/stripe.payment_intent_succeeded.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "stripe",
+      "signatureRequired": true,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/post-payment/address-update",
+      "id": "form_post_payment_address_update",
+      "method": "POST",
+      "path": "app/contracts/forms/post-payment/address-update.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/post-payment/compliance",
+      "id": "form_post_payment_compliance",
+      "method": "POST",
+      "path": "app/contracts/forms/post-payment/compliance.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/post-payment/esign-2848",
+      "id": "form_post_payment_esign_2848",
+      "method": "POST",
+      "path": "app/contracts/forms/post-payment/esign-2848.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/post-payment/exit-survey",
+      "id": "form_post_payment_exit_survey",
+      "method": "POST",
+      "path": "app/contracts/forms/post-payment/exit-survey.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/post-payment/filing-status",
+      "id": "form_post_payment_filing_status",
+      "method": "POST",
+      "path": "app/contracts/forms/post-payment/filing-status.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 1,
+      "writes": ["orders"]
+    },
+    {
+      "dedupeKey": "payload.eventId",
+      "endpoint": "https://api.virtuallaunch.pro/forms/post-payment/welcome",
+      "id": "form_post_payment_welcome",
+      "method": "POST",
+      "path": "app/contracts/forms/post-payment/welcome.contract.json",
+      "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+      "receiptSource": "form",
+      "signatureRequired": false,
+      "version": 2,
+      "writes": ["orders"]
+    }
+  ],
+  "registryVersion": 1
+}

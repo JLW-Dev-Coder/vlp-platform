@@ -1,0 +1,72 @@
+{
+  "auth": {
+    "required": true,
+    "trustClientIdentityFields": false,
+    "type": "session"
+  },
+  "contract": {
+    "authority": [
+      "TMP_SESSION"
+    ],
+    "governs": "Destroys the authenticated TMP session by clearing the tmp_session cookie and writing an audit event.",
+    "path": "/contracts/tmp.auth.logout.v1.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Auth Contract — Logout",
+    "usedOnPages": [
+      "/app/dashboard.html",
+      "/app/settings.html"
+    ],
+    "validation": {
+      "enumStrict": false,
+      "rejectUnknownValues": false,
+      "requireJsonContentType": false
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/v1/auth/logout",
+    "method": "POST",
+    "receiptKeyPattern": "receipts/tmp/auth/logout/{eventId}.json",
+    "receiptSource": "tmp_auth_logout",
+    "signature": {
+      "header": null,
+      "required": false,
+      "secretEnvVar": null
+    }
+  },
+  "effects": {
+    "dedupeKey": "system.requestId",
+    "eventIdFrom": "system.requestId",
+    "receiptAppend": {
+      "to": "receipts/tmp/auth/logout/{eventId}.json"
+    },
+    "writeOrder": [
+      "receiptAppend"
+    ],
+    "writes": []
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "response": {
+    "deduped": {
+      "loggedOut": true,
+      "ok": true
+    },
+    "error": {
+      "error": "logout_failed",
+      "ok": false
+    },
+    "success": {
+      "loggedOut": true,
+      "ok": true
+    }
+  },
+  "schema": {
+    "name": "tmp_auth_logout",
+    "version": 1
+  }
+}

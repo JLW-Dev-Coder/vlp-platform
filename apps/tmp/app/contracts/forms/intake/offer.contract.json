@@ -1,0 +1,82 @@
+{
+  "auth": {
+    "required": false,
+    "trustClientIdentityFields": false,
+    "type": "none"
+  },
+  "contract": {
+    "authority": [
+      "R2_BUCKET"
+    ],
+    "governs": "Tax Monitor offer submission",
+    "path": "forms/intake/offer.contract.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Offer Contract",
+    "usedOnPages": [
+      "/app/pages/flows/intake/offer.html"
+    ],
+    "validation": {
+      "enumStrict": true,
+      "rejectUnknownValues": true,
+      "requireJsonContentType": true
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/v1/forms/intake/offer",
+    "method": "POST",
+    "receiptKeyPattern": "",
+    "receiptSource": "tm_offer",
+    "signature": {
+      "header": null,
+      "required": false,
+      "secretEnvVar": null
+    },
+    "writes": [
+      "offers"
+    ]
+  },
+  "effects": {
+    "dedupeKey": "payload.eventId",
+    "eventIdFrom": "payload.eventId",
+    "receiptAppend": {
+      "to": ""
+    },
+    "canonicalUpsert": {
+      "target": ""
+    },
+    "writeOrder": [
+      "receiptAppend",
+      "canonicalUpsert"
+    ],
+    "writes": [
+      "offers"
+    ]
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "response": {
+    "deduped": {
+      "deduped": true,
+      "eventId": "{effects.eventIdFrom}",
+      "ok": true
+    },
+    "error": {
+      "error": "validation_failed",
+      "ok": false
+    },
+    "success": {
+      "eventId": "{effects.eventIdFrom}",
+      "ok": true,
+      "status": "submitted"
+    }
+  },
+  "schema": {
+    "name": "tm_offer",
+    "version": 1
+  }
+}

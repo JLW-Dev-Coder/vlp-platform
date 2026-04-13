@@ -1,0 +1,22 @@
+{
+  "contract": "directory-index.v1",
+  "featured": [
+    "sample-sarah-mitchell",
+    "sample-james-rodriguez",
+    "sample-emily-wong"
+  ],
+  "profiles": [
+    "sample-amanda-garcia",
+    "sample-david-chen",
+    "sample-emily-wong",
+    "sample-james-rodriguez",
+    "sample-jennifer-lee",
+    "sample-kevin-nakamura",
+    "sample-lisa-park",
+    "sample-michael-johnson",
+    "sample-rachel-brooks",
+    "sample-sarah-mitchell",
+    "sample-steven-roberts",
+    "sample-thomas-wilson"
+  ]
+}

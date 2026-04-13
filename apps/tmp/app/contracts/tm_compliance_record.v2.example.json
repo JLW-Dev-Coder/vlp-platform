@@ -1,0 +1,137 @@
+{
+  "compliance": {
+    "Case_Summary_Notes": null,
+    "Compliance_Activity_Type": null,
+    "Compliance_Internal_Notes": null,
+    "Compliance_Period_Covered": null,
+    "Estimated_Balance_Due_Range": null,
+    "IA_Established": null,
+    "IRS_Account_Status": null,
+    "IRS_Agent_Department": null,
+    "IRS_Agent_Department_Phone": null,
+    "IRS_Call_Confirmation_Date": null,
+    "IRS_Lien_Exposure_Level": null,
+    "IRS_Missing_Years": null,
+    "IRS_Notice_Date": null,
+    "IRS_Notice_Received": null,
+    "IRS_Notice_Type": null,
+    "IRS_Revenue_Officer_Fax": null,
+    "IRS_Revenue_Officer_Name": null,
+    "IRS_Revenue_Officer_Notes": null,
+    "IRS_Revenue_Officer_Phone": null,
+    "IRS_Status_Categories": [],
+    "Spouse_DOB": null,
+    "Spouse_SSN": null,
+    "Taxpayer_Address_1": null,
+    "Taxpayer_Address_2": null,
+    "Taxpayer_City": null,
+    "Taxpayer_DOB": null,
+    "Taxpayer_SSN": null,
+    "Taxpayer_State": null,
+    "Taxpayer_Zip": null,
+    "Transcript_Delivery_Method": null,
+    "Transcript_Files_Upload": [],
+    "Transcript_Request_Made": false,
+    "Transcript_Retrieval_Date": null,
+    "Transcript_Retrieval_Notes": null,
+    "Transcript_Scope_Confirmed": null,
+    "Transcripts_Retrieved_From_SOR": null,
+    "Unfiled_Returns_Indicator": null
+  },
+  "dates": {
+    "IA_Last_Payment_Date": null,
+    "IA_Payment_Date": null
+  },
+  "financialSummary": {
+    "IA_Last_Payment_Amount": null,
+    "IA_Payment_Amount": null,
+    "IRS_Interest_Total": null,
+    "IRS_Penalties_Total": null,
+    "Total_Balance_With_Accruals": null,
+    "Total_Balance_With_Accruals_v_Return_10_Year_Balance_Diff": null,
+    "Total_IRS_Balance": null
+  },
+  "identifiers": {
+    "accountId": "",
+    "orderId": ""
+  },
+  "notes": {},
+  "returns": {
+    "window": {
+      "endYear": 2025,
+      "startYear": 2016
+    },
+    "years": {
+      "2016": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2017": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2018": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2019": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2020": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2021": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2022": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2023": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2024": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      },
+      "2025": {
+        "CSED": null,
+        "Filed": false,
+        "Filing_Status": null,
+        "Total_Balance": null
+      }
+    }
+  },
+  "schema": {
+    "name": "tm_compliance_record",
+    "version": 5
+  },
+  "system": {
+    "complianceSubmitted": false,
+    "lastUpdated": null,
+    "reportReady": false,
+    "updatedBy": null
+  }
+}

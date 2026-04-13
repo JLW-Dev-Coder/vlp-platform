@@ -1,0 +1,104 @@
+@import '@vlp/member-ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: 'Raleway', sans-serif;
+    --font-body: 'Raleway', sans-serif;
+    --accent:        #f59e0b;
+    --accent-light:  #fffbeb;
+    --accent-dark:   #b45309;
+    --accent-text:   #92400e;
+    --accent-border: #fde68a;
+    --max-width:     1280px;
+    --page-gutter:   clamp(1.25rem, 5vw, 3rem);
+    --header-height: 68px;
+
+    /* TMP Brand — Amber */
+    --accent-hover: #D97706;
+
+    /* Dark theme */
+    --bg: #020617;
+    --fg: rgba(255, 255, 255, 0.92);
+    --muted: rgba(255, 255, 255, 0.66);
+    --card: rgba(255, 255, 255, 0.06);
+    --line: rgba(255, 255, 255, 0.12);
+    --surface: #0F172A;
+    --surface-mid: rgba(15, 23, 42, 0.4);
+    --surface-border: rgba(100, 116, 139, 0.3);
+    --surface-border-solid: #1E293B;
+
+    /* Text */
+    --text: #E2E8F0;
+    --text-muted: #94A3B8;
+    --text-subtle: #64748B;
+
+    /* Semantic */
+    --error: #EF4444;
+    --success: #22C55E;
+    --warning: #F59E0B;
+
+    /* Layout */
+    --max-content: 1200px;
+    --radius: 12px;
+    --radius-sm: 8px;
+
+    /* TMP brand overrides for member-ui shared tokens */
+    --member-accent: rgba(245, 158, 11, 0.1);
+    --member-accent-strong: rgba(245, 158, 11, 0.2);
+    --member-hero-bg: #451a03;
+    --member-hero-bg-end: #1c0a00;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-raleway), Inter, system-ui, sans-serif;
+    background-color: #020617;
+    color: rgba(255, 255, 255, 0.92);
+    min-height: 100vh;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Gradient text utility — used across marketing pages */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    #D97706 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card utility — used everywhere */
+.glass-card {
+  background: var(--surface-mid);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+}

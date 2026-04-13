@@ -1,0 +1,76 @@
+{
+  "auth": {
+    "required": true,
+    "trustClientIdentityFields": false,
+    "type": "session"
+  },
+  "contract": {
+    "authority": [
+      "TMP_SESSION",
+      "R2_TMP_CANONICAL"
+    ],
+    "governs": "Retrieves the authenticated TMP taxpayer session for dashboard and protected TMP app views.",
+    "path": "/contracts/tmp.auth.session.get.v1.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Auth Contract — Session Get",
+    "usedOnPages": [
+      "/app/dashboard.html",
+      "/app/index.html",
+      "/app/settings.html"
+    ],
+    "validation": {
+      "enumStrict": true,
+      "rejectUnknownValues": true,
+      "requireJsonContentType": false
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/v1/auth/session",
+    "method": "GET",
+    "receiptKeyPattern": "receipts/tmp/auth/session/{eventId}.json",
+    "receiptSource": "tmp_auth_session_get",
+    "signature": {
+      "header": null,
+      "required": false,
+      "secretEnvVar": null
+    }
+  },
+  "effects": {
+    "dedupeKey": "system.requestId",
+    "eventIdFrom": "system.requestId",
+    "receiptAppend": {
+      "to": "receipts/tmp/auth/session/{eventId}.json"
+    },
+    "writeOrder": [
+      "receiptAppend"
+    ],
+    "writes": []
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "response": {
+    "deduped": {
+      "eventId": "{effects.eventIdFrom}",
+      "ok": true,
+      "session": "{read.session}"
+    },
+    "error": {
+      "error": "session_not_found",
+      "ok": false
+    },
+    "success": {
+      "eventId": "{effects.eventIdFrom}",
+      "ok": true,
+      "session": "{read.session}"
+    }
+  },
+  "schema": {
+    "name": "tmp_auth_session_get",
+    "version": 1
+  }
+}

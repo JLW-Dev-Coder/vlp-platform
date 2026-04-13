@@ -1,0 +1,104 @@
+{
+  "clickupProjection": [],
+  "contract": {
+    "authority": ["R2 Canonical"],
+    "governs": "Form — Post-payment — Filing Status",
+    "path": "app/contracts/forms/post-payment/filing-status.contract.json",
+    "source": "Tax Monitor Pro",
+    "title": "Tax Monitor Pro — Form Contract — Post-payment — Filing Status",
+    "validation": {
+      "enumStrict": true,
+      "normalizeCheckboxToBoolean": true,
+      "rejectUnknownValues": true
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/forms/post-payment/filing-status",
+    "method": "POST",
+    "receiptKeyPattern": "receipts/{source}/{eventId}.json",
+    "receiptSource": "form"
+  },
+  "effects": {
+    "dedupeKey": "payload.eventId",
+    "writes": ["orders"],
+    "writeOrder": ["receiptAppend", "canonicalUpsert", "clickupProjection"],
+    "receiptAppend": {
+      "to": "receipts/{source}/{eventId}.json"
+    },
+    "canonicalUpsert": {
+      "target": "orders/{orderId}.json",
+      "patch": {
+        "stepBooleans": {
+          "filingStatusSubmitted": true
+        }
+      }
+    }
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {
+      "Marital_Status": {
+        "type": ["string", "null"],
+        "enum": [
+          "Head of household",
+          "Married filing jointly",
+          "Married filing separately",
+          "Single",
+          "Widow(er)"
+        ]
+      },
+      "Spouse_Full_Legal_Name": {
+        "type": ["string", "null"],
+        "maxLength": 500
+      },
+      "Spouse_Separate_2848_Required": {
+        "type": ["string", "null"],
+        "enum": [
+          "No — I was not married during the compliance years",
+          "Yes — I was married during one or more compliance years"
+        ]
+      },
+      "Tax_Monitoring_Plan_Selected": {
+        "type": ["string", "null"],
+        "maxLength": 500
+      },
+      "Tax_Monitoring_Service_Progress_Percent": {
+        "type": ["number", "null"]
+      },
+      "Tax_Monitoring_Service_Progress_Status": {
+        "type": ["string", "null"],
+        "maxLength": 5000
+      },
+      "Taxpayer_Full_Legal_Name": {
+        "type": ["string", "null"],
+        "maxLength": 500
+      },
+      "Taxpayer_SSN_ITIN": {
+        "type": ["string", "null"],
+        "maxLength": 50
+      },
+      "accountId": {
+        "type": ["string", "null"]
+      },
+      "eventId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "orderId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "sessionToken": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": ["eventId", "orderId", "sessionToken"],
+    "type": "object"
+  },
+  "schema": {
+    "name": "tm_form_post_payment_filing_status",
+    "version": 1
+  }
+}
