@@ -1,0 +1,116 @@
+@import '@vlp/member-ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* TCVLP brand overrides for member-ui shared tokens */
+    --member-accent: rgba(239, 68, 68, 0.1);
+    --member-accent-strong: rgba(239, 68, 68, 0.2);
+    --member-hero-bg: #450a0a;
+    --member-hero-bg-end: #1c0505;
+
+    /* TCVLP legacy brand tokens (used by CSS module marketing pages) */
+    --color-bg:          #0f1117;
+    --color-surface:     #161824;
+    --color-surface-2:   #1e2130;
+    --color-border:      #2a2d3e;
+    --color-red:         #dc2626;
+    --color-red-light:   #f87171;
+    --color-red-muted:   rgba(220, 38, 38, 0.15);
+    --color-green:       #22c55e;
+    --color-blue:        #3b82f6;
+    --color-yellow:      #eab308;
+    --color-text-1:      #f1f1f4;
+    --color-text-2:      #9ca3af;
+    --color-text-3:      #6b7280;
+    --color-text-4:      #4b5563;
+    --font-display:      'Raleway', Arial, sans-serif;
+    --font-body:         'DM Sans', sans-serif;
+    --max-width:         72rem;
+    --transition:        0.15s ease;
+  }
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
+  background: #0f1117;
+  color: #f1f1f4;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 { margin: 0; color: var(--color-text-1); }
+p { margin: 0; color: var(--color-text-2); }
+a { color: inherit; text-decoration: none; }
+
+/* ── Form Elements ───────────────────────────────────────────────────────── */
+input, select, textarea {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-1);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-red);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+input::placeholder, textarea::placeholder { color: var(--color-text-3); }
+select option { background: var(--color-surface); }
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); }
+  50%       { box-shadow: 0 0 24px 8px rgba(220, 38, 38, 0.15); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position:  1000px 0; }
+}
+
+@keyframes skeletonLoad {
+  0%   { background-position: -1000px 0; }
+  100% { background-position:  1000px 0; }
+}
+
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+@keyframes urgencyPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.15); }
+  50%       { box-shadow: 0 0 40px rgba(220, 38, 38, 0.4), 0 0 60px rgba(220, 38, 38, 0.2); }
+}
+
+/* ── Print ───────────────────────────────────────────────────────────────── */
+@media print {
+  body { background: #fff; color: #000; }
+}

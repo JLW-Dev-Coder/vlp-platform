@@ -1,0 +1,58 @@
+.root {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.main {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.header {
+  margin-bottom: 1.75rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-text-1);
+  margin: 0 0 0.5rem;
+}
+
+.desc {
+  font-size: 1rem;
+  color: var(--color-text-2);
+  margin: 0;
+}
+
+.iframeWrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.875rem;
+  overflow: hidden;
+}
+
+.iframe {
+  display: block;
+  width: 100%;
+  height: 700px;
+  border: none;
+  border-radius: 0.875rem;
+}
+
+.backRow {
+  margin-top: 1.5rem;
+}
+
+.backLink {
+  font-size: 0.9375rem;
+  color: var(--color-red-light, #f87171);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}

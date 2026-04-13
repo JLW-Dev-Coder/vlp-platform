@@ -1,0 +1,31 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: rgba(220, 38, 38, 0.12);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.3);
+  font-size: 0.875rem;
+  color: #fca5a5;
+  animation: urgencyPulse 2s ease-in-out infinite;
+}
+
+.icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.text {
+  flex: 1;
+  text-align: center;
+}
+
+.text strong {
+  color: #f87171;
+}
+
+@keyframes urgencyPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  50% { box-shadow: 0 0 12px 0 rgba(220, 38, 38, 0.2); }
+}
