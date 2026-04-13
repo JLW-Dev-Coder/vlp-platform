@@ -1,0 +1,1711 @@
+<!-- assets/report.html -->
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transcript.Tax Monitor Pro - IRS Transcript Report</title>
+
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['DM Sans', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial']
+            }
+          }
+        }
+      };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/site.css?v=1" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+
+    <style>
+      :root {
+        --tm-bg: #020617;
+        --tm-card: #ffffff;
+        --tm-copy: #0b0a14;
+        --tm-copy-soft: #4b5563;
+        --tm-line: #e5e7eb;
+        --tm-muted: #6b7280;
+        --tm-purple: #7c3aed;
+        --tm-purple-soft: rgba(124, 58, 237, 0.08);
+        --tm-success: #059669;
+        --tm-warn: #d97706;
+        --tm-danger: #dc2626;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        height: 100%;
+      }
+
+      body {
+        background:
+          radial-gradient(1200px 600px at 20% -10%, rgba(168, 85, 247, 0.18), transparent 55%),
+          radial-gradient(900px 500px at 80% 10%, rgba(249, 115, 22, 0.14), transparent 55%),
+          radial-gradient(700px 500px at 50% 120%, rgba(59, 130, 246, 0.1), transparent 55%),
+          var(--tm-bg);
+        color: var(--tm-copy);
+      }
+
+      .report-shell {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        backdrop-filter: blur(16px);
+        background: rgba(2, 6, 23, 0.82);
+        border-bottom: 1px solid rgba(51, 65, 85, 0.7);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+
+      .topbar-inner,
+      .footer-inner,
+      .report-wrap,
+      .state-wrap {
+        margin: 0 auto;
+        max-width: 1280px;
+        width: 100%;
+      }
+
+      .topbar-inner {
+        align-items: center;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        padding: 16px 24px;
+      }
+
+      .brand {
+        align-items: center;
+        color: #fff;
+        display: flex;
+        gap: 12px;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        align-items: center;
+        background: linear-gradient(135deg, #9333ea, #7c3aed);
+        border-radius: 14px;
+        color: #020617;
+        display: inline-flex;
+        font-size: 14px;
+        font-weight: 800;
+        height: 40px;
+        justify-content: center;
+        width: 40px;
+      }
+
+      .brand-copy strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .brand-copy span {
+        color: rgba(255, 255, 255, 0.62);
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        margin-top: 2px;
+        text-transform: uppercase;
+      }
+
+      .topbar-actions {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .btn {
+        align-items: center;
+        border-radius: 14px;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 14px;
+        font-weight: 700;
+        gap: 8px;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 16px;
+        text-decoration: none;
+        transition: 180ms ease;
+      }
+
+      .btn svg {
+        height: 18px;
+        width: 18px;
+      }
+
+      .btn-ghost {
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(51, 65, 85, 0.9);
+        color: rgba(255, 255, 255, 0.86);
+      }
+
+      .btn-ghost:hover {
+        color: #fff;
+      }
+
+      .btn-primary {
+        background: linear-gradient(90deg, #7c3aed, #9333ea);
+        border: 1px solid transparent;
+        color: #fff;
+        box-shadow: 0 10px 24px rgba(124, 58, 237, 0.28);
+      }
+
+      .btn-primary:hover {
+        filter: brightness(1.05);
+      }
+
+      .btn-soft {
+        background: rgba(124, 58, 237, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.32);
+        color: #ede9fe;
+      }
+
+      .btn-soft:hover {
+        background: rgba(124, 58, 237, 0.18);
+        color: #fff;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .report-wrap,
+      .state-wrap {
+        padding: 28px 16px 48px;
+      }
+
+      .report-page {
+        background: var(--tm-card);
+        border-radius: 18px;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+        margin: 0 auto 28px;
+        max-width: 8.5in;
+        overflow: hidden;
+        page-break-after: always;
+        width: 100%;
+      }
+
+      .page-content {
+        padding: 56px;
+      }
+
+      .report-header {
+        align-items: flex-start;
+        border-bottom: 2px solid var(--tm-copy);
+        display: flex;
+        gap: 20px;
+        justify-content: space-between;
+        margin-bottom: 32px;
+        padding-bottom: 18px;
+      }
+
+      .report-header h1 {
+        color: var(--tm-copy);
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin-bottom: 8px;
+      }
+
+      .report-header p {
+        color: var(--tm-muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .report-header img {
+        display: block;
+        height: auto;
+        max-width: 160px;
+        object-fit: contain;
+      }
+
+      .section {
+        margin-bottom: 30px;
+      }
+
+      .section-title {
+        border-left: 4px solid var(--tm-purple);
+        color: var(--tm-copy);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        margin-bottom: 14px;
+        padding-left: 10px;
+        text-transform: uppercase;
+      }
+
+      .summary-grid,
+      .detail-grid,
+      .status-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .summary-grid,
+      .detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .status-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .status-grid.two-col {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card,
+      .metric,
+      .panel {
+        background: #f8fafc;
+        border: 1px solid var(--tm-line);
+        border-radius: 14px;
+      }
+
+      .card {
+        border-left: 3px solid var(--tm-purple);
+        padding: 14px;
+      }
+
+      .card-label,
+      .metric-label,
+      .badge {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .card-label,
+      .metric-label {
+        color: var(--tm-muted);
+        margin-bottom: 6px;
+      }
+
+      .card-value {
+        color: var(--tm-copy);
+        font-size: 16px;
+        font-weight: 700;
+        word-break: break-word;
+      }
+
+      .metric {
+        padding: 18px;
+        text-align: center;
+      }
+
+      .metric-value {
+        color: var(--tm-copy);
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 6px;
+      }
+
+      .metric-value.low { color: var(--tm-success); }
+      .metric-value.moderate { color: var(--tm-warn); }
+      .metric-value.attention { color: var(--tm-danger); }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .panel.tint {
+        background: var(--tm-purple-soft);
+        border-left: 4px solid var(--tm-purple);
+      }
+
+      .panel-copy {
+        color: #374151;
+        font-size: 14px;
+        line-height: 1.75;
+      }
+
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .item {
+        background: #f9fafb;
+        border: 1px solid var(--tm-line);
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+
+      .item-title {
+        color: var(--tm-copy);
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .item-copy {
+        color: var(--tm-copy-soft);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 18px;
+      }
+
+      .timeline-row {
+        border-bottom: 1px solid var(--tm-line);
+        display: grid;
+        gap: 22px;
+        grid-template-columns: 136px 1fr;
+        padding-bottom: 18px;
+      }
+
+      .timeline-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .timeline-date {
+        color: var(--tm-purple);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .timeline-code {
+        color: var(--tm-muted);
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 4px;
+      }
+
+      .timeline-desc {
+        color: var(--tm-copy);
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+
+      .timeline-impact {
+        color: var(--tm-copy-soft);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .table-wrap {
+        border: 1px solid var(--tm-line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--tm-line);
+        font-size: 13px;
+        padding: 12px 14px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: rgba(124, 58, 237, 0.1);
+        color: #374151;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .code-cell {
+        color: var(--tm-purple);
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .balance-box {
+        background: #f9fafb;
+        border-left: 4px solid var(--tm-purple);
+        border-radius: 12px;
+        padding: 18px;
+      }
+
+      .balance-row {
+        border-bottom: 1px solid var(--tm-line);
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 200px 1fr 120px;
+        padding: 12px 0;
+      }
+
+      .balance-row:last-child {
+        border-bottom: none;
+        border-top: 2px solid var(--tm-purple);
+        margin-top: 8px;
+        padding-bottom: 0;
+        padding-top: 14px;
+      }
+
+      .balance-label {
+        color: var(--tm-copy);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .balance-desc {
+        color: var(--tm-muted);
+        font-size: 13px;
+      }
+
+      .balance-amount {
+        color: var(--tm-purple);
+        font-size: 13px;
+        font-weight: 800;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .balance-row:last-child .balance-amount {
+        color: var(--tm-copy);
+        font-size: 16px;
+      }
+
+      .report-footer {
+        align-items: center;
+        border-top: 1px solid var(--tm-line);
+        color: #9ca3af;
+        display: flex;
+        font-size: 11px;
+        gap: 16px;
+        justify-content: space-between;
+        margin-top: 34px;
+        padding-top: 16px;
+      }
+
+      .state-card {
+        background: #fff;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+        max-width: 860px;
+        overflow: hidden;
+      }
+
+      .state-top {
+        background: linear-gradient(135deg, rgba(124,58,237,0.16), rgba(14,165,233,0.12));
+        border-bottom: 1px solid var(--tm-line);
+        padding: 22px 24px;
+      }
+
+      .state-top h2 {
+        color: var(--tm-copy);
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+
+      .state-top p,
+      .state-body p {
+        color: var(--tm-copy-soft);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .state-body {
+        padding: 22px 24px 24px;
+      }
+
+      .state-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .inline-code {
+        background: #f3f4f6;
+        border-radius: 8px;
+        color: var(--tm-purple);
+        display: inline-block;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        margin-top: 12px;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        padding: 8px 10px;
+      }
+
+      .footer-inner {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: space-between;
+        padding: 12px 24px 18px;
+      }
+
+      .footer-inner p,
+      .footer-inner a {
+        color: #94a3b8;
+        font-size: 14px;
+        text-decoration: none;
+      }
+
+      @media (max-width: 720px) {
+        .page-content {
+          padding: 28px;
+        }
+
+        .detail-grid,
+        .summary-grid,
+        .status-grid,
+        .status-grid.two-col {
+          grid-template-columns: 1fr;
+        }
+
+        .timeline-row,
+        .balance-row {
+          gap: 10px;
+          grid-template-columns: 1fr;
+        }
+
+        .balance-amount {
+          text-align: left;
+        }
+
+        .report-footer,
+        .footer-inner,
+        .topbar-inner {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media print {
+        body,
+        html {
+          background: #fff !important;
+          height: auto;
+          overflow: visible;
+        }
+
+        .topbar,
+        footer,
+        #addLogoBtn,
+        #logoFileInput,
+        #removeLogoBtn,
+        #emailReportBtn,
+        #printBtn,
+        #reportBackButton {
+          display: none !important;
+        }
+
+        .report-wrap,
+        .state-wrap {
+          padding: 0;
+        }
+
+        .report-page {
+          border-radius: 0;
+          box-shadow: none;
+          margin: 0;
+          page-break-after: always;
+        }
+
+        .page-content {
+          padding: 0.75in;
+        }
+      }
+    </style>
+  </head>
+  <body class="h-full">
+    <div class="report-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a href="/app-dashboard" class="brand">
+            <span class="brand-mark">TM</span>
+            <span class="brand-copy">
+              <strong>Transcript.Tax Monitor Pro</strong>
+              <span>Canonical Report Page</span>
+            </span>
+          </a>
+
+          <div class="topbar-actions">
+            <button id="reportBackButton" type="button" class="btn btn-ghost">Back</button>
+            <input id="logoFileInput" type="file" accept="image/*" class="hidden" />
+            <button id="addLogoBtn" type="button" class="btn btn-soft">Add Logo</button>
+            <button id="removeLogoBtn" type="button" class="btn btn-ghost hidden">Remove Logo</button>
+            <button id="printBtn" type="button" class="btn btn-primary">Print Report</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <div id="stateWrap" class="state-wrap"></div>
+        <div id="reportWrap" class="report-wrap hidden"></div>
+      </main>
+
+      <footer>
+        <div class="footer-inner">
+          <p>© <span id="footerYear"></span> Transcript.Tax Monitor Pro. All rights reserved.</p>
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <a href="/legal/privacy.html">Privacy Policy</a>
+            <a href="/legal/terms.html">Terms of Service</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        const FALLBACK_REPORT_DATA = {
+          analysis: [],
+          generatedAt: new Date().toISOString(),
+          metadata: {
+            accountNumberMasked: '***-**-0000',
+            filingStatus: 'Single',
+            taxPeriodEnding: '2023-12-31',
+            taxpayerName: 'John Q. Public',
+            transcriptType: 'IRS Account Transcript'
+          },
+          notices: [],
+          recommendations: [],
+          rows: [
+            {
+              amount: '$0.00',
+              code: '150',
+              date: '2024-03-15',
+              description: 'Return Filed & Assessed',
+              impact: 'Initial assessment posted to the account.'
+            },
+            {
+              amount: '$0.00',
+              code: '806',
+              date: '2024-04-10',
+              description: 'Withholding Credit',
+              impact: 'Withholding applied to reduce liability.'
+            },
+            {
+              amount: '$0.00',
+              code: '846',
+              date: '2024-05-05',
+              description: 'Refund Issued',
+              impact: 'Refund released by the IRS.'
+            }
+          ],
+          summary: {
+            actionRequired: 'No',
+            currentBalance: '$0.00',
+            noticesIssued: 'No',
+            refundStatus: 'Issued',
+            riskLevel: 'Low'
+          }
+        };
+
+        function escapeHtml(value) {
+          return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function cleanText(value, fallback = '—') {
+          const text = String(value == null ? '' : value).trim();
+          return text || fallback;
+        }
+
+        function numberFromUnknown(value) {
+          if (typeof value === 'number' && Number.isFinite(value)) return value;
+          const text = String(value == null ? '' : value).trim();
+          if (!text) return null;
+          const cleaned = text.replace(/[$,()]/g, '').replace(/\s+/g, '');
+          if (!cleaned) return null;
+          const maybeNeg = String(value).includes('(') && String(value).includes(')');
+          const num = Number(cleaned);
+          if (!Number.isFinite(num)) return null;
+          return maybeNeg ? -Math.abs(num) : num;
+        }
+
+        function money(value) {
+          const num = numberFromUnknown(value);
+          if (num == null) return String(value || '—');
+          return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }).format(num);
+        }
+
+        function toIsoish(value) {
+          const d = new Date(value);
+          return Number.isNaN(d.getTime()) ? null : d.toISOString();
+        }
+
+        function toDisplayDate(value) {
+          const d = new Date(value);
+          if (Number.isNaN(d.getTime())) return cleanText(value, 'Undated');
+          return d.toLocaleDateString();
+        }
+
+        function hasCode(rows, codes) {
+          const set = new Set(codes.map((x) => String(x)));
+          return rows.some((row) => set.has(String(row.code)));
+        }
+
+        function base64UrlToUint8Array(input) {
+          const raw = String(input || '').trim();
+          if (!raw) return new Uint8Array();
+          const normalized = raw.split('-').join('+').split('_').join('/');
+          const padLength = normalized.length % 4 === 0 ? 0 : 4 - (normalized.length % 4);
+          const padded = normalized + '='.repeat(padLength);
+          const decoded = atob(padded);
+          const bytes = new Uint8Array(decoded.length);
+          for (let i = 0; i < decoded.length; i++) bytes[i] = decoded.charCodeAt(i);
+          return bytes;
+        }
+
+        function base64UrlToText(input) {
+          const bytes = base64UrlToUint8Array(input);
+          return new TextDecoder().decode(bytes);
+        }
+
+        function tryParseJson(raw) {
+          try {
+            return JSON.parse(raw);
+          } catch (_) {
+            return null;
+          }
+        }
+
+        function normalizeRow(row, index) {
+          const code = cleanText(row?.code || row?.transactionCode || row?.tc || row?.cycleCode || `Item ${index + 1}`);
+          const date = cleanText(row?.date || row?.transactionDate || row?.postedDate || row?.effectiveDate, 'Undated');
+          const amountRaw = row?.amount ?? row?.transactionAmount ?? row?.value ?? row?.balanceChange ?? null;
+          return {
+            amount: amountRaw == null || String(amountRaw).trim() === '' ? '—' : money(amountRaw),
+            code,
+            date: toDisplayDate(date),
+            description: cleanText(row?.description || row?.title || row?.meaning || row?.name || 'Transcript activity'),
+            impact: cleanText(row?.impact || row?.analysis || row?.note || row?.details || 'Included in the transcript analysis.')
+          };
+        }
+
+        function deriveCurrentBalance(source) {
+          const candidates = [source?.currentBalance, source?.balanceDue, source?.accountBalance, source?.amountDue, source?.payoffBalance, source?.balance];
+          for (const candidate of candidates) {
+            const num = numberFromUnknown(candidate);
+            if (num != null) return money(num);
+            const text = String(candidate == null ? '' : candidate).trim();
+            if (text) return text;
+          }
+          return '$0.00';
+        }
+
+        function deriveRefundStatus(rows, source) {
+          const explicit = cleanText(source?.refundStatus || source?.refund_state || '', '');
+          if (explicit) return explicit;
+          if (hasCode(rows, ['846'])) return 'Issued';
+          if (hasCode(rows, ['898'])) return 'Applied Elsewhere';
+          if (hasCode(rows, ['570', '971'])) return 'Review / Hold Signals';
+          return 'No refund signal found';
+        }
+
+        function deriveNoticesIssued(rows, source) {
+          const explicit = cleanText(source?.noticesIssued || source?.noticeStatus || '', '');
+          if (explicit) return explicit;
+          return hasCode(rows, ['971']) ? 'Yes' : 'No';
+        }
+
+        function deriveRiskLevel(rows, source) {
+          const explicit = cleanText(source?.riskLevel || source?.risk || '', '');
+          if (explicit) return explicit;
+          const balanceNum = numberFromUnknown(source?.currentBalance ?? source?.balanceDue ?? source?.accountBalance ?? 0) || 0;
+          const urgent = hasCode(rows, ['420', '480', '582', '898', '922']);
+          const review = hasCode(rows, ['570', '576', '971']);
+          if (urgent || Math.abs(balanceNum) >= 100) return 'Attention';
+          if (review) return 'Moderate';
+          return 'Low';
+        }
+
+        function deriveActionRequired(rows, source) {
+          const explicit = cleanText(source?.actionRequired || source?.actionNeeded || '', '');
+          if (explicit) return explicit;
+          const balanceNum = numberFromUnknown(source?.currentBalance ?? source?.balanceDue ?? source?.accountBalance ?? 0) || 0;
+          if (Math.abs(balanceNum) >= 1) return 'Yes';
+          if (hasCode(rows, ['570', '971'])) return 'Possibly';
+          return 'No';
+        }
+
+        function getRiskClass(level) {
+          const text = String(level || '').toLowerCase();
+          if (text === 'low') return 'low';
+          if (text === 'moderate') return 'moderate';
+          return 'attention';
+        }
+
+        function extractPayloadCandidate(raw) {
+          if (!raw) return null;
+          if (typeof raw === 'object') return raw;
+
+          const queue = [];
+          const seen = new Set();
+
+          function push(value) {
+            const text = String(value == null ? '' : value).trim();
+            if (!text || seen.has(text)) return;
+            seen.add(text);
+            queue.push(text);
+          }
+
+          push(raw);
+          try { push(decodeURIComponent(String(raw).trim())); } catch (_) {}
+
+          while (queue.length) {
+            const item = queue.shift();
+            if (!item) continue;
+
+            const parsedJson = tryParseJson(item);
+            if (parsedJson) return parsedJson;
+
+            try {
+              const decoded = base64UrlToText(item);
+              if (decoded && !seen.has(decoded)) {
+                const parsedDecoded = tryParseJson(decoded);
+                if (parsedDecoded) return parsedDecoded;
+                push(decoded);
+              }
+            } catch (_) {}
+          }
+
+          return null;
+        }
+
+        function readHashParams() {
+          const rawHash = String(window.location.hash || '').trim();
+          const value = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+          return new URLSearchParams(value);
+        }
+
+        async function decryptEncryptedPayload(params) {
+          const version = String(params.get('v') || '').trim();
+          const keyValue = String(params.get('k') || '').trim();
+          const ivValue = String(params.get('iv') || '').trim();
+          const reportValue = String(params.get('r') || '').trim();
+
+          if (version !== '1' || !keyValue || !ivValue || !reportValue) return null;
+
+          const rawKey = base64UrlToUint8Array(keyValue);
+          const iv = base64UrlToUint8Array(ivValue);
+          const ciphertext = base64UrlToUint8Array(reportValue);
+
+          const key = await crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['decrypt']);
+          const plaintext = await crypto.subtle.decrypt({ iv, name: 'AES-GCM' }, key, ciphertext);
+          const decoded = new TextDecoder().decode(plaintext);
+          const parsed = tryParseJson(decoded);
+          if (!parsed) throw new Error('Decrypted payload was not valid JSON.');
+          return parsed;
+        }
+
+        async function readEncryptedPayload() {
+          const url = new URL(window.location.href);
+          const queryParams = url.searchParams;
+          const hashParams = readHashParams();
+
+          const hasQueryPayload = queryParams.get('v') && queryParams.get('k') && queryParams.get('iv') && queryParams.get('r');
+          const hasHashPayload = hashParams.get('v') && hashParams.get('k') && hashParams.get('iv') && hashParams.get('r');
+
+          if (hasQueryPayload) return await decryptEncryptedPayload(queryParams);
+          if (hasHashPayload) return await decryptEncryptedPayload(hashParams);
+          return null;
+        }
+
+        function readParamsPayload() {
+          const url = new URL(window.location.href);
+          return extractPayloadCandidate(url.searchParams.get('data')) || extractPayloadCandidate(url.searchParams.get('payload'));
+        }
+
+        function readHashPayload() {
+          const rawHash = String(window.location.hash || '').trim();
+          const value = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+          const hashParams = readHashParams();
+          if (hashParams.get('v') && hashParams.get('k') && hashParams.get('iv') && hashParams.get('r')) return null;
+          return extractPayloadCandidate(value);
+        }
+
+        function readStoragePayload() {
+          const keys = ['tm_report_data', 'tmp_report_data', 'transcript_report_data', 'transcript_report_payload', 'reportData'];
+          for (const key of keys) {
+            try {
+              const raw = sessionStorage.getItem(key) || localStorage.getItem(key);
+              const parsed = extractPayloadCandidate(raw);
+              if (parsed) return parsed;
+            } catch (_) {}
+          }
+          return null;
+        }
+
+        function readReportId() {
+          const url = new URL(window.location.href);
+          return String(url.searchParams.get('reportId') || url.searchParams.get('r') || '').trim();
+        }
+
+        async function decodeWorkerReportPayload(payload, transport) {
+          const raw = String(payload || '').trim();
+          if (!raw) return null;
+
+          const params = new URLSearchParams(raw);
+          const hasEncryptedParts =
+            params.get('v') &&
+            params.get('k') &&
+            params.get('iv') &&
+            params.get('r');
+
+          if (hasEncryptedParts) {
+            return await decryptEncryptedPayload(params);
+          }
+
+          return extractPayloadCandidate(raw);
+        }
+
+        async function fetchReportById(reportId) {
+          const response = await fetch(`/transcript/report-data?reportId=${encodeURIComponent(reportId)}`, {
+            method: 'GET',
+            credentials: 'omit'
+          });
+
+          const text = await response.text().catch(() => '');
+          let data = null;
+          try {
+            data = text ? JSON.parse(text) : null;
+          } catch (_) {
+            data = null;
+          }
+
+          if (!response.ok) {
+            const message = data && data.error ? String(data.error) : (text || response.statusText || 'report_fetch_failed');
+            throw new Error(message);
+          }
+
+          if (!data || !data.payload) {
+            throw new Error('missing_report_payload');
+          }
+
+          const decoded = await decodeWorkerReportPayload(data.payload, data.transport || 'hash');
+          if (!decoded) {
+            throw new Error('unable_to_decode_report_payload');
+          }
+
+          return unwrapReportCandidate(decoded);
+        }
+
+        function readWindowPayload() {
+          const candidates = [
+            window.reportData,
+            window.__REPORT_DATA__,
+            window.__TRANSCRIPT_REPORT_DATA__,
+            window.opener && window.opener.reportData,
+            window.opener && window.opener.__REPORT_DATA__,
+            window.parent && window.parent.reportData
+          ];
+          for (const candidate of candidates) {
+            if (candidate && typeof candidate === 'object') {
+              try { return JSON.parse(JSON.stringify(candidate)); } catch (_) { return candidate; }
+            }
+          }
+          return null;
+        }
+
+        function unwrapReportCandidate(raw) {
+          const candidate = raw && typeof raw === 'object' ? raw : null;
+          if (!candidate) return raw;
+
+          const nestedCandidates = [
+            candidate.report,
+            candidate.reportData,
+            candidate.data,
+            candidate.payload,
+            candidate.preview,
+            candidate.result,
+            candidate.value
+          ];
+
+          if (candidate.summary || candidate.metadata || Array.isArray(candidate.rows) || Array.isArray(candidate.transactions) || Array.isArray(candidate.timeline)) {
+            return candidate;
+          }
+
+          for (const nested of nestedCandidates) {
+            if (!nested) continue;
+            if (typeof nested === 'string') {
+              const parsed = extractPayloadCandidate(nested);
+              if (parsed) return unwrapReportCandidate(parsed);
+              continue;
+            }
+            if (typeof nested === 'object') {
+              return unwrapReportCandidate(nested);
+            }
+          }
+
+          return candidate;
+        }
+
+        function normalizeReport(raw) {
+          const unwrapped = unwrapReportCandidate(raw);
+          const source = unwrapped && typeof unwrapped === 'object' ? unwrapped : {};
+          if (source.summary && source.metadata && Array.isArray(source.rows)) {
+            return source;
+          }
+
+          const header = source.header && typeof source.header === 'object' ? source.header : {};
+          const meta = source.meta && typeof source.meta === 'object' ? source.meta : {};
+          const rowsRaw = Array.isArray(source.rows)
+            ? source.rows
+            : Array.isArray(source.transactions)
+            ? source.transactions
+            : Array.isArray(source.transactionCodes)
+            ? source.transactionCodes
+            : Array.isArray(source.codes)
+            ? source.codes
+            : Array.isArray(source.codesFound)
+            ? source.codesFound
+            : Array.isArray(source.timeline)
+            ? source.timeline
+            : [];
+
+          const rows = rowsRaw.map(normalizeRow);
+          const metadata = {
+            accountNumberMasked: cleanText(meta.tinMasked || source.accountNumberMasked || source.ssnMasked || source.tinMasked || source.taxpayerIdMasked || '—'),
+            filingStatus: cleanText(meta.filingStatus || source.filingStatus || source.maritalStatus || '—'),
+            preparedBy: cleanText(source.preparedBy || source.preparer || source.prepared_by || 'Tax Professional'),
+            taxpayerName: cleanText(meta.taxpayerName || source.taxpayerName || source.clientName || source.name || source.taxpayer || 'Unnamed Taxpayer'),
+            taxPeriodEnding: cleanText(meta.taxPeriodEnding || source.taxPeriodEnding || source.taxPeriod || source.periodEnding || source.taxYear || '—'),
+            transcriptType: cleanText(meta.transcriptType || source.transcriptType || source.reportType || source.transcript || header.formNumber || 'IRS Account Transcript')
+          };
+
+          const summary = {
+            actionRequired: deriveActionRequired(rows, { ...source, accountBalance: meta.accountBalance || source.accountBalance, actionRequired: meta.actionRequired || source.actionRequired }),
+            currentBalance: deriveCurrentBalance({ ...source, accountBalance: meta.accountBalance || source.accountBalance }),
+            noticesIssued: deriveNoticesIssued(rows, { ...source, noticeStatus: meta.noticeStatus || source.noticeStatus }),
+            refundStatus: deriveRefundStatus(rows, { ...source, refundStatus: meta.refundStatus || source.refundStatus }),
+            riskLevel: deriveRiskLevel(rows, { ...source, accountBalance: meta.accountBalance || source.accountBalance, riskLevel: meta.riskLevel || source.riskLevel })
+          };
+
+          const summaryNarrative = cleanText(source.summaryNarrative || source.summary || meta.summary || '', '');
+          const analysis = [];
+          if (hasCode(rows, ['150'])) analysis.push({ title: 'Return posting detected', copy: 'A TC 150 entry usually means the return posted and the baseline tax computation is on the account. Useful, unlike most panic.' });
+          if (hasCode(rows, ['806'])) analysis.push({ title: 'Withholding credit applied', copy: 'A TC 806 entry points to withholding credit being applied, which often explains refund or reduced balance behavior.' });
+          if (hasCode(rows, ['846'])) analysis.push({ title: 'Refund release signal found', copy: 'A TC 846 entry strongly suggests the refund was released instead of merely existing as a comforting theory.' });
+          if (hasCode(rows, ['570'])) analysis.push({ title: 'Processing hold or review signal', copy: 'A TC 570 entry often indicates a hold or pending review, so follow-through matters more than optimism.' });
+          if (hasCode(rows, ['971'])) analysis.push({ title: 'Notice activity detected', copy: 'A TC 971 entry often points to notice activity and should be matched against correspondence or client mail.' });
+          if ((numberFromUnknown(summary.currentBalance) || 0) !== 0) analysis.push({ title: 'Balance still appears open', copy: `The transcript suggests a current balance position of ${summary.currentBalance}. Reconcile credits, timing, and penalties before calling the account resolved.` });
+          if (!analysis.length) analysis.push({ title: 'No major adverse signal found', copy: 'The parsed transcript does not show a strong adverse pattern in the available fields. Routine is not the same as reviewed, but it is better than chaos.' });
+
+          const notices = [];
+          if (hasCode(rows, ['971'])) notices.push({ title: 'IRS notice or notice-related activity', copy: 'Review related correspondence and confirm whether the client already received or responded to the notice.' });
+          if (hasCode(rows, ['570'])) notices.push({ title: 'Hold or freeze indicator', copy: 'Monitor for additional transcript movement, supporting document requests, or delayed refund processing.' });
+          if (!notices.length) notices.push({ title: 'No major notice signal parsed', copy: 'The current payload does not show a clear notice-heavy pattern.' });
+
+          const recommendations = [];
+          if (summary.actionRequired === 'Yes' || summary.actionRequired === 'Possibly') recommendations.push({ title: 'Reconcile account status', copy: 'Compare transcript movement against balances, refund entries, and any client notices before finalizing advice.' });
+          if (summary.riskLevel === 'Attention') recommendations.push({ title: 'Escalate review depth', copy: 'Higher-risk patterns warrant line-by-line transcript review and documentation before communicating a final client position.' });
+          if (hasCode(rows, ['846']) && String(summary.currentBalance).trim() !== '$0.00') recommendations.push({ title: 'Reconcile refund against balance', copy: 'A refund release alongside a non-zero balance can be explainable, but it needs a clean narrative before this becomes someone else’s headache.' });
+          if (!recommendations.length) recommendations.push({ title: 'Maintain normal monitoring cadence', copy: 'The parsed data looks routine enough for standard retention and periodic recheck practices.' });
+
+          return {
+            analysis,
+            generatedAt: toIsoish(source.generatedAt || header.responseDate || header.requestDate || source.reportDate || source.generatedOn || new Date().toISOString()) || new Date().toISOString(),
+            header: {
+              formNumber: cleanText(header.formNumber || '—'),
+              requestDate: cleanText(header.requestDate || '—'),
+              responseDate: cleanText(header.responseDate || '—'),
+              trackingNumber: cleanText(header.trackingNumber || '—')
+            },
+            logo: source.logo || meta.logo || null,
+            logoWidth: Number(source.logoWidth || meta.logoWidth || 140) || 140,
+            metadata,
+            notices,
+            recommendations,
+            rows,
+            summary,
+            summaryNarrative: summaryNarrative || `This ${metadata.transcriptType.toLowerCase()} for ${metadata.taxpayerName} shows a current balance of ${summary.currentBalance}. Refund status appears to be ${summary.refundStatus.toLowerCase()}, notices are marked ${summary.noticesIssued.toLowerCase()}, and risk is currently assessed as ${summary.riskLevel.toLowerCase()}.`,
+            version: cleanText(source.version || '1')
+          };
+        }
+
+        function buildBalanceRows(report) {
+          return [
+            { label: 'Assessment', desc: 'Initial tax assessed from the filed or adjusted return.', amount: money(report.assessmentTotal || '—') },
+            { label: 'Withholding', desc: 'Federal withholding and wage-related credits applied to the account.', amount: money(report.withholdingTotal || '—') },
+            { label: 'Payments', desc: 'Estimated payments, direct payments, or other non-withholding credits.', amount: money(report.paymentTotal || '—') },
+            { label: 'Interest & Penalties', desc: 'Interest and penalty activity reflected in the transcript.', amount: money(report.interestAndPenaltyTotal || '—') },
+            { label: 'Current Balance', desc: '', amount: report.summary.currentBalance }
+          ].map((row) => ({ ...row, amount: row.amount === '$NaN' ? '—' : row.amount }));
+        }
+
+        function renderLogoBlock(report, allowPlaceholder) {
+          if (report.logo) {
+            const width = Math.max(80, Number(report.logoWidth || 140));
+            return `<img src="${escapeHtml(report.logo)}" alt="Company logo" style="max-width:${width}px;height:auto;" />`;
+          }
+          if (!allowPlaceholder) return '';
+          return `
+            <div style="width:160px;height:110px;background:#f3f4f6;border:2px dashed #d1d5db;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:8px;color:#9ca3af;text-align:center;font-size:12px;font-weight:800;">
+              <div>Company Logo</div>
+              <div style="margin-top:6px;font-size:10px;font-weight:600;color:#6b7280;line-height:1.3;">600×600 PNG preferred • SVG/JPG accepted</div>
+            </div>
+          `;
+        }
+
+        function renderReportPages(report) {
+          const balanceRows = buildBalanceRows(report);
+          const riskClass = getRiskClass(report.summary.riskLevel);
+          const reportDate = new Date(report.generatedAt).toLocaleString();
+          const rowsHtml = report.rows.length
+            ? report.rows.map((row) => `
+                <div class="timeline-row">
+                  <div>
+                    <div class="timeline-date">${escapeHtml(row.date)}</div>
+                    <div class="timeline-code">TC ${escapeHtml(row.code)}</div>
+                  </div>
+                  <div>
+                    <div class="timeline-desc">${escapeHtml(row.description)}</div>
+                    <div class="timeline-impact">${escapeHtml(row.impact)}</div>
+                  </div>
+                </div>
+              `).join('')
+            : `<div class="panel tint"><div class="panel-copy">No parsed transcript rows were found in the payload.</div></div>`;
+
+          const analysisHtml = report.analysis.map((item) => `<div class="item"><div class="item-title">${escapeHtml(item.title)}</div><div class="item-copy">${escapeHtml(item.copy)}</div></div>`).join('');
+          const noticesHtml = report.notices.map((item) => `<div class="item"><div class="item-title">${escapeHtml(item.title)}</div><div class="item-copy">${escapeHtml(item.copy)}</div></div>`).join('');
+          const recommendationsHtml = report.recommendations.map((item) => `<div class="item"><div class="item-title">${escapeHtml(item.title)}</div><div class="item-copy">${escapeHtml(item.copy)}</div></div>`).join('');
+          const tableHtml = report.rows.length
+            ? `
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Amount</th>
+                      <th>Code</th>
+                      <th>Date</th>
+                      <th>Description</th>
+                      <th>Interpretation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${report.rows.map((row) => `
+                      <tr>
+                        <td>${escapeHtml(row.amount)}</td>
+                        <td class="code-cell">${escapeHtml(row.code)}</td>
+                        <td>${escapeHtml(row.date)}</td>
+                        <td>${escapeHtml(row.description)}</td>
+                        <td>${escapeHtml(row.impact)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `
+            : `<div class="panel tint"><div class="panel-copy">Transaction-level detail was not available in the payload.</div></div>`;
+
+          const balanceHtml = balanceRows.map((row, index) => `
+            <div class="balance-row">
+              <div class="balance-label">${escapeHtml(row.label)}</div>
+              <div class="balance-desc">${index === balanceRows.length - 1 ? '' : escapeHtml(row.desc)}</div>
+              <div class="balance-amount">${escapeHtml(row.amount)}</div>
+            </div>
+          `).join('');
+
+          return `
+            <div class="report-page">
+              <div class="page-content">
+                <div class="report-header">
+                  <div>
+                    <h1>IRS Transcript Report</h1>
+                    <p>Client-Ready Account Analysis</p>
+                  </div>
+                  <div>${renderLogoBlock(report, true)}</div>
+                </div>
+
+                <section class="section">
+                  <div class="section-title">Report Header</div>
+                  <div class="summary-grid">
+                    <div class="card"><div class="card-label">Generated</div><div class="card-value">${escapeHtml(reportDate)}</div></div>
+                    <div class="card"><div class="card-label">Prepared By</div><div class="card-value">${escapeHtml(report.metadata.preparedBy || 'Tax Professional')}</div></div>
+                    <div class="card"><div class="card-label">Form Number</div><div class="card-value">${escapeHtml(report.header && report.header.formNumber || '—')}</div></div>
+                    <div class="card"><div class="card-label">Tracking Number</div><div class="card-value">${escapeHtml(report.header && report.header.trackingNumber || '—')}</div></div>
+                    <div class="card"><div class="card-label">Request Date</div><div class="card-value">${escapeHtml(toDisplayDate(report.header && report.header.requestDate || '—'))}</div></div>
+                    <div class="card"><div class="card-label">Response Date</div><div class="card-value">${escapeHtml(toDisplayDate(report.header && report.header.responseDate || '—'))}</div></div>
+                  </div>
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Account / Transcript Summary</div>
+                  <div class="detail-grid">
+                    <div class="card"><div class="card-label">Taxpayer Name</div><div class="card-value">${escapeHtml(report.metadata.taxpayerName)}</div></div>
+                    <div class="card"><div class="card-label">Transcript Type</div><div class="card-value">${escapeHtml(report.metadata.transcriptType)}</div></div>
+                    <div class="card"><div class="card-label">Tax Period Ending</div><div class="card-value">${escapeHtml(report.metadata.taxPeriodEnding)}</div></div>
+                    <div class="card"><div class="card-label">Taxpayer ID / Account</div><div class="card-value">${escapeHtml(report.metadata.accountNumberMasked)}</div></div>
+                    <div class="card"><div class="card-label">Filing Status</div><div class="card-value">${escapeHtml(report.metadata.filingStatus)}</div></div>
+                    <div class="card"><div class="card-label">Current Balance</div><div class="card-value">${escapeHtml(report.summary.currentBalance)}</div></div>
+                  </div>
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Key Findings</div>
+                  <div class="status-grid">
+                    <div class="metric"><div class="metric-value">${escapeHtml(report.summary.currentBalance)}</div><div class="metric-label">Current Balance</div></div>
+                    <div class="metric"><div class="metric-value">${escapeHtml(report.summary.refundStatus)}</div><div class="metric-label">Refund Status</div></div>
+                    <div class="metric"><div class="metric-value">${escapeHtml(report.summary.noticesIssued)}</div><div class="metric-label">Notices Issued</div></div>
+                  </div>
+                  <div class="status-grid two-col" style="margin-top:14px;">
+                    <div class="metric"><div class="metric-value">${escapeHtml(report.summary.actionRequired)}</div><div class="metric-label">Action Required</div></div>
+                    <div class="metric"><div class="metric-value ${riskClass}">${escapeHtml(report.summary.riskLevel)}</div><div class="metric-label">Risk Assessment</div></div>
+                  </div>
+                  <div class="panel tint" style="margin-top:14px;"><div class="panel-copy">${escapeHtml(report.summaryNarrative)}</div></div>
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Notices or Risk Flags</div>
+                  <div class="stack">${noticesHtml}</div>
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Parsed Transcript Details</div>
+                  <div class="timeline">${rowsHtml}</div>
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Recommended Next Steps</div>
+                  <div class="stack">${recommendationsHtml}</div>
+                </section>
+
+                <div class="report-footer">
+                  <span>This report is confidential and intended for the named taxpayer and their representative.</span>
+                  <span>Generated ${escapeHtml(reportDate)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-page">
+              <div class="page-content">
+                <div class="report-header">
+                  <div>
+                    <h1>Technical Analysis</h1>
+                    <p>Shared Preview / Report Layout Contract</p>
+                  </div>
+                  <div>${renderLogoBlock(report, false)}</div>
+                </div>
+
+                <section class="section">
+                  <div class="section-title">Analysis Highlights</div>
+                  <div class="stack">${analysisHtml}</div>
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Transcript Rows / Details</div>
+                  ${tableHtml}
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Balance Summary</div>
+                  <div class="balance-box">${balanceHtml}</div>
+                </section>
+
+                <section class="section">
+                  <div class="section-title">Recommended Next Steps</div>
+                  <div class="stack">${recommendationsHtml}</div>
+                </section>
+
+                <div class="report-footer">
+                  <span>Interpretation is based on the normalized frontend report object and should be checked against the source transcript before final client advice.</span>
+                  <span>Generated ${escapeHtml(reportDate)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        function getReportFingerprint(report) {
+          const basis = [
+            report?.header?.trackingNumber || '',
+            report?.metadata?.accountNumberMasked || '',
+            report?.metadata?.taxpayerName || '',
+            report?.generatedAt || ''
+          ].join('|');
+          let hash = 0;
+          for (let i = 0; i < basis.length; i++) {
+            hash = (hash * 31 + basis.charCodeAt(i)) >>> 0;
+          }
+          return `tm_report_logo_${hash.toString(16)}`;
+        }
+
+        function getStoredLogo(report) {
+          try {
+            const key = getReportFingerprint(report);
+            return String(sessionStorage.getItem(key) || '').trim() || null;
+          } catch (_) {
+            return null;
+          }
+        }
+
+        function setStoredLogo(report, value) {
+          try {
+            const key = getReportFingerprint(report);
+            const text = String(value || '').trim();
+            if (text) sessionStorage.setItem(key, text);
+          } catch (_) {}
+        }
+
+        function clearStoredLogo(report) {
+          try {
+            const key = getReportFingerprint(report);
+            sessionStorage.removeItem(key);
+          } catch (_) {}
+        }
+
+        function isDevMode() {
+          const host = String(window.location.hostname || '').toLowerCase();
+          return host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local') || urlHasDebugFlag();
+        }
+
+        function urlHasDebugFlag() {
+          const url = new URL(window.location.href);
+          const hashParams = readHashParams();
+          const values = [
+            url.searchParams.get('debug'),
+            url.searchParams.get('dev'),
+            hashParams.get('debug'),
+            hashParams.get('dev')
+          ].map((value) => String(value || '').toLowerCase());
+          return values.includes('1') || values.includes('true') || values.includes('yes');
+        }
+
+        function debugLog(label, detail) {
+          try {
+            console.warn(`[TM Report] ${label}`, detail);
+          } catch (_) {}
+        }
+
+        function getReturnUrl() {
+          const url = new URL(window.location.href);
+          const returnUrl = String(url.searchParams.get('return') || '').trim();
+          return returnUrl || '/app-dashboard';
+        }
+
+        function goBackToReturnUrl() {
+          window.location.href = getReturnUrl();
+        }
+
+        let hasReportedPrintComplete = false;
+
+        async function markPrintComplete() {
+          const reportId = readReportId();
+          if (!reportId || hasReportedPrintComplete) return;
+
+          try {
+            const response = await fetch(`/api/transcripts/report/${encodeURIComponent(reportId)}/print-complete`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ reportId })
+            });
+
+            if (!response.ok) {
+              const text = await response.text().catch(() => '');
+              debugLog('print-complete request failed', {
+                reportId,
+                status: response.status,
+                text: String(text || response.statusText || 'print_complete_failed').slice(0, 500)
+              });
+              return;
+            }
+
+            hasReportedPrintComplete = true;
+            debugLog('print-complete recorded', { reportId });
+          } catch (err) {
+            debugLog('print-complete request threw', {
+              reportId,
+              message: String(err && err.message || err || 'print_complete_failed')
+            });
+          }
+        }
+
+        function triggerPrintFlow() {
+          window.print();
+          window.setTimeout(() => {
+            markPrintComplete();
+          }, 250);
+        }
+
+        function renderState(type, payload) {
+          const wrap = document.getElementById('stateWrap');
+          if (!wrap) return;
+          const debugEnabled = isDevMode();
+          const configs = {
+            malformed: {
+              title: 'Malformed report payload',
+              copy: 'The report link included data, but it could not be decoded into a usable report object. That usually means the encrypted payload was damaged, double-encoded, or otherwise mangled by transport weirdness.',
+              detail: payload
+            },
+            missing: {
+              title: 'Missing report payload',
+              copy: 'This page needs either a valid ?reportId=... value or a legacy report payload from encrypted URL params, ?data=..., ?payload=..., or the URL hash. Right now it has none, which is not a report workflow so much as a polite failure.',
+              detail: 'Preferred: ?reportId=... | Legacy encrypted: ?v=1&k=...&iv=...&r=... | Plain: ?data=... | ?payload=... | #...'
+            },
+            invalid: {
+              title: 'Invalid report payload',
+              copy: 'A payload was found, but it did not contain the minimum structure needed to render the report. The page expects transcript metadata, summary data, and parsed rows in a normalizable shape.',
+              detail: payload
+            }
+          };
+          const view = configs[type];
+          const debugBlock = debugEnabled
+            ? `
+              <div style="margin-top:18px;">
+                <div style="color:#111827;font-size:12px;font-weight:800;letter-spacing:.05em;margin-bottom:8px;text-transform:uppercase;">Debug</div>
+                <div class="inline-code">${escapeHtml(typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2) || '')}</div>
+              </div>
+            `
+            : '';
+          wrap.innerHTML = `
+            <div class="state-card">
+              <div class="state-top">
+                <h2>${escapeHtml(view.title)}</h2>
+                <p>${escapeHtml(view.copy)}</p>
+              </div>
+              <div class="state-body">
+                <p>This report page is the finished destination for printable output and emailed links. It is intentionally not showing parser, token, or checkout UI here.</p>
+                <div class="inline-code">${escapeHtml(view.detail || '')}</div>
+                ${debugBlock}
+                <div class="state-actions">
+                  <button type="button" class="btn btn-primary" id="statePrintBtn">Print Report</button>
+                  <button type="button" class="btn btn-ghost" id="stateBackBtn">Go Back</button>
+                </div>
+              </div>
+            </div>
+          `;
+          const backBtn = document.getElementById('stateBackBtn');
+          const btn = document.getElementById('statePrintBtn');
+          if (backBtn) backBtn.addEventListener('click', () => goBackToReturnUrl());
+          if (btn) btn.addEventListener('click', () => triggerPrintFlow());
+        }
+
+        function showReport(report) {
+          const stateWrap = document.getElementById('stateWrap');
+          const reportWrap = document.getElementById('reportWrap');
+          if (!stateWrap || !reportWrap) return;
+          stateWrap.innerHTML = '';
+          reportWrap.classList.remove('hidden');
+          reportWrap.innerHTML = renderReportPages(report);
+        }
+
+        async function getPayloadResult() {
+          const reportId = readReportId();
+
+          if (reportId) {
+            try {
+              const reportFromWorker = await fetchReportById(reportId);
+              debugLog('Using payload source', 'reportId');
+              const normalizedReport = normalizeReport(reportFromWorker);
+
+              if (!normalizedReport || !normalizedReport.summary || !normalizedReport.metadata || !Array.isArray(normalizedReport.rows)) {
+                const invalidPreview = JSON.stringify(reportFromWorker).slice(0, 500);
+                debugLog('Worker report normalized into invalid report shape', invalidPreview);
+                return { status: 'invalid', payload: invalidPreview };
+              }
+
+              return { status: 'ok', payload: normalizedReport };
+            } catch (err) {
+              const message = String(err && err.message || err || 'report_fetch_failed');
+              debugLog('Report fetch by reportId failed', { reportId, message });
+              return { status: 'malformed', payload: `reportId=${reportId} :: ${message}` };
+            }
+          }
+
+          const encryptedPayload = await readEncryptedPayload().catch((err) => ({ __decryptError: String(err && err.message || err || 'decrypt_failed') }));
+          if (encryptedPayload && encryptedPayload.__decryptError) {
+            debugLog('Encrypted payload decryption failed', encryptedPayload.__decryptError);
+          }
+
+          const paramsPayload = readParamsPayload();
+          const hashPayload = readHashPayload();
+          const winPayload = readWindowPayload();
+          const storagePayload = readStoragePayload();
+          const url = new URL(window.location.href);
+          const hashParams = readHashParams();
+
+          const hasRawParam = url.searchParams.get('data') || url.searchParams.get('payload') || (url.searchParams.get('v') && url.searchParams.get('k') && url.searchParams.get('iv') && url.searchParams.get('r') ? 'encrypted_query_payload' : '');
+          const hasRawHash = String(window.location.hash || '').trim() || (hashParams.get('v') && hashParams.get('k') && hashParams.get('iv') && hashParams.get('r') ? 'encrypted_hash_payload' : '');
+
+          if (encryptedPayload && encryptedPayload.__decryptError) {
+            return { status: 'malformed', payload: encryptedPayload.__decryptError };
+          }
+
+          const payloadSource = encryptedPayload
+            ? 'encrypted'
+            : paramsPayload
+            ? 'query'
+            : hashPayload
+            ? 'hash'
+            : winPayload
+            ? 'window'
+            : storagePayload
+            ? 'storage'
+            : null;
+
+          const payload = unwrapReportCandidate(encryptedPayload || paramsPayload || hashPayload || winPayload || storagePayload);
+
+          if (!payload) {
+            if (hasRawParam || hasRawHash) {
+              const malformedHint = String(hasRawParam || hasRawHash).slice(0, 500);
+              debugLog('Raw payload detected but parsing failed', { hasRawHash: Boolean(hasRawHash), hasRawParam: Boolean(hasRawParam), malformedHint });
+              return { status: 'malformed', payload: malformedHint };
+            }
+
+            debugLog('No report payload found', {
+              hash: String(window.location.hash || '').slice(0, 240),
+              search: String(window.location.search || '').slice(0, 240)
+            });
+
+            return { status: 'missing', payload: null };
+          }
+
+          try {
+            debugLog('Using payload source', payloadSource);
+            const report = normalizeReport(payload);
+
+            if (!report || !report.summary || !report.metadata || !Array.isArray(report.rows)) {
+              const invalidPreview = JSON.stringify(payload).slice(0, 500);
+              debugLog('Payload normalized into invalid report shape', invalidPreview);
+              return { status: 'invalid', payload: invalidPreview };
+            }
+
+            return { status: 'ok', payload: report };
+          } catch (err) {
+            const errorMessage = String(err && err.message || err || 'Unknown error');
+            debugLog('Report normalization failed', errorMessage);
+            return { status: 'invalid', payload: errorMessage };
+          }
+        }
+
+        function wireControls() {
+          const addBtn = document.getElementById('addLogoBtn');
+          const backBtn = document.getElementById('reportBackButton');
+          
+          const removeBtn = document.getElementById('removeLogoBtn');
+          const printBtn = document.getElementById('printBtn');
+          const fileInput = document.getElementById('logoFileInput');
+
+          function syncButtons() {
+            if (!removeBtn) return;
+            removeBtn.classList.toggle('hidden', !Boolean(window.tmCanonicalReport && window.tmCanonicalReport.logo));
+          }
+
+          if (backBtn) backBtn.addEventListener('click', () => goBackToReturnUrl());
+          if (printBtn) printBtn.addEventListener('click', () => triggerPrintFlow());
+
+          if (addBtn && fileInput) {
+            addBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => {
+              const file = fileInput.files && fileInput.files[0];
+              if (!file || !String(file.type || '').startsWith('image/')) return;
+              const reader = new FileReader();
+              reader.onload = () => {
+                const result = String(reader.result || '');
+                if (!result.startsWith('data:image/')) return;
+                window.tmCanonicalReport = window.tmCanonicalReport || normalizeReport(FALLBACK_REPORT_DATA);
+                window.tmCanonicalReport.logo = result;
+                setStoredLogo(window.tmCanonicalReport, result);
+                showReport(window.tmCanonicalReport);
+                syncButtons();
+              };
+              reader.readAsDataURL(file);
+            });
+          }
+
+          if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+              if (!window.tmCanonicalReport) return;
+              window.tmCanonicalReport.logo = null;
+              clearStoredLogo(window.tmCanonicalReport);
+              showReport(window.tmCanonicalReport);
+              syncButtons();
+            });
+          }
+
+          syncButtons();
+        }
+
+        async function boot() {
+          window.addEventListener('afterprint', () => {
+            markPrintComplete();
+          });
+          document.getElementById('footerYear').textContent = String(new Date().getFullYear());
+
+          const result = await getPayloadResult();
+          if (result.status !== 'ok') {
+            renderState(result.status, result.payload);
+            wireControls();
+            return;
+          }
+
+          const report = result.payload;
+          const storedLogo = getStoredLogo(report);
+          if (storedLogo && !report.logo) report.logo = storedLogo;
+          window.tmCanonicalReport = report;
+          window.TMReportShared = {
+            normalizeReport,
+            renderReportPages,
+            unwrapReportCandidate,
+            version: '1.3.0'
+          };
+          showReport(report);
+          wireControls();
+        }
+
+        boot().catch((err) => {
+          renderState('malformed', String(err && err.message || err || 'unknown_boot_error'));
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "name": "ttmp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "cf:build": "npx @opennextjs/cloudflare build",
+    "pages:build": "npm run cf:build",
+    "deploy": "npm run cf:build && npx wrangler deploy && npx wrangler kv bulk delete --namespace-id dda38413b0be42e6b7bcb3ff8308439e --force",
+    "preview": "npm run cf:build && npx wrangler dev"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.18.0",
+    "@vlp/member-ui": "*",
+    "csv-parse": "^6.2.1",
+    "lucide-react": "^1.8.0",
+    "next": "^15.2.4",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.27",
+    "esbuild": "^0.28.0",
+    "postcss": "^8.5.9",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,165 @@
+﻿{
+  "auth": {
+    "required": true,
+    "trustClientIdentityFields": false,
+    "type": "session"
+  },
+  "contract": {
+    "authority": [
+      "R2_TTMP_CANONICAL"
+    ],
+    "governs": "TTMP marketing parse-lab actions",
+    "path": "/contracts/parse-lab.contract.json",
+    "source": "Transcript Tax Monitor",
+    "title": "Transcript Tax Monitor — Parse Lab Contract",
+    "usedOnPages": [
+      "/partials/parse-lab.html",
+      "/index.html"
+    ],
+    "validation": {
+      "enumStrict": true,
+      "rejectUnknownValues": true,
+      "requireJsonContentType": true
+    },
+    "version": 1
+  },
+  "events": {
+    "getBalance": {
+      "delivery": {
+        "endpoint": "/api/transcripts/me",
+        "method": "GET"
+      },
+      "request": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "response": {
+        "error": {
+          "error": "session_required",
+          "ok": false
+        },
+        "success": {
+          "balance": 0,
+          "ok": true,
+          "tokenId": "acct_123"
+        }
+      }
+    },
+    "savePreviewReport": {
+      "delivery": {
+        "endpoint": "/api/transcripts/preview",
+        "method": "POST",
+        "receiptKeyPattern": "receipts/ttmp/report_previews/{eventId}.json",
+        "receiptSource": "ttmp_report_preview"
+      },
+      "effects": {
+        "canonicalUpsert": {
+          "target": "reports/{reportId}.json"
+        },
+        "eventIdFrom": "response.eventId",
+        "receiptAppend": {
+          "to": "receipts/ttmp/report_previews/{eventId}.json"
+        },
+        "writeOrder": [
+          "receiptAppend",
+          "canonicalUpsert"
+        ],
+        "writes": [
+          "reports",
+          "token_usage"
+        ]
+      },
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "reportData": {
+            "additionalProperties": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "reportData"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "error": {
+          "error": "preview_save_failed",
+          "ok": false
+        },
+        "success": {
+          "balance": 0,
+          "eventId": "evt_123",
+          "ok": true,
+          "reportId": "rpt_123",
+          "reportUrl": "/assets/report.html?reportId=rpt_123"
+        }
+      }
+    },
+    "sendReportEmail": {
+      "delivery": {
+        "endpoint": "/forms/transcript/report-email",
+        "method": "POST",
+        "receiptKeyPattern": "receipts/ttmp/report_emails/{eventId}.json",
+        "receiptSource": "ttmp_report_email"
+      },
+      "effects": {
+        "eventIdFrom": "payload.eventId",
+        "receiptAppend": {
+          "to": "receipts/ttmp/report_emails/{eventId}.json"
+        },
+        "writeOrder": [
+          "receiptAppend"
+        ],
+        "writes": [
+          "email_receipts"
+        ]
+      },
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "eventId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "reportUrl": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "tokenId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "eventId",
+          "reportUrl",
+          "tokenId"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "error": {
+          "error": "email_send_failed",
+          "ok": false
+        },
+        "success": {
+          "ok": true,
+          "reportUrl": "{payload.reportUrl}",
+          "status": "sent"
+        }
+      }
+    }
+  },
+  "schema": {
+    "name": "ttmp_parse_lab",
+    "version": 1
+  }
+}

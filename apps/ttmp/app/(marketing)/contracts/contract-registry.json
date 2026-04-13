@@ -1,0 +1,9 @@
+﻿{
+    "contracts":  [
+                      "app-dashboard.contract.json",
+                      "parse-lab.contract.json",
+                      "payment-success.contract.json",
+                      "report.contract.json",
+                      "sign-in.contract.json"
+                  ]
+}

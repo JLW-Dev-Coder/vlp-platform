@@ -1,0 +1,486 @@
+<!-- assets/payment-success.html -->
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Payment Success | Transcript.Tax Monitor Pro</title>
+
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: [
+                'DM Sans',
+                'ui-sans-serif',
+                'system-ui',
+                '-apple-system',
+                'Segoe UI',
+                'Roboto',
+                'Helvetica',
+                'Arial'
+              ]
+            }
+          }
+        }
+      };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/styles/site.css?v=1" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+
+    <style>
+      @keyframes tmFadeUp {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .tm-anim {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      .tm-loaded .tm-anim {
+        animation: tmFadeUp 700ms ease forwards;
+      }
+      .tm-loaded .tm-anim.delay-1 {
+        animation-delay: 80ms;
+      }
+      .tm-loaded .tm-anim.delay-2 {
+        animation-delay: 160ms;
+      }
+      .tm-loaded .tm-anim.delay-3 {
+        animation-delay: 240ms;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .tm-anim {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+        .tm-loaded .tm-anim {
+          animation: none !important;
+        }
+      }
+
+      @media print {
+        .tm-no-print {
+          display: none !important;
+        }
+        body {
+          background: #ffffff !important;
+        }
+        #receipt-card,
+        #state-card {
+          border: 1px solid #e5e7eb !important;
+          box-shadow: none !important;
+        }
+      }
+
+      #receipt-card,
+      #state-card {
+        background: #ffffff !important;
+      }
+      #receipt-card *,
+      #state-card * {
+        filter: none !important;
+        opacity: 1 !important;
+      }
+    </style>
+  </head>
+
+  <body class="h-full overflow-auto bg-slate-950 font-sans text-slate-300">
+    <div id="app-container" class="flex min-h-full flex-col">
+      <header class="tm-no-print sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
+          <a href="https://transcript.taxmonitor.pro/" class="flex items-center gap-3 text-white">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-purple-500 font-extrabold text-slate-950">TM</span>
+            <div class="leading-tight">
+              <div class="text-sm font-semibold">Transcript.Tax Monitor Pro</div>
+              <div class="text-[11px] text-white/60">Payment Confirmation</div>
+            </div>
+          </a>
+
+          <div class="flex items-center gap-2">
+            <a
+              href="/"
+              class="inline-flex items-center gap-2 rounded-xl border border-slate-800/60 bg-slate-950/60 px-3 py-2 text-sm font-semibold text-white/80 transition hover:text-white"
+            >
+              <svg class="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              Back
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-6 py-10">
+        <div class="mx-auto max-w-7xl">
+          <div class="mx-auto w-full max-w-md">
+            <div id="state-card" class="tm-anim overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div class="relative h-24 bg-gradient-to-r from-purple-600 to-purple-500">
+                <div class="absolute left-0 top-0 h-full w-2/3 bg-purple-600/70"></div>
+                <div class="absolute right-0 top-0 h-full w-1/3 bg-white/85" style="clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%);"></div>
+
+                <div class="absolute left-1/2 top-14 -translate-x-1/2">
+                  <div id="state-icon-wrap" class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 ring-4 ring-white">
+                    <span id="state-icon" class="font-extrabold text-purple-500">TM</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-8 pb-8 pt-10">
+                <div class="text-center">
+                  <div id="state-eyebrow" class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Checking session</div>
+                  <h1 id="state-title" class="mt-2 text-2xl font-semibold text-slate-900">Loading your payment receipt...</h1>
+                  <p id="state-copy" class="mt-3 text-sm leading-6 text-slate-600">
+                    We are fetching your finalized checkout details from the Worker instead of pretending static HTML knows anything useful.
+                  </p>
+                </div>
+
+                <div id="loading-block" class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div class="space-y-3">
+                    <div class="h-3 w-24 animate-pulse rounded bg-slate-200"></div>
+                    <div class="h-4 w-full animate-pulse rounded bg-slate-200"></div>
+                    <div class="h-4 w-5/6 animate-pulse rounded bg-slate-200"></div>
+                    <div class="h-20 animate-pulse rounded-xl bg-slate-200"></div>
+                  </div>
+                </div>
+
+                <div id="error-block" class="mt-6 hidden rounded-xl border border-rose-200 bg-rose-50 p-4">
+                  <div class="flex items-start gap-3">
+                    <div class="mt-0.5 rounded-full bg-rose-100 p-2 text-rose-700">
+                      <svg class="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 9v4" />
+                        <path d="M12 17h.01" />
+                        <path d="M10.29 3.86l-7.54 13.08A2 2 0 0 0 4.46 20h15.08a2 2 0 0 0 1.73-3.06L13.73 3.86a2 2 0 0 0-3.46 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="text-sm font-semibold text-rose-900">Receipt unavailable</div>
+                      <p id="error-message" class="mt-1 text-sm leading-6 text-rose-800"></p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="receipt-card" class="mt-6 hidden">
+                  <div class="text-center">
+                    <div class="text-lg font-semibold text-slate-900">Receipt from Lenore, Inc</div>
+                    <div id="receipt-number" class="mt-1 text-xs text-slate-500">Receipt #--</div>
+                  </div>
+
+                  <div class="mt-6 grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Amount paid</div>
+                      <div id="amount-paid" class="mt-1 text-sm font-semibold text-slate-900">--</div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Date paid</div>
+                      <div id="date-paid" class="mt-1 text-sm text-slate-700">--</div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Payment method</div>
+                      <div id="payment-method" class="mt-1 text-sm text-slate-700">--</div>
+                    </div>
+                  </div>
+
+                  <div class="mt-6">
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Summary</div>
+                    <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <div class="flex items-start justify-between gap-4 text-sm">
+                        <div id="product-label" class="text-slate-700">--</div>
+                        <div id="line-amount" class="font-medium text-slate-900">--</div>
+                      </div>
+                      <div class="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 text-sm">
+                        <div class="text-slate-600">Subtotal</div>
+                        <div id="subtotal-amount" class="text-slate-900">--</div>
+                      </div>
+                      <div class="mt-2 flex items-center justify-between text-sm">
+                        <div class="font-semibold text-slate-900">Amount paid</div>
+                        <div id="total-amount" class="font-semibold text-slate-900">--</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm">
+                    <div class="flex items-center justify-between gap-4">
+                      <div class="text-emerald-800 font-semibold">Payment status</div>
+                      <div id="payment-status" class="text-emerald-700 font-semibold">Paid</div>
+                    </div>
+                    <div id="balance-copy" class="mt-1 text-emerald-700/80">Your purchase has been confirmed.</div>
+                  </div>
+
+                  <dl class="mt-6 grid grid-cols-2 gap-3 text-sm">
+                    <div class="rounded-xl border border-slate-200 bg-white p-4">
+                      <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Credits added</dt>
+                      <dd id="credits-added" class="mt-1 text-base font-semibold text-slate-900">--</dd>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-white p-4">
+                      <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Balance</dt>
+                      <dd id="token-balance" class="mt-1 text-base font-semibold text-slate-900">--</dd>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-white p-4">
+                      <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Session ID</dt>
+                      <dd id="session-id" class="mt-1 break-all text-xs font-medium text-slate-700">--</dd>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-white p-4">
+                      <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Token ID</dt>
+                      <dd id="token-id" class="mt-1 break-all text-xs font-medium text-slate-700">--</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div class="mt-7 flex flex-col gap-3 tm-no-print">
+                  <button
+                    type="button"
+                    id="downloadPdfBtn"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600/90 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-600"
+                  >
+                    <svg class="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3v12" />
+                      <path d="M8 11l4 4 4-4" />
+                      <path d="M5 21h14" />
+                    </svg>
+                    Download as PDF
+                  </button>
+
+                  <a
+                    href="/index.html"
+                    class="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                  >
+                    Start Using Transcript Parser
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 text-center text-xs text-slate-500 tm-no-print tm-anim delay-2">
+              This page only renders finalized Worker data. The fake demo receipt has been retired, which must be devastating for the fake demo receipt.
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="tm-no-print mt-1 border-t border-slate-800/60 bg-slate-950/80 px-6 py-3 backdrop-blur">
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
+          <p class="text-sm text-slate-500">© <span id="footer-year"></span> Transcript.Tax Monitor Pro. All rights reserved.</p>
+          <div class="flex items-center gap-6">
+            <a href="/legal/privacy.html" class="text-sm text-slate-400 transition-colors hover:text-purple-400">Privacy Policy</a>
+            <a href="/legal/terms.html" class="text-sm text-slate-400 transition-colors hover:text-purple-400">Terms of Service</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        const API_BASE = 'https://api.taxmonitor.pro';
+        const CHECKOUT_STATUS_ENDPOINT = API_BASE + '/v1/checkout/status';
+
+        const els = {
+          amountPaid: document.getElementById('amount-paid'),
+          balanceCopy: document.getElementById('balance-copy'),
+          creditsAdded: document.getElementById('credits-added'),
+          datePaid: document.getElementById('date-paid'),
+          errorBlock: document.getElementById('error-block'),
+          errorMessage: document.getElementById('error-message'),
+          footerYear: document.getElementById('footer-year'),
+          lineAmount: document.getElementById('line-amount'),
+          loadingBlock: document.getElementById('loading-block'),
+          paymentMethod: document.getElementById('payment-method'),
+          paymentStatus: document.getElementById('payment-status'),
+          productLabel: document.getElementById('product-label'),
+          receiptCard: document.getElementById('receipt-card'),
+          receiptNumber: document.getElementById('receipt-number'),
+          sessionId: document.getElementById('session-id'),
+          stateCopy: document.getElementById('state-copy'),
+          stateEyebrow: document.getElementById('state-eyebrow'),
+          stateIcon: document.getElementById('state-icon'),
+          stateIconWrap: document.getElementById('state-icon-wrap'),
+          stateTitle: document.getElementById('state-title'),
+          subtotalAmount: document.getElementById('subtotal-amount'),
+          tokenBalance: document.getElementById('token-balance'),
+          tokenId: document.getElementById('token-id'),
+          totalAmount: document.getElementById('total-amount')
+        };
+
+        const search = new URLSearchParams(window.location.search);
+        const sessionId = (search.get('session_id') || '').trim();
+        const tokenId = (search.get('tokenId') || '').trim();
+
+        requestAnimationFrame(() => document.documentElement.classList.add('tm-loaded'));
+
+        if (els.footerYear) {
+          els.footerYear.textContent = String(new Date().getFullYear());
+        }
+
+        const printBtn = document.getElementById('downloadPdfBtn');
+        printBtn?.addEventListener('click', () => window.print());
+
+        function currency(amount, code) {
+          const cents = Number(amount);
+          const currencyCode = String(code || 'usd').toUpperCase();
+          if (!Number.isFinite(cents)) return '--';
+          try {
+            return new Intl.NumberFormat(undefined, {
+              currency: currencyCode,
+              style: 'currency'
+            }).format(cents / 100);
+          } catch (error) {
+            return '$' + (cents / 100).toFixed(2);
+          }
+        }
+
+        function formatDate(value) {
+          if (!value) return '--';
+          const date = new Date(value);
+          if (Number.isNaN(date.getTime())) return '--';
+          return new Intl.DateTimeFormat(undefined, {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          }).format(date);
+        }
+
+        function safeText(value, fallback) {
+          const text = value == null ? '' : String(value).trim();
+          return text || fallback;
+        }
+
+        function setError(message) {
+          els.loadingBlock?.classList.add('hidden');
+          els.receiptCard?.classList.add('hidden');
+          els.errorBlock?.classList.remove('hidden');
+          els.errorMessage.textContent = message;
+          els.stateEyebrow.textContent = 'Receipt unavailable';
+          els.stateTitle.textContent = 'We could not load this payment receipt';
+          els.stateCopy.textContent = 'This page needs a valid paid Stripe session and a working Worker status endpoint. Decorative fiction no longer qualifies.';
+          els.stateIcon.textContent = '!';
+          els.stateIcon.className = 'font-extrabold text-rose-600';
+          els.stateIconWrap.className = 'flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 ring-4 ring-white';
+        }
+
+        function setLoading(message) {
+          els.errorBlock?.classList.add('hidden');
+          els.receiptCard?.classList.add('hidden');
+          els.loadingBlock?.classList.remove('hidden');
+          els.stateEyebrow.textContent = 'Checking session';
+          els.stateTitle.textContent = 'Loading your payment receipt...';
+          els.stateCopy.textContent = message;
+          els.stateIcon.textContent = 'TM';
+          els.stateIcon.className = 'font-extrabold text-purple-500';
+          els.stateIconWrap.className = 'flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 ring-4 ring-white';
+        }
+
+        function renderReceipt(data) {
+          const amount = currency(data.amountPaid, data.currency);
+          const qty = Number(data.quantity);
+          const quantityLabel = Number.isFinite(qty) && qty > 0 ? ' × ' + qty : '';
+          const credits = data.creditsAdded == null ? '--' : String(data.creditsAdded);
+          const balance = data.balance == null ? '--' : String(data.balance);
+          const paidStatus = safeText(data.paymentStatus, 'paid');
+          const normalizedStatus = paidStatus.toLowerCase();
+          const isPaid = normalizedStatus === 'paid';
+          const product = safeText(data.productLabel, 'Transcript credits') + quantityLabel;
+          const resolvedSessionId = safeText(data.sessionId, sessionId || '--');
+          const resolvedTokenId = safeText(data.tokenId, tokenId || 'Not provided');
+          const balanceMessage = isPaid
+            ? 'Added ' + credits + ' credits. Current balance: ' + balance + '.'
+            : 'Payment status is ' + paidStatus + '. Credits are not treated as finalized until the Worker says so.';
+
+          els.loadingBlock?.classList.add('hidden');
+          els.errorBlock?.classList.add('hidden');
+          els.receiptCard?.classList.remove('hidden');
+
+          els.stateEyebrow.textContent = isPaid ? 'Payment confirmed' : 'Payment recorded';
+          els.stateTitle.textContent = isPaid ? 'Your purchase is complete' : 'Your checkout session was found';
+          els.stateCopy.textContent = isPaid
+            ? 'Your receipt below reflects live checkout data returned by the Worker.'
+            : 'The session exists, but the payment status is not fully paid yet.';
+          els.stateIcon.textContent = isPaid ? '✓' : '•';
+          els.stateIcon.className = isPaid ? 'font-extrabold text-emerald-600' : 'font-extrabold text-amber-600';
+          els.stateIconWrap.className = isPaid
+            ? 'flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 ring-4 ring-white'
+            : 'flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 ring-4 ring-white';
+
+          els.amountPaid.textContent = amount;
+          els.balanceCopy.textContent = balanceMessage;
+          els.creditsAdded.textContent = credits;
+          els.datePaid.textContent = formatDate(data.datePaid);
+          els.lineAmount.textContent = amount;
+          els.paymentMethod.textContent = safeText(data.paymentMethodLabel, 'Not available');
+          els.paymentStatus.textContent = paidStatus;
+          els.productLabel.textContent = product;
+          els.receiptNumber.textContent = 'Receipt #' + safeText(data.receiptNumber, resolvedSessionId);
+          els.sessionId.textContent = resolvedSessionId;
+          els.subtotalAmount.textContent = amount;
+          els.tokenBalance.textContent = balance;
+          els.tokenId.textContent = resolvedTokenId;
+          els.totalAmount.textContent = amount;
+        }
+
+        async function loadReceipt() {
+          if (!sessionId) {
+            setError('Missing session_id in the URL. This page only works when Stripe sends the user back with a real checkout session id.');
+            return;
+          }
+
+          setLoading('Fetching finalized checkout details from the Worker...');
+
+          const qs = new URLSearchParams({ session_id: sessionId });
+          if (tokenId) {
+            qs.set('tokenId', tokenId);
+          }
+
+          try {
+            const response = await fetch(CHECKOUT_STATUS_ENDPOINT + '?' + qs.toString(), {
+              credentials: 'omit',
+              headers: {
+                Accept: 'application/json'
+              },
+              method: 'GET'
+            });
+
+            let data = null;
+            try {
+              data = await response.json();
+            } catch (jsonError) {
+              data = null;
+            }
+
+            if (!response.ok) {
+              const message = data && data.error ? String(data.error) : 'Worker returned HTTP ' + response.status + '.';
+              setError(message);
+              return;
+            }
+
+            if (!data || data.ok !== true) {
+              const message = data && data.error ? String(data.error) : 'Checkout status payload was missing ok=true.';
+              setError(message);
+              return;
+            }
+
+            renderReceipt(data);
+          } catch (error) {
+            setError(error instanceof Error ? error.message : 'Network request failed while loading receipt status.');
+          }
+        }
+
+        loadReceipt();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,77 @@
+﻿{
+  "auth": {
+    "required": false,
+    "trustClientIdentityFields": false,
+    "type": "none"
+  },
+  "contract": {
+    "authority": [
+      "R2_TTMP_CANONICAL"
+    ],
+    "governs": "TTMP checkout success receipt lookup",
+    "path": "/contracts/payment-success.contract.json",
+    "source": "Transcript Tax Monitor",
+    "title": "Transcript Tax Monitor — Payment Success Contract",
+    "usedOnPages": [
+      "/assets/payment-success.html"
+    ],
+    "validation": {
+      "enumStrict": true,
+      "rejectUnknownValues": true,
+      "requireJsonContentType": false
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/api/transcripts/checkout/status",
+    "method": "GET",
+    "query": [
+      "session_id",
+      "tokenId"
+    ]
+  },
+  "effects": {
+    "writes": []
+  },
+  "request": {
+    "additionalProperties": false,
+    "properties": {
+      "session_id": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "tokenId": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "required": [
+      "session_id"
+    ],
+    "type": "object"
+  },
+  "response": {
+    "error": {
+      "error": "checkout_status_failed",
+      "ok": false
+    },
+    "success": {
+      "amountPaid": 0,
+      "balance": 0,
+      "currency": "usd",
+      "datePaid": "2026-03-15T00:00:00.000Z",
+      "ok": true,
+      "paymentMethodLabel": "card",
+      "paymentStatus": "paid",
+      "productLabel": "Transcript credits",
+      "quantity": 1,
+      "receiptNumber": "rcpt_123",
+      "sessionId": "{query.session_id}",
+      "tokenId": "{query.tokenId}"
+    }
+  },
+  "schema": {
+    "name": "ttmp_payment_success",
+    "version": 1
+  }
+}

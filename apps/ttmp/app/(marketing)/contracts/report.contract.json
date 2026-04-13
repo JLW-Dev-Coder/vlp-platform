@@ -1,0 +1,110 @@
+﻿{
+  "auth": {
+    "required": false,
+    "trustClientIdentityFields": false,
+    "type": "none"
+  },
+  "contract": {
+    "authority": [
+      "R2_TTMP_CANONICAL"
+    ],
+    "governs": "TTMP report rendering and print completion",
+    "path": "/contracts/report.contract.json",
+    "source": "Transcript Tax Monitor",
+    "title": "Transcript Tax Monitor — Report Contract",
+    "usedOnPages": [
+      "/assets/report.html"
+    ],
+    "validation": {
+      "enumStrict": true,
+      "rejectUnknownValues": true,
+      "requireJsonContentType": true
+    },
+    "version": 1
+  },
+  "events": {
+    "getReportData": {
+      "delivery": {
+        "endpoint": "/transcript/report-data",
+        "method": "GET",
+        "query": [
+          "reportId"
+        ]
+      },
+      "effects": {
+        "writes": []
+      },
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "reportId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reportId"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "error": {
+          "error": "report_not_found",
+          "ok": false
+        },
+        "success": {
+          "ok": true,
+          "report": {}
+        }
+      }
+    },
+    "markPrintComplete": {
+      "delivery": {
+        "endpoint": "/api/transcripts/report/{reportId}/print-complete",
+        "method": "POST",
+        "receiptKeyPattern": "receipts/ttmp/report_prints/{eventId}.json",
+        "receiptSource": "ttmp_report_print_complete"
+      },
+      "effects": {
+        "eventIdFrom": "payload.eventId",
+        "receiptAppend": {
+          "to": "receipts/ttmp/report_prints/{eventId}.json"
+        },
+        "writeOrder": [
+          "receiptAppend"
+        ],
+        "writes": [
+          "report_prints"
+        ]
+      },
+      "request": {
+        "additionalProperties": false,
+        "properties": {
+          "eventId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "eventId"
+        ],
+        "type": "object"
+      },
+      "response": {
+        "error": {
+          "error": "print_complete_failed",
+          "ok": false
+        },
+        "success": {
+          "ok": true,
+          "reportId": "{path.reportId}",
+          "status": "recorded"
+        }
+      }
+    }
+  },
+  "schema": {
+    "name": "ttmp_report",
+    "version": 1
+  }
+}
