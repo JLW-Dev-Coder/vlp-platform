@@ -1,0 +1,89 @@
+{
+  "version": "1.0",
+  "type": "federated",
+  "description": "VLP Ecosystem Contract Master Registry - Federated Model",
+  "lastUpdated": "2026-04-10",
+  "totalPlatforms": 8,
+  "registries": [
+    {
+      "platform": "vlp",
+      "name": "Virtual Launch Pro",
+      "path": "/contracts/registries/vlp-registry.json",
+      "owner": "VLP Core Team",
+      "status": "active"
+    },
+    {
+      "platform": "tttmp",
+      "name": "Tax Tools Arcade",
+      "path": "/contracts/registries/tttmp-registry.json",
+      "owner": "TTTMP Team",
+      "status": "active"
+    },
+    {
+      "platform": "ttmp",
+      "name": "Transcript Tax Monitor",
+      "path": "/contracts/registries/ttmp-registry.json",
+      "owner": "TTMP Team",
+      "status": "active"
+    },
+    {
+      "platform": "tmp",
+      "name": "Tax Monitor Pro",
+      "path": "/contracts/registries/tmp-registry.json",
+      "owner": "TMP Team",
+      "status": "active"
+    },
+    {
+      "platform": "dvlp",
+      "name": "Developers VLP",
+      "path": "/contracts/registries/dvlp-registry.json",
+      "owner": "DVLP Team",
+      "status": "active"
+    },
+    {
+      "platform": "gvlp",
+      "name": "Games VLP",
+      "path": "/contracts/registries/gvlp-registry.json",
+      "owner": "GVLP Team",
+      "status": "active"
+    },
+    {
+      "platform": "tcvlp",
+      "name": "Tax Claim VLP",
+      "path": "/contracts/registries/tcvlp-registry.json",
+      "owner": "TCVLP Team",
+      "status": "active"
+    },
+    {
+      "platform": "wlvlp",
+      "name": "Website Lotto VLP",
+      "path": "/contracts/registries/wlvlp-registry.json",
+      "owner": "WLVLP Team",
+      "status": "active"
+    }
+  ],
+  "statistics": {
+    "totalContracts": 76,
+    "activeContracts": 75,
+    "deprecatedContracts": 1,
+    "byPlatform": {
+      "vlp": 65,
+      "tttmp": 4,
+      "ttmp": 2,
+      "tmp": 4,
+      "dvlp": 0,
+      "gvlp": 0,
+      "tcvlp": 0,
+      "wlvlp": 0
+    }
+  },
+  "notes": {
+    "legacyEntries": [
+      {
+        "id": "tools_form_8821_submit",
+        "reason": "Older-format duplicate of tttmp.tool.form8821.v1. Kept in vlp-registry.json as deprecated. Canonical version is in tttmp-registry.json.",
+        "status": "deprecated"
+      }
+    ]
+  }
+}

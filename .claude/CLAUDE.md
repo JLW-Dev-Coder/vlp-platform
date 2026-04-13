@@ -81,25 +81,25 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 - Never duplicate a canonical into an app directory
 - When a canonical is updated, it applies to all apps immediately
 
-### Canonical files:
+### Canonical files (15 total):
 
-| File | Purpose |
-|------|---------|
-| `canonical-claude.md` | CLAUDE.md template for app-level context |
-| `canonical-contract.json` | Contract schema template |
-| `canonical-contract-registry.json` | Registry entry schema |
-| `canonical-index.html` | HTML page template |
-| `canonical-market.md` | Market positioning template |
-| `canonical-readme.md` | README template |
-| `canonical-roles.md` | Roles template |
-| `canonical-scale.md` | SCALE batch operations template |
-| `canonical-skill.md` | SKILL.md template |
-| `canonical-style.md` | STYLE.md template |
-| `canonical-workflow.md` | Workflow template |
-| `canonical-wrangler.toml` | Wrangler config template |
-| `canonical-deploy.md` | Deployment template |
-| `canonical-api.md` | API documentation template |
-| `canonical-stack.md` | Stack documentation template |
+| File | Purpose | Use when... |
+|------|---------|-------------|
+| `canonical-api.md` | Master API endpoint registry (~193 routes) | Documenting, adding, or referencing Worker API endpoints |
+| `canonical-claude.md` | CLAUDE.md template for app-level context | Creating or editing any app's `.claude/CLAUDE.md` |
+| `canonical-contract.json` | Contract JSON schema (7 required sections) | Creating or modifying any data contract |
+| `canonical-contract-registry.json` | Registry entry schema (required fields) | Adding entries to platform registries |
+| `canonical-deploy.md` | Per-adapter deploy procedures + rollback | Deploying any platform or troubleshooting deploys |
+| `canonical-index.html` | Landing page structure (8 required sections) | Creating or editing landing pages |
+| `canonical-market.md` | Market positioning template (12 sections) | Writing marketing copy or positioning docs |
+| `canonical-readme.md` | README template (14 sections) | Creating or editing README files |
+| `canonical-roles.md` | Role definitions (Principal, Execution, Owner) | Understanding role boundaries and escalation |
+| `canonical-scale.md` | SCALE batch operations pipeline template | Working on SCALE outreach, enrichment, or email pipeline |
+| `canonical-skill.md` | SKILL.md template (11 sections) | Defining reusable execution skills |
+| `canonical-stack.md` | Platform stack matrix + architecture decisions | Understanding platform tech choices, adapters, or domains |
+| `canonical-style.md` | Design tokens, typography, layout patterns | Styling components, pages, or creating new UI |
+| `canonical-workflow.md` | Operational playbook template | Writing human-executed workflow documents |
+| `canonical-wrangler.toml` | Worker config template + rules | Modifying `apps/worker/wrangler.toml` |
 
 ---
 

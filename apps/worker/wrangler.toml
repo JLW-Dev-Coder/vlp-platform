@@ -1,0 +1,286 @@
+name = "virtuallaunch-pro-api"
+main = "src/index.js"
+compatibility_date = "2026-02-28"
+
+# ---------------------------------------
+# Routes
+# ---------------------------------------
+
+routes = [
+  { pattern = "api.virtuallaunch.pro/*", zone_name = "virtuallaunch.pro" },
+  { pattern = "*.websitelotto.virtuallaunch.pro/*", zone_name = "virtuallaunch.pro" }
+]
+
+# ---------------------------------------
+# Observability
+# ---------------------------------------
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+# ---------------------------------------
+# Bindings
+# ---------------------------------------
+
+[[r2_buckets]]
+binding = "R2_VIRTUAL_LAUNCH"
+bucket_name = "virtuallaunch-pro"
+
+[[r2_buckets]]
+binding = "ONBOARDING_R2"
+bucket_name = "virtuallaunch-pro"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "virtuallaunch-pro"
+database_id = "079dfd69-dbf4-4070-bc91-51f837021795"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "ENRICHMENT_KV"
+id = "eca3b78d3e564774bb4bdebed8ffa512"
+
+# ---------------------------------------
+# Cron Triggers
+# ---------------------------------------
+
+[triggers]
+crons = [
+  "0 6 * * *",   # Every day 06:00 UTC - WLVLP site generation + SCALE find-emails (Reoon Power)
+  "0 8 * * *",   # Every day 08:00 UTC - SCALE validate-emails (Reoon quick mode)
+  "0 9 * * 1",   # Every Monday 9am UTC - DVLP job matching
+  "0 10 * * *",  # Every day 10am UTC - WLVLP auction settlement + FOIA lead enrichment + SCALE generate-batch
+  "0 12 * * *",  # Every day 12:00 UTC - WLVLP SCALE batch generation
+  "0 13 * * *",  # Every day 13:00 UTC - WLVLP asset page enrichment (crawl + conversion_leak_report)
+  "0 14 * * *"   # Every day 14:00 UTC - SCALE email sending (TTMP + WLVLP)
+]
+
+# ---------------------------------------
+# Vars (non-secret)
+# ---------------------------------------
+
+[vars]
+
+# =================================================
+# App
+# =================================================
+
+APP_BASE_URL = "https://api.virtuallaunch.pro"
+COOKIE_DOMAIN = ".virtuallaunch.pro"
+ENVIRONMENT = "production"
+MAGIC_LINK_EXPIRATION_MINUTES = "15"
+SESSION_TTL_SECONDS = "86400"
+
+# =================================================
+# Auth
+# =================================================
+
+GOOGLE_CLIENT_ID = "567315945471-t231g2f08bnti82h5omhg90dflc9ljtj.apps.googleusercontent.com"
+GOOGLE_REDIRECT_URI = "https://api.virtuallaunch.pro/v1/auth/google/callback"
+
+SSO_OIDC_CLIENT_ID = "567315945471-ca7g5u8ppuvh6cl7qmo34afn1g3a2cui.apps.googleusercontent.com"
+SSO_OIDC_ISSUER = "https://accounts.google.com"
+SSO_OIDC_REDIRECT_URI = "https://api.virtuallaunch.pro/v1/auth/sso/oidc/callback"
+
+SSO_SAML_ACS_URL = "https://api.virtuallaunch.pro/v1/auth/sso/saml/acs"
+SSO_SAML_ENTITY_ID = "https://api.virtuallaunch.pro/v1/auth/sso/saml"
+SSO_SAML_IDP_METADATA_URL = "https://api.virtuallaunch.pro/contracts/sso/google-workspace-idp-metadata.xml"
+
+SSO_SAML_IDP_ENTITY_ID = "https://accounts.google.com/o/saml2?idpid=C04e5y3us"
+SSO_SAML_IDP_SSO_URL = "https://accounts.google.com/o/saml2/idp?idpid=C04e5y3us"
+
+TWOFA_TOKEN_EXPIRY_SECONDS = "300"
+TWOFA_TOTP_ISSUER = "VirtualLaunchPro"
+
+# =================================================
+# Cal.com
+# =================================================
+
+CAL_APP_OAUTH_CLIENT_ID = "d6839d7dccd5a878d6c5e26b52effd2ab6d241dc047ed2786f9f56de039ca7f3"
+CAL_PRO_OAUTH_CLIENT_ID = "9d03bcaa8ee24644d21dc7af5c3c17722ffa314c9790f2c7c83a1f88032b8420"
+
+CAL_APPT_DEMO_INFO = "https://cal.com/tax-monitor-pro/virtual-launch-pro-demo-intro"
+CAL_APPT_SUPPORT = "https://cal.com/tax-monitor-pro/virtual-launch-pro-support"
+
+# =================================================
+# Billing
+# =================================================
+
+BILLING_LINK_VA_STARTER_TRACK = "https://billing.taxmonitor.pro/b/fZu6oGcImaZk3k48z0aR206"
+
+STRIPE_PRODUCT_VLP_FREE = "prod_UA40Oi1pLriREe"
+STRIPE_PRICE_VLP_FREE_MONTHLY = "price_1TBjsM9ROeyeXOqeAPefMFfM"
+
+STRIPE_PRICE_VLP_ADVANCED_MONTHLY = "price_1T9AXX9ROeyeXOqef7Ja1Iig"
+STRIPE_PRICE_VLP_ADVANCED_YEARLY = "price_1TBk1G9ROeyeXOqeBQcj749T"
+
+STRIPE_PRICE_VLP_PRO_MONTHLY = "price_1T9AUi9ROeyeXOqeqyzsSOYV"
+STRIPE_PRICE_VLP_PRO_YEARLY = "price_1TBk0K9ROeyeXOqeC3sHQqFN"
+
+STRIPE_PRICE_VLP_STARTER_MONTHLY = "price_1T9APS9ROeyeXOqeOWjA4sq3"
+STRIPE_PRICE_VLP_STARTER_YEARLY = "price_1TBjy19ROeyeXOqeyzbwP3hW"
+
+STRIPE_PRODUCT_VLP_ADVANCED_MONTHLY = "prod_U7PM0qbFA2hFeM"
+STRIPE_PRODUCT_VLP_ADVANCED_YEARLY = "prod_U7PM0qbFA2hFeM"
+
+STRIPE_PRODUCT_VLP_PRO_MONTHLY = "prod_U7PJAioATefEi7"
+STRIPE_PRODUCT_VLP_PRO_YEARLY = "prod_U7PJAioATefEi7"
+
+STRIPE_PRODUCT_VLP_STARTER_MONTHLY = "prod_U7PDtTKvnjGuxE"
+STRIPE_PRODUCT_VLP_STARTER_YEARLY = "prod_U7PDtTKvnjGuxE"
+
+STRIPE_PUBLISHABLE_KEY = "pk_live_51T99pl9ROeyeXOqedzg5KIWii7uWGBxKYlTEhRymUiKOSXUA2m2AZ2uO9Pq36iKewxMg872yeZubOIKjy8jjYgrm00IhXpjxd6"
+
+# Tax Tools Arcade (TTTMP) — Token Packs
+STRIPE_PRODUCT_TTTMP_TOKENS = "prod_UExej9awY6pNCe"
+STRIPE_PRICE_TTTMP_30_TOKENS = "price_1TGTiqQEa4WBi79guSRnECvw"
+STRIPE_PRICE_TTTMP_80_TOKENS = "price_1TGTiqQEa4WBi79gScrpsUab"
+STRIPE_PRICE_TTTMP_200_TOKENS = "price_1TGTiqQEa4WBi79gpTsbsLIi"
+
+# TTTMP Token Credit Map (price_id → token quantity)
+# 30_TOKENS = 30, 80_TOKENS = 80, 200_TOKENS = 200
+
+# TTMP (Transcript Tax Monitor) — Token Packs
+STRIPE_PRODUCT_TTMP_10_TOKENS = "prod_U6FqqHSLpxTcnc"
+STRIPE_PRICE_TTMP_10_TOKENS = "price_1T83KXQEa4WBi79g8sD2NI7c"
+
+STRIPE_PRODUCT_TTMP_25_TOKENS = "prod_U6HFIj9Q3haRdz"
+STRIPE_PRICE_TTMP_25_TOKENS = "price_1T84hAQEa4WBi79gCziLGXUD"
+
+STRIPE_PRODUCT_TTMP_100_TOKENS = "prod_U6LSxmslq5zCWw"
+STRIPE_PRICE_TTMP_100_TOKENS = "price_1T8pDtQEa4WBi79gWfSQwLgM"
+
+# TTMP Token Credit Map (price_id → token quantity)
+# 10_TOKENS = 10, 25_TOKENS = 25, 100_TOKENS = 100
+
+# TMP (Tax Monitor Pro) — Subscription Plans
+STRIPE_PRODUCT_TMP_FREE = "prod_U9LDhnUUoaV82l"
+STRIPE_PRICE_TMP_FREE_MONTHLY = "price_1TB2XMQEa4WBi79g9MrIQ8sE"
+
+STRIPE_PRODUCT_TMP_ESSENTIAL = "prod_U9LM3whygrnrY0"
+STRIPE_PRICE_TMP_ESSENTIAL_MONTHLY = "price_1TB2g5QEa4WBi79gzBFxy2se"
+STRIPE_PRICE_TMP_ESSENTIAL_YEARLY = "price_1TJPFlQEa4WBi79gpcqnHzcD"
+
+STRIPE_PRODUCT_TMP_PLUS = "prod_U9LQhYkDTaATna"
+STRIPE_PRICE_TMP_PLUS_MONTHLY = "price_1TB2k2QEa4WBi79g3hyGQ5Cp"
+STRIPE_PRICE_TMP_PLUS_YEARLY = "price_1TJPGrQEa4WBi79gSBdkJZDO"
+
+STRIPE_PRODUCT_TMP_PREMIER = "prod_U9LakGL5MJfj1x"
+STRIPE_PRICE_TMP_PREMIER_MONTHLY = "price_1TB2t8QEa4WBi79gQwOSRGsb"
+STRIPE_PRICE_TMP_PREMIER_YEARLY = "price_1TJPHaQEa4WBi79gFk3BO9Ky"
+
+# TMP Plan II — Monitoring Plans
+STRIPE_PRODUCT_TMP_BRONZE = "prod_UFLz41lHYkKT8i"
+STRIPE_PRICE_TMP_BRONZE = "price_1TGrHWQEa4WBi79gLtqP1w2T"
+
+STRIPE_PRODUCT_TMP_SILVER = "prod_UFM1lNxpjyPSkl"
+STRIPE_PRICE_TMP_SILVER = "price_1TGrJEQEa4WBi79g22NiHNaS"
+
+STRIPE_PRODUCT_TMP_GOLD = "prod_UFM2PYeKFmIdEU"
+STRIPE_PRICE_TMP_GOLD = "price_1TGrKRQEa4WBi79gRpDXgl0v"
+
+STRIPE_PRODUCT_TMP_SNAPSHOT = "prod_UFM3Lbl3vvDta9"
+STRIPE_PRICE_TMP_SNAPSHOT = "price_1TGrLPQEa4WBi79gaY6dRa4Y"
+
+STRIPE_PRODUCT_TMP_MFJ = "prod_UFM47XevzRSGv5"
+STRIPE_PRICE_TMP_MFJ = "price_1TGrMUQEa4WBi79gwvcpmU07"
+
+# WLVLP (Website Lotto VLP) — Site purchases + hosting
+STRIPE_PRICE_WLVLP_STANDARD = "price_1TGTuN9ROeyeXOqeCKvi0vP0"
+STRIPE_PRICE_WLVLP_PREMIUM = "price_1TJaoe9ROeyeXOqeHeuA0dII"
+STRIPE_PRICE_WLVLP_HOSTING = "price_1TJapO9ROeyeXOqe4Poll2VI"
+STRIPE_PRICE_WLVLP_PREMIUM_HOSTING = "price_1TJarn9ROeyeXOqejfYk4uh4"
+
+# Affiliate Program — Phase 3
+AFFILIATE_COMMISSION_RATE = "0.20"
+STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
+
+# =================================================
+# Secrets
+# =================================================
+
+# =================================================
+# Auth
+# =================================================
+
+# CAL_APP_OAUTH_CLIENT_SECRET
+# CAL_PRO_OAUTH_CLIENT_SECRET
+# CAL_WEBHOOK_SECRET
+# ENCRYPTION_KEY
+# GOOGLE_CLIENT_SECRET
+# JWT_SECRET
+# SESSION_SECRET
+# SSO_OIDC_CLIENT_SECRET
+# SSO_SAML_IDP_CERT
+# TWOFA_ENCRYPTION_KEY
+
+# =================================================
+# Billing
+# =================================================
+
+# STRIPE_SECRET_KEY
+# STRIPE_WEBHOOK_SECRET
+
+# TMP (Tax Monitor Pro) — Subscription Plans
+# STRIPE_PRICE_TMP_ESSENTIAL
+# STRIPE_PRICE_TMP_PLUS
+# STRIPE_PRICE_TMP_PREMIER
+# STRIPE_PRICE_TMP_BRONZE
+# STRIPE_PRICE_TMP_SILVER
+# STRIPE_PRICE_TMP_GOLD
+# STRIPE_PRICE_TMP_SNAPSHOT
+
+# =================================================
+# Messaging
+# =================================================
+
+# GOOGLE_PRIVATE_KEY
+# TWILIO_ACCOUNT_SID
+# TWILIO_AUTH_TOKEN
+# TWILIO_PHONE_NUMBER
+# TWILIO_VERIFY_SERVICE_SID
+# TWILIO_WEBHOOK_SECRET
+
+# =================================================
+# Security
+# =================================================
+
+# TURNSTILE_SECRET_KEY
+
+# =================================================
+# Storage / Internal
+# =================================================
+
+# CF_API_TOKEN
+# R2_CANONICAL_WRITE_TOKEN
+
+# =================================================
+# DVLP (Developers VLP)
+# =================================================
+
+# CRON_SECRET
+# GOOGLE_CLIENT_EMAIL
+# RESEND_API_KEY
+# STRIPE_DVLP_PRICE_FREE
+# STRIPE_DVLP_PRICE_PAID
+# STRIPE_DVLP_SECRET_KEY
+# STRIPE_DVLP_WEBHOOK_SECRET
+
+# =================================================
+# Enrichment Pipeline
+# =================================================
+
+# REOON_API_KEY  — Reoon email verifier ($9/mo plan, 500 verifications/day)
+
+# =================================================
+# Optional / Future Integrations
+# =================================================
+
+# OPENAI_API_KEY
+# PUSH_VAPID_PRIVATE_KEY
+# PUSH_VAPID_PUBLIC_KEY
+# PUSH_VAPID_SUBJECT

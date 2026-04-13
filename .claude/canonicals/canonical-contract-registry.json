@@ -1,1 +1,61 @@
-<!-- TODO: migrate from VLP repo -->
+# canonical-contract-registry.json
+
+Template for contract registry entries. Registry files live in `apps/worker/contracts/registries/`.
+
+## Required fields per entry
+
+- **authRequired** (boolean) — whether the endpoint requires session authentication
+- **category** (string) — one of: `form`, `read-model`, `webhook`
+- **dedupeKey** (string) — field or expression used for deduplication
+- **endpoint** (string) — absolute URL path (e.g., `/v1/accounts`)
+- **id** (string) — lowercase snake_case identifier (e.g., `vlp_account_create`)
+- **method** (string) — HTTP method: `GET`, `POST`, `PATCH`, `PUT`, `DELETE`
+- **path** (string) — monorepo-relative path to contract file (e.g., `contracts/vlp/vlp.account.create.v1.json`)
+- **receiptKeyPattern** (string) — R2 key pattern for receipt storage
+- **receiptSource** (string) — identifier for receipt source
+- **signatureRequired** (boolean) — whether the request requires signature verification
+- **status** (string) — one of: `active`, `deprecated`, `draft`
+- **usedOnPages** (array of strings) — page paths where this contract is used
+- **version** (integer) — minimum 1, incremented on breaking changes
+- **writes** (array of strings) — collection names written to
+
+## Registry File Structure
+
+### Platform Registry (`registries/{platform}-registry.json`)
+
+```json
+{
+  "platform": "{platform}",
+  "name": "{Platform Full Name}",
+  "owner": "Jamie L Williams",
+  "version": 1,
+  "contracts": [
+    { /* entry per canonical-contract-registry.json */ }
+  ]
+}
+```
+
+### Master Registry (`contract-registry.json`)
+
+```json
+{
+  "version": 1,
+  "registries": [
+    {
+      "platform": "{platform}",
+      "name": "{Platform Full Name}",
+      "owner": "Jamie L Williams",
+      "path": "contracts/registries/{platform}-registry.json",
+      "status": "active"
+    }
+  ]
+}
+```
+
+## Rules
+
+1. Every contract must have a corresponding registry entry
+2. Registry entry `id` must match the contract filename (without extension and version)
+3. `status: deprecated` contracts are skipped by the contract loader but kept for reference
+4. `usedOnPages` must be non-empty — if a contract is not used on any page, it should be `draft`
+5. Master registry path uses monorepo-relative paths from `apps/worker/`

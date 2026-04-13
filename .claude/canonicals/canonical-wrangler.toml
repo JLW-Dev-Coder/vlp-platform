@@ -1,1 +1,67 @@
-<!-- TODO: migrate from VLP repo -->
+# canonical-wrangler.toml
+
+Standard Cloudflare Worker configuration template for the VLP ecosystem.
+The production wrangler.toml lives at `apps/worker/wrangler.toml`.
+
+---
+
+## Required Sections
+
+### Identity
+- `name` — Worker name (e.g., `virtuallaunch-pro-api`)
+- `main` — entry point (e.g., `src/index.js`)
+- `compatibility_date` — Cloudflare Workers compatibility date
+
+### Routes
+- `routes` — array of `{ pattern, zone_name }` objects
+- One route pattern per domain served
+
+### Observability
+```toml
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+```
+
+### Bindings
+- `[[r2_buckets]]` — R2 bucket bindings (binding name, bucket name)
+- `[[d1_databases]]` — D1 database bindings (binding name, database name, database ID, migrations dir)
+- `[[kv_namespaces]]` — KV namespace bindings (binding name, namespace ID)
+
+### Cron Triggers
+```toml
+[triggers]
+crons = [
+  "0 6 * * *",   # Description of what runs
+]
+```
+
+### Vars (non-secret)
+Organized by category:
+- App (base URL, cookie domain, environment)
+- Auth (OAuth client IDs, redirect URIs, SSO config)
+- Billing (Stripe product/price IDs, publishable key)
+- Calendar (Cal.com client IDs, appointment URLs)
+
+### Secrets (comments only)
+Listed as comments — never commit actual secret values:
+```toml
+# STRIPE_SECRET_KEY
+# JWT_SECRET
+# SESSION_SECRET
+```
+
+---
+
+## Rules
+
+1. **Never commit secret values** — all secrets set via `wrangler secret put {name}`
+2. All secrets listed as comments in the `[vars]` section for documentation
+3. Non-secret configuration vars go in `[vars]`
+4. One route pattern per domain/subdomain served
+5. `migrations_dir` path is relative to the wrangler.toml location
+6. In the monorepo, the wrangler.toml lives at `apps/worker/wrangler.toml`
+7. Paths in wrangler.toml are relative to `apps/worker/` (e.g., `main = "src/index.js"`, `migrations_dir = "migrations"`)

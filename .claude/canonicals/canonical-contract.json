@@ -1,1 +1,55 @@
-<!-- TODO: migrate from VLP repo -->
+# canonical-contract.json
+
+_canonical: This is the required structure for all contract files across all 8 VLP ecosystem platforms. Every section below is mandatory. See canonical-claude.md 'Canonicals Enforcement' for rules.
+
+Contract files live in `apps/worker/contracts/{platform}/` in the monorepo.
+
+## Required top-level sections (all 7 must be present)
+
+- **auth:** required, trustClientIdentityFields, type
+- **contract:** authority, governs, path, source, title, usedOnPages, validation, version
+- **delivery:** endpoint, method, receiptKeyPattern, receiptSource, signature
+- **effects:** dedupeKey, eventIdFrom, writeOrder, writes
+- **payload:** additionalProperties, properties, required, type
+- **response:** deduped, error, success
+- **schema:** name, version
+
+## Optional sections
+
+- clickupProjection
+- emailProjection
+- notificationProjection
+- notes
+
+## Naming Convention
+
+```
+apps/worker/contracts/{platform}/{platform}.{domain}.{action}.v{n}.json
+```
+
+Examples:
+- `apps/worker/contracts/vlp/vlp.account.create.v1.json`
+- `apps/worker/contracts/ttmp/ttmp.transcript.upload.v1.json`
+- `apps/worker/contracts/wlvlp/wlvlp.site.purchase.v1.json`
+
+## Write Order
+
+```
+receiptAppend → canonicalUpsert
+```
+
+Never deviate from this order. Receipt is always written first, then canonical record is updated.
+
+## Contract Registry
+
+Each platform has a registry file at `apps/worker/contracts/registries/{platform}-registry.json`. The master registry is at `apps/worker/contracts/contract-registry.json`.
+
+## Rules
+
+1. Every contract must have all 7 required top-level sections
+2. `usedOnPages` must be a non-empty array of page paths
+3. `version` must be a positive integer, starting at 1
+4. `additionalProperties` in payload must be explicitly set (true or false)
+5. `writeOrder` must follow the canonical sequence: receiptAppend → canonicalUpsert
+6. Contract `path` must use monorepo-relative paths: `contracts/{platform}/{filename}`
+7. Never create a contract without a corresponding registry entry
