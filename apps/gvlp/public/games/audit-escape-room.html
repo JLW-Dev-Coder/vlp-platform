@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audit Escape Room</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&amp;family=JetBrains+Mono:wght@400;700&amp;family=Crimson+Pro:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+ <style>
+  html, body { height: 100%; margin: 0; }
+  * { box-sizing: border-box; }
+  .font-typewriter { font-family: 'Special Elite', cursive; }
+  .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+  .font-body { font-family: 'Crimson Pro', serif; }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+    73% { opacity: 0.95; }
+    91% { opacity: 0.88; }
+  }
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(34,197,94,0.3); }
+    50% { box-shadow: 0 0 40px rgba(34,197,94,0.6); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  @keyframes stamp {
+    0% { transform: scale(3) rotate(-15deg); opacity: 0; }
+    60% { transform: scale(1) rotate(-15deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-15deg); opacity: 1; }
+  }
+  .animate-flicker { animation: flicker 3s infinite; }
+  .animate-scanline { animation: scanline 8s linear infinite; }
+  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+  .animate-shake { animation: shake 0.4s ease-in-out; }
+  .animate-stamp { animation: stamp 0.6s ease-out forwards; }
+
+  .room-transition { transition: opacity 0.5s ease, transform 0.5s ease; }
+  .crt-overlay {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 2px);
+  }
+  .paper-texture {
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+  .file-tab { clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 100%, 0 100%); }
+  input:focus { outline: none; }
+  .hint-btn:hover .hint-icon { transform: rotate(15deg); }
+
+  .deduction-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .deduction-card:hover { transform: translateY(-2px); }
+  .deduction-card.selected {
+    ring: 2px;
+    box-shadow: 0 0 0 3px #22c55e, 0 4px 12px rgba(34,197,94,0.3);
+  }
+  .deduction-card.wrong {
+    box-shadow: 0 0 0 3px #ef4444;
+  }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+ </head>
+ <body class="h-full bg-gray-950 text-gray-100 overflow-hidden">
+  <div id="app" class="h-full w-full relative overflow-auto">
+   <!-- SCREEN: INTRO -->
+   <div id="screen-intro" class="h-full w-full flex items-center justify-center relative">
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-950 via-emerald-950/30 to-gray-950"></div>
+    <div class="crt-overlay"></div>
+    <div class="relative z-10 text-center max-w-lg px-6">
+     <div class="mb-6 text-emerald-400 animate-flicker">
+      <svg width="80" height="80" viewbox="0 0 80 80" class="mx-auto">
+       <rect x="10" y="5" width="60" height="70" rx="3" fill="none" stroke="currentColor" stroke-width="2" /> <line x1="22" y1="20" x2="58" y2="20" stroke="currentColor" stroke-width="1.5" /> <line x1="22" y1="30" x2="58" y2="30" stroke="currentColor" stroke-width="1.5" /> <line x1="22" y1="40" x2="45" y2="40" stroke="currentColor" stroke-width="1.5" /> <text x="40" y="62" text-anchor="middle" fill="currentColor" font-size="12" font-weight="bold">
+        1040
+       </text>
+      </svg>
+     </div>
+     <h1 id="intro-title" class="font-typewriter text-4xl md:text-5xl text-emerald-400 mb-4 animate-flicker">AUDIT ESCAPE ROOM</h1>
+     <p id="intro-message" class="font-body text-lg text-gray-400 mb-8 leading-relaxed">You've been flagged for an IRS audit. Solve tax puzzles across 4 rooms to clear your name before time runs out. Every second counts.</p><button id="btn-start" class="font-mono-code bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded transition-all animate-pulse-glow text-lg tracking-wider"> BEGIN AUDIT → </button>
+     <p class="text-gray-600 text-sm mt-4 font-mono-code">4 ROOMS • 10:00 TIMER • 3 HINTS</p>
+    </div>
+   </div><!-- SCREEN: GAME -->
+   <div id="screen-game" class="h-full w-full hidden flex-col">
+    <!-- Top Bar -->
+    <div class="flex-shrink-0 bg-gray-900/90 border-b border-emerald-900/50 px-4 py-2 flex items-center justify-between backdrop-blur">
+     <div class="flex items-center gap-3">
+      <span class="font-mono-code text-emerald-400 text-sm">ROOM</span>
+      <div class="flex gap-1" id="room-indicators"></div>
+     </div>
+     <div class="flex items-center gap-2 font-mono-code">
+      <i data-lucide="clock" class="w-4 h-4 text-emerald-400"></i> <span id="timer" class="text-emerald-400 text-lg tabular-nums">10:00</span>
+     </div>
+     <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1">
+       <i data-lucide="star" class="w-4 h-4 text-amber-400"></i> <span id="score" class="font-mono-code text-amber-400">0</span>
+      </div><button id="btn-hint" class="hint-btn flex items-center gap-1 bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-sm font-mono-code text-yellow-400 transition-colors"> <i data-lucide="lightbulb" class="w-4 h-4 hint-icon transition-transform"></i> <span id="hints-left">3</span> </button>
+     </div>
+    </div><!-- Hint Toast -->
+    <div id="hint-toast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-yellow-900/95 border border-yellow-600/50 text-yellow-200 px-5 py-3 rounded-lg font-body text-sm max-w-sm text-center shadow-xl backdrop-blur"></div><!-- Room Content -->
+    <div id="room-container" class="flex-1 overflow-auto relative">
+     <div class="crt-overlay"></div>
+    </div><!-- Feedback Toast -->
+    <div id="feedback" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-lg font-mono-code text-sm shadow-xl backdrop-blur"></div>
+   </div><!-- SCREEN: VICTORY -->
+   <div id="screen-victory" class="h-full w-full hidden items-center justify-center relative">
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-950 via-emerald-950/20 to-gray-950"></div>
+    <div class="relative z-10 text-center max-w-md px-6">
+     <div class="animate-stamp inline-block mb-6">
+      <div class="border-4 border-emerald-500 rounded-lg px-8 py-4 text-emerald-400 font-typewriter text-3xl tracking-widest" style="transform:rotate(-15deg)">
+       CLEARED
+      </div>
+     </div>
+     <h2 class="font-typewriter text-3xl text-emerald-400 mb-2">AUDIT CLEARED!</h2>
+     <p class="font-body text-gray-400 mb-6">You've escaped the IRS audit.</p>
+     <div class="bg-gray-900/80 rounded-lg p-6 mb-6 border border-emerald-900/30">
+      <div class="grid grid-cols-3 gap-4 text-center">
+       <div>
+        <p class="text-2xl font-mono-code text-emerald-400" id="final-score">0</p>
+        <p class="text-xs text-gray-500">POINTS</p>
+       </div>
+       <div>
+        <p class="text-2xl font-mono-code text-amber-400" id="final-time">0:00</p>
+        <p class="text-xs text-gray-500">TIME LEFT</p>
+       </div>
+       <div>
+        <p class="text-2xl font-mono-code text-purple-400" id="final-hints">0</p>
+        <p class="text-xs text-gray-500">HINTS USED</p>
+       </div>
+      </div>
+     </div><button id="btn-restart" class="font-mono-code bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded transition-all text-lg">PLAY AGAIN</button>
+    </div>
+   </div><!-- SCREEN: GAME OVER -->
+   <div id="screen-gameover" class="h-full w-full hidden items-center justify-center relative">
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-950 via-red-950/20 to-gray-950"></div>
+    <div class="relative z-10 text-center max-w-md px-6">
+     <div class="animate-stamp inline-block mb-6">
+      <div class="border-4 border-red-500 rounded-lg px-8 py-4 text-red-400 font-typewriter text-3xl tracking-widest" style="transform:rotate(-15deg)">
+       AUDITED
+      </div>
+     </div>
+     <h2 class="font-typewriter text-3xl text-red-400 mb-2">TIME'S UP!</h2>
+     <p class="font-body text-gray-400 mb-6">The IRS got you. Better luck next audit season.</p>
+     <div class="bg-gray-900/80 rounded-lg p-6 mb-6 border border-red-900/30">
+      <p class="text-gray-400 font-body">You reached Room <span id="gameover-room" class="text-red-400 font-mono-code">1</span> with <span id="gameover-score" class="text-amber-400 font-mono-code">0</span> points</p>
+     </div><button id="btn-restart2" class="font-mono-code bg-red-600 hover:bg-red-500 text-white px-8 py-3 rounded transition-all text-lg">TRY AGAIN</button>
+    </div>
+   </div>
+  </div>
+  <script>
+// ========== GAME STATE ==========
+const STATE = {
+  currentRoom: 0,
+  score: 0,
+  hints: 3,
+  hintsUsed: 0,
+  timeLeft: 600,
+  timerInterval: null,
+  roomSolved: [false, false, false, false],
+  room2Selected: new Set(),
+  room3Answers: ['', '', ''],
+  room4Code: ['', '', '', '']
+};
+
+// ========== DEFAULT CONFIG ==========
+const defaultConfig = {
+  game_title: 'AUDIT ESCAPE ROOM',
+  welcome_message: "You've been flagged for an IRS audit. Solve tax puzzles across 4 rooms to clear your name before time runs out.",
+  background_color: '#030712',
+  accent_color: '#22c55e',
+  text_color: '#d1d5db',
+  surface_color: '#111827',
+  action_color: '#16a34a',
+  font_family: 'Special Elite',
+  font_size: 16
+};
+
+// ========== ROOMS DATA ==========
+const ROOMS = [
+  {
+    title: 'Room 1: Decode the W-2',
+    subtitle: 'Crack the wage code',
+    hint: 'Look at Box 1 (Wages) minus Box 2 (Federal Tax). The answer is a 5-digit number.',
+    points: 250,
+    render: renderRoom1,
+  },
+  {
+    title: 'Room 2: Hidden Deductions',
+    subtitle: 'Find all valid deductions',
+    hint: 'Select items that are legitimate tax deductions. Medical expenses and home office are valid. Vacation is not.',
+    points: 300,
+    render: renderRoom2,
+  },
+  {
+    title: 'Room 3: IRS Riddles',
+    subtitle: 'Answer the tax riddles',
+    hint: 'Riddle 1: April. Riddle 2: Think about what you file. Riddle 3: What number form do individuals use?',
+    points: 250,
+    render: renderRoom3,
+  },
+  {
+    title: 'Room 4: The Vault Code',
+    subtitle: 'Crack the final combination',
+    hint: 'The code digits come from: standard deduction thousands (14), married filing jointly code (2), number of fiscal quarters (4).',
+    points: 400,
+    render: renderRoom4,
+  }
+];
+
+// ========== SCREENS ==========
+function showScreen(id) {
+  ['screen-intro','screen-game','screen-victory','screen-gameover','screen-tiers'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) {
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+  });
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.remove('hidden');
+    if (id === 'screen-game') {
+      target.classList.add('flex');
+      target.style.display = 'flex';
+    } else {
+      target.classList.add('flex');
+    }
+  }
+}
+
+// ========== TIMER ==========
+function startTimer() {
+  clearInterval(STATE.timerInterval);
+  STATE.timerInterval = setInterval(() => {
+    STATE.timeLeft--;
+    updateTimerDisplay();
+    if (STATE.timeLeft <= 0) {
+      clearInterval(STATE.timerInterval);
+      gameOver();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(STATE.timeLeft / 60);
+  const s = STATE.timeLeft % 60;
+  const el = document.getElementById('timer');
+  el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  if (STATE.timeLeft <= 60) el.classList.add('text-red-400');
+  else el.classList.remove('text-red-400');
+}
+
+// ========== SCORE ==========
+function addScore(pts) {
+  STATE.score += pts;
+  document.getElementById('score').textContent = STATE.score;
+}
+
+// ========== HINTS ==========
+function showHint() {
+  if (STATE.hints <= 0) return;
+  STATE.hints--;
+  STATE.hintsUsed++;
+  document.getElementById('hints-left').textContent = STATE.hints;
+  const toast = document.getElementById('hint-toast');
+  toast.textContent = ROOMS[STATE.currentRoom].hint;
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 5000);
+}
+
+// ========== FEEDBACK ==========
+function showFeedback(msg, success) {
+  const el = document.getElementById('feedback');
+  el.textContent = msg;
+  el.className = `fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-lg font-mono-code text-sm shadow-xl backdrop-blur ${success ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-700/50' : 'bg-red-900/90 text-red-300 border border-red-700/50'}`;
+  setTimeout(() => el.classList.add('hidden'), 2500);
+}
+
+// ========== ROOM INDICATORS ==========
+function updateRoomIndicators() {
+  const cont = document.getElementById('room-indicators');
+  cont.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const d = document.createElement('div');
+    d.className = `w-3 h-3 rounded-full border ${i === STATE.currentRoom ? 'bg-emerald-400 border-emerald-400' : STATE.roomSolved[i] ? 'bg-emerald-700 border-emerald-700' : 'bg-gray-700 border-gray-600'}`;
+    cont.appendChild(d);
+  }
+}
+
+// ========== SOLVE ROOM ==========
+function solveRoom() {
+  STATE.roomSolved[STATE.currentRoom] = true;
+  addScore(ROOMS[STATE.currentRoom].points);
+  // Time bonus
+  const bonus = Math.floor(STATE.timeLeft / 10) * 5;
+  addScore(bonus);
+  showFeedback(`+${ROOMS[STATE.currentRoom].points + bonus} pts! Room cleared!`, true);
+
+  if (STATE.currentRoom >= 3) {
+    setTimeout(victory, 1500);
+  } else {
+    setTimeout(() => {
+      STATE.currentRoom++;
+      loadRoom();
+    }, 1500);
+  }
+}
+
+// ========== LOAD ROOM ==========
+function loadRoom() {
+  updateRoomIndicators();
+  const container = document.getElementById('room-container');
+  // Keep CRT overlay
+  container.innerHTML = '<div class="crt-overlay"></div>';
+  ROOMS[STATE.currentRoom].render(container);
+  lucide.createIcons();
+}
+
+// ========== ROOM 1: W-2 DECODE ==========
+function renderRoom1(container) {
+  const w2Data = { wages: 72450, fedTax: 12817, ssTax: 4491.90, workerName: 'JOHNSON, ALEX T' };
+  const answer = String(w2Data.wages - Math.floor(w2Data.fedTax)); // 59633
+
+  const div = document.createElement('div');
+  div.className = 'h-full flex flex-col items-center justify-center p-6';
+  div.innerHTML = `
+    <div class="max-w-xl w-full">
+      <h2 class="font-typewriter text-2xl text-emerald-400 mb-1 text-center">${ROOMS[0].title}</h2>
+      <p class="font-body text-gray-500 mb-6 text-center">${ROOMS[0].subtitle}</p>
+
+      <!-- W-2 Form -->
+      <div class="bg-gray-100 text-gray-900 rounded-lg p-5 paper-texture mb-6 relative">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-xs text-gray-500">Department of the Treasury — IRS</p>
+            <p class="font-mono-code text-lg font-bold">Form W-2</p>
+          </div>
+          <p class="font-mono-code text-xs text-gray-500">Tax Year 2024</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-white p-2 rounded border">
+            <p class="text-[10px] text-gray-400 mb-1">e. Employee Name</p>
+            <p class="font-mono-code font-bold">${w2Data.workerName}</p>
+          </div>
+          <div class="bg-white p-2 rounded border">
+            <p class="text-[10px] text-gray-400 mb-1">a. EIN</p>
+            <p class="font-mono-code">XX-XXX7832</p>
+          </div>
+          <div class="bg-yellow-50 p-2 rounded border-2 border-yellow-400">
+            <p class="text-[10px] text-gray-400 mb-1">1. Wages, tips, compensation</p>
+            <p class="font-mono-code font-bold text-lg">$${w2Data.wages.toLocaleString()}.00</p>
+          </div>
+          <div class="bg-yellow-50 p-2 rounded border-2 border-yellow-400">
+            <p class="text-[10px] text-gray-400 mb-1">2. Federal income tax withheld</p>
+            <p class="font-mono-code font-bold text-lg">$${w2Data.fedTax.toLocaleString()}.00</p>
+          </div>
+          <div class="bg-white p-2 rounded border">
+            <p class="text-[10px] text-gray-400 mb-1">3. Social security wages</p>
+            <p class="font-mono-code">$${w2Data.wages.toLocaleString()}.00</p>
+          </div>
+          <div class="bg-white p-2 rounded border">
+            <p class="text-[10px] text-gray-400 mb-1">4. Social security tax</p>
+            <p class="font-mono-code">$${w2Data.ssTax.toLocaleString()}</p>
+          </div>
+        </div>
+        <div class="mt-3 p-2 bg-emerald-50 rounded border border-emerald-300 text-xs text-emerald-800 font-mono-code text-center">
+          🔍 PUZZLE: Subtract Box 2 from Box 1. Enter the result (no commas or $).
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-center">
+        <input id="r1-input" type="text" maxlength="6" placeholder="Enter 5-digit answer"
+          class="bg-gray-800 border border-gray-700 rounded px-4 py-2 font-mono-code text-center text-emerald-400 text-lg w-48 focus:border-emerald-500 transition-colors"/>
+        <button id="r1-submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded font-mono-code transition-colors">SUBMIT</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+
+  document.getElementById('r1-submit').addEventListener('click', () => {
+    const val = document.getElementById('r1-input').value.trim();
+    if (val === answer) {
+      solveRoom();
+    } else {
+      showFeedback('Wrong code. Check your math!', false);
+      document.getElementById('r1-input').parentElement.classList.add('animate-shake');
+      setTimeout(() => document.getElementById('r1-input')?.parentElement?.classList.remove('animate-shake'), 500);
+    }
+  });
+
+  document.getElementById('r1-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('r1-submit').click();
+  });
+}
+
+// ========== ROOM 2: HIDDEN DEDUCTIONS ==========
+function renderRoom2(container) {
+  const items = [
+    { id: 'd1', name: 'Home Office Expenses', icon: 'home', valid: true, amount: '$1,500' },
+    { id: 'd2', name: 'Medical Bills > 7.5% AGI', icon: 'heart-pulse', valid: true, amount: '$4,200' },
+    { id: 'd3', name: 'Hawaii Vacation', icon: 'palmtree', valid: false, amount: '$3,800' },
+    { id: 'd4', name: 'Charitable Donations', icon: 'gift', valid: true, amount: '$2,100' },
+    { id: 'd5', name: 'Student Loan Interest', icon: 'graduation-cap', valid: true, amount: '$1,800' },
+    { id: 'd6', name: 'Designer Clothing', icon: 'shirt', valid: false, amount: '$950' },
+    { id: 'd7', name: 'Business Mileage', icon: 'car', valid: true, amount: '$3,200' },
+    { id: 'd8', name: 'Netflix Subscription', icon: 'tv', valid: false, amount: '$180' },
+  ];
+  const correctIds = new Set(items.filter(i => i.valid).map(i => i.id));
+  STATE.room2Selected = new Set();
+
+  const div = document.createElement('div');
+  div.className = 'h-full flex flex-col items-center justify-center p-6';
+  div.innerHTML = `
+    <div class="max-w-2xl w-full">
+      <h2 class="font-typewriter text-2xl text-emerald-400 mb-1 text-center">${ROOMS[1].title}</h2>
+      <p class="font-body text-gray-500 mb-2 text-center">${ROOMS[1].subtitle}</p>
+      <p class="font-mono-code text-xs text-gray-600 mb-6 text-center">Select ALL legitimate tax deductions. Watch out for fakes!</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="deductions-grid">
+        ${items.map(item => `
+          <div class="deduction-card bg-gray-800 border border-gray-700 rounded-lg p-3 text-center" data-id="${item.id}">
+            <i data-lucide="${item.icon}" class="w-8 h-8 mx-auto mb-2 text-gray-400"></i>
+            <p class="font-mono-code text-xs text-gray-300">${item.name}</p>
+            <p class="font-mono-code text-emerald-400 text-sm mt-1">${item.amount}</p>
+          </div>
+        `).join('')}
+      </div>
+      <div class="text-center">
+        <button id="r2-submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-2 rounded font-mono-code transition-colors">FILE DEDUCTIONS</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+
+  document.querySelectorAll('.deduction-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      if (STATE.room2Selected.has(id)) {
+        STATE.room2Selected.delete(id);
+        card.classList.remove('selected');
+      } else {
+        STATE.room2Selected.add(id);
+        card.classList.add('selected');
+      }
+    });
+  });
+
+  document.getElementById('r2-submit').addEventListener('click', () => {
+    const sel = STATE.room2Selected;
+    if (sel.size === correctIds.size && [...sel].every(id => correctIds.has(id))) {
+      solveRoom();
+    } else {
+      showFeedback('Some deductions are wrong! Try again.', false);
+      // Briefly highlight wrong selections
+      document.querySelectorAll('.deduction-card.selected').forEach(c => {
+        if (!correctIds.has(c.dataset.id)) {
+          c.classList.add('wrong');
+          setTimeout(() => c.classList.remove('wrong'), 800);
+        }
+      });
+    }
+  });
+}
+
+// ========== ROOM 3: IRS RIDDLES ==========
+function renderRoom3(container) {
+  const riddles = [
+    { q: "I come once a year and make accountants cheer (and taxpayers fear). I'm the 15th of a month — which month am I?", a: 'april' },
+    { q: "I'm what you 'file' but I'm not a nail. I come in forms numbered by the IRS. What am I?", a: 'return' },
+    { q: "I'm the most common tax form for individuals. My number has 4 digits and starts with '1'. What form am I? (number only)", a: '1040' }
+  ];
+  STATE.room3Answers = ['', '', ''];
+
+  const div = document.createElement('div');
+  div.className = 'h-full flex flex-col items-center justify-center p-6';
+  div.innerHTML = `
+    <div class="max-w-lg w-full">
+      <h2 class="font-typewriter text-2xl text-emerald-400 mb-1 text-center">${ROOMS[2].title}</h2>
+      <p class="font-body text-gray-500 mb-6 text-center">${ROOMS[2].subtitle}</p>
+      <div class="space-y-5">
+        ${riddles.map((r, i) => `
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="font-body text-gray-300 mb-3 text-sm italic">"${r.q}"</p>
+            <input id="r3-${i}" type="text" placeholder="Your answer..."
+              class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 font-mono-code text-sm text-emerald-400 focus:border-emerald-500 transition-colors"/>
+          </div>
+        `).join('')}
+      </div>
+      <div class="text-center mt-6">
+        <button id="r3-submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-2 rounded font-mono-code transition-colors">SUBMIT ANSWERS</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+
+  document.getElementById('r3-submit').addEventListener('click', () => {
+    const answers = riddles.map((r, i) => document.getElementById(`r3-${i}`).value.trim().toLowerCase());
+    const allCorrect = answers.every((a, i) => a === riddles[i].a);
+    if (allCorrect) {
+      solveRoom();
+    } else {
+      showFeedback('Not all answers are correct!', false);
+      riddles.forEach((r, i) => {
+        const inp = document.getElementById(`r3-${i}`);
+        if (inp.value.trim().toLowerCase() !== r.a) {
+          inp.style.borderColor = '#ef4444';
+          setTimeout(() => inp.style.borderColor = '', 1000);
+        } else {
+          inp.style.borderColor = '#22c55e';
+        }
+      });
+    }
+  });
+}
+
+// ========== ROOM 4: VAULT CODE ==========
+function renderRoom4(container) {
+  // Code: 1424 (14 = standard deduction in thousands, 2 = MFJ code, 4 = quarters)
+  const code = '1424';
+
+  const div = document.createElement('div');
+  div.className = 'h-full flex flex-col items-center justify-center p-6';
+  div.innerHTML = `
+    <div class="max-w-lg w-full text-center">
+      <h2 class="font-typewriter text-2xl text-emerald-400 mb-1">${ROOMS[3].title}</h2>
+      <p class="font-body text-gray-500 mb-6">${ROOMS[3].subtitle}</p>
+
+      <!-- Clues -->
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6 text-left space-y-3">
+        <p class="font-mono-code text-xs text-gray-500 mb-2">INTERCEPTED CLUES:</p>
+        <div class="flex items-start gap-2">
+          <span class="text-emerald-400 font-mono-code text-xs">01:</span>
+          <p class="font-body text-gray-300 text-sm">The <strong class="text-emerald-400">standard deduction</strong> for single filers in 2024 is $14,600. Take the first two digits.</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-emerald-400 font-mono-code text-xs">02:</span>
+          <p class="font-body text-gray-300 text-sm"><strong class="text-emerald-400">Married Filing Jointly</strong> is filing status number ___ on the 1040.</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-emerald-400 font-mono-code text-xs">03:</span>
+          <p class="font-body text-gray-300 text-sm">A fiscal year has ___ quarters for estimated tax payments.</p>
+        </div>
+      </div>
+
+      <!-- Code Input -->
+      <div class="flex justify-center gap-3 mb-6">
+        ${[0,1,2,3].map(i => `<input id="r4-${i}" type="text" maxlength="1" class="w-14 h-16 bg-gray-800 border-2 border-gray-700 rounded-lg text-center font-mono-code text-2xl text-emerald-400 focus:border-emerald-500 transition-colors"/>`).join('')}
+      </div>
+
+      <button id="r4-submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded font-mono-code transition-colors text-lg tracking-wider">🔓 UNLOCK VAULT</button>
+    </div>
+  `;
+  container.appendChild(div);
+
+  // Auto-focus next input
+  [0,1,2,3].forEach(i => {
+    const inp = document.getElementById(`r4-${i}`);
+    inp.addEventListener('input', () => {
+      if (inp.value && i < 3) document.getElementById(`r4-${i+1}`).focus();
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) document.getElementById(`r4-${i-1}`).focus();
+      if (e.key === 'Enter') document.getElementById('r4-submit').click();
+    });
+  });
+
+  document.getElementById('r4-submit').addEventListener('click', () => {
+    const entered = [0,1,2,3].map(i => document.getElementById(`r4-${i}`).value).join('');
+    if (entered === code) {
+      solveRoom();
+    } else {
+      showFeedback('Wrong combination! Re-read the clues.', false);
+      [0,1,2,3].forEach(i => {
+        const inp = document.getElementById(`r4-${i}`);
+        inp.parentElement.classList.add('animate-shake');
+        setTimeout(() => inp.parentElement.classList.remove('animate-shake'), 500);
+      });
+    }
+  });
+}
+
+// ========== GAME FLOW ==========
+function startGame() {
+  STATE.currentRoom = 0;
+  STATE.score = 0;
+  STATE.hints = 3;
+  STATE.hintsUsed = 0;
+  STATE.timeLeft = 600;
+  STATE.roomSolved = [false, false, false, false];
+  document.getElementById('score').textContent = '0';
+  document.getElementById('hints-left').textContent = '3';
+  showScreen('screen-game');
+  loadRoom();
+  startTimer();
+}
+
+function victory() {
+  clearInterval(STATE.timerInterval);
+  const m = Math.floor(STATE.timeLeft / 60);
+  const s = STATE.timeLeft % 60;
+  document.getElementById('final-score').textContent = STATE.score;
+  document.getElementById('final-time').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  document.getElementById('final-hints').textContent = STATE.hintsUsed;
+  showScreen('screen-victory');
+}
+
+function showTierScreen() {
+  showScreen('screen-tiers');
+}
+
+function gameOver() {
+  clearInterval(STATE.timerInterval);
+  document.getElementById('gameover-room').textContent = STATE.currentRoom + 1;
+  document.getElementById('gameover-score').textContent = STATE.score;
+  showScreen('screen-gameover');
+}
+
+// ========== EVENT LISTENERS ==========
+document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('btn-hint').addEventListener('click', showHint);
+document.getElementById('btn-restart').addEventListener('click', startGame);
+document.getElementById('btn-to-tiers').addEventListener('click', showTierScreen);
+document.getElementById('btn-restart2').addEventListener('click', startGame);
+document.getElementById('btn-play-again-from-tier').addEventListener('click', startGame);
+
+// ========== ELEMENT SDK ==========
+function applyConfig(config) {
+  const title = config.game_title || defaultConfig.game_title;
+  const msg = config.welcome_message || defaultConfig.welcome_message;
+  const bg = config.background_color || defaultConfig.background_color;
+  const accent = config.accent_color || defaultConfig.accent_color;
+  const textCol = config.text_color || defaultConfig.text_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const action = config.action_color || defaultConfig.action_color;
+  const font = config.font_family || defaultConfig.font_family;
+  const size = config.font_size || defaultConfig.font_size;
+
+  const el = (id) => document.getElementById(id);
+  el('intro-title').textContent = title;
+  el('intro-message').textContent = msg;
+
+  document.body.style.backgroundColor = bg;
+  document.body.style.color = textCol;
+  document.body.style.fontFamily = `${font}, 'Special Elite', cursive`;
+  document.body.style.fontSize = `${size}px`;
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.action_color || defaultConfig.action_color, set: (v) => { config.action_color = v; window.elementSdk.setConfig({ action_color: v }); } },
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } },
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['game_title', config.game_title || defaultConfig.game_title],
+    ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
+  ])
+});
+
+applyConfig(defaultConfig);
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e016934a37f27c9',t:'MTc3NDE0MjgxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,131 @@
+.container {
+  animation: fadeUp 0.3s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.heading {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.subheading {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+}
+
+/* ── Stats row ── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.card {
+  background: rgba(42, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Tier badge */
+.tierBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tier-color, var(--brand-gold));
+  background: color-mix(in srgb, var(--tier-color, var(--brand-gold)) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier-color, var(--brand-gold)) 40%, transparent);
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.statValue {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--brand-gold);
+  line-height: 1.1;
+  margin-top: 4px;
+}
+
+.statSub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Unlocked games ── */
+.section {
+  margin-top: 8px;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(196, 30, 58, 0.15);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 16px 0;
+}
+
+.gameGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.gameCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(58, 21, 40, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(196, 30, 58, 0.15);
+  border-radius: var(--radius);
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.gameCard:hover {
+  border-color: rgba(196, 30, 58, 0.4);
+  background: rgba(58, 21, 40, 0.9);
+}
+
+.gameEmoji {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.gameName {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+}

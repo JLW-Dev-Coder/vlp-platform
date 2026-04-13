@@ -1,0 +1,118 @@
+.container {
+  animation: fadeUp 0.3s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.heading {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.subheading {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.empty span {
+  font-size: 2.5rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.gameBlock {
+  background: rgba(42, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+}
+
+.gameHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.gameEmoji {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.gameName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.codeWrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pre {
+  flex: 1;
+  background: rgba(10, 4, 8, 0.7);
+  border: 1px solid rgba(196, 30, 58, 0.15);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  overflow-x: auto;
+  margin: 0;
+}
+
+.code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #e8d5dc;
+  white-space: pre;
+  line-height: 1.6;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(196, 30, 58, 0.3);
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  align-self: center;
+}
+
+.copyBtn:hover {
+  background: var(--brand-red);
+  border-color: var(--brand-red);
+  color: #fff;
+}
+
+.copyBtnSuccess {
+  background: #1a6b3c !important;
+  border-color: #2aaa60 !important;
+  color: #6effb4 !important;
+}

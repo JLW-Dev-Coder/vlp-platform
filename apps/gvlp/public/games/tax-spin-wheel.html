@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Spin Wheel</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  
+  <style>
+html, body { height: 100%; margin: 0; }
+* { font-family: 'Outfit', sans-serif; }
+
+@keyframes glow-pulse { 0%,100% { box-shadow: 0 0 20px rgba(240,192,64,0.6), 0 0 40px rgba(240,192,64,0.3); } 50% { box-shadow: 0 0 30px rgba(240,192,64,0.8), 0 0 60px rgba(240,192,64,0.5); } }
+@keyframes neon-flicker { 0%,18%,22%,25%,54%,56%,100% { box-shadow: 0 0 10px rgba(255,0,255,0.7), inset 0 0 10px rgba(255,0,255,0.3); } 20%,24%,55% { box-shadow: 0 0 5px rgba(255,0,255,0.3), inset 0 0 5px rgba(255,0,255,0.1); } }
+@keyframes orbit-glow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse-glow { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+.wheel-container { 
+  position: relative; 
+  display: inline-block; 
+  filter: drop-shadow(0 0 60px rgba(240,192,64,0.5));
+}
+
+.wheel-glow-ring {
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%);
+  width: 540px; 
+  height: 540px; 
+  border: 3px solid rgba(240,192,64,0.3);
+  border-radius: 50%;
+  animation: glow-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.wheel-glow-ring-2 {
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%);
+  width: 600px; 
+  height: 600px; 
+  border: 1px dashed rgba(240,192,64,0.15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+@keyframes twinkle-light { 
+  0%, 10% { opacity: 0.3; } 
+  15%, 85% { opacity: 1; } 
+  90%, 100% { opacity: 0.3; } 
+}
+
+.roulette-light {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px currentColor, inset 0 0 8px rgba(255,255,255,0.4);
+  animation: twinkle-light 0.8s ease-in-out infinite;
+}
+
+.wheel-pointer {
+  position: absolute; 
+  top: -28px; 
+  left: 50%; 
+  transform: translateX(-50%);
+  width: 0; 
+  height: 0; 
+  border-left: 22px solid transparent; 
+  border-right: 22px solid transparent;
+  border-top: 44px solid #f0c040; 
+  z-index: 10; 
+  filter: drop-shadow(0 0 15px rgba(240,192,64,0.8));
+}
+
+.spin-btn {
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%);
+  z-index: 10; 
+  border-radius: 50%; 
+  width: 100px; 
+  height: 100px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-weight: 900; 
+  font-size: 18px; 
+  letter-spacing: 1.5px; 
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s; 
+  border: 5px solid rgba(255,255,255,0.4);
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+.spin-btn:hover:not(:disabled) { 
+  transform: translate(-50%, -50%) scale(1.12);
+  filter: drop-shadow(0 0 25px rgba(255,165,0,0.8));
+}
+.spin-btn:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed;
+  animation: none;
+}
+
+.modal-overlay {
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,0.8); 
+  backdrop-filter: blur(8px);
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 50;
+  opacity: 0; 
+  pointer-events: none; 
+  transition: opacity 0.3s;
+}
+.modal-overlay.active { 
+  opacity: 1; 
+  pointer-events: all; 
+}
+.modal-card {
+  transform: scale(0.85); 
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 420px; 
+  width: 90%;
+  box-shadow: 0 0 50px rgba(240,192,64,0.4);
+  border: 2px solid rgba(240,192,64,0.3);
+}
+.modal-overlay.active .modal-card { 
+  transform: scale(1); 
+}
+
+.score-card {
+  backdrop-filter: blur(12px); 
+  border: 2px solid rgba(255,255,255,0.2);
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.score-card:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 30px rgba(255,255,255,0.1), 0 0 20px rgba(255,255,255,0.1);
+}
+
+.title-glow {
+  text-shadow: 0 0 20px rgba(240,192,64,0.8), 0 0 40px rgba(240,192,64,0.4);
+  letter-spacing: 2px;
+}
+
+.glow-text {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto" style="background: #0f0f23;">
+  <div id="app" class="h-full w-full flex flex-col items-center" style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0f0f23 100%);">
+   <!-- Header / Scoreboard -->
+   <div class="w-full max-w-lg px-4 pt-6 pb-24">
+    <h1 id="gameTitle" class="text-center text-4xl font-black tracking-tight mb-6 title-glow" style="color: #f0c040;">🎰 Tax Spin Wheel</h1>
+    <div class="flex gap-3 justify-center mb-8">
+     <div class="score-card rounded-xl px-5 py-3 text-center" style="background: rgba(240,192,64,0.1);">
+      <div class="text-xs font-semibold uppercase tracking-wider" style="color: #f0c040;">
+       Tokens
+      </div>
+      <div id="tokenDisplay" class="text-2xl font-black" style="color: #f0c040;">
+       10
+      </div>
+     </div>
+     <div class="score-card rounded-xl px-5 py-3 text-center" style="background: rgba(100,220,180,0.1);">
+      <div class="text-xs font-semibold uppercase tracking-wider" style="color: #64dcb4;">
+       Score
+      </div>
+      <div id="scoreDisplay" class="text-2xl font-black" style="color: #64dcb4;">
+       0
+      </div>
+     </div>
+     <div class="score-card rounded-xl px-5 py-3 text-center" style="background: rgba(180,140,255,0.1);">
+      <div class="text-xs font-semibold uppercase tracking-wider" style="color: #b48cff;">
+       Spins
+      </div>
+      <div id="spinDisplay" class="text-2xl font-black" style="color: #b48cff;">
+       0
+      </div>
+     </div>
+    </div>
+   </div><!-- Wheel -->
+   <div class="wheel-container my-2 relative">
+    <div class="wheel-glow-ring-2"></div>
+    <div id="rouletteLights"></div>
+    <div class="wheel-glow-ring"></div>
+    <div class="wheel-pointer"></div>
+    <canvas id="wheelCanvas" width="480" height="480"></canvas><button id="spinBtn" class="spin-btn" style="background: linear-gradient(135deg, #ffa500, #ff8800); color: #1a1a2e;"> <span id="spinBtnText">SPIN!</span> </button>
+   </div><!-- Cost message below wheel -->
+   <p class="mt-32 text-xs font-semibold glow-text" style="color: rgba(255,255,255,0.6);">🎰 Spin to reveal your tax tip!</p>
+  </div><!-- Modal -->
+  <div id="modal" class="modal-overlay" role="dialog" aria-modal="true">
+   <div class="modal-card rounded-2xl p-6 text-center" style="background: linear-gradient(135deg, #1e1e3a 0%, #2a2a4a 100%); border: 2px solid rgba(240,192,64,0.3);">
+    <div id="modalEmoji" class="text-6xl mb-3 animate-bounce"></div>
+    <h2 id="modalTitle" class="text-2xl font-black mb-2 title-glow" style="color: #f0c040;"></h2>
+    <p id="modalDesc" class="text-sm mb-1" style="color: rgba(255,255,255,0.8);"></p>
+    <div id="modalPoints" class="text-lg font-bold mb-4 glow-text" style="color: #64dcb4;"></div>
+    <div id="modalLearnMore" class="hidden mb-4 p-3 rounded-xl text-left text-xs leading-relaxed" style="background: rgba(100,220,180,0.1); color: rgba(255,255,255,0.7); border-left: 3px solid #64dcb4;"></div>
+    <div class="flex gap-2 justify-center flex-wrap">
+     <button id="learnMoreBtn" class="hidden px-4 py-2 rounded-lg text-xs font-bold" style="background: rgba(180,140,255,0.3); color: #b48cff; transition: all 0.2s;"> <i data-lucide="book-open" style="width:14px;height:14px;display:inline;vertical-align:middle;"></i> Learn More </button> <button id="closeModal" class="px-6 py-2 rounded-lg text-sm font-bold transition-all" style="background: linear-gradient(135deg, #ffa500, #ff8800); color: #1a1a2e;">OK</button>
+    </div>
+   </div>
+  </div>
+  <script>
+const segments = [
+  { label: "10% Off!", emoji: "💸", desc: "You earned a 10% tax discount!", points: 50, color: "#e74c3c", learnMore: "Standard deductions can reduce your taxable income significantly. For 2024, the standard deduction is $14,600 for single filers." },
+  { label: "IRS Fact", emoji: "🏛️", desc: "The IRS processes over 150 million tax returns annually!", points: 10, color: "#3498db", learnMore: "The IRS employs about 80,000 workers and collects over $4 trillion in gross taxes each year." },
+  { label: "+5 Tokens", emoji: "🪙", desc: "Bonus! You won 5 extra tokens!", points: 20, color: "#2ecc71", tokenBonus: 5, learnMore: "Filing your taxes early can help you get your refund faster—typically within 21 days for e-filed returns." },
+  { label: "25% Off!", emoji: "🎉", desc: "Jackpot! A 25% tax discount!", points: 100, color: "#f39c12", learnMore: "Tax credits directly reduce the amount of tax you owe, making them more valuable than deductions dollar-for-dollar." },
+  { label: "Fun Fact", emoji: "📊", desc: "The US tax code is over 10 million words long!", points: 15, color: "#9b59b6", learnMore: "That's about 7x longer than the entire Harry Potter series. Even tax professionals rely on specialized software." },
+  { label: "Try Again", emoji: "😅", desc: "No luck this time. Spin again!", points: 0, color: "#e67e22", learnMore: "Nearly 70% of Americans receive a tax refund each year, averaging about $3,100." },
+  { label: "15% Off!", emoji: "✨", desc: "Nice! A 15% tax discount!", points: 75, color: "#1abc9c", learnMore: "Contributions to a traditional IRA or 401(k) can lower your taxable income and save you money now." },
+  { label: "Bonus Fact", emoji: "🦅", desc: "The 16th Amendment made income tax permanent in 1913!", points: 25, color: "#e84393", learnMore: "Before 1913, the federal government funded itself primarily through tariffs and excise taxes." }
+];
+
+// Read URL params (set by embed page)
+const _params = new URLSearchParams(window.location.search);
+const _clientId = _params.get('client_id') || '';
+const _visitorId = _params.get('visitor_id') || '';
+const _tokensRemaining = parseInt(_params.get('tokens_remaining') || '0', 10);
+
+let score = 0, spins = 0, spinning = false, currentAngle = 0;
+const canvas = document.getElementById('wheelCanvas');
+const ctx = canvas.getContext('2d');
+const segAngle = (2 * Math.PI) / segments.length;
+
+function drawWheel(angle) {
+  ctx.clearRect(0, 0, 480, 480);
+  const cx = 240, cy = 240, r = 225;
+  segments.forEach((seg, i) => {
+    const start = angle + i * segAngle;
+    const end = start + segAngle;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, start, end); ctx.closePath();
+    ctx.fillStyle = seg.color; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 2; ctx.stroke();
+    // Text
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + segAngle / 2);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 19px Outfit'; ctx.textAlign = 'center';
+    ctx.fillText(seg.label, r * 0.62, 4);
+    ctx.restore();
+  });
+  // Center circle
+  ctx.beginPath(); ctx.arc(cx, cy, 63, 0, 2 * Math.PI); ctx.fillStyle = '#1a1a2e'; ctx.fill();
+  ctx.strokeStyle = 'rgba(240,192,64,0.4)'; ctx.lineWidth = 3; ctx.stroke();
+}
+
+function updateUI() {
+  document.getElementById('tokenDisplay').textContent = _tokensRemaining;
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('spinDisplay').textContent = spins;
+  document.getElementById('spinBtn').disabled = spinning;
+}
+
+function getWinningSegment(angle) {
+  // Pointer is at top (270° / -π/2)
+  const pointerAngle = (3 * Math.PI / 2 - angle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  const idx = Math.floor(pointerAngle / segAngle) % segments.length;
+  return idx;
+}
+
+function spinWheel() {
+  if (spinning) return;
+  spinning = true; spins++; updateUI();
+
+  const totalRotation = (Math.random() * 4 + 5) * 2 * Math.PI; // 5-9 full rotations
+  const target = currentAngle + totalRotation;
+  const duration = 4000;
+  const start = performance.now();
+  const startAngle = currentAngle;
+
+  function animate(now) {
+    const elapsed = now - start;
+    const t = Math.min(elapsed / duration, 1);
+    // Cubic ease-out
+    const ease = 1 - Math.pow(1 - t, 3);
+    currentAngle = startAngle + totalRotation * ease;
+    drawWheel(currentAngle);
+    if (t < 1) { requestAnimationFrame(animate); }
+    else { spinning = false; showResult(); updateUI(); }
+  }
+  requestAnimationFrame(animate);
+}
+
+function showResult() {
+  const idx = getWinningSegment(currentAngle);
+  const seg = segments[idx];
+  score += seg.points;
+  updateUI();
+
+  document.getElementById('modalEmoji').textContent = seg.emoji;
+  document.getElementById('modalTitle').textContent = seg.label;
+  document.getElementById('modalDesc').textContent = seg.desc;
+  document.getElementById('modalPoints').textContent = seg.points > 0 ? `+${seg.points} points` : '';
+  document.getElementById('modalLearnMore').textContent = seg.learnMore;
+  document.getElementById('modalLearnMore').classList.add('hidden');
+  const lmBtn = document.getElementById('learnMoreBtn');
+  lmBtn.classList.remove('hidden');
+  lmBtn.onclick = () => document.getElementById('modalLearnMore').classList.toggle('hidden');
+  document.getElementById('modal').classList.add('active');
+  setTimeout(() => lucide.createIcons(), 10);
+}
+
+document.getElementById('closeModal').onclick = () => document.getElementById('modal').classList.remove('active');
+document.getElementById('modal').onclick = (e) => { if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('active'); };
+document.getElementById('spinBtn').onclick = spinWheel;
+// Init
+drawWheel(currentAngle);
+updateUI();
+lucide.createIcons();
+
+// Create roulette lights around the outer circle
+function createRouletteLights() {
+  const lightsContainer = document.getElementById('rouletteLights');
+  const lightColors = ['#ff1744', '#ff6d00', '#ffea00', '#00e676', '#00b0ff', '#b81dff', '#ff1744'];
+  const numLights = 24;
+  const radius = 300; // Distance from center
+  
+  for (let i = 0; i < numLights; i++) {
+    const angle = (i / numLights) * Math.PI * 2;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    
+    const light = document.createElement('div');
+    light.className = 'roulette-light';
+    light.style.color = lightColors[i % lightColors.length];
+    light.style.left = 'calc(50% + ' + x + 'px)';
+    light.style.top = 'calc(50% + ' + y + 'px)';
+    light.style.animationDelay = (i * 0.05) + 's';
+    light.style.transform = `translate(-50%, -50%) translateZ(0)`;
+    lightsContainer.appendChild(light);
+  }
+}
+
+createRouletteLights();
+
+// Element SDK
+const defaultConfig = {
+  game_title: "🎰 Tax Spin Wheel",
+  spin_button_text: "SPIN!",
+  background_color: "#0f0f23",
+  accent_color: "#f0c040",
+  score_color: "#64dcb4",
+  text_color: "#b48cff",
+  surface_color: "#1e1e3a"
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  document.getElementById('gameTitle').textContent = c.game_title;
+  document.getElementById('spinBtnText').textContent = c.spin_button_text;
+  document.getElementById('gameTitle').style.color = c.accent_color;
+
+  document.body.style.background = c.background_color;
+  document.getElementById('app').style.background = `linear-gradient(135deg, ${c.background_color} 0%, ${c.surface_color} 50%, ${c.background_color} 100%)`;
+
+  document.querySelectorAll('.score-card').forEach((el, i) => {
+    const colors = [c.accent_color, c.score_color, c.text_color];
+    el.style.background = `${colors[i]}15`;
+    el.children[0].style.color = colors[i];
+    el.children[1].style.color = colors[i];
+  });
+
+  document.getElementById('spinBtn').style.background = c.accent_color;
+  document.getElementById('modalTitle').style.color = c.accent_color;
+  document.getElementById('closeModal').style.background = c.accent_color;
+  document.querySelector('.modal-card').style.background = c.surface_color;
+
+  const lmBtn = document.getElementById('learnMoreBtn');
+  lmBtn.style.background = `${c.text_color}33`;
+  lmBtn.style.color = c.text_color;
+  document.getElementById('modalPoints').style.color = c.score_color;
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.score_color || defaultConfig.score_color, set: (v) => { config.score_color = v; window.elementSdk.setConfig({ score_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family || 'Outfit',
+      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: undefined
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ["game_title", config.game_title || defaultConfig.game_title],
+    ["spin_button_text", config.spin_button_text || defaultConfig.spin_button_text]
+  ])
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e0787cb920327c9',t:'MTc3NDIwNjk4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

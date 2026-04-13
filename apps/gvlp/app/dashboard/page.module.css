@@ -1,0 +1,141 @@
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid rgba(196, 30, 58, 0.2);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebarBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid rgba(196, 30, 58, 0.15);
+}
+
+.brandIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.brandName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brand-gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Nav ── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 12px;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.18s, color 0.18s;
+  text-align: left;
+  text-decoration: none;
+}
+
+.navItem:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.navItemActive {
+  background: linear-gradient(135deg, var(--brand-red), #8b1228);
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(196, 30, 58, 0.4);
+}
+
+.navItemActive .navEmoji {
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+}
+
+.navEmoji {
+  font-size: 1.05rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ── Sidebar footer ── */
+.sidebarFooter {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(196, 30, 58, 0.15);
+}
+
+.footerEmail {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+/* ── Main ── */
+.main {
+  padding: 40px 48px;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* ── States ── */
+.loadingState {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  padding-top: 60px;
+}
+
+.loadingDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--brand-gold);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.errorState {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--brand-pink);
+  font-size: 0.95rem;
+  padding: 20px 24px;
+  background: rgba(232, 68, 109, 0.08);
+  border: 1px solid rgba(232, 68, 109, 0.25);
+  border-radius: var(--radius);
+  margin-top: 20px;
+}

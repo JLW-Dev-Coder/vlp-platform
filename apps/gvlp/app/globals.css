@@ -1,0 +1,67 @@
+@import '@vlp/member-ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* GVLP brand overrides for member-ui shared tokens */
+    --member-accent: rgba(34, 197, 94, 0.1);
+    --member-accent-strong: rgba(34, 197, 94, 0.2);
+    --member-hero-bg: #052e16;
+    --member-hero-bg-end: #022c22;
+
+    /* GVLP legacy brand tokens (used by CSS module marketing pages) */
+    --brand-red: #c41e3a;
+    --brand-pink: #e8446d;
+    --brand-gold: #ffd700;
+    --bg: #1a0a10;
+    --surface: #2a0f1e;
+    --surface2: #3a1528;
+    --text: #f0e6ea;
+    --text-muted: #9a7a85;
+    --radius: 12px;
+    --radius-lg: 20px;
+  }
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+input, select, textarea { font-family: inherit; }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.7); }
+}

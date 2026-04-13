@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Word Search</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  <style>
+html, body { height: 100%; margin: 0; }
+body { font-family: 'DM Sans', sans-serif; }
+.mono { font-family: 'Space Mono', monospace; }
+
+.grid-cell {
+  width: 45px; height: 45px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 17px;
+  cursor: pointer; user-select: none;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+}
+.grid-cell:hover { transform: scale(1.12); }
+.grid-cell.selecting { background: rgba(251,191,36,0.35); }
+.grid-cell.found {
+  animation: foundPop 0.4s ease forwards;
+}
+@keyframes foundPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.word-item.found-word { text-decoration: line-through; opacity: 0.5; }
+.tip-enter { animation: tipSlide 0.4s ease; }
+@keyframes tipSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.score-pop { animation: scorePop 0.3s ease; }
+@keyframes scorePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+@media (max-width: 640px) {
+  .grid-cell { width: 35px; height: 35px; font-size: 14px; }
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+ </head>
+ <body class="h-full overflow-auto" style="background: #0f172a;">
+  <div id="app" class="h-full w-full flex flex-col items-center p-4 md:p-6" style="color: #e2e8f0;">
+   <header class="w-full max-w-3xl flex items-center justify-between mb-6">
+    <div>
+     <h1 id="gameTitle" class="text-3xl md:text-4xl font-bold mono" style="color: #fbbf24;">Tax Word Search</h1>
+     <p class="text-base opacity-60 mt-2">Find all tax terms hidden in the grid</p>
+    </div>
+    <div class="flex gap-3 items-center">
+     <div class="text-center px-3 py-2 rounded-lg" style="background: #1e293b;">
+      <div class="text-xs opacity-50 uppercase">
+       Score
+      </div>
+      <div id="score" class="mono font-bold text-lg" style="color: #fbbf24;">
+       0
+      </div>
+     </div>
+     <div class="text-center px-3 py-2 rounded-lg" style="background: #1e293b;">
+      <div class="text-xs opacity-50 uppercase">
+       Time
+      </div>
+      <div id="timer" class="mono font-bold text-lg" style="color: #34d399;">
+       0:00
+      </div>
+     </div>
+    </div>
+   </header>
+   <div class="w-full max-w-3xl flex flex-col md:flex-row gap-4 flex-1">
+    <div class="flex-1 flex flex-col items-center">
+     <div id="grid" class="inline-grid gap-1 p-4 rounded-xl" style="background: #1e293b;"></div>
+     <div id="tipBox" class="w-full mt-5 p-5 rounded-xl text-base hidden" style="background: #1e293b; border-left: 4px solid #fbbf24;">
+      <div class="flex items-center gap-2 mb-2 font-bold" style="color: #fbbf24;">
+       <i data-lucide="lightbulb" style="width:18px;height:18px;"></i> Did You Know?
+      </div>
+      <p id="tipText" class="opacity-80"></p>
+     </div>
+    </div>
+    <div class="md:w-56 flex flex-col gap-3">
+     <h2 class="font-bold text-base uppercase opacity-50 tracking-wider">Words to Find</h2>
+     <div id="wordList" class="flex flex-wrap md:flex-col gap-3"></div><button id="newGameBtn" class="mt-5 py-3 px-5 rounded-lg font-bold text-base transition-colors" style="background: #fbbf24; color: #0f172a;" onmouseenter="this.style.background='#f59e0b'" onmouseleave="this.style.background='#fbbf24'"> New Puzzle </button>
+    </div>
+   </div>
+  </div>
+  <script>
+const WORDS_DATA = [
+  { word: "DEDUCTION", tip: "Tax deductions reduce your taxable income, potentially saving you hundreds or thousands of dollars." },
+  { word: "REFUND", tip: "The average US tax refund is over $3,000. Many people treat it like a forced savings plan!" },
+  { word: "AUDIT", tip: "Only about 0.4% of individual tax returns get audited by the IRS each year." },
+  { word: "INCOME", tip: "Not all income is taxed the same — long-term capital gains often have lower rates than ordinary income." },
+  { word: "FILING", tip: "E-filing is faster and more accurate. The IRS processes e-filed returns in about 21 days." },
+  { word: "EXEMPT", tip: "Certain organizations like charities are tax-exempt under Section 501(c)(3) of the tax code." },
+  { word: "CREDIT", tip: "Unlike deductions, tax credits reduce your tax bill dollar-for-dollar. The Child Tax Credit is worth up to $2,000." },
+  { word: "GROSS", tip: "Gross income includes all income before deductions — wages, investments, rental income, and more." },
+  { word: "WITHHOLD", tip: "Your employer withholds taxes from each paycheck based on your W-4 form selections." },
+  { word: "TAXABLE", tip: "Some income like municipal bond interest and Roth IRA withdrawals may be completely tax-free!" },
+  { word: "RETURN", tip: "The first income tax form (1040) was introduced in 1913 and was just one page long." },
+  { word: "PENALTY", tip: "Filing late can cost you 5% of unpaid taxes per month, up to 25%. Always file on time, even if you can't pay!" }
+];
+
+const GRID_SIZE = 12;
+const DIRECTIONS = [[0,1],[1,0],[1,1],[-1,1],[0,-1],[-1,0],[-1,-1],[1,-1]];
+const COLORS = ['#fbbf24','#34d399','#f472b6','#60a5fa','#a78bfa','#fb923c'];
+
+let grid = [], gameWords = [], foundWords = new Set(), score = 0, seconds = 0, timerInterval = null;
+let selecting = false, selStart = null, selCells = [];
+let wordPlacements = {};
+
+function pickWords() {
+  const shuffled = [...WORDS_DATA].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 7);
+}
+
+function makeGrid() {
+  grid = Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(''));
+  wordPlacements = {};
+  const words = gameWords.map(w => w.word);
+
+  for (const word of words) {
+    let placed = false;
+    for (let attempts = 0; attempts < 200 && !placed; attempts++) {
+      const dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+      const r = Math.floor(Math.random() * GRID_SIZE);
+      const c = Math.floor(Math.random() * GRID_SIZE);
+      if (canPlace(word, r, c, dir)) {
+        const cells = [];
+        for (let i = 0; i < word.length; i++) {
+          grid[r + dir[0]*i][c + dir[1]*i] = word[i];
+          cells.push(`${r+dir[0]*i},${c+dir[1]*i}`);
+        }
+        wordPlacements[word] = cells;
+        placed = true;
+      }
+    }
+  }
+
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < GRID_SIZE; r++)
+    for (let c = 0; c < GRID_SIZE; c++)
+      if (!grid[r][c]) grid[r][c] = letters[Math.floor(Math.random()*26)];
+}
+
+function canPlace(word, r, c, dir) {
+  for (let i = 0; i < word.length; i++) {
+    const nr = r + dir[0]*i, nc = c + dir[1]*i;
+    if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) return false;
+    if (grid[nr][nc] && grid[nr][nc] !== word[i]) return false;
+  }
+  return true;
+}
+
+function renderGrid() {
+  const el = document.getElementById('grid');
+  el.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+  el.innerHTML = '';
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell mono';
+      cell.style.background = '#0f172a';
+      cell.style.color = '#94a3b8';
+      cell.textContent = grid[r][c];
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('pointerdown', onPointerDown);
+      cell.addEventListener('pointerenter', onPointerEnter);
+      el.appendChild(cell);
+    }
+  }
+}
+
+function renderWordList() {
+  const el = document.getElementById('wordList');
+  el.innerHTML = '';
+  gameWords.forEach((w, i) => {
+    const d = document.createElement('div');
+    d.className = 'word-item mono text-base font-bold px-3 py-2 rounded';
+    d.style.color = COLORS[i % COLORS.length];
+    d.id = 'word-' + w.word;
+    d.textContent = w.word;
+    if (foundWords.has(w.word)) d.classList.add('found-word');
+    el.appendChild(d);
+  });
+}
+
+function getCellsBetween(r1,c1,r2,c2) {
+  const dr = Math.sign(r2-r1), dc = Math.sign(c2-c1);
+  const dist = Math.max(Math.abs(r2-r1), Math.abs(c2-c1));
+  if (r1===r2 && c1===c2) return [`${r1},${c1}`];
+  if (r1!==r2 && c1!==c2 && Math.abs(r2-r1)!==Math.abs(c2-c1)) return [];
+  const cells = [];
+  for (let i = 0; i <= dist; i++) cells.push(`${r1+dr*i},${c1+dc*i}`);
+  return cells;
+}
+
+function onPointerDown(e) {
+  e.preventDefault();
+  selecting = true;
+  selStart = {r: +e.target.dataset.r, c: +e.target.dataset.c};
+  selCells = [`${selStart.r},${selStart.c}`];
+  highlightSelection();
+  document.addEventListener('pointerup', onPointerUp, {once: true});
+}
+
+function onPointerEnter(e) {
+  if (!selecting) return;
+  const r = +e.target.dataset.r, c = +e.target.dataset.c;
+  selCells = getCellsBetween(selStart.r, selStart.c, r, c);
+  highlightSelection();
+}
+
+function highlightSelection() {
+  document.querySelectorAll('.grid-cell.selecting').forEach(c => c.classList.remove('selecting'));
+  selCells.forEach(key => {
+    const [r,c] = key.split(',');
+    const cell = document.querySelector(`.grid-cell[data-r="${r}"][data-c="${c}"]`);
+    if (cell) cell.classList.add('selecting');
+  });
+}
+
+function onPointerUp() {
+  selecting = false;
+  document.querySelectorAll('.grid-cell.selecting').forEach(c => c.classList.remove('selecting'));
+
+  const selectedStr = selCells.map(k => {
+    const [r,c] = k.split(',');
+    return grid[+r][+c];
+  }).join('');
+
+  const reversedStr = [...selectedStr].reverse().join('');
+
+  for (const w of gameWords) {
+    if (foundWords.has(w.word)) continue;
+    if (selectedStr === w.word || reversedStr === w.word) {
+      foundWords.add(w.word);
+      score += w.word.length * 10;
+      const scoreEl = document.getElementById('score');
+      scoreEl.textContent = score;
+      scoreEl.classList.remove('score-pop');
+      void scoreEl.offsetWidth;
+      scoreEl.classList.add('score-pop');
+
+      const colorIdx = gameWords.indexOf(w) % COLORS.length;
+      (wordPlacements[w.word] || selCells).forEach((key, i) => {
+        const [r,c] = key.split(',');
+        const cell = document.querySelector(`.grid-cell[data-r="${r}"][data-c="${c}"]`);
+        if (cell) {
+          setTimeout(() => {
+            cell.style.background = COLORS[colorIdx];
+            cell.style.color = '#0f172a';
+            cell.classList.add('found');
+          }, i * 60);
+        }
+      });
+
+      const wordEl = document.getElementById('word-' + w.word);
+      if (wordEl) wordEl.classList.add('found-word');
+
+      showTip(w.tip);
+
+      if (foundWords.size === gameWords.length) {
+        clearInterval(timerInterval);
+        setTimeout(() => showTip(`🎉 Congratulations! You found all words in ${formatTime(seconds)} with ${score} points!`), 600);
+      }
+      break;
+    }
+  }
+  selCells = [];
+}
+
+function showTip(text) {
+  const box = document.getElementById('tipBox');
+  const tipText = document.getElementById('tipText');
+  box.classList.remove('hidden','tip-enter');
+  void box.offsetWidth;
+  box.classList.add('tip-enter');
+  tipText.textContent = text;
+}
+
+function formatTime(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+
+function startTimer() {
+  clearInterval(timerInterval);
+  seconds = 0;
+  document.getElementById('timer').textContent = '0:00';
+  timerInterval = setInterval(() => {
+    seconds++;
+    document.getElementById('timer').textContent = formatTime(seconds);
+  }, 1000);
+}
+
+function newGame() {
+  gameWords = pickWords();
+  foundWords.clear();
+  score = 0;
+  document.getElementById('score').textContent = '0';
+  document.getElementById('tipBox').classList.add('hidden');
+  makeGrid();
+  renderGrid();
+  renderWordList();
+  startTimer();
+  lucide.createIcons();
+}
+
+document.getElementById('newGameBtn').addEventListener('click', newGame);
+
+// Element SDK
+const defaultConfig = {
+  game_title: 'Tax Word Search',
+  background_color: '#0f172a',
+  surface_color: '#1e293b',
+  text_color: '#e2e8f0',
+  accent_color: '#fbbf24',
+  secondary_color: '#34d399',
+  font_family: 'DM Sans',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const text = config.text_color || defaultConfig.text_color;
+  const accent = config.accent_color || defaultConfig.accent_color;
+  const secondary = config.secondary_color || defaultConfig.secondary_color;
+  const font = config.font_family || defaultConfig.font_family;
+  const size = config.font_size || defaultConfig.font_size;
+
+  document.body.style.background = bg;
+  document.getElementById('app').style.color = text;
+  document.getElementById('gameTitle').textContent = config.game_title || defaultConfig.game_title;
+  document.getElementById('gameTitle').style.color = accent;
+  document.getElementById('gameTitle').style.fontFamily = `${font}, sans-serif`;
+  document.getElementById('gameTitle').style.fontSize = `${size * 1.75}px`;
+
+  document.querySelectorAll('[style*="background: #1e293b"], [style*="background:#1e293b"]').forEach(el => {
+    el.style.background = surface;
+  });
+  document.getElementById('grid').style.background = surface;
+  document.getElementById('tipBox').style.background = surface;
+  document.getElementById('tipBox').style.borderLeftColor = accent;
+
+  document.querySelectorAll('.grid-cell:not(.found)').forEach(c => {
+    c.style.background = bg;
+    c.style.color = text; c.style.opacity = '0.6';
+  });
+
+  const btn = document.getElementById('newGameBtn');
+  btn.style.background = accent; btn.style.color = bg;
+
+  const timerEl = document.getElementById('timer');
+  timerEl.style.color = secondary;
+
+  document.getElementById('score').style.color = accent;
+  document.body.style.fontFamily = `${font}, sans-serif`;
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({background_color:v}); }},
+      { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({surface_color:v}); }},
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({text_color:v}); }},
+      { get: () => config.accent_color || defaultConfig.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({accent_color:v}); }},
+      { get: () => config.secondary_color || defaultConfig.secondary_color, set: v => { config.secondary_color = v; window.elementSdk.setConfig({secondary_color:v}); }}
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({font_family:v}); }},
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({font_size:v}); }}
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ["game_title", config.game_title || defaultConfig.game_title]
+  ])
+});
+
+newGame();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e01ecda924827c9',t:'MTc3NDE0ODIwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

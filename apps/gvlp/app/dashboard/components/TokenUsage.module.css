@@ -1,0 +1,171 @@
+.container {
+  animation: fadeUp 0.3s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.heading {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.subheading {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+}
+
+/* ── Balance card ── */
+.balanceCard {
+  background: rgba(42, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 36px;
+}
+
+.balanceHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.balanceLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.balanceFraction {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.barTrack {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--bar-color, #2aaa60);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--bar-color, #2aaa60) 60%, transparent);
+}
+
+.balanceFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.remaining {
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.pct {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ── Table section ── */
+.tableSection {
+  background: rgba(42, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+}
+
+.tableTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(196, 30, 58, 0.15);
+}
+
+.stateMsg {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 12px 0;
+}
+
+.errorMsg {
+  color: var(--brand-pink);
+  font-size: 0.9rem;
+  padding: 12px 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 14px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-bottom: 1px solid rgba(196, 30, 58, 0.15);
+}
+
+.table td {
+  padding: 12px 14px;
+  color: var(--text);
+  border-bottom: 1px solid rgba(196, 30, 58, 0.07);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background: rgba(58, 21, 40, 0.4);
+}
+
+.gameCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.visitorId {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: rgba(58, 21, 40, 0.6);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.tokensUsed {
+  font-weight: 600;
+  color: var(--brand-gold);
+}

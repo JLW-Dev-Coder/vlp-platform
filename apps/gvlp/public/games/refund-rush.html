@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refund Rush</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@400;600;800;900&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  <style>
+html,body{margin:0;padding:0;height:100%;font-family:'DM Sans',sans-serif}
+.font-display{font-family:var(--ff),'Anybody','DM Sans',sans-serif}
+:root{--bg:#0f172a;--surface:#1e293b;--text:#e2e8f0;--primary:#f59e0b;--secondary:#3b82f6;--ff:'Anybody'}
+*{box-sizing:border-box}
+@keyframes slideIn{from{transform:translateY(40px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes comboFlash{0%{opacity:1;transform:scale(1.3) translateY(-10px)}100%{opacity:0;transform:scale(1) translateY(-30px)}}
+.card-anim{animation:slideIn .4s ease-out}
+.pulse-anim{animation:pulse .3s ease}
+.shake-anim{animation:shake .3s ease}
+.combo-pop{animation:comboFlash .6s ease forwards;position:absolute;top:-20px;left:50%;pointer-events:none;font-weight:800}
+.cat-btn{transition:all .15s ease;cursor:pointer;user-select:none}
+.cat-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
+.cat-btn:active{transform:scale(.95)}
+.progress-bar{transition:width .1s linear}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full" style="background:var(--bg);color:var(--text)">
+  <div id="app" class="h-full w-full overflow-auto flex flex-col"><!-- START SCREEN -->
+   <div id="screen-start" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+    <div class="card-anim">
+     <div class="text-6xl mb-4">
+      🧾
+     </div>
+     <h1 id="title-display" class="font-display text-4xl md:text-5xl font-900 mb-2" style="color:var(--primary)">Refund Rush</h1>
+     <p class="text-lg opacity-70 mb-8 max-w-md">Sort tax documents into the right categories before time runs out!</p><input id="name-input" type="text" placeholder="Your name" maxlength="20" class="block mx-auto mb-4 px-5 py-3 rounded-xl text-center text-lg font-semibold outline-none w-64" style="background:var(--surface);color:var(--text);border:2px solid var(--primary)"> <button id="btn-start" class="cat-btn font-display font-800 text-xl px-10 py-4 rounded-2xl" style="background:var(--primary);color:var(--bg)"> <i data-lucide="zap" style="display:inline;width:20px;height:20px;vertical-align:middle;margin-right:6px"></i>START SORTING </button> <button id="btn-leaderboard" class="cat-btn block mx-auto mt-4 text-sm opacity-60 hover:opacity-100 underline">View Leaderboard</button>
+    </div>
+   </div><!-- GAME SCREEN -->
+   <div id="screen-game" class="flex-1 flex-col p-4 md:p-6 hidden" style="display:none"><!-- HUD -->
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+     <div class="flex items-center gap-3"><span class="font-display font-800 text-2xl" style="color:var(--primary)" id="hud-score">0</span> <span class="text-xs opacity-50">PTS</span>
+     </div>
+     <div id="combo-display" class="font-display font-800 text-lg" style="color:var(--secondary);opacity:0">
+      🔥 x0
+     </div>
+     <div class="flex items-center gap-2"><i data-lucide="clock" style="width:18px;height:18px;color:var(--primary)"></i> <span id="hud-timer" class="font-display font-800 text-2xl">30</span>
+     </div>
+    </div><!-- Timer bar -->
+    <div class="w-full h-2 rounded-full mb-5" style="background:var(--surface)">
+     <div id="timer-bar" class="h-full rounded-full progress-bar" style="background:var(--primary);width:100%"></div>
+    </div><!-- Document card -->
+    <div class="flex-1 flex flex-col items-center justify-center">
+     <div id="doc-card" class="card-anim relative w-full max-w-sm p-6 rounded-2xl text-center mb-6" style="background:var(--surface);border:2px solid rgba(255,255,255,.08)">
+      <div id="doc-icon" class="text-4xl mb-2">
+       📄
+      </div>
+      <div id="doc-title" class="font-display font-800 text-xl mb-1"></div>
+      <div id="doc-desc" class="text-sm opacity-60"></div>
+     </div><!-- Category buttons -->
+     <div id="cat-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-lg"></div>
+    </div>
+   </div><!-- ROUND END SCREEN -->
+   <div id="screen-end" class="flex-1 flex-col items-center justify-center p-6 text-center hidden" style="display:none">
+    <div class="card-anim">
+     <div class="text-5xl mb-3">
+      🏆
+     </div>
+     <h2 class="font-display text-3xl font-800 mb-1" style="color:var(--primary)">Round Over!</h2>
+     <p id="end-score" class="text-5xl font-display font-900 my-4" style="color:var(--secondary)">0</p>
+     <p class="text-sm opacity-50 mb-4">points earned</p>
+     <div id="tax-fact" class="max-w-md mx-auto p-4 rounded-xl mb-6 text-sm leading-relaxed" style="background:var(--surface)"><span class="font-semibold" style="color:var(--primary)">💡 Tax Fact:</span> <span id="fact-text"></span>
+     </div>
+     <div class="flex gap-3 justify-center flex-wrap"><button id="btn-again" class="cat-btn font-display font-800 px-8 py-3 rounded-xl" style="background:var(--primary);color:var(--bg)">Play Again</button> <button id="btn-lb" class="cat-btn font-display font-600 px-8 py-3 rounded-xl" style="background:var(--surface);border:1px solid var(--secondary);color:var(--secondary)">Leaderboard</button>
+     </div>
+    </div>
+   </div><!-- LEADERBOARD SCREEN -->
+   <div id="screen-lb" class="flex-1 flex-col p-6 hidden" style="display:none">
+    <div class="card-anim max-w-lg mx-auto w-full">
+     <h2 class="font-display text-2xl font-800 mb-4 text-center" style="color:var(--primary)">🏅 Top Refunders</h2>
+     <div id="lb-list" class="space-y-2"></div>
+     <p id="lb-empty" class="text-center opacity-40 py-8 hidden">No scores yet. Be the first!</p><button id="btn-back" class="cat-btn block mx-auto mt-6 font-display font-600 px-8 py-3 rounded-xl" style="background:var(--surface);color:var(--text)">← Back</button>
+    </div>
+   </div>
+  </div>
+  <script>
+// --- DATA ---
+const categories = [
+  {id:'income',label:'Income',color:'#22c55e',icon:'💰'},
+  {id:'deductions',label:'Deductions',color:'#a855f7',icon:'✂️'},
+  {id:'credits',label:'Credits',color:'#3b82f6',icon:'🎁'},
+  {id:'forms',label:'Forms',color:'#f97316',icon:'📋'}
+];
+
+const documents = [
+  {title:'W-2',desc:'Wage and tax statement from employer',cat:'income',icon:'💼'},
+  {title:'1099-INT',desc:'Interest income from bank',cat:'income',icon:'🏦'},
+  {title:'1099-DIV',desc:'Dividend income from investments',cat:'income',icon:'📈'},
+  {title:'K-1',desc:'Income from partnerships',cat:'income',icon:'🤝'},
+  {title:'Mortgage Interest',desc:'Home loan interest paid',cat:'deductions',icon:'🏠'},
+  {title:'Charitable Donation',desc:'Gifts to qualified charities',cat:'deductions',icon:'❤️'},
+  {title:'Medical Expenses',desc:'Out-of-pocket healthcare costs',cat:'deductions',icon:'🏥'},
+  {title:'Student Loan Interest',desc:'Interest on education loans',cat:'deductions',icon:'🎓'},
+  {title:'State Taxes Paid',desc:'State and local tax payments',cat:'deductions',icon:'🏛️'},
+  {title:'Child Tax Credit',desc:'Credit per qualifying child',cat:'credits',icon:'👶'},
+  {title:'Earned Income Credit',desc:'Credit for low-to-moderate income',cat:'credits',icon:'⭐'},
+  {title:'Education Credit',desc:'American Opportunity or Lifetime Learning',cat:'credits',icon:'📚'},
+  {title:'EV Credit',desc:'Electric vehicle purchase credit',cat:'credits',icon:'🚗'},
+  {title:'Form 1040',desc:'Standard individual tax return',cat:'forms',icon:'📝'},
+  {title:'Schedule C',desc:'Profit or loss from business',cat:'forms',icon:'💼'},
+  {title:'Schedule A',desc:'Itemized deductions form',cat:'forms',icon:'📑'},
+  {title:'Form 8863',desc:'Education credits form',cat:'forms',icon:'🎓'},
+  {title:'1099-NEC',desc:'Non-employee compensation',cat:'income',icon:'💻'},
+  {title:'Home Office',desc:'Home office expense deduction',cat:'deductions',icon:'🖥️'},
+  {title:'Saver\'s Credit',desc:'Retirement savings contribution credit',cat:'credits',icon:'🐖'},
+];
+
+const taxFacts = [
+  "The U.S. tax code is over 10 million words long — about 17 times longer than the Bible!",
+  "About 70% of Americans receive a tax refund each year, averaging around $3,000.",
+  "The first income tax in the U.S. was introduced in 1861 to fund the Civil War.",
+  "Americans spend over 8 billion hours per year on tax preparation.",
+  "The standard deduction for 2024 is $14,600 for single filers.",
+  "Tax Day wasn't always April 15 — it used to be March 1, then March 15.",
+  "Einstein reportedly said the hardest thing to understand is income tax.",
+  "The IRS processes about 150 million individual tax returns each year.",
+];
+
+// --- GAME STATE ---
+let score=0, combo=0, bestCombo=0, timeLeft=30, maxTime=30, timerInterval=null, currentDoc=null, playing=false;
+let leaderboard=[];
+let playerName='Player';
+let usedDocs=[];
+
+// --- CONFIG ---
+const defaultConfig = {
+  game_title:'Refund Rush',
+  round_seconds:'30',
+  background_color:'#0f172a',
+  surface_color:'#1e293b',
+  text_color:'#e2e8f0',
+  primary_color:'#f59e0b',
+  secondary_color:'#3b82f6',
+  font_family:'Anybody',
+  font_size:16
+};
+
+function applyConfig(c){
+  const r=document.documentElement.style;
+  r.setProperty('--bg',c.background_color||defaultConfig.background_color);
+  r.setProperty('--surface',c.surface_color||defaultConfig.surface_color);
+  r.setProperty('--text',c.text_color||defaultConfig.text_color);
+  r.setProperty('--primary',c.primary_color||defaultConfig.primary_color);
+  r.setProperty('--secondary',c.secondary_color||defaultConfig.secondary_color);
+  r.setProperty('--ff',(c.font_family||defaultConfig.font_family));
+  const t=document.getElementById('title-display');
+  if(t) t.textContent=c.game_title||defaultConfig.game_title;
+  maxTime=parseInt(c.round_seconds)||30;
+  const bs=c.font_size||defaultConfig.font_size;
+  document.querySelectorAll('.font-display').forEach(el=>{
+    // handled via css var
+  });
+}
+
+// --- SCREENS ---
+function showScreen(id){
+  ['screen-start','screen-game','screen-end','screen-lb'].forEach(s=>{
+    const el=document.getElementById(s);
+    el.classList.add('hidden');el.style.display='none';
+  });
+  const el=document.getElementById(id);
+  el.classList.remove('hidden');el.style.display='flex';
+}
+
+// --- CATEGORY BUTTONS ---
+function buildCatButtons(){
+  const g=document.getElementById('cat-grid');
+  g.innerHTML='';
+  categories.forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='cat-btn font-display font-700 py-4 px-3 rounded-xl text-base';
+    b.style.background=cat.color+'22';b.style.color=cat.color;b.style.border='2px solid '+cat.color+'44';
+    b.innerHTML=cat.icon+' '+cat.label;
+    b.onclick=()=>handleSort(cat.id);
+    g.appendChild(b);
+  });
+}
+
+// --- DOCUMENT ---
+function nextDoc(){
+  if(usedDocs.length>=documents.length) usedDocs=[];
+  let pool=documents.filter(d=>!usedDocs.includes(d.title));
+  const doc=pool[Math.floor(Math.random()*pool.length)];
+  usedDocs.push(doc.title);
+  currentDoc=doc;
+  const card=document.getElementById('doc-card');
+  card.classList.remove('card-anim');void card.offsetWidth;card.classList.add('card-anim');
+  document.getElementById('doc-icon').textContent=doc.icon;
+  document.getElementById('doc-title').textContent=doc.title;
+  document.getElementById('doc-desc').textContent=doc.desc;
+}
+
+// --- SORT ---
+function handleSort(catId){
+  if(!playing||!currentDoc) return;
+  const card=document.getElementById('doc-card');
+  if(catId===currentDoc.cat){
+    combo++;
+    if(combo>bestCombo) bestCombo=combo;
+    let pts=10+(combo>1?combo*5:0);
+    score+=pts;
+    card.classList.remove('pulse-anim');void card.offsetWidth;card.classList.add('pulse-anim');
+    if(combo>1) showComboPop(combo);
+  } else {
+    score=Math.max(0,score-5);
+    combo=0;
+    card.classList.remove('shake-anim');void card.offsetWidth;card.classList.add('shake-anim');
+  }
+  updateHUD();
+  nextDoc();
+}
+
+function showComboPop(c){
+  const card=document.getElementById('doc-card');
+  const pop=document.createElement('div');
+  pop.className='combo-pop';pop.style.color='var(--secondary)';
+  pop.textContent='🔥 x'+c+'!';
+  card.appendChild(pop);
+  setTimeout(()=>pop.remove(),700);
+}
+
+function updateHUD(){
+  document.getElementById('hud-score').textContent=score;
+  const cd=document.getElementById('combo-display');
+  if(combo>1){cd.style.opacity='1';cd.textContent='🔥 x'+combo;}else{cd.style.opacity='0';}
+}
+
+// --- TIMER ---
+function startTimer(){
+  timeLeft=maxTime;
+  updateTimerDisplay();
+  timerInterval=setInterval(()=>{
+    timeLeft-=0.1;
+    if(timeLeft<=0){timeLeft=0;clearInterval(timerInterval);endRound();}
+    updateTimerDisplay();
+  },100);
+}
+function updateTimerDisplay(){
+  document.getElementById('hud-timer').textContent=Math.ceil(timeLeft);
+  document.getElementById('timer-bar').style.width=(timeLeft/maxTime*100)+'%';
+  if(timeLeft<10) document.getElementById('timer-bar').style.background='#ef4444';
+  else document.getElementById('timer-bar').style.background='var(--primary)';
+}
+
+// --- GAME FLOW ---
+function startGame(){
+  playerName=document.getElementById('name-input').value.trim()||'Player';
+  score=0;combo=0;bestCombo=0;usedDocs=[];
+  showScreen('screen-game');
+  buildCatButtons();
+  nextDoc();
+  updateHUD();
+  playing=true;
+  startTimer();
+}
+
+async function endRound(){
+  playing=false;
+  showScreen('screen-end');
+  document.getElementById('end-score').textContent=score;
+  document.getElementById('fact-text').textContent=taxFacts[Math.floor(Math.random()*taxFacts.length)];
+  // Save score
+  if(score>0 && leaderboard.length<999){
+    const r=await window.dataSdk.create({player_name:playerName,score:score,created_at:new Date().toISOString()});
+    if(!r.isOk) console.error('Save failed');
+  }
+}
+
+// --- LEADERBOARD ---
+function renderLeaderboard(){
+  const list=document.getElementById('lb-list');
+  const empty=document.getElementById('lb-empty');
+  const sorted=[...leaderboard].sort((a,b)=>b.score-a.score).slice(0,10);
+  if(!sorted.length){list.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  const medals=['🥇','🥈','🥉'];
+  // Selective update
+  const existing=new Map([...list.children].map(el=>[el.dataset.bid,el]));
+  const keep=new Set();
+  sorted.forEach((entry,i)=>{
+    const bid=entry.__backendId;
+    keep.add(bid);
+    if(existing.has(bid)){
+      const el=existing.get(bid);
+      el.querySelector('.lb-rank').textContent=medals[i]||(i+1);
+      el.querySelector('.lb-name').textContent=entry.player_name;
+      el.querySelector('.lb-score').textContent=entry.score;
+    } else {
+      const el=document.createElement('div');
+      el.dataset.bid=bid;
+      el.className='flex items-center gap-3 p-3 rounded-xl';
+      el.style.background='var(--surface)';
+      el.innerHTML=`<span class="lb-rank font-display font-800 text-xl w-8 text-center">${medals[i]||(i+1)}</span><span class="lb-name flex-1 font-semibold">${entry.player_name}</span><span class="lb-score font-display font-800" style="color:var(--primary)">${entry.score}</span>`;
+      list.appendChild(el);
+    }
+  });
+  existing.forEach((el,bid)=>{if(!keep.has(bid))el.remove();});
+}
+
+// --- INIT ---
+const dataHandler={onDataChanged(data){leaderboard=data;}};
+
+(async()=>{
+  await window.dataSdk.init(dataHandler);
+
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange:async(c)=>applyConfig(c),
+    mapToCapabilities:(c)=>({
+      recolorables:[
+        {get:()=>c.background_color||defaultConfig.background_color,set:v=>{c.background_color=v;window.elementSdk.setConfig({background_color:v})}},
+        {get:()=>c.surface_color||defaultConfig.surface_color,set:v=>{c.surface_color=v;window.elementSdk.setConfig({surface_color:v})}},
+        {get:()=>c.text_color||defaultConfig.text_color,set:v=>{c.text_color=v;window.elementSdk.setConfig({text_color:v})}},
+        {get:()=>c.primary_color||defaultConfig.primary_color,set:v=>{c.primary_color=v;window.elementSdk.setConfig({primary_color:v})}},
+        {get:()=>c.secondary_color||defaultConfig.secondary_color,set:v=>{c.secondary_color=v;window.elementSdk.setConfig({secondary_color:v})}},
+      ],
+      borderables:[],
+      fontEditable:{get:()=>c.font_family||defaultConfig.font_family,set:v=>{c.font_family=v;window.elementSdk.setConfig({font_family:v})}},
+      fontSizeable:{get:()=>c.font_size||defaultConfig.font_size,set:v=>{c.font_size=v;window.elementSdk.setConfig({font_size:v})}}
+    }),
+    mapToEditPanelValues:(c)=>new Map([
+      ['game_title',c.game_title||defaultConfig.game_title],
+      ['round_seconds',c.round_seconds||defaultConfig.round_seconds]
+    ])
+  });
+
+  applyConfig(defaultConfig);
+
+  document.getElementById('btn-start').onclick=startGame;
+  document.getElementById('btn-again').onclick=()=>showScreen('screen-start');
+  document.getElementById('btn-leaderboard').onclick=()=>{renderLeaderboard();showScreen('screen-lb');};
+  document.getElementById('btn-lb').onclick=()=>{renderLeaderboard();showScreen('screen-lb');};
+  document.getElementById('btn-back').onclick=()=>showScreen('screen-start');
+
+  lucide.createIcons();
+})();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e01eab2258f27c9',t:'MTc3NDE0ODExOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

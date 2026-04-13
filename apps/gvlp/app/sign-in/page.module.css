@@ -1,0 +1,321 @@
+.main {
+  position: relative;
+  min-height: 100vh;
+  background: #1a0a10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+  overflow: hidden;
+}
+
+/* Ambient blobs */
+.blob1,
+.blob2,
+.blob3 {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+  opacity: 0.3;
+  z-index: 0;
+}
+
+.blob1 {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, #c41e3a 0%, transparent 70%);
+  top: -160px;
+  right: -120px;
+  animation: float1 20s ease-in-out infinite;
+}
+
+.blob2 {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, #ffd700 0%, transparent 70%);
+  top: 50%;
+  left: -130px;
+  animation: float2 25s ease-in-out infinite;
+}
+
+.blob3 {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #e8446d 0%, transparent 70%);
+  bottom: -100px;
+  right: 10%;
+  animation: float3 22s ease-in-out infinite;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(28px, -28px); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(-28px, 28px); }
+}
+@keyframes float3 {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(-18px, -38px); }
+}
+
+/* Sign-in card */
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  background: rgba(42, 15, 30, 0.7);
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 2.75rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: slideUp 0.7s ease-out both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.logoMark {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #c41e3a, #e8446d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.headline {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(10, 2, 8, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 10px;
+  color: #f0e6ea;
+  font-size: 0.95rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ffd700;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.15);
+}
+
+.error {
+  font-size: 0.85rem;
+  color: #fca5a5;
+  background: rgba(196, 30, 58, 0.12);
+  border: 1px solid rgba(196, 30, 58, 0.3);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+}
+
+.primaryBtn {
+  padding: 0.875rem;
+  background: linear-gradient(135deg, #c41e3a 0%, #e8446d 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(196, 30, 58, 0.4);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dividerText {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.06em;
+}
+
+/* Google button */
+.googleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.googleBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.googleIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Footer note */
+.footerNote {
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footerLink {
+  color: #ffd700;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+  color: #fff;
+}
+
+/* Success state */
+.successState {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  background: rgba(42, 15, 30, 0.7);
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: slideUp 0.7s ease-out both;
+}
+
+.successIcon {
+  font-size: 3rem;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(196, 30, 58, 0.15), rgba(255, 215, 0, 0.15));
+  border: 2px solid rgba(255, 215, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  color: #ffd700;
+}
+
+.successHeadline {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.successDesc {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.7;
+  max-width: 320px;
+}
+
+.emailHighlight {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.resendBtn {
+  margin-top: 0.5rem;
+  padding: 0.65rem 1.5rem;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  background: transparent;
+  color: #ffd700;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.resendBtn:hover {
+  background: rgba(255, 215, 0, 0.08);
+  border-color: #ffd700;
+}
+
+.loading {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1rem;
+}
+
+@media (max-width: 480px) {
+  .card,
+  .successState {
+    padding: 2rem 1.5rem;
+    border-radius: 14px;
+  }
+}

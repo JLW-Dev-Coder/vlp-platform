@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Match Mania</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Outfit', sans-serif; }
+
+.card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); transform-style: preserve-3d; }
+.card-flipped .card-inner { transform: rotateY(180deg); }
+.card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.card-back { transform: rotateY(180deg); }
+.card-matched { animation: matchPop 0.6s ease; }
+@keyframes matchPop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.15) rotate(5deg); }
+  60% { transform: scale(0.95) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes confetti { 0% { opacity:1; transform: translateY(0) rotate(0); } 100% { opacity:0; transform: translateY(-80px) rotate(360deg); } }
+.confetti-particle { position: absolute; animation: confetti 0.8s ease-out forwards; pointer-events: none; }
+@keyframes tipSlide { 0% { opacity:0; transform: translateY(20px) scale(0.9); } 100% { opacity:1; transform: translateY(0) scale(1); } }
+.tip-popup { animation: tipSlide 0.4s ease-out; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease-out; }
+.grid-card { perspective: 600px; cursor: pointer; }
+.leaderboard-row { animation: fadeIn 0.3s ease-out; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full overflow-auto">
+  <div id="app" class="w-full h-full flex flex-col items-center" style="background:#0f172a; color:#e2e8f0;">
+   <!-- Header -->
+   <header class="w-full max-w-lg px-4 pt-32 pb-2 text-center">
+    <h1 id="game-title" class="text-3xl font-extrabold tracking-tight" style="color:#facc15;">💰 Tax Match Mania</h1>
+    <div class="flex justify-center gap-6 mt-3 text-sm font-semibold">
+     <div class="flex items-center gap-1.5"><i data-lucide="trophy" style="width:16px;height:16px;color:#facc15;"></i> <span id="score-display">0</span>
+     </div>
+     <div class="flex items-center gap-1.5"><i data-lucide="clock" style="width:16px;height:16px;color:#38bdf8;"></i> <span id="timer-label-el">Time</span>: <span id="timer-display">60</span>s
+     </div>
+     <div class="flex items-center gap-1.5"><i data-lucide="layers" style="width:16px;height:16px;color:#a78bfa;"></i> <span id="matches-display">0</span>/8
+     </div>
+    </div>
+   </header><!-- Game Grid -->
+   <main id="game-area" class="w-full max-w-lg px-4 py-1 flex-1">
+    <div id="card-grid" class="grid grid-cols-4 gap-2.5" style="aspect-ratio:1/1;"></div><!-- Tax Tip Popup -->
+    <div id="tip-container" class="mt-1 hidden"></div>
+    <div class="w-full flex gap-2 mt-8">
+     <button id="btn-start" onclick="startGame()" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105" style="background:#facc15;color:#0f172a;">New Game</button> <button id="btn-board" onclick="toggleLeaderboard()" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;">🏆 Leaderboard</button>
+    </div>
+   </main><!-- Leaderboard Overlay -->
+   <div id="leaderboard-overlay" class="hidden fixed inset-0 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.7);z-index:50;">
+    <div class="w-full max-w-sm rounded-2xl p-5 fade-in" style="background:#1e293b;border:1px solid #334155;">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-bold" style="color:#facc15;">🏆 High Scores</h2><button onclick="toggleLeaderboard()" class="p-1 rounded-lg hover:bg-white/10"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+     </div>
+     <div id="leaderboard-list" class="space-y-2 max-h-64 overflow-auto"></div>
+     <p id="leaderboard-empty" class="text-center text-sm py-6 opacity-50">No scores yet. Play a game!</p>
+    </div>
+   </div><!-- Game Over Overlay -->
+   <div id="gameover-overlay" class="hidden fixed inset-0 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.7);z-index:50;">
+    <div class="w-full max-w-xs rounded-2xl p-6 text-center fade-in" style="background:#1e293b;border:1px solid #334155;">
+     <div class="text-4xl mb-2">
+      🎉
+     </div>
+     <h2 class="text-xl font-bold mb-1" style="color:#facc15;" id="gameover-title">Game Over!</h2>
+     <p class="text-sm opacity-70 mb-3" id="gameover-stats"></p><input id="name-input" type="text" placeholder="Your name" maxlength="15" class="w-full px-3 py-2 rounded-lg text-sm mb-3 outline-none" style="background:#0f172a;color:#e2e8f0;border:1px solid #334155;"> <button id="btn-save" onclick="saveScore()" class="w-full py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105" style="background:#facc15;color:#0f172a;">Save Score</button>
+    </div>
+   </div>
+  </div>
+  <script>
+// Tax-themed card icons
+const TAX_ICONS = [
+  { emoji: '📋', label: 'W-2 Form' },
+  { emoji: '💵', label: 'Cash' },
+  { emoji: '🏦', label: 'Bank' },
+  { emoji: '📊', label: 'Charts' },
+  { emoji: '🧾', label: 'Receipt' },
+  { emoji: '💳', label: 'Card' },
+  { emoji: '📈', label: 'Growth' },
+  { emoji: '🪙', label: 'Coin' }
+];
+
+const TAX_TIPS = [
+  "💡 Don't forget to claim your home office deduction if you work remotely!",
+  "💡 Keep all receipts for business expenses — they add up fast!",
+  "💡 Contributing to a 401(k) can lower your taxable income.",
+  "💡 You can deduct student loan interest up to $2,500 per year.",
+  "💡 Filing early helps prevent tax identity theft.",
+  "💡 Charitable donations are deductible if you itemize.",
+  "💡 The standard deduction for 2024 is $14,600 for singles.",
+  "💡 Health savings accounts (HSAs) offer triple tax benefits!"
+];
+
+let cards = [], flipped = [], matched = new Set(), score = 0, matches = 0, timer = 60, timerInterval = null, gameActive = false, tipIndex = 0;
+let leaderboardData = [];
+
+// Shuffle
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+
+function buildGrid() {
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = '';
+  const pairs = [...TAX_ICONS, ...TAX_ICONS];
+  cards = shuffle(pairs);
+  cards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'grid-card';
+    el.dataset.idx = i;
+    el.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front flex flex-col items-center justify-center" style="background:#1e293b;border:2px solid #334155;">
+          <span class="text-2xl">💲</span>
+        </div>
+        <div class="card-back flex flex-col items-center justify-center gap-1" style="background:#1e293b;border:2px solid #facc15;">
+          <span class="text-3xl">${card.emoji}</span>
+          <span class="text-xs font-semibold opacity-70">${card.label}</span>
+        </div>
+      </div>`;
+    el.onclick = () => flipCard(i, el);
+    grid.appendChild(el);
+  });
+}
+
+function flipCard(idx, el) {
+  if (!gameActive || flipped.length >= 2 || flipped.includes(idx) || matched.has(idx)) return;
+  el.classList.add('card-flipped');
+  flipped.push(idx);
+  if (flipped.length === 2) {
+    setTimeout(checkMatch, 600);
+  }
+}
+
+function checkMatch() {
+  const [a, b] = flipped;
+  const cardEls = document.querySelectorAll('.grid-card');
+  if (cards[a].emoji === cards[b].emoji) {
+    matched.add(a); matched.add(b);
+    matches++; score += Math.max(10, 50 - (60 - timer));
+    cardEls[a].classList.add('card-matched');
+    cardEls[b].classList.add('card-matched');
+    spawnConfetti(cardEls[a]); spawnConfetti(cardEls[b]);
+    document.getElementById('score-display').textContent = score;
+    document.getElementById('matches-display').textContent = matches;
+    showTip();
+    if (matches === 8) endGame(true);
+  } else {
+    setTimeout(() => { cardEls[a].classList.remove('card-flipped'); cardEls[b].classList.remove('card-flipped'); }, 400);
+  }
+  flipped = [];
+}
+
+function spawnConfetti(el) {
+  const colors = ['#facc15','#38bdf8','#a78bfa','#34d399','#fb7185'];
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-particle';
+    p.style.cssText = `left:${30+Math.random()*40}%;top:${30+Math.random()*40}%;width:8px;height:8px;border-radius:50%;background:${colors[i%colors.length]};`;
+    el.style.position = 'relative';
+    el.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
+function showTip() {
+  const c = document.getElementById('tip-container');
+  c.classList.remove('hidden');
+  c.innerHTML = `<div class="tip-popup rounded-xl p-3 text-xs font-semibold" style="background:#1e293b;border:1px solid #334155;color:#38bdf8;">${TAX_TIPS[tipIndex % TAX_TIPS.length]}</div>`;
+  tipIndex++;
+  setTimeout(() => c.classList.add('hidden'), 3000);
+}
+
+function startGame() {
+  clearInterval(timerInterval);
+  document.getElementById('gameover-overlay').classList.add('hidden');
+  score = 0; matches = 0; timer = 60; flipped = []; matched = new Set(); gameActive = true; tipIndex = 0;
+  document.getElementById('score-display').textContent = '0';
+  document.getElementById('matches-display').textContent = '0';
+  document.getElementById('timer-display').textContent = '60';
+  document.getElementById('tip-container').classList.add('hidden');
+  buildGrid();
+  timerInterval = setInterval(() => {
+    timer--;
+    document.getElementById('timer-display').textContent = timer;
+    if (timer <= 0) endGame(false);
+  }, 1000);
+}
+
+function endGame(won) {
+  gameActive = false; clearInterval(timerInterval);
+  const ov = document.getElementById('gameover-overlay');
+  document.getElementById('gameover-title').textContent = won ? '🎉 You Won!' : '⏰ Time\'s Up!';
+  document.getElementById('gameover-stats').textContent = `Score: ${score} • Matches: ${matches}/8 • Time: ${60 - timer}s`;
+  document.getElementById('name-input').value = '';
+  document.getElementById('btn-save').disabled = false;
+  document.getElementById('btn-save').textContent = 'Save Score';
+  ov.classList.remove('hidden');
+}
+
+async function saveScore() {
+  const name = document.getElementById('name-input').value.trim() || 'Anonymous';
+  const btn = document.getElementById('btn-save');
+  if (leaderboardData.length >= 999) {
+    btn.textContent = 'Limit reached!'; btn.disabled = true; return;
+  }
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const result = await window.dataSdk.create({ player_name: name, score, time: 60 - timer, created_at: new Date().toISOString() });
+  if (result.isOk) {
+    document.getElementById('gameover-overlay').classList.add('hidden');
+  } else {
+    btn.textContent = 'Error — Retry'; btn.disabled = false;
+  }
+}
+
+function toggleLeaderboard() {
+  document.getElementById('leaderboard-overlay').classList.toggle('hidden');
+}
+
+function renderLeaderboard(data) {
+  leaderboardData = data;
+  const sorted = [...data].sort((a, b) => b.score - a.score).slice(0, 10);
+  const list = document.getElementById('leaderboard-list');
+  const empty = document.getElementById('leaderboard-empty');
+  if (!sorted.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = sorted.map((s, i) => `
+    <div class="leaderboard-row flex items-center justify-between px-3 py-2 rounded-lg" style="background:#0f172a;">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-bold w-6 text-center">${medals[i] || (i+1)}</span>
+        <span class="text-sm font-semibold">${s.player_name}</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs opacity-70">
+        <span>${s.score} pts</span>
+        <span>${s.time}s</span>
+      </div>
+    </div>`).join('');
+}
+
+// SDK Init
+const defaultConfig = {
+  game_title: 'Tax Match Mania',
+  timer_label: 'Time',
+  bg_color: '#0f172a',
+  surface_color: '#1e293b',
+  text_color: '#e2e8f0',
+  accent_color: '#facc15',
+  secondary_color: '#38bdf8'
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  document.getElementById('app').style.background = c.bg_color;
+  document.getElementById('app').style.color = c.text_color;
+  document.getElementById('game-title').textContent = '💰 ' + c.game_title;
+  document.getElementById('game-title').style.color = c.accent_color;
+  document.getElementById('timer-label-el').textContent = c.timer_label;
+
+  document.querySelectorAll('.card-front').forEach(el => { el.style.background = c.surface_color; });
+  document.querySelectorAll('.card-back').forEach(el => { el.style.background = c.surface_color; el.style.borderColor = c.accent_color; });
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.bg_color || defaultConfig.bg_color, set: v => { config.bg_color = v; window.elementSdk.setConfig({ bg_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.secondary_color || defaultConfig.secondary_color, set: v => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family || 'Outfit',
+      set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: {
+      get: () => config.font_size || defaultConfig.font_size || 16,
+      set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+    }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['game_title', config.game_title || defaultConfig.game_title],
+    ['timer_label', config.timer_label || defaultConfig.timer_label]
+  ])
+});
+
+window.dataSdk.init({
+  onDataChanged(data) { renderLeaderboard(data); }
+});
+
+buildGrid();
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e10d63997b8d93b',t:'MTc3NDMwNDU2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

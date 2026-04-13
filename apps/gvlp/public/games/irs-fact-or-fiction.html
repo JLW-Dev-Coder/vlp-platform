@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRS: Fact or Fiction?</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=Source+Sans+3:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  <style>
+html,body{margin:0;padding:0;height:100%;font-family:'Source Sans 3',sans-serif}
+.font-display{font-family:'DM Serif Display',serif}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 20px rgba(234,179,8,0.3)}50%{box-shadow:0 0 40px rgba(234,179,8,0.6)}}
+@keyframes confetti-fall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(60px) rotate(720deg);opacity:0}}
+.animate-slide{animation:slideUp .4s ease-out}
+.streak-glow{animation:pulse-glow 1.5s ease-in-out infinite}
+.confetti-piece{animation:confetti-fall 1s ease-out forwards;position:absolute;width:8px;height:8px;border-radius:2px}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto" style="background:#0f172a"><!-- START SCREEN -->
+   <div id="screen-start" class="flex flex-col items-center justify-center h-full px-4 text-center">
+    <div class="animate-slide">
+     <div class="text-6xl mb-6">
+      🏛️
+     </div>
+     <h1 id="el-title" class="font-display text-4xl md:text-5xl mb-3" style="color:#facc15">IRS: Fact or Fiction?</h1>
+     <p id="el-subtitle" class="text-lg mb-10 opacity-80" style="color:#94a3b8">Test your tax knowledge</p><button onclick="startGame()" class="px-8 py-4 rounded-xl text-lg font-bold transition-all hover:scale-105" style="background:#facc15;color:#0f172a"> <span class="flex items-center gap-2"><i data-lucide="play" style="width:20px;height:20px"></i> Start Game</span> </button>
+    </div>
+   </div><!-- GAME SCREEN -->
+   <div id="screen-game" class="hidden flex flex-col h-full px-4 py-6 max-w-2xl mx-auto w-full"><!-- Top Bar -->
+    <div class="flex justify-between items-center mb-6">
+     <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:#1e293b;color:#facc15"><i data-lucide="coins" style="width:18px;height:18px"></i> <span id="el-score" class="font-bold text-lg">0</span>
+     </div>
+     <div class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background:#1e293b;color:#94a3b8"><span id="el-progress">1</span> / <span id="el-total">10</span>
+     </div>
+     <div id="el-streak-badge" class="flex items-center gap-1 px-3 py-1.5 rounded-lg opacity-0 transition-opacity" style="background:#7c2d12;color:#fb923c"><i data-lucide="flame" style="width:16px;height:16px"></i> <span id="el-streak" class="font-bold">0</span>🔥
+     </div>
+    </div><!-- Progress Bar -->
+    <div class="w-full h-2 rounded-full mb-8" style="background:#1e293b">
+     <div id="el-bar" class="h-full rounded-full transition-all duration-500" style="background:#facc15;width:0%"></div>
+    </div><!-- Question Card -->
+    <div class="flex-1 flex flex-col justify-center">
+     <div id="el-card" class="rounded-2xl p-6 md:p-8 animate-slide relative overflow-hidden" style="background:#1e293b">
+      <div id="confetti-container" class="absolute inset-0 pointer-events-none"></div>
+      <p class="text-xs font-semibold tracking-widest uppercase mb-4" style="color:#facc15">Statement</p>
+      <p id="el-statement" class="font-display text-xl md:text-2xl leading-relaxed mb-8" style="color:#e2e8f0"></p><!-- Buttons -->
+      <div id="el-buttons" class="flex gap-4"><button onclick="answer(true)" class="flex-1 py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.03] flex items-center justify-center gap-2" style="background:#166534;color:#bbf7d0"> <i data-lucide="check-circle" style="width:22px;height:22px"></i> Fact </button> <button onclick="answer(false)" class="flex-1 py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.03] flex items-center justify-center gap-2" style="background:#991b1b;color:#fecaca"> <i data-lucide="x-circle" style="width:22px;height:22px"></i> Fiction </button>
+      </div><!-- Explanation -->
+      <div id="el-explanation" class="hidden mt-6 p-4 rounded-xl" style="background:#0f172a">
+       <div id="el-result-icon" class="flex items-center gap-2 font-bold mb-2"></div>
+       <p id="el-explain-text" class="text-sm leading-relaxed" style="color:#94a3b8"></p><button onclick="nextQuestion()" id="el-next-btn" class="mt-4 w-full py-3 rounded-lg font-semibold transition-all hover:scale-[1.02]" style="background:#facc15;color:#0f172a">Next →</button>
+      </div>
+     </div>
+    </div>
+   </div><!-- RESULTS SCREEN -->
+   <div id="screen-results" class="hidden flex flex-col items-center justify-center h-full px-4 text-center">
+    <div class="animate-slide max-w-md w-full">
+     <div class="text-6xl mb-4" id="el-result-emoji">
+      🎉
+     </div>
+     <h2 class="font-display text-3xl md:text-4xl mb-2" style="color:#facc15">Game Over!</h2>
+     <p class="text-lg mb-8" style="color:#94a3b8">Here's how you did</p>
+     <div class="rounded-2xl p-6 mb-6" style="background:#1e293b">
+      <div class="text-5xl font-bold mb-1" style="color:#facc15">
+       <span id="el-final-score">0</span>
+      </div>
+      <p class="text-sm mb-4" style="color:#64748b">points earned</p>
+      <div class="flex justify-around text-center">
+       <div>
+        <div class="text-2xl font-bold" style="color:#4ade80" id="el-correct">
+         0
+        </div>
+        <div class="text-xs" style="color:#64748b">
+         Correct
+        </div>
+       </div>
+       <div class="w-px" style="background:#334155"></div>
+       <div>
+        <div class="text-2xl font-bold" style="color:#f87171" id="el-wrong">
+         0
+        </div>
+        <div class="text-xs" style="color:#64748b">
+         Wrong
+        </div>
+       </div>
+       <div class="w-px" style="background:#334155"></div>
+       <div>
+        <div class="text-2xl font-bold" style="color:#fb923c" id="el-best-streak">
+         0
+        </div>
+        <div class="text-xs" style="color:#64748b">
+         Best Streak
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="flex gap-3"><button onclick="shareScore()" class="flex-1 py-3 rounded-xl font-bold transition-all hover:scale-[1.03] flex items-center justify-center gap-2" style="background:#1e293b;color:#facc15;border:2px solid #facc15"> <i data-lucide="share-2" style="width:18px;height:18px"></i> Share Score </button> <button onclick="startGame()" class="flex-1 py-3 rounded-xl font-bold transition-all hover:scale-[1.03]" style="background:#facc15;color:#0f172a"> Play Again </button>
+     </div>
+     <div id="el-share-toast" class="hidden mt-4 py-2 px-4 rounded-lg text-sm font-semibold" style="background:#166534;color:#4ade80">
+      ✓ Score copied to clipboard!
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+const questions=[
+{s:"The IRS was established in 1862 by President Abraham Lincoln.",a:true,e:"Congress created the Bureau of Internal Revenue (now the IRS) in 1862, along with the first income tax, to fund the Civil War."},
+{s:"You don't have to pay taxes on lottery winnings under $5,000.",a:false,e:"All lottery winnings are taxable income regardless of amount. The IRS requires reporting of all gambling winnings."},
+{s:"Tips you receive at work are not considered taxable income.",a:false,e:"All tips are taxable income. Employees must report tips of $20+ per month to their employer, but all tips are reportable on tax returns."},
+{s:"The U.S. tax code is over 70,000 pages long.",a:true,e:"The Internal Revenue Code plus associated regulations, rulings, and case law totals over 70,000 pages, making it one of the most complex tax systems worldwide."},
+{s:"You can deduct the cost of a home office if you're a W-2 employee.",a:false,e:"The Tax Cuts and Jobs Act of 2017 eliminated the home office deduction for W-2 employees through 2025. Only self-employed individuals can claim it."},
+{s:"Bartering goods or services is a taxable event.",a:true,e:"The IRS considers the fair market value of goods or services received through bartering as taxable income that must be reported."},
+{s:"If you file an extension, you get extra time to pay your taxes.",a:false,e:"An extension gives you more time to file your return, but any taxes owed are still due by the original deadline. Late payments incur penalties and interest."},
+{s:"Illegal income must be reported on your tax return.",a:true,e:"The IRS requires all income to be reported, including income from illegal activities. This is famously how Al Capone was convicted — for tax evasion."},
+{s:"Social Security benefits are never taxable.",a:false,e:"Up to 85% of Social Security benefits can be taxable depending on your combined income. Many retirees are surprised to learn this."},
+{s:"The IRS has a dedicated form for reporting stolen property gains.",a:true,e:"Stolen property must be reported as income at its fair market value unless it's returned to the rightful owner in the same year. It falls under 'other income' on Schedule 1."},
+{s:"Children under 18 never have to file a tax return.",a:false,e:"Minors must file if their earned income exceeds the standard deduction or unearned income exceeds $1,250. Age doesn't exempt you from filing requirements."},
+{s:"The IRS can revoke your passport for unpaid taxes.",a:true,e:"Since 2018, the State Department can deny, revoke, or limit passports for taxpayers with seriously delinquent tax debt over $59,000 (2024 threshold)."},
+{s:"You can deduct pet expenses as medical costs if prescribed by a doctor.",a:true,e:"Service animals and emotional support animals prescribed by a licensed healthcare provider may qualify as a deductible medical expense for their care and maintenance."},
+{s:"Gift cards given to employees are not taxable.",a:false,e:"Gift cards to employees are considered taxable compensation regardless of the amount and must be reported as wages on the employee's W-2."},
+{s:"The IRS processes over 150 million individual tax returns each year.",a:true,e:"The IRS processes roughly 150+ million individual returns annually, making it one of the largest financial operations in the world."}
+];
+
+let game={score:0,streak:0,bestStreak:0,current:0,correct:0,questions:[],answered:false};
+
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+
+function startGame(){
+  game={score:0,streak:0,bestStreak:0,current:0,correct:0,questions:shuffle([...questions]).slice(0,10),answered:false};
+  document.getElementById('el-total').textContent=game.questions.length;
+  showScreen('screen-game');
+  showQuestion();
+}
+
+function showScreen(id){
+  ['screen-start','screen-game','screen-results'].forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==id));
+  lucide.createIcons();
+}
+
+function showQuestion(){
+  game.answered=false;
+  const q=game.questions[game.current];
+  document.getElementById('el-statement').textContent=q.s;
+  document.getElementById('el-progress').textContent=game.current+1;
+  document.getElementById('el-bar').style.width=((game.current)/game.questions.length*100)+'%';
+  document.getElementById('el-explanation').classList.add('hidden');
+  document.getElementById('el-buttons').style.opacity='1';
+  document.getElementById('el-buttons').style.pointerEvents='auto';
+  document.getElementById('el-score').textContent=game.score;
+  const sb=document.getElementById('el-streak-badge');
+  sb.style.opacity=game.streak>=2?'1':'0';
+  if(game.streak>=3)sb.classList.add('streak-glow');else sb.classList.remove('streak-glow');
+  document.getElementById('el-streak').textContent=game.streak;
+  document.getElementById('el-card').classList.remove('animate-slide');
+  void document.getElementById('el-card').offsetWidth;
+  document.getElementById('el-card').classList.add('animate-slide');
+  document.getElementById('confetti-container').innerHTML='';
+}
+
+function answer(val){
+  if(game.answered)return;
+  game.answered=true;
+  const q=game.questions[game.current];
+  const correct=val===q.a;
+  if(correct){
+    game.streak++;
+    game.correct++;
+    const bonus=game.streak>=3?game.streak*5:0;
+    const pts=10+bonus;
+    game.score+=pts;
+    if(game.streak>game.bestStreak)game.bestStreak=game.streak;
+    if(game.streak>=2)spawnConfetti();
+  }else{
+    game.streak=0;
+  }
+  document.getElementById('el-score').textContent=game.score;
+  document.getElementById('el-streak').textContent=game.streak;
+  const sb=document.getElementById('el-streak-badge');
+  sb.style.opacity=game.streak>=2?'1':'0';
+  if(game.streak>=3)sb.classList.add('streak-glow');else sb.classList.remove('streak-glow');
+
+  document.getElementById('el-buttons').style.opacity='0.4';
+  document.getElementById('el-buttons').style.pointerEvents='none';
+
+  const ri=document.getElementById('el-result-icon');
+  ri.innerHTML=correct?'<span style="color:#4ade80">✓ Correct!</span>':'<span style="color:#f87171">✗ Wrong!</span>';
+  if(correct&&game.streak>=3)ri.innerHTML+='<span style="color:#fb923c;font-size:0.8em;margin-left:8px">🔥 +'+game.streak*5+' streak bonus!</span>';
+  document.getElementById('el-explain-text').textContent=q.e;
+  const isLast=game.current>=game.questions.length-1;
+  document.getElementById('el-next-btn').textContent=isLast?'See Results':'Next →';
+  document.getElementById('el-explanation').classList.remove('hidden');
+}
+
+function nextQuestion(){
+  game.current++;
+  if(game.current>=game.questions.length){showResults();return}
+  showQuestion();
+}
+
+function showResults(){
+  document.getElementById('el-final-score').textContent=game.score;
+  document.getElementById('el-correct').textContent=game.correct;
+  document.getElementById('el-wrong').textContent=game.questions.length-game.correct;
+  document.getElementById('el-best-streak').textContent=game.bestStreak;
+  const pct=game.correct/game.questions.length;
+  document.getElementById('el-result-emoji').textContent=pct>=0.8?'🏆':pct>=0.5?'👏':'📚';
+  document.getElementById('el-bar').style.width='100%';
+  document.getElementById('el-share-toast').classList.add('hidden');
+  showScreen('screen-results');
+}
+
+function spawnConfetti(){
+  const c=document.getElementById('confetti-container');
+  const colors=['#facc15','#4ade80','#fb923c','#60a5fa','#f472b6'];
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=Math.random()*100+'%';
+    p.style.top=Math.random()*40+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.animationDelay=Math.random()*0.3+'s';
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.innerHTML='',1500);
+}
+
+function shareScore(){
+  const pct=Math.round(game.correct/game.questions.length*100);
+  const text=`🏛️ IRS: Fact or Fiction?\n\nScore: ${game.score} pts\n✅ ${game.correct}/${game.questions.length} correct (${pct}%)\n🔥 Best streak: ${game.bestStreak}\n\nThink you can beat me?`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const t=document.getElementById('el-share-toast');
+    t.classList.remove('hidden');
+    setTimeout(()=>t.classList.add('hidden'),3000);
+  }).catch(()=>{});
+}
+
+// Element SDK
+const defaultConfig={
+  game_title:"IRS: Fact or Fiction?",
+  subtitle:"Test your tax knowledge",
+  background_color:"#0f172a",
+  surface_color:"#1e293b",
+  text_color:"#e2e8f0",
+  accent_color:"#facc15",
+  secondary_color:"#94a3b8",
+  font_family:"DM Serif Display",
+  font_size:16
+};
+
+function applyConfig(cfg){
+  const c=k=>cfg[k]||defaultConfig[k];
+  document.getElementById('app').style.background=c('background_color');
+  document.getElementById('el-title').textContent=c('game_title');
+  document.getElementById('el-title').style.color=c('accent_color');
+  document.getElementById('el-subtitle').textContent=c('subtitle');
+  document.getElementById('el-subtitle').style.color=c('secondary_color');
+
+  const font=c('font_family');
+  const baseSize=c('font_size');
+  document.getElementById('el-title').style.fontFamily=`${font}, serif`;
+  document.getElementById('el-title').style.fontSize=`${baseSize*2.8}px`;
+  document.getElementById('el-statement').style.fontFamily=`${font}, serif`;
+  document.getElementById('el-statement').style.fontSize=`${baseSize*1.5}px`;
+
+  document.querySelectorAll('[style*="background:#1e293b"]').forEach(el=>el.style.background=c('surface_color'));
+  document.querySelectorAll('[style*="color:#facc15"]').forEach(el=>{if(el.id!=='el-title')el.style.color=c('accent_color')});
+  document.querySelectorAll('[style*="color:#e2e8f0"]').forEach(el=>el.style.color=c('text_color'));
+  document.querySelectorAll('[style*="color:#94a3b8"]').forEach(el=>el.style.color=c('secondary_color'));
+
+  document.querySelectorAll('[style*="background:#facc15"]').forEach(el=>{el.style.background=c('accent_color');el.style.color=c('background_color')});
+  document.getElementById('el-bar').style.background=c('accent_color');
+}
+
+if(window.elementSdk){
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange:async(cfg)=>applyConfig(cfg),
+    mapToCapabilities:(cfg)=>({
+      recolorables:[
+        {get:()=>cfg.background_color||defaultConfig.background_color,set:v=>{cfg.background_color=v;window.elementSdk.setConfig({background_color:v})}},
+        {get:()=>cfg.surface_color||defaultConfig.surface_color,set:v=>{cfg.surface_color=v;window.elementSdk.setConfig({surface_color:v})}},
+        {get:()=>cfg.text_color||defaultConfig.text_color,set:v=>{cfg.text_color=v;window.elementSdk.setConfig({text_color:v})}},
+        {get:()=>cfg.accent_color||defaultConfig.accent_color,set:v=>{cfg.accent_color=v;window.elementSdk.setConfig({accent_color:v})}},
+        {get:()=>cfg.secondary_color||defaultConfig.secondary_color,set:v=>{cfg.secondary_color=v;window.elementSdk.setConfig({secondary_color:v})}}
+      ],
+      borderables:[],
+      fontEditable:{get:()=>cfg.font_family||defaultConfig.font_family,set:v=>{cfg.font_family=v;window.elementSdk.setConfig({font_family:v})}},
+      fontSizeable:{get:()=>cfg.font_size||defaultConfig.font_size,set:v=>{cfg.font_size=v;window.elementSdk.setConfig({font_size:v})}}
+    }),
+    mapToEditPanelValues:(cfg)=>new Map([
+      ["game_title",cfg.game_title||defaultConfig.game_title],
+      ["subtitle",cfg.subtitle||defaultConfig.subtitle]
+    ])
+  });
+}
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e01ea3666a827c9',t:'MTc3NDE0ODA5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

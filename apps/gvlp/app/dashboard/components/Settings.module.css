@@ -1,0 +1,210 @@
+.container {
+  animation: fadeUp 0.3s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.heading {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.subheading {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+}
+
+/* ── Cards ── */
+.card {
+  background: rgba(42, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(196, 30, 58, 0.15);
+  margin-bottom: 4px;
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Rows ── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 6px 0;
+}
+
+.rowLabel {
+  width: 110px;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+
+.rowValue {
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.tierBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--brand-gold);
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* ── Client ID ── */
+.clientIdRow {
+  background: rgba(10, 4, 8, 0.6);
+  border: 1px solid rgba(196, 30, 58, 0.15);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+
+.clientIdValue {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  color: #e8d5dc;
+  word-break: break-all;
+}
+
+/* ── Buttons ── */
+.dangerBtn {
+  align-self: flex-start;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  background: rgba(196, 30, 58, 0.15);
+  color: var(--brand-pink);
+  border: 1px solid rgba(196, 30, 58, 0.4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.dangerBtn:hover {
+  background: var(--brand-red);
+  border-color: var(--brand-red);
+  color: #fff;
+}
+
+/* ── Confirm box ── */
+.confirmBox {
+  background: rgba(196, 30, 58, 0.08);
+  border: 1px solid rgba(196, 30, 58, 0.3);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.confirmText {
+  font-size: 0.875rem;
+  color: var(--brand-pink);
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirmBtn {
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  background: var(--brand-red);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  transition: opacity 0.18s;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(196, 30, 58, 0.2);
+  transition: color 0.18s;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  color: var(--text);
+}
+
+/* ── Messages ── */
+.successMsg {
+  font-size: 0.875rem;
+  color: #6effb4;
+  background: rgba(42, 170, 96, 0.1);
+  border: 1px solid rgba(42, 170, 96, 0.3);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+.errorMsg {
+  font-size: 0.875rem;
+  color: var(--brand-pink);
+  background: rgba(232, 68, 109, 0.08);
+  border: 1px solid rgba(232, 68, 109, 0.25);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+/* ── Upgrade link ── */
+.upgradeLink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--brand-red), #8b1228);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 12px rgba(196, 30, 58, 0.3);
+}
+
+.upgradeLink:hover {
+  opacity: 0.88;
+  box-shadow: 0 4px 20px rgba(196, 30, 58, 0.5);
+}

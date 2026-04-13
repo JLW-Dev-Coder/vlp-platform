@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deduction Dash</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&amp;family=Nunito:wght@600;800&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  <style>
+html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden}
+*{box-sizing:border-box}
+canvas{display:block}
+.game-wrap{width:100%;height:100%;position:relative;font-family:'Nunito',sans-serif}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10}
+.panel{padding:2.5rem;border-radius:1.2rem;text-align:center;max-width:420px;width:90%}
+.btn{padding:.75rem 2rem;border:none;border-radius:.6rem;font-family:'Bangers',cursive;font-size:1.4rem;cursor:pointer;letter-spacing:1px;transition:transform .15s}
+.btn:hover{transform:scale(1.05)}
+.fact-bar{position:absolute;bottom:0;left:0;right:0;padding:8px 16px;font-size:.75rem;text-align:center;z-index:5;opacity:.85}
+.hud{position:absolute;top:0;left:0;right:0;padding:10px 16px;display:flex;justify-content:space-between;z-index:5;font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:1px}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+ </head>
+ <body class="h-full w-full"><!-- Hub Screen -->
+  <div id="hubScreen" class="overlay" style="background:linear-gradient(135deg,#0f172a 0%,#1a1f3a 100%);inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center">
+   <div style="text-align:center;width:90%;max-width:1000px">
+    <h1 id="hubTitle" style="font-family:'Bangers',cursive;font-size:3.2rem;margin:0 0 1rem;letter-spacing:2px;color:#34d399">Tax Games Hub</h1>
+    <p style="color:#94a3b8;margin:0 0 2.5rem;font-size:1.1rem">Pick your game and start earning deductions!</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem">
+     <div class="game-card" onclick="launchGame('dash')" style="background:rgba(52,211,153,.1);border:2px solid #34d399;border-radius:1.2rem;padding:1.5rem;cursor:pointer;transition:all .3s;text-align:center">
+      <div style="font-size:3rem;margin-bottom:.5rem">
+       🏃
+      </div>
+      <h3 id="game1Title" style="font-family:'Bangers',cursive;font-size:1.8rem;color:#34d399;margin:0 0 .5rem">Deduction Dash</h3>
+      <p style="color:#cbd5e1;font-size:.9rem;margin:0">Collect deductions, dodge audits!</p>
+     </div>
+     <div class="game-card" onclick="launchGame('trivia')" style="background:rgba(251,191,36,.1);border:2px solid #fbbf24;border-radius:1.2rem;padding:1.5rem;cursor:pointer;transition:all .3s;text-align:center">
+      <div style="font-size:3rem;margin-bottom:.5rem">
+       🧠
+      </div>
+      <h3 id="game2Title" style="font-family:'Bangers',cursive;font-size:1.8rem;color:#fbbf24;margin:0 0 .5rem">Tax Trivia</h3>
+      <p style="color:#cbd5e1;font-size:.9rem;margin:0">Answer tax questions right!</p>
+     </div>
+     <div class="game-card" onclick="launchGame('clicks')" style="background:rgba(248,113,113,.1);border:2px solid #f87171;border-radius:1.2rem;padding:1.5rem;cursor:pointer;transition:all .3s;text-align:center">
+      <div style="font-size:3rem;margin-bottom:.5rem">
+       💰
+      </div>
+      <h3 id="game3Title" style="font-family:'Bangers',cursive;font-size:1.8rem;color:#f87171;margin:0 0 .5rem">Money Clicker</h3>
+      <p style="color:#cbd5e1;font-size:.9rem;margin:0">Click your way to riches!</p>
+     </div>
+    </div><button class="btn" style="background:#94a3b8;color:#0f172a;margin-top:2rem" onclick="goToHub()">← Back to Hub</button>
+   </div>
+  </div>
+  <style>
+    .game-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(52,211,153,.2);
+    }
+  </style>
+  <div class="game-wrap" id="wrap">
+   <canvas id="c"></canvas><!-- HUD -->
+   <div class="hud" id="hud" style="display:none"><span id="hudScore">$0</span> <span id="hudDist">0m</span> <span id="hudPower" style="opacity:0">⚡ SHIELD</span> <button class="btn" style="background:#94a3b8;color:#0f172a;font-size:.9rem;padding:.5rem 1rem" onclick="goToHub()">HUB</button>
+   </div><!-- Fact bar -->
+   <div class="fact-bar" id="factBar" style="display:none"></div><!-- Start screen -->
+   <div class="overlay" id="startScreen">
+    <div class="panel" style="background:rgba(15,23,42,.92);backdrop-filter:blur(8px)">
+     <h1 id="titleEl" style="font-family:'Bangers',cursive;font-size:2.6rem;margin:0 0 .3rem;letter-spacing:2px;color:#34d399">Deduction Dash</h1>
+     <p style="color:#94a3b8;margin:0 0 1.5rem;font-size:.95rem">Collect deductions. Dodge audits. Max your refund!</p><button class="btn" style="background:#34d399;color:#0f172a" onclick="startGame('dash')">▶ PLAY</button> <button class="btn" style="background:#94a3b8;color:#0f172a;margin-top:.5rem" onclick="goToHub()">← Back</button>
+    </div>
+   </div><!-- End screen -->
+   <div class="overlay" id="endScreen" style="display:none">
+    <div class="panel" style="background:rgba(15,23,42,.92);backdrop-filter:blur(8px)">
+     <h2 style="font-family:'Bangers',cursive;font-size:2rem;color:#34d399;margin:0 0 .2rem">Tax Refund Tally</h2>
+     <div id="tallyList" style="color:#cbd5e1;text-align:left;margin:1rem 0;font-size:.9rem;line-height:1.8"></div>
+     <div style="border-top:1px solid #334155;padding-top:.8rem;margin-top:.5rem"><span style="font-family:'Bangers',cursive;font-size:1.8rem;color:#fbbf24" id="totalRefund">$0</span>
+      <p style="color:#64748b;font-size:.75rem;margin:.2rem 0 1rem">Total Refund</p>
+     </div>
+     <div style="color:#94a3b8;font-size:.8rem;margin-bottom:1rem">
+      Distance: <span id="endDist">0</span>m
+     </div><button class="btn" style="background:#34d399;color:#0f172a" onclick="startGame('dash')">↻ PLAY AGAIN</button> <button class="btn" style="background:#94a3b8;color:#0f172a;margin-top:.5rem" onclick="goToHub()">← Back to Hub</button>
+    </div>
+   </div>
+  </div>
+  <script>
+const defaultConfig={hub_title:"Tax Games Hub",game_1_title:"Deduction Dash",game_2_title:"Tax Trivia",game_3_title:"Money Clicker",bg_color:"#0f172a",surface_color:"#1e293b",text_color:"#34d399",primary_action:"#fbbf24",secondary_action:"#f87171",font_family:"Nunito",font_size:16};
+let config={...defaultConfig};
+let currentGame='none';
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange:async(c)=>{
+    config=c;
+    document.getElementById('hubTitle').textContent=c.hub_title||defaultConfig.hub_title;
+    document.getElementById('game1Title').textContent=c.game_1_title||defaultConfig.game_1_title;
+    document.getElementById('game2Title').textContent=c.game_2_title||defaultConfig.game_2_title;
+    document.getElementById('game3Title').textContent=c.game_3_title||defaultConfig.game_3_title;
+    document.body.style.background=c.bg_color||defaultConfig.bg_color;
+  },
+  mapToCapabilities:(c)=>({
+    recolorables:[
+      {get:()=>c.bg_color||defaultConfig.bg_color,set:v=>{c.bg_color=v;window.elementSdk.setConfig({bg_color:v})}},
+      {get:()=>c.surface_color||defaultConfig.surface_color,set:v=>{c.surface_color=v;window.elementSdk.setConfig({surface_color:v})}},
+      {get:()=>c.text_color||defaultConfig.text_color,set:v=>{c.text_color=v;window.elementSdk.setConfig({text_color:v})}},
+      {get:()=>c.primary_action||defaultConfig.primary_action,set:v=>{c.primary_action=v;window.elementSdk.setConfig({primary_action:v})}},
+      {get:()=>c.secondary_action||defaultConfig.secondary_action,set:v=>{c.secondary_action=v;window.elementSdk.setConfig({secondary_action:v})}}
+    ],
+    borderables:[],
+    fontEditable:{get:()=>c.font_family||defaultConfig.font_family,set:v=>{c.font_family=v;window.elementSdk.setConfig({font_family:v})}},
+    fontSizeable:{get:()=>c.font_size||defaultConfig.font_size,set:v=>{c.font_size=v;window.elementSdk.setConfig({font_size:v})}}
+  }),
+  mapToEditPanelValues:(c)=>new Map([["hub_title",c.hub_title||defaultConfig.hub_title],["game_1_title",c.game_1_title||defaultConfig.game_1_title],["game_2_title",c.game_2_title||defaultConfig.game_2_title],["game_3_title",c.game_3_title||defaultConfig.game_3_title]])
+});
+
+function goToHub(){
+  gameStarted=false;gameOver=false;
+  document.getElementById('hubScreen').style.display='flex';
+  document.getElementById('wrap').style.display='none';
+  currentGame='none';
+  cancelAnimationFrame(raf);
+}
+
+function launchGame(game){
+  currentGame=game;
+  document.getElementById('hubScreen').style.display='none';
+  document.getElementById('wrap').style.display='block';
+  setTimeout(()=>{startGame(game)},50);
+}
+
+// Game constants
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const SCALE=1.5; // 50% larger
+const GRAVITY=0.6*SCALE, JUMP=-12*SCALE, GROUND_H=60*SCALE;
+const deductionTypes=[
+  {emoji:'🧾',label:'Receipt',value:50},
+  {emoji:'💝',label:'Charity',value:100},
+  {emoji:'💼',label:'Business Exp',value:75},
+  {emoji:'🏠',label:'Home Office',value:120},
+  {emoji:'📚',label:'Education',value:90},
+  {emoji:'🏥',label:'Medical',value:80}
+];
+const facts=[
+  "The average US tax refund is about $3,000!",
+  "You can deduct up to $300 in charitable donations without itemizing.",
+  "Home office deductions cover rent, utilities & internet!",
+  "Business meals are 50% deductible in most cases.",
+  "Student loan interest is deductible up to $2,500/year.",
+  "Medical expenses over 7.5% of income are deductible.",
+  "Self-employed? You can deduct health insurance premiums!",
+  "Moving expenses are deductible for active military members.",
+  "Energy-efficient home upgrades can earn tax credits!",
+  "Teachers can deduct up to $300 for classroom supplies."
+];
+
+let W,H,groundY,player,items,obstacles,particles,score,dist,speed,shieldTimer,gameOver,gameStarted,collected,factIdx,factTimer,starsBg;
+
+function resize(){
+  W=canvas.width=canvas.parentElement.clientWidth;
+  H=canvas.height=canvas.parentElement.clientHeight;
+  groundY=H-GROUND_H;
+}
+resize();
+window.addEventListener('resize',resize);
+
+function init(){
+  player={x:80*SCALE,y:groundY-50*SCALE,w:40*SCALE,h:50*SCALE,vy:0,grounded:true};
+  items=[];obstacles=[];particles=[];
+  score=0;dist=0;speed=4;shieldTimer=0;gameOver=false;gameStarted=true;
+  collected={};factIdx=0;factTimer=0;
+  starsBg=Array.from({length:60},()=>({x:Math.random()*W,y:Math.random()*(H-GROUND_H),s:Math.random()*2+1,sp:Math.random()*0.5+0.2}));
+}
+
+function startGame(){
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('endScreen').style.display='none';
+  document.getElementById('hud').style.display='flex';
+  document.getElementById('factBar').style.display='block';
+  init();
+  loop();
+}
+
+function endGame(){
+  gameOver=true;
+  document.getElementById('hud').style.display='none';
+  document.getElementById('factBar').style.display='none';
+  // Build tally
+  let html='';
+  for(const[k,v]of Object.entries(collected)){
+    html+=`<div style="display:flex;justify-content:space-between"><span>${k}</span><span style="color:#fbbf24">$${v.total} (×${v.count})</span></div>`;
+  }
+  if(!html) html='<div style="color:#64748b">No deductions collected!</div>';
+  document.getElementById('tallyList').innerHTML=html;
+  document.getElementById('totalRefund').textContent='$'+score;
+  document.getElementById('endDist').textContent=Math.floor(dist);
+  document.getElementById('endScreen').style.display='flex';
+}
+
+// Input
+let jumpPressed=false;
+function doJump(){if(player.grounded){player.vy=JUMP;player.grounded=false}}
+document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='ArrowUp')&&gameStarted&&!gameOver){e.preventDefault();doJump()}});
+document.addEventListener('touchstart',e=>{if(gameStarted&&!gameOver){e.preventDefault();doJump()}},{passive:false});
+canvas.addEventListener('click',()=>{if(gameStarted&&!gameOver)doJump()});
+
+function spawnItem(){
+  const t=deductionTypes[Math.floor(Math.random()*deductionTypes.length)];
+  const isPower=Math.random()<0.08;
+  items.push({x:W+Math.random()*200,y:groundY-80*SCALE-Math.random()*120*SCALE,type:t,isPower,size:isPower?36*SCALE:28*SCALE,bob:Math.random()*Math.PI*2});
+}
+function spawnObstacle(){
+  const tall=Math.random()<0.3;
+  obstacles.push({x:W+Math.random()*100,y:groundY-(tall?70*SCALE:40*SCALE),w:tall?30*SCALE:40*SCALE,h:tall?70*SCALE:40*SCALE});
+}
+
+function addParticles(x,y,color,n=6){
+  for(let i=0;i<n;i++) particles.push({x,y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:30,color,r:Math.random()*4+2});
+}
+
+function update(){
+  if(gameOver)return;
+  dist+=speed*0.05;
+  speed=4+dist*0.008;
+  if(shieldTimer>0)shieldTimer--;
+
+  // Player physics
+  player.vy+=GRAVITY;
+  player.y+=player.vy;
+  if(player.y>=groundY-player.h){player.y=groundY-player.h;player.vy=0;player.grounded=true}
+
+  // Spawning
+  if(Math.random()<0.025)spawnItem();
+  if(Math.random()<0.015)spawnObstacle();
+
+  // Items
+  for(let i=items.length-1;i>=0;i--){
+    const it=items[i];
+    it.x-=speed;it.bob+=0.06;
+    if(it.x<-50){items.splice(i,1);continue}
+    // Collision
+    if(Math.abs((player.x+player.w/2)-(it.x))<30*SCALE&&Math.abs((player.y+player.h/2)-(it.y+Math.sin(it.bob)*6))<30*SCALE){
+      if(it.isPower){shieldTimer=300;addParticles(it.x,it.y,'#a78bfa',10)}
+      else{
+        const v=it.type.value;score+=v;
+        if(!collected[it.type.emoji+' '+it.type.label])collected[it.type.emoji+' '+it.type.label]={count:0,total:0};
+        collected[it.type.emoji+' '+it.type.label].count++;
+        collected[it.type.emoji+' '+it.type.label].total+=v;
+        addParticles(it.x,it.y,'#34d399');
+      }
+      items.splice(i,1);
+    }
+  }
+
+  // Obstacles
+  for(let i=obstacles.length-1;i>=0;i--){
+    const o=obstacles[i];
+    o.x-=speed;
+    if(o.x<-60){obstacles.splice(i,1);continue}
+    if(player.x+player.w-8>o.x&&player.x+8<o.x+o.w&&player.y+player.h>o.y){
+      if(shieldTimer>0){shieldTimer=0;obstacles.splice(i,1);addParticles(o.x,o.y,'#fbbf24',8)}
+      else{addParticles(player.x,player.y,'#f87171',12);endGame()}
+    }
+  }
+
+  // Particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.life--;
+    if(p.life<=0)particles.splice(i,1);
+  }
+
+  // Facts
+  factTimer++;
+  if(factTimer>360){factTimer=0;factIdx=(factIdx+1)%facts.length}
+  document.getElementById('factBar').textContent='💡 '+facts[factIdx];
+  document.getElementById('hudScore').textContent='$'+score;
+  document.getElementById('hudDist').textContent=Math.floor(dist)+'m';
+  const pe=document.getElementById('hudPower');
+  pe.style.opacity=shieldTimer>0?'1':'0';
+}
+
+function draw(){
+  const bg=config.bg_color||defaultConfig.bg_color;
+  const surface=config.surface_color||defaultConfig.surface_color;
+  const accent=config.text_color||defaultConfig.text_color;
+  const primary=config.primary_action||defaultConfig.primary_action;
+  const danger=config.secondary_action||defaultConfig.secondary_action;
+
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // Stars
+  ctx.fillStyle=accent+'44';
+  starsBg.forEach(s=>{s.x-=s.sp;if(s.x<0)s.x=W;ctx.beginPath();ctx.arc(s.x,s.y,s.s,0,Math.PI*2);ctx.fill()});
+
+  // Distant buildings
+  ctx.fillStyle=surface+'99';
+  for(let i=0;i<8;i++){const bw=40+Math.random()*20;ctx.fillRect(i*W/8,groundY-60-i%3*30,bw,60+i%3*30)}
+
+  // Ground
+  ctx.fillStyle=surface;
+  ctx.fillRect(0,groundY,W,GROUND_H);
+  ctx.fillStyle=accent+'33';
+  for(let x=(-(dist*speed*2)%40);x<W;x+=40){ctx.fillRect(x,groundY,20,2)}
+
+  // Items
+  items.forEach(it=>{
+    const yy=it.y+Math.sin(it.bob)*6;
+    if(it.isPower){
+      ctx.fillStyle='#a78bfa';ctx.font=`${it.size}px serif`;ctx.fillText('⚡',it.x-it.size/2,yy+it.size/3);
+      ctx.shadowColor='#a78bfa';ctx.shadowBlur=12;ctx.shadowBlur=0;
+    }else{
+      ctx.font=`${it.size}px serif`;ctx.fillText(it.type.emoji,it.x-it.size/2,yy+it.size/3);
+    }
+  });
+
+  // Obstacles
+  obstacles.forEach(o=>{
+    ctx.fillStyle=danger;
+    ctx.fillRect(o.x,o.y,o.w,o.h);
+    ctx.fillStyle='#fff';ctx.font='bold 11px Nunito';ctx.textAlign='center';
+    ctx.fillText('IRS',o.x+o.w/2,o.y+o.h/2+4);ctx.textAlign='left';
+  });
+
+  // Player
+  const px=player.x,py=player.y;
+  if(shieldTimer>0){ctx.strokeStyle='#a78bfa';ctx.lineWidth=2*SCALE;ctx.beginPath();ctx.arc(px+20*SCALE,py+25*SCALE,32*SCALE,0,Math.PI*2);ctx.stroke()}
+  // Body
+  ctx.fillStyle=primary;
+  ctx.beginPath();ctx.roundRect(px+8*SCALE,py+10*SCALE,24*SCALE,28*SCALE,6*SCALE);ctx.fill();
+  // Head
+  ctx.fillStyle='#fde68a';
+  ctx.beginPath();ctx.arc(px+20*SCALE,py+6*SCALE,12*SCALE,0,Math.PI*2);ctx.fill();
+  // Eyes
+  ctx.fillStyle=bg;
+  ctx.beginPath();ctx.arc(px+17*SCALE,py+4*SCALE,2*SCALE,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(px+24*SCALE,py+4*SCALE,2*SCALE,0,Math.PI*2);ctx.fill();
+  // Legs (animated)
+  ctx.fillStyle=accent;
+  const legOff=Math.sin(dist*2)*5*SCALE;
+  ctx.fillRect(px+12*SCALE,py+38*SCALE,6*SCALE,12*SCALE+legOff);
+  ctx.fillRect(px+22*SCALE,py+38*SCALE,6*SCALE,12*SCALE-legOff);
+
+  // Particles
+  particles.forEach(p=>{ctx.globalAlpha=p.life/30;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()});
+  ctx.globalAlpha=1;
+}
+
+let raf;
+function loop(){
+  if(!gameStarted)return;
+  update();draw();
+  if(!gameOver)raf=requestAnimationFrame(loop);
+}
+
+// Idle draw
+function idleDraw(){
+  if(gameStarted)return;
+  const bg=config.bg_color||defaultConfig.bg_color;
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  if(!starsBg)starsBg=Array.from({length:60},()=>({x:Math.random()*W,y:Math.random()*H,s:Math.random()*2+1,sp:Math.random()*0.5+0.2}));
+  ctx.fillStyle=(config.text_color||defaultConfig.text_color)+'44';
+  starsBg.forEach(s=>{s.x-=s.sp;if(s.x<0)s.x=W;ctx.beginPath();ctx.arc(s.x,s.y,s.s,0,Math.PI*2);ctx.fill()});
+  requestAnimationFrame(idleDraw);
+}
+idleDraw();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e01e9bc544627c9',t:'MTc3NDE0ODA4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

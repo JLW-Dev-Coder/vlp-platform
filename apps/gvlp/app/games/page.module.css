@@ -1,0 +1,233 @@
+/* ── Games gallery page ── */
+
+.main {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* ── Ambient blobs ── */
+
+.blob1 {
+  position: absolute;
+  top: -120px;
+  left: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(196, 30, 58, 0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blob2 {
+  position: absolute;
+  bottom: 80px;
+  right: -180px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Hero ── */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem 3rem;
+  text-align: center;
+}
+
+.heroEyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-red, #c41e3a);
+  margin-bottom: 0.75rem;
+}
+
+.heroHeadline {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  color: var(--text, #f0e6ea);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+
+.heroSub {
+  font-size: 1.05rem;
+  color: var(--text-muted, #9a7a85);
+  line-height: 1.65;
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+/* ── Grid section ── */
+
+.gridSection {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+/* ── Game card ── */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem 1.5rem;
+  background: rgba(42, 15, 30, 0.7);
+  border: 1px solid rgba(196, 30, 58, 0.18);
+  border-radius: var(--radius-lg, 20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(196, 30, 58, 0.22);
+  border-color: rgba(196, 30, 58, 0.45);
+}
+
+.cardEmoji {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.cardName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text, #f0e6ea);
+  margin: 0;
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: var(--text-muted, #9a7a85);
+  line-height: 1.55;
+  flex: 1;
+  margin: 0;
+}
+
+/* ── Tier badges ── */
+
+.tierBadge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.75rem;
+  border-radius: 50px;
+  border: 1px solid transparent;
+  margin-top: 0.25rem;
+}
+
+.tierStarter {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.tierApprentice {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.tierStrategist {
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.tierNavigator {
+  background: rgba(196, 30, 58, 0.15);
+  color: #f87171;
+  border-color: rgba(196, 30, 58, 0.35);
+}
+
+/* ── CTA strip ── */
+
+.ctaStrip {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 3rem 1.5rem 5rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.ctaHeading {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text, #f0e6ea);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.ctaSub {
+  font-size: 0.95rem;
+  color: var(--text-muted, #9a7a85);
+  margin-bottom: 1.75rem;
+}
+
+.ctaBtn {
+  display: inline-block;
+  padding: 0.8rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #c41e3a, #e8446d);
+  border-radius: 50px;
+  transition: transform 0.18s, box-shadow 0.18s;
+  text-decoration: none;
+}
+
+.ctaBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(196, 30, 58, 0.45);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .hero {
+    padding: 3.5rem 1rem 2rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 1.5rem 1.25rem;
+  }
+}

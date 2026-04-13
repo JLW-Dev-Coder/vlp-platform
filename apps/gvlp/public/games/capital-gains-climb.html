@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capital Gains Climb</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;family=Outfit:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  <style>
+html, body { height: 100%; margin: 0; overflow: hidden; }
+* { box-sizing: border-box; }
+canvas { display: block; }
+.pixel-font { font-family: 'Press Start 2P', monospace; }
+.body-font { font-family: 'Outfit', sans-serif; }
+@keyframes coinFloat { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
+@keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.fade-in { animation: fadeIn 0.5s ease forwards; }
+.coin-float { animation: coinFloat 1.5s ease-in-out infinite; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+ </head>
+ <body class="h-full body-font" style="background:#0a0e1a;">
+  <div id="app" class="h-full w-full relative overflow-hidden" style="background: linear-gradient(135deg, #0a0e1a 0%, #1a1040 50%, #0a0e1a 100%);"><!-- HUD -->
+   <div id="hud" class="absolute top-0 left-0 right-0 z-20 p-3 flex items-center justify-between" style="display:none; background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);">
+    <div class="flex items-center gap-4"><span class="pixel-font text-yellow-400 text-xs" id="scoreDisplay">$0</span> <span class="pixel-font text-emerald-400 text-xs" id="levelDisplay">LVL 1</span>
+    </div>
+    <div class="flex-1 mx-4 max-w-xs">
+     <div class="h-3 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);">
+      <div id="progressBar" class="h-full rounded-full transition-all duration-300" style="width:0%; background: linear-gradient(90deg, #34d399, #fbbf24);"></div>
+     </div>
+    </div><span class="pixel-font text-xs" style="color:#c084fc;" id="titleHud">Capital Gains Climb</span>
+   </div><!-- Canvas -->
+   <canvas id="gameCanvas" class="absolute inset-0 z-10"></canvas><!-- Start Screen -->
+   <div id="startScreen" class="absolute inset-0 z-30 flex flex-col items-center justify-center text-center p-6">
+    <div class="coin-float mb-6">
+     <div class="w-20 h-20 rounded-full flex items-center justify-center text-4xl" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 40px rgba(251,191,36,0.4);">
+      💰
+     </div>
+    </div>
+    <h1 id="mainTitle" class="pixel-font text-2xl md:text-3xl mb-3" style="color:#fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.5);">Capital Gains Climb</h1>
+    <p class="text-gray-400 mb-8 max-w-sm">Jump between investments, collect capital gains, and dodge tax penalties!</p><button id="startBtn" class="pixel-font text-sm px-8 py-4 rounded-xl text-black font-bold transition-all hover:scale-105 active:scale-95" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 4px 20px rgba(251,191,36,0.4);"> START GAME </button>
+    <div class="mt-6 text-gray-500 text-sm flex items-center gap-2"><span class="px-2 py-1 rounded text-xs" style="background:rgba(255,255,255,0.1);">←→</span> Move <span class="px-2 py-1 rounded text-xs" style="background:rgba(255,255,255,0.1);">SPACE</span> Jump
+    </div>
+   </div><!-- Tip Screen -->
+   <div id="tipScreen" class="absolute inset-0 z-30 flex flex-col items-center justify-center text-center p-6" style="display:none; background:rgba(10,14,26,0.95);">
+    <div class="fade-in max-w-md">
+     <div class="text-5xl mb-4">
+      📊
+     </div>
+     <h2 class="pixel-font text-lg mb-2" style="color:#34d399;">LEVEL COMPLETE!</h2>
+     <p class="pixel-font text-sm mb-6" style="color:#fbbf24;" id="tipScore">$0</p>
+     <div class="rounded-xl p-6 mb-8" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+      <p class="text-xs pixel-font mb-2" style="color:#c084fc;">💡 INVESTMENT TIP</p>
+      <p class="text-gray-300 leading-relaxed" id="tipText"></p>
+     </div><button id="nextLevelBtn" class="pixel-font text-xs px-8 py-3 rounded-xl text-black font-bold transition-all hover:scale-105" style="background: linear-gradient(135deg, #34d399, #10b981);"> NEXT LEVEL → </button>
+    </div>
+   </div><!-- Game Over -->
+   <div id="gameOverScreen" class="absolute inset-0 z-30 flex flex-col items-center justify-center text-center p-6" style="display:none; background:rgba(10,14,26,0.95);">
+    <div class="fade-in max-w-md">
+     <div class="text-5xl mb-4">
+      🏆
+     </div>
+     <h2 class="pixel-font text-xl mb-2" style="color:#fbbf24;">GAME OVER</h2>
+     <p class="pixel-font text-sm mb-2" style="color:#34d399;" id="finalScore">$0</p>
+     <p class="pixel-font text-xs mb-6" style="color:#c084fc;" id="finalLevel">Level 1</p>
+     <div class="rounded-xl p-4 mb-6" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+      <p class="pixel-font text-xs mb-3" style="color:#fbbf24;">🏅 SCOREBOARD</p>
+      <div id="scoreboard" class="text-left text-sm text-gray-300 space-y-1"></div>
+     </div><button id="restartBtn" class="pixel-font text-xs px-8 py-3 rounded-xl text-black font-bold transition-all hover:scale-105" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);"> PLAY AGAIN </button>
+    </div>
+   </div>
+  </div>
+  <script>
+const defaultConfig = {
+  game_title: 'Capital Gains Climb',
+  background_color: '#0a0e1a',
+  surface_color: '#1a1040',
+  text_color: '#fbbf24',
+  primary_action_color: '#34d399',
+  secondary_action_color: '#c084fc',
+  font_family: 'Outfit',
+  font_size: 16
+};
+
+let config = { ...defaultConfig };
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (c) => {
+    config = c;
+    const t = c.game_title || defaultConfig.game_title;
+    document.getElementById('mainTitle').textContent = t;
+    document.getElementById('titleHud').textContent = t;
+    document.title = t;
+
+    const bg = c.background_color || defaultConfig.background_color;
+    const sf = c.surface_color || defaultConfig.surface_color;
+    document.getElementById('app').style.background = `linear-gradient(135deg, ${bg} 0%, ${sf} 50%, ${bg} 100%)`;
+
+    const txt = c.text_color || defaultConfig.text_color;
+    document.getElementById('mainTitle').style.color = txt;
+    document.getElementById('scoreDisplay').style.color = txt;
+    document.getElementById('startBtn').style.background = `linear-gradient(135deg, ${txt}, ${txt}dd)`;
+
+    const pa = c.primary_action_color || defaultConfig.primary_action_color;
+    document.getElementById('nextLevelBtn').style.background = `linear-gradient(135deg, ${pa}, ${pa}dd)`;
+    document.getElementById('levelDisplay').style.color = pa;
+
+    const sa = c.secondary_action_color || defaultConfig.secondary_action_color;
+    document.getElementById('titleHud').style.color = sa;
+
+    const ff = c.font_family || defaultConfig.font_family;
+    document.body.style.fontFamily = `${ff}, Outfit, sans-serif`;
+
+    const fs = c.font_size || defaultConfig.font_size;
+    document.querySelectorAll('.body-font p, .body-font span:not(.pixel-font)').forEach(el => {
+      el.style.fontSize = fs + 'px';
+    });
+  },
+  mapToCapabilities: (c) => ({
+    recolorables: [
+      { get: () => c.background_color || defaultConfig.background_color, set: v => { c.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => c.surface_color || defaultConfig.surface_color, set: v => { c.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => c.text_color || defaultConfig.text_color, set: v => { c.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => c.primary_action_color || defaultConfig.primary_action_color, set: v => { c.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+      { get: () => c.secondary_action_color || defaultConfig.secondary_action_color, set: v => { c.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: { get: () => c.font_family || defaultConfig.font_family, set: v => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => c.font_size || defaultConfig.font_size, set: v => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+  }),
+  mapToEditPanelValues: (c) => new Map([
+    ['game_title', c.game_title || defaultConfig.game_title]
+  ])
+});
+
+// Game Engine
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const tips = [
+  "Diversification spreads risk across different asset classes. Don't put all your eggs in one basket!",
+  "Index funds historically outperform most actively managed funds over 10+ years.",
+  "Compound interest is the 8th wonder of the world. Start investing early!",
+  "Tax-loss harvesting can offset gains and reduce your tax bill significantly.",
+  "Emergency fund first! Keep 3-6 months expenses before aggressive investing.",
+  "Dollar-cost averaging removes emotion from investing decisions.",
+  "REITs let you invest in real estate without buying property directly.",
+  "Bond prices move inversely to interest rates. Know the relationship!"
+];
+
+const investmentTypes = ['Stocks','Bonds','ETFs','REITs','Crypto','Index Funds','Mutual Funds','CDs','Treasury','Options'];
+
+let state = 'start';
+let score = 0;
+let level = 1;
+let coinsCollected = 0;
+let totalCoinsInLevel = 0;
+let highScores = JSON.parse(localStorage.getItem('cgc_scores') || '[]');
+
+// Player
+let player = { x:60, y:0, w:28, h:36, vx:0, vy:0, onGround:false, facing:1 };
+const GRAVITY = 0.55;
+const JUMP = -11;
+const SPEED = 4;
+const FRICTION = 0.85;
+
+let keys = {};
+let platforms = [];
+let coins = [];
+let traps = [];
+let particles = [];
+let exitPortal = null;
+let cameraX = 0;
+let gameTime = 0;
+
+function resize() {
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function generateLevel(lvl) {
+  platforms = [];
+  coins = [];
+  traps = [];
+  particles = [];
+  coinsCollected = 0;
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const numPlats = 8 + lvl * 3;
+  const levelWidth = W + (lvl * 300);
+
+  // Ground
+  platforms.push({ x: 0, y: H - 40, w: 180, h: 18, label: 'START', color: '#34d399' });
+
+  for (let i = 1; i < numPlats; i++) {
+    const px = 120 + (i / numPlats) * (levelWidth - 200);
+    const py = H - 60 - Math.random() * (H * 0.55);
+    const pw = 80 + Math.random() * 60;
+    const label = investmentTypes[i % investmentTypes.length];
+    const color = ['#fbbf24','#60a5fa','#f472b6','#a78bfa','#34d399','#fb923c'][i % 6];
+    platforms.push({ x: px, y: py, w: pw, h: 16, label, color });
+
+    // Coin above platform
+    if (Math.random() < 0.7) {
+      coins.push({ x: px + pw / 2 - 10, y: py - 40, w: 20, h: 20, collected: false, value: 50 + lvl * 25 });
+    }
+
+    // Trap on some platforms
+    if (Math.random() < 0.15 + lvl * 0.05 && i > 2) {
+      traps.push({ x: px + 10, y: py - 22, w: pw - 20, h: 10 });
+    }
+  }
+
+  totalCoinsInLevel = coins.length;
+
+  // Exit portal
+  const lastP = platforms[platforms.length - 1];
+  exitPortal = { x: lastP.x + lastP.w / 2 - 15, y: lastP.y - 50, w: 30, h: 40 };
+
+  // Reset player
+  player.x = 60;
+  player.y = H - 90;
+  player.vx = 0;
+  player.vy = 0;
+  player.onGround = false;
+  cameraX = 0;
+}
+
+function spawnParticles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6 - 2,
+      life: 30 + Math.random() * 20, maxLife: 50, size: 2 + Math.random() * 3, color
+    });
+  }
+}
+
+function update() {
+  if (state !== 'playing') return;
+  gameTime++;
+
+  // Input
+  if (keys['ArrowLeft'] || keys['KeyA']) player.vx -= SPEED * 0.3;
+  if (keys['ArrowRight'] || keys['KeyD']) player.vx += SPEED * 0.3;
+  if ((keys['Space'] || keys['ArrowUp'] || keys['KeyW']) && player.onGround) {
+    player.vy = JUMP;
+    player.onGround = false;
+  }
+
+  player.vx *= FRICTION;
+  if (Math.abs(player.vx) > SPEED) player.vx = SPEED * Math.sign(player.vx);
+  if (player.vx > 0.3) player.facing = 1;
+  if (player.vx < -0.3) player.facing = -1;
+
+  player.vy += GRAVITY;
+  player.x += player.vx;
+  player.y += player.vy;
+  player.onGround = false;
+
+  // Platform collision
+  for (const p of platforms) {
+    if (player.x + player.w > p.x && player.x < p.x + p.w &&
+        player.y + player.h > p.y && player.y + player.h < p.y + p.h + 12 && player.vy >= 0) {
+      player.y = p.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  }
+
+  // Coins
+  for (const c of coins) {
+    if (!c.collected && player.x + player.w > c.x && player.x < c.x + c.w &&
+        player.y + player.h > c.y && player.y < c.y + c.h) {
+      c.collected = true;
+      score += c.value;
+      coinsCollected++;
+      spawnParticles(c.x + 10, c.y + 10, '#fbbf24', 8);
+    }
+  }
+
+  // Traps
+  for (const t of traps) {
+    if (player.x + player.w > t.x && player.x < t.x + t.w &&
+        player.y + player.h > t.y && player.y < t.y + t.h) {
+      score = Math.max(0, score - 100);
+      player.vy = JUMP * 0.7;
+      spawnParticles(player.x + 14, player.y + 18, '#ef4444', 12);
+    }
+  }
+
+  // Exit portal
+  if (exitPortal && player.x + player.w > exitPortal.x && player.x < exitPortal.x + exitPortal.w &&
+      player.y + player.h > exitPortal.y && player.y < exitPortal.y + exitPortal.h) {
+    levelComplete();
+    return;
+  }
+
+  // Fall death
+  if (player.y > canvas.height + 50) {
+    gameOver();
+    return;
+  }
+
+  // Camera
+  const targetCam = player.x - canvas.width * 0.35;
+  cameraX += (targetCam - cameraX) * 0.08;
+  if (cameraX < 0) cameraX = 0;
+
+  // Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life--;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  // HUD
+  document.getElementById('scoreDisplay').textContent = '$' + score;
+  document.getElementById('levelDisplay').textContent = 'LVL ' + level;
+  const pct = totalCoinsInLevel > 0 ? (coinsCollected / totalCoinsInLevel) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (state !== 'playing') return;
+
+  ctx.save();
+  ctx.translate(-cameraX, 0);
+
+  // Stars bg
+  for (let i = 0; i < 40; i++) {
+    const sx = (i * 137 + 50) % (W + 2000);
+    const sy = (i * 97 + 30) % (H - 60);
+    const brightness = 0.3 + 0.2 * Math.sin(gameTime * 0.03 + i);
+    ctx.fillStyle = `rgba(255,255,255,${brightness})`;
+    ctx.fillRect(sx, sy, 2, 2);
+  }
+
+  // Platforms
+  for (const p of platforms) {
+    const grad = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+    grad.addColorStop(0, p.color);
+    grad.addColorStop(1, p.color + '88');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(p.x, p.y, p.w, p.h, 6);
+    ctx.fill();
+
+    // Glow
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.fillStyle = '#fff';
+    ctx.font = '8px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.label, p.x + p.w / 2, p.y + p.h + 14);
+  }
+
+  // Coins
+  for (const c of coins) {
+    if (c.collected) continue;
+    const bob = Math.sin(gameTime * 0.06 + c.x) * 4;
+    ctx.fillStyle = '#fbbf24';
+    ctx.shadowColor = '#fbbf24';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(c.x + 10, c.y + 10 + bob, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#92400e';
+    ctx.font = 'bold 11px Outfit';
+    ctx.textAlign = 'center';
+    ctx.fillText('$', c.x + 10, c.y + 14 + bob);
+  }
+
+  // Traps
+  for (const t of traps) {
+    ctx.fillStyle = '#ef4444';
+    ctx.shadowColor = '#ef4444';
+    ctx.shadowBlur = 8;
+    for (let i = 0; i < t.w; i += 12) {
+      ctx.beginPath();
+      ctx.moveTo(t.x + i, t.y + t.h);
+      ctx.lineTo(t.x + i + 6, t.y);
+      ctx.lineTo(t.x + i + 12, t.y + t.h);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff';
+    ctx.font = '6px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillText('TAX', t.x + t.w / 2, t.y + t.h + 12);
+  }
+
+  // Exit portal
+  if (exitPortal) {
+    const pulse = 0.7 + 0.3 * Math.sin(gameTime * 0.08);
+    ctx.fillStyle = `rgba(168, 85, 247, ${pulse})`;
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.ellipse(exitPortal.x + 15, exitPortal.y + 20, 18, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px Outfit';
+    ctx.textAlign = 'center';
+    ctx.fillText('🚀', exitPortal.x + 15, exitPortal.y + 26);
+  }
+
+  // Player
+  const px = player.x, py = player.y;
+  // Body
+  ctx.fillStyle = '#60a5fa';
+  ctx.beginPath();
+  ctx.roundRect(px + 4, py + 10, 20, 20, 4);
+  ctx.fill();
+  // Head
+  ctx.fillStyle = '#fcd34d';
+  ctx.beginPath();
+  ctx.arc(px + 14, py + 8, 10, 0, Math.PI * 2);
+  ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#1e293b';
+  const eyeOff = player.facing > 0 ? 3 : -3;
+  ctx.fillRect(px + 12 + eyeOff, py + 5, 3, 4);
+  // Legs
+  ctx.fillStyle = '#3b82f6';
+  const legAnim = Math.abs(player.vx) > 0.5 ? Math.sin(gameTime * 0.3) * 4 : 0;
+  ctx.fillRect(px + 6, py + 28, 6, 8 + legAnim);
+  ctx.fillRect(px + 16, py + 28, 6, 8 - legAnim);
+
+  // Particles
+  for (const p of particles) {
+    const alpha = p.life / p.maxLife;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
+}
+
+function levelComplete() {
+  state = 'tip';
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('tipScreen').style.display = 'flex';
+  document.getElementById('tipScore').textContent = '$' + score;
+  document.getElementById('tipText').textContent = tips[(level - 1) % tips.length];
+}
+
+function gameOver() {
+  state = 'over';
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('gameOverScreen').style.display = 'flex';
+  document.getElementById('finalScore').textContent = '$' + score;
+  document.getElementById('finalLevel').textContent = 'Reached Level ' + level;
+
+  highScores.push({ score, level, date: new Date().toLocaleDateString() });
+  highScores.sort((a, b) => b.score - a.score);
+  highScores = highScores.slice(0, 5);
+  try { localStorage.setItem('cgc_scores', JSON.stringify(highScores)); } catch(e) {}
+
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = highScores.map((h, i) =>
+    `<div class="flex justify-between px-2 py-1 rounded" style="background:rgba(255,255,255,${i === 0 ? 0.08 : 0.03});">
+      <span class="pixel-font text-xs" style="color:${['#fbbf24','#d1d5db','#d97706'][i] || '#9ca3af'}">#${i + 1}</span>
+      <span class="text-gray-300">$${h.score}</span>
+      <span class="text-gray-500 text-xs">Lvl ${h.level}</span>
+    </div>`
+  ).join('');
+}
+
+function startGame() {
+  score = 0; level = 1; gameTime = 0;
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('gameOverScreen').style.display = 'none';
+  document.getElementById('tipScreen').style.display = 'none';
+  document.getElementById('hud').style.display = 'flex';
+  state = 'playing';
+  generateLevel(level);
+}
+
+function nextLevel() {
+  level++;
+  document.getElementById('tipScreen').style.display = 'none';
+  document.getElementById('hud').style.display = 'flex';
+  state = 'playing';
+  generateLevel(level);
+}
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('restartBtn').addEventListener('click', startGame);
+document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+
+window.addEventListener('keydown', e => { keys[e.code] = true; if (['Space','ArrowUp','ArrowDown'].includes(e.code)) e.preventDefault(); });
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// Touch controls
+let touchStartX = 0;
+let touchActive = false;
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  touchActive = true;
+  touchStartX = e.touches[0].clientX;
+  const midY = canvas.height * 0.5;
+  if (e.touches[0].clientY < midY) keys['Space'] = true;
+}, { passive: false });
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!touchActive) return;
+  const dx = e.touches[0].clientX - touchStartX;
+  keys['ArrowLeft'] = dx < -20;
+  keys['ArrowRight'] = dx > 20;
+}, { passive: false });
+canvas.addEventListener('touchend', e => {
+  touchActive = false;
+  keys['ArrowLeft'] = false;
+  keys['ArrowRight'] = false;
+  keys['Space'] = false;
+});
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+gameLoop();
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e01e928504027c9',t:'MTc3NDE0ODA1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

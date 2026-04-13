@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Trivia</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <link rel="icon" href="https://virtuallaunch.pro/favicon.ico" sizes="any">
+  <link rel="icon" href="https://virtuallaunch.pro/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://virtuallaunch.pro/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="https://virtuallaunch.pro/assets/favicon.ico">
+  <style>
+html, body { height: 100%; margin: 0; }
+* { font-family: 'Chakra Petch', sans-serif; }
+.mono { font-family: 'Space Mono', monospace; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 8px var(--primary); } 50% { box-shadow: 0 0 24px var(--primary); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes coin-spin { 0% { transform: rotateY(0deg) scale(1); } 50% { transform: rotateY(180deg) scale(1.3); } 100% { transform: rotateY(360deg) scale(1); } }
+@keyframes confetti-fall { 0% { transform: translateY(-10px) rotate(0deg); opacity: 1; } 100% { transform: translateY(60px) rotate(720deg); opacity: 0; } }
+.anim-in { animation: slideIn 0.4s ease-out both; }
+.anim-shake { animation: shake 0.4s ease-in-out; }
+.anim-coin { animation: coin-spin 0.6s ease-in-out; }
+.timer-ring { transition: stroke-dashoffset 1s linear; }
+.option-btn { transition: all 0.15s ease; }
+.option-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.option-btn:disabled { cursor: default; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script>
+// URL params injected by embed page
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  window._gvlp = {
+    clientId: p.get('client_id') || '',
+    visitorId: p.get('visitor_id') || '',
+    tokensRemaining: parseInt(p.get('tokens_remaining') || '0', 10),
+    gameSlug: p.get('game') || ''
+  };
+})();
+  </script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto" style="background: var(--bg);"><!-- START SCREEN -->
+   <div id="screen-start" class="h-full flex flex-col items-center justify-center p-6 text-center">
+    <div class="anim-in" style="animation-delay: 0.1s;">
+     <div class="text-7xl mb-4">
+      🏛️
+     </div>
+     <h1 id="el-title" class="text-4xl md:text-5xl font-bold mb-2" style="color: var(--text);">Tax Trivia</h1>
+     <p class="text-lg mb-8 opacity-70" style="color: var(--text);">Test your tax knowledge — earn coins for every correct answer!</p>
+    </div>
+    <div class="anim-in" style="animation-delay: 0.3s;"><button id="el-start-btn" onclick="startGame()" class="option-btn font-bold text-xl px-10 py-4 rounded-xl" style="background: var(--primary); color: var(--bg);"> Start Game </button>
+    </div>
+    <div class="anim-in mt-6 flex gap-3 items-center opacity-60" style="animation-delay: 0.5s; color: var(--text);"><i data-lucide="clock" style="width:18px;height:18px;"></i> <span class="text-sm">15 seconds per question · 10 questions</span>
+    </div>
+   </div><!-- GAME SCREEN -->
+   <div id="screen-game" class="h-full flex flex-col p-4 md:p-6 hidden"><!-- Top bar -->
+    <div class="flex items-center justify-between mb-3">
+     <div class="flex items-center gap-2" style="color: var(--primary);"><span class="text-2xl">🪙</span> <span id="score-display" class="mono font-bold text-xl">0</span>
+     </div>
+     <div class="mono text-sm opacity-70" style="color: var(--text);"><span id="q-counter">1</span>/10
+     </div>
+    </div><!-- Progress bar -->
+    <div class="w-full h-2 rounded-full mb-5 overflow-hidden" style="background: var(--surface);">
+     <div id="progress-bar" class="h-full rounded-full transition-all duration-500" style="background: var(--primary); width: 10%;"></div>
+    </div><!-- Question area -->
+    <div class="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full"><!-- Timer -->
+     <div class="relative mb-4">
+      <svg width="64" height="64" viewbox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="none" stroke-width="4" style="stroke: var(--surface);" /> <circle id="timer-circle" cx="32" cy="32" r="28" fill="none" stroke-width="4" stroke-linecap="round" class="timer-ring" style="stroke: var(--primary); stroke-dasharray: 175.93; stroke-dashoffset: 0;" transform="rotate(-90 32 32)" />
+      </svg><span id="timer-text" class="absolute inset-0 flex items-center justify-center mono font-bold text-lg" style="color: var(--text);">15</span>
+     </div><!-- Illustration + Question -->
+     <div id="q-illustration" class="text-5xl mb-3 anim-in">
+      💰
+     </div>
+     <h2 id="q-text" class="text-xl md:text-2xl font-bold text-center mb-6 anim-in" style="color: var(--text);">Question</h2><!-- Options -->
+     <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mb-4"></div><!-- Fun fact (hidden initially) -->
+     <div id="fun-fact" class="hidden w-full rounded-xl p-4 mt-2 anim-in" style="background: var(--surface); color: var(--text);">
+      <div class="flex items-start gap-2"><span class="text-xl mt-0.5">💡</span>
+       <p id="fact-text" class="text-sm leading-relaxed"></p>
+      </div>
+     </div><!-- Coin animation overlay -->
+     <div id="coin-anim" class="hidden text-4xl anim-coin">
+      🪙
+     </div>
+    </div>
+   </div><!-- RESULTS SCREEN -->
+   <div id="screen-results" class="h-full flex flex-col items-center justify-center p-6 text-center hidden">
+    <div class="anim-in">
+     <div id="result-emoji" class="text-7xl mb-4">
+      🏆
+     </div>
+     <h2 class="text-3xl md:text-4xl font-bold mb-2" style="color: var(--text);">Game Over!</h2>
+     <p class="text-lg opacity-70 mb-2" style="color: var(--text);">You scored</p>
+     <div class="mono text-5xl font-bold mb-1" style="color: var(--primary);">
+      <span id="final-score">0</span> 🪙
+     </div>
+     <p id="result-msg" class="text-base opacity-60 mb-8" style="color: var(--text);"></p>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3 anim-in" style="animation-delay: 0.2s;"><button onclick="startGame()" class="option-btn font-bold px-8 py-3 rounded-xl" style="background: var(--primary); color: var(--bg);"> Play Again </button> <button onclick="challengeFriend()" class="option-btn font-bold px-8 py-3 rounded-xl border-2" style="border-color: var(--secondary); color: var(--secondary); background: transparent;"> <span class="flex items-center gap-2"><i data-lucide="share-2" style="width:18px;height:18px;"></i> Challenge a Friend</span> </button>
+    </div>
+    <div id="share-toast" class="hidden mt-4 px-4 py-2 rounded-lg text-sm font-bold anim-in" style="background: var(--primary); color: var(--bg);">
+     Link copied! Share it with a friend 🎉
+    </div>
+   </div>
+  </div>
+  <script>
+const QUESTIONS = [
+  { q: "What does IRS stand for?", icon: "🏛️", options: ["Internal Revenue Service","International Revenue System","Internal Resource Service","Income Revenue Service"], correct: 0, fact: "The IRS was established in 1862 by President Lincoln to fund the Civil War!" },
+  { q: "When is the typical US tax filing deadline?", icon: "📅", options: ["March 15","April 15","May 1","January 31"], correct: 1, fact: "April 15th became the deadline in 1955. Before that it was March 15!" },
+  { q: "What is a W-2 form used for?", icon: "📄", options: ["Report freelance income","Report wages from an employer","Claim tax refund","File business taxes"], correct: 1, fact: "Employers must send W-2s to employees by January 31 each year." },
+  { q: "Which US amendment allows federal income tax?", icon: "📜", options: ["13th","14th","16th","18th"], correct: 2, fact: "The 16th Amendment was ratified in 1913 — over 110 years ago!" },
+  { q: "What does 'AGI' stand for in taxes?", icon: "🧮", options: ["Annual Gross Intake","Adjusted Gross Income","Applied General Income","Aggregate Gain Index"], correct: 1, fact: "Your AGI determines eligibility for many tax credits and deductions." },
+  { q: "Which is NOT a filing status?", icon: "👤", options: ["Single","Married Filing Jointly","Dependent Minor","Head of Household"], correct: 2, fact: "There are 5 filing statuses. 'Dependent Minor' isn't one of them!" },
+  { q: "What's the standard deduction for a single filer in 2024?", icon: "💵", options: ["$10,500","$14,600","$12,950","$18,000"], correct: 1, fact: "The standard deduction increases most years to keep up with inflation." },
+  { q: "Capital gains tax applies to profits from selling what?", icon: "📈", options: ["Groceries","Investments like stocks","Monthly salary","Tax refunds"], correct: 1, fact: "Long-term capital gains (held 1+ year) are taxed at lower rates than short-term." },
+  { q: "What tax form do most individuals file?", icon: "✏️", options: ["1099","W-4","1040","Schedule C"], correct: 2, fact: "Form 1040 has existed since 1913 and was originally just 1 page with 1 page of instructions!" },
+  { q: "What is a tax bracket?", icon: "📊", options: ["A shelf for tax files","A range of income taxed at a specific rate","A type of tax refund","An IRS penalty"], correct: 1, fact: "The US uses progressive brackets — only income within each range is taxed at that rate." }
+];
+
+let state = { current: 0, score: 0, timer: 15, interval: null, answered: false };
+
+function show(id) { document.querySelectorAll('[id^="screen-"]').forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+
+function startGame() {
+  state = { current: 0, score: 0, timer: 15, interval: null, answered: false };
+  document.getElementById('score-display').textContent = '0';
+  document.getElementById('share-toast').classList.add('hidden');
+  show('screen-game');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const q = QUESTIONS[state.current];
+  state.timer = 15; state.answered = false;
+  document.getElementById('q-counter').textContent = state.current + 1;
+  document.getElementById('progress-bar').style.width = ((state.current + 1) / QUESTIONS.length * 100) + '%';
+  document.getElementById('q-illustration').textContent = q.icon;
+  document.getElementById('q-illustration').className = 'text-5xl mb-3 anim-in';
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-text').className = 'text-xl md:text-2xl font-bold text-center mb-6 anim-in';
+  document.getElementById('fun-fact').classList.add('hidden');
+  document.getElementById('coin-anim').classList.add('hidden');
+  document.getElementById('timer-text').textContent = '15';
+  document.getElementById('timer-circle').style.strokeDashoffset = '0';
+  document.getElementById('timer-circle').style.stroke = 'var(--primary)';
+
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  const labels = ['A','B','C','D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn text-left px-4 py-3 rounded-xl font-semibold border-2 flex items-center gap-3';
+    btn.style.cssText = `border-color: var(--surface); background: var(--surface); color: var(--text);`;
+    btn.innerHTML = `<span class="mono text-xs opacity-50">${labels[i]}</span> ${opt}`;
+    btn.onclick = () => selectAnswer(i);
+    btn.dataset.idx = i;
+    grid.appendChild(btn);
+  });
+
+  clearInterval(state.interval);
+  state.interval = setInterval(tick, 1000);
+}
+
+function tick() {
+  state.timer--;
+  const pct = (1 - state.timer / 15) * 175.93;
+  document.getElementById('timer-circle').style.strokeDashoffset = pct;
+  document.getElementById('timer-text').textContent = state.timer;
+  if (state.timer <= 5) document.getElementById('timer-circle').style.stroke = 'var(--secondary)';
+  if (state.timer <= 0) { clearInterval(state.interval); if (!state.answered) selectAnswer(-1); }
+}
+
+function selectAnswer(idx) {
+  if (state.answered) return;
+  state.answered = true;
+  clearInterval(state.interval);
+  const q = QUESTIONS[state.current];
+  const btns = document.getElementById('options-grid').children;
+
+  for (let b of btns) {
+    const i = parseInt(b.dataset.idx);
+    b.disabled = true;
+    if (i === q.correct) { b.style.borderColor = 'var(--primary)'; b.style.background = 'var(--primary)'; b.style.color = 'var(--bg)'; }
+    else if (i === idx) { b.style.borderColor = 'var(--secondary)'; b.classList.add('anim-shake'); }
+  }
+
+  if (idx === q.correct) {
+    const bonus = Math.max(1, state.timer);
+    state.score += 10 + bonus;
+    document.getElementById('score-display').textContent = state.score;
+    const coin = document.getElementById('coin-anim');
+    coin.classList.remove('hidden'); coin.className = 'text-4xl anim-coin';
+    setTimeout(() => coin.classList.add('hidden'), 700);
+  }
+
+  document.getElementById('fact-text').textContent = q.fact;
+  document.getElementById('fun-fact').classList.remove('hidden');
+  document.getElementById('fun-fact').className = 'w-full rounded-xl p-4 mt-2 anim-in';
+
+  setTimeout(() => {
+    state.current++;
+    if (state.current < QUESTIONS.length) loadQuestion(); else showResults();
+  }, 3000);
+}
+
+function showResults() {
+  show('screen-results');
+  document.getElementById('final-score').textContent = state.score;
+  const pct = state.score / (QUESTIONS.length * 25);
+  if (pct >= 0.8) { document.getElementById('result-emoji').textContent = '🏆'; document.getElementById('result-msg').textContent = 'Tax genius! The IRS should hire you.'; }
+  else if (pct >= 0.5) { document.getElementById('result-emoji').textContent = '📊'; document.getElementById('result-msg').textContent = 'Solid knowledge! A few more deductions to learn.'; }
+  else { document.getElementById('result-emoji').textContent = '📚'; document.getElementById('result-msg').textContent = 'Time to brush up on those tax facts!'; }
+  lucide.createIcons();
+}
+
+function challengeFriend() {
+  const text = `I scored ${state.score} coins in Tax Trivia! 🪙 Think you can beat me?`;
+  if (navigator.share) { navigator.share({ title: 'Tax Trivia Challenge', text }); }
+  else { navigator.clipboard.writeText(text).then(() => { document.getElementById('share-toast').classList.remove('hidden'); }); }
+}
+
+// SDK + Config
+const defaultConfig = {
+  game_title: 'Tax Trivia',
+  start_button_text: 'Start Game',
+  background_color: '#0f1729',
+  surface_color: '#1a2744',
+  text_color: '#e8ecf4',
+  primary_color: '#34d399',
+  secondary_color: '#f87171'
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  const root = document.getElementById('app');
+  root.style.setProperty('--bg', c.background_color);
+  root.style.setProperty('--surface', c.surface_color);
+  root.style.setProperty('--text', c.text_color);
+  root.style.setProperty('--primary', c.primary_color);
+  root.style.setProperty('--secondary', c.secondary_color);
+  document.getElementById('el-title').textContent = c.game_title;
+  document.getElementById('el-start-btn').textContent = c.start_button_text;
+}
+
+applyConfig(defaultConfig);
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.primary_color || defaultConfig.primary_color, set: v => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+      { get: () => config.secondary_color || defaultConfig.secondary_color, set: v => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family || 'Chakra Petch',
+      set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: {
+      get: () => config.font_size || defaultConfig.font_size || 16,
+      set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+    }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['game_title', config.game_title || defaultConfig.game_title],
+    ['start_button_text', config.start_button_text || defaultConfig.start_button_text]
+  ])
+});
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e01ec6dc7b327c9',t:'MTc3NDE0ODE5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
