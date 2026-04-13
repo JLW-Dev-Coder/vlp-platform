@@ -1,0 +1,216 @@
+name: Deploy Pages Apps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/vlp/**'
+      - 'apps/tmp/**'
+      - 'apps/tttmp/**'
+      - 'apps/dvlp/**'
+      - 'apps/gvlp/**'
+      - 'apps/tcvlp/**'
+      - 'apps/wlvlp/**'
+      - 'packages/member-ui/**'
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'App to deploy (all, vlp, tmp, tttmp, dvlp, gvlp, tcvlp, wlvlp)'
+        required: true
+        default: 'all'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      vlp: ${{ steps.filter.outputs.vlp }}
+      tmp: ${{ steps.filter.outputs.tmp }}
+      tttmp: ${{ steps.filter.outputs.tttmp }}
+      dvlp: ${{ steps.filter.outputs.dvlp }}
+      gvlp: ${{ steps.filter.outputs.gvlp }}
+      tcvlp: ${{ steps.filter.outputs.tcvlp }}
+      wlvlp: ${{ steps.filter.outputs.wlvlp }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            vlp:
+              - 'apps/vlp/**'
+              - 'packages/member-ui/**'
+            tmp:
+              - 'apps/tmp/**'
+              - 'packages/member-ui/**'
+            tttmp:
+              - 'apps/tttmp/**'
+              - 'packages/member-ui/**'
+            dvlp:
+              - 'apps/dvlp/**'
+              - 'packages/member-ui/**'
+            gvlp:
+              - 'apps/gvlp/**'
+              - 'packages/member-ui/**'
+            tcvlp:
+              - 'apps/tcvlp/**'
+              - 'packages/member-ui/**'
+            wlvlp:
+              - 'apps/wlvlp/**'
+              - 'packages/member-ui/**'
+
+  deploy-vlp:
+    needs: changes
+    if: |
+      needs.changes.outputs.vlp == 'true' ||
+      github.event.inputs.app == 'vlp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build VLP
+        run: npx turbo build --filter=vlp
+      - name: Pages build
+        run: cd apps/vlp && npm run pages:build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/vlp/.vercel/output/static --project-name=virtuallaunch-pro-web --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-tmp:
+    needs: changes
+    if: |
+      needs.changes.outputs.tmp == 'true' ||
+      github.event.inputs.app == 'tmp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build TMP
+        run: npx turbo build --filter=tmp
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/tmp/out --project-name=taxmonitor-pro-site --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-tttmp:
+    needs: changes
+    if: |
+      needs.changes.outputs.tttmp == 'true' ||
+      github.event.inputs.app == 'tttmp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build TTTMP
+        run: npx turbo build --filter=tttmp
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/tttmp/out --project-name=taxtools-taxmonitor-pro-site --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-dvlp:
+    needs: changes
+    if: |
+      needs.changes.outputs.dvlp == 'true' ||
+      github.event.inputs.app == 'dvlp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build DVLP
+        run: npx turbo build --filter=dvlp
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/dvlp/out --project-name=developers-virtuallaunch-pro-site --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-gvlp:
+    needs: changes
+    if: |
+      needs.changes.outputs.gvlp == 'true' ||
+      github.event.inputs.app == 'gvlp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build GVLP
+        run: npx turbo build --filter=gvlp
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/gvlp/out --project-name=games-virtuallaunch-pro --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-tcvlp:
+    needs: changes
+    if: |
+      needs.changes.outputs.tcvlp == 'true' ||
+      github.event.inputs.app == 'tcvlp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build TCVLP
+        run: npx turbo build --filter=tcvlp
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/tcvlp/out --project-name=taxclaim-virtuallaunch-pro --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-wlvlp:
+    needs: changes
+    if: |
+      needs.changes.outputs.wlvlp == 'true' ||
+      github.event.inputs.app == 'wlvlp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build WLVLP
+        run: npx turbo build --filter=wlvlp
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/wlvlp/out --project-name=websitelotto-virtuallaunch-pro --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
