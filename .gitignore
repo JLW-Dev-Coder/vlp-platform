@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build outputs
+.next/
+.open-next/
+out/
+dist/
+.vercel/
+
+# turbo
+.turbo/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# os
+.DS_Store
+Thumbs.db
+
+# editor
+.vscode/settings.json
+*.swp
+*.swo

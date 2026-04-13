@@ -1,0 +1,14 @@
+/*
+ * @vlp/member-ui — shared member area CSS variables
+ *
+ * These are the structural/neutral variables shared across all platforms.
+ * Brand-specific values (--member-accent, --member-hero-bg, etc.) are
+ * injected at runtime per-platform via PlatformConfig.brandColor.
+ */
+
+:root {
+  --member-bg: #0a0f1e;
+  --member-card: rgba(255, 255, 255, 0.04);
+  --member-card-hover: rgba(255, 255, 255, 0.06);
+  --member-border: rgba(255, 255, 255, 0.08);
+}
