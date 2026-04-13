@@ -1,0 +1,411 @@
+<!-- games/tax-tips-refund-boost.html -->
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tax Tips Refund Boost • Play • TaxTools Arcade</title>
+  <meta name="description" content="Play Tax Tips Refund Boost. Access is verified server-side with an active play session." />
+
+  <link rel="icon" href="/assets/favicon.ico" />
+  <link rel="stylesheet" href="/styles/site.css" />
+
+  
+  
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    .font-display { font-family: 'Fredoka', sans-serif; }
+    .font-body { font-family: 'Fredoka', sans-serif; }
+
+    html, body { background: #020617; color: #fff; }
+    html, body, #app { height: 100%; }
+
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+    }
+
+    @keyframes bounce-in {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { opacity: 1; }
+      70% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes correct-flash {
+      0% { background: rgba(16, 185, 129, 0.1); }
+      50% { background: rgba(16, 185, 129, 0.4); }
+      100% { background: rgba(16, 185, 129, 0.1); }
+    }
+
+    @keyframes pulse-indicator {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.9), inset 0 0 8px rgba(255, 255, 255, 0.5);
+      }
+    }
+
+    .screen { animation: slideIn 0.6s ease-out; }
+    .correct-flash { animation: correct-flash 0.6s ease; }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+      border: 2px solid rgba(16, 185, 129, 0.35);
+      border-radius: 14px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .status-badge:hover {
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.15);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 12px;
+      height: 12px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.3);
+      animation: pulse-indicator 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .status-text {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, #FFD600 0%, #FFC700 100%);
+      border: none;
+      border-radius: 12px;
+      color: #1e3a5f;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px 32px;
+      transition: all 0.3s ease;
+    }
+
+    .button-primary:hover {
+      box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+      transform: translateY(-3px);
+    }
+
+    .button-primary:active { transform: translateY(-1px); }
+
+    .button-secondary {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      padding: 10px 20px;
+      transition: all 0.3s ease;
+    }
+
+    .button-secondary:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 215, 0, 0.5);
+    }
+
+    .game-shell {
+      margin: 0 auto;
+      max-width: 1120px;
+      width: 100%;
+    }
+
+    .question-shell {
+      margin: 0 auto;
+      max-width: 920px;
+      width: 100%;
+    }
+
+    .answer-btn {
+      width: 100%;
+      max-width: 220px;
+    }
+
+    .answers-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .answer-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 16px;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
+
+    .answer-btn:hover:not(.disabled) {
+      background: rgba(255, 215, 0, 0.1);
+      border-color: rgba(255, 215, 0, 0.6);
+      transform: scale(1.02);
+    }
+
+    .answer-btn.correct {
+      animation: bounce-in 0.5s ease;
+      background: rgba(16, 185, 129, 0.3);
+      border-color: #10b981;
+    }
+
+    .answer-btn.incorrect {
+      animation: pulse-glow 0.6s ease;
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+    }
+
+    .answer-btn.disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .score-badge {
+      background: rgba(255, 215, 0, 0.2);
+      border: 2px solid #FFD600;
+      border-radius: 20px;
+      display: inline-block;
+      font-weight: 700;
+      padding: 12px 20px;
+    }
+
+    .leaderboard-entry {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      border-left: 4px solid #FFD600;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      padding: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .leaderboard-entry:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(5px);
+    }
+
+    .medal { font-size: 24px; margin-right: 10px; }
+    .player-rank { font-weight: 700; }
+
+    .power-up-btn {
+      background: rgba(139, 92, 246, 0.3);
+      border: 2px solid rgba(139, 92, 246, 0.6);
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 4px;
+      padding: 8px 12px;
+      transition: all 0.2s ease;
+    }
+
+    .power-up-btn:hover:not(.used) {
+      background: rgba(139, 92, 246, 0.5);
+      border-color: rgba(139, 92, 246, 0.9);
+      transform: scale(1.05);
+    }
+
+    .power-up-btn.used {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    .streak-counter {
+      background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+      border-radius: 20px;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 6px;
+      padding: 8px 16px;
+    }
+
+    .achievement-badge {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      display: inline-flex;
+      font-size: 24px;
+      height: 48px;
+      justify-content: center;
+      margin: 4px;
+      transition: all 0.3s ease;
+      width: 48px;
+    }
+
+    .achievement-badge.unlocked {
+      animation: bounce-in 0.5s ease;
+      background: rgba(255, 215, 0, 0.2);
+      border-color: #FFD600;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .achievement-badge:hover { transform: scale(1.1); }
+  </style>
+</head>
+<body class="h-full font-body bg-slate-950 text-white">
+  <!-- PARTIAL:header -->
+
+  <!-- Status line required by Canonical UX safety -->
+  <div class="mx-auto max-w-6xl px-6 pt-4 pb-4 flex justify-center">
+    <div class="status-badge">
+      <span class="status-indicator" aria-hidden="true"></span>
+      <span id="status" class="status-text">Checking access…</span>
+    </div>
+  </div>
+
+  <div id="app" class="h-full w-full overflow-auto custom-scrollbar" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); padding-bottom: 6rem;">
+    <div id="home-screen" class="screen flex min-h-full flex-col items-center justify-start pt-20 px-6 text-center">
+      <div class="mb-4">
+        <h1 id="game-title" class="mb-4 text-6xl font-black" style="background: linear-gradient(135deg, #FFD600 0%, #FFC700 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Tax Quest</h1>
+        <p class="mb-2 text-2xl font-light">Master tax tips &amp; boost your refund!</p>
+        <p id="company-name" class="text-sm opacity-80"></p>
+      </div>
+
+      <div class="mb-8 w-full max-w-md rounded-3xl bg-white bg-opacity-10 p-8 backdrop-blur-md">
+        <p class="mb-6 text-lg">Ready to test your tax knowledge?</p>
+        <input id="player-name-input" type="text" placeholder="Enter your name" class="mb-4 w-full rounded-lg border-2 border-transparent px-4 py-3 text-gray-800 focus:border-yellow-400 focus:outline-none" />
+        <button id="start-game-btn" class="button-primary mb-4 w-full">START GAME 🎮</button>
+        <button id="leaderboard-btn" class="button-secondary w-full">VIEW LEADERBOARD 🏆</button>
+      </div>
+
+      <div class="max-w-sm text-sm opacity-70">
+        <p>📚 20 questions • ⏱️ Quick &amp; fun • 🎯 Learn as you play</p>
+      </div>
+    </div>
+
+    <div id="game-screen" class="screen hidden min-h-full flex-col p-6">
+      <div class="game-shell">
+        <div class="mb-8 flex items-start justify-between gap-6">
+        <div class="text-left">
+          <p class="text-sm opacity-80">Question <span id="question-number">1</span>/20</p>
+          <div class="mt-2 h-2 w-48 rounded-full bg-white bg-opacity-20">
+            <div id="progress-bar" class="h-full rounded-full bg-gradient-to-r from-yellow-400 to-yellow-300 transition-all" style="width: 5%;"></div>
+          </div>
+          <div class="streak-counter" id="streak-display" style="display: none;">
+            🔥 Streak: <span id="streak-count">0</span>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="score-badge mb-3">Score: <span id="current-score">0</span></div>
+          <div class="flex justify-end gap-2">
+            <button id="fifty-btn" class="power-up-btn" title="Remove 2 wrong answers">50/50</button>
+            <button id="skip-btn" class="power-up-btn" title="Skip this question">⏭️ Skip</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="question-shell mb-8 flex flex-1 flex-col justify-center">
+          <h2 id="question-text" class="mb-8 text-3xl font-bold leading-tight"></h2>
+          <div id="answers-container" class="answers-grid"></div>
+        </div>
+
+        <div class="question-shell text-center text-sm opacity-70">
+        <p id="feedback-text" class="mb-4 h-6"></p>
+      </div>
+      <button id="next-btn" class="button-primary hidden">NEXT QUESTION →</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen hidden min-h-full flex-col items-center justify-center px-6 text-center">
+      <h1 class="mb-4 text-5xl font-black" style="background: linear-gradient(135deg, #FFD600 0%, #FFC700 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">QUIZ COMPLETE! 🎉</h1>
+
+      <div class="my-8 w-full max-w-md rounded-3xl bg-white bg-opacity-10 p-8 backdrop-blur-md">
+        <p class="mb-4 text-lg opacity-90">Great job, <span id="result-name" class="font-bold"></span>!</p>
+
+        <div class="mb-8">
+          <p class="text-7xl font-black" style="background: linear-gradient(135deg, #FFD600 0%, #FFC700 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><span id="final-score">0</span>/20</p>
+          <p class="mt-2 text-sm opacity-80">Correct Answers</p>
+        </div>
+
+        <div class="mb-6 rounded-lg bg-white bg-opacity-5 p-4">
+          <p class="mb-2 text-sm opacity-80">Accuracy</p>
+          <p class="text-2xl font-bold"><span id="accuracy">0</span>%</p>
+        </div>
+
+        <div id="achievements-display" class="mb-6 rounded-lg bg-white bg-opacity-5 p-4">
+          <p class="mb-3 text-xs opacity-70">ACHIEVEMENTS</p>
+          <div id="achievements-container" class="flex flex-wrap justify-center"></div>
+        </div>
+
+        <button id="play-again-btn" class="button-primary mb-3 w-full">PLAY AGAIN 🎮</button>
+        <button id="home-btn" class="button-secondary w-full">BACK HOME 🏠</button>
+      </div>
+    </div>
+
+    <div id="leaderboard-screen" class="screen hidden min-h-full flex-col p-6">
+      <button id="back-home-btn" class="button-secondary mb-6 self-start">← BACK</button>
+      <h1 class="mb-8 text-center text-5xl font-black" style="background: linear-gradient(135deg, #FFD600 0%, #FFC700 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🏆 LEADERBOARD</h1>
+      <div class="flex-1 overflow-y-auto">
+        <div id="leaderboard-list" class="mx-auto max-w-2xl"></div>
+      </div>
+      <p id="empty-leaderboard" class="py-12 text-center opacity-70">No scores yet. Be the first to play! 🚀</p>
+    </div>
+  </div>
+
+  <!-- PARTIAL:footer -->
+
+  
+</body>
+</html>

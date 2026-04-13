@@ -1,0 +1,42 @@
+import type { PlatformConfig } from '@vlp/member-ui'
+
+export const tttmpConfig: PlatformConfig = {
+  brandName: 'Tax Tools Arcade',
+  brandAbbrev: 'TTTMP',
+  brandColor: '#8b5cf6',
+  brandSubtitle: 'Tax Education Hub',
+  logoText: 'TTA',
+  apiBaseUrl: 'https://api.virtuallaunch.pro',
+  navSections: [
+    {
+      title: 'WORKSPACE',
+      items: [
+        { label: 'Dashboard', href: '/account', icon: 'LayoutDashboard' },
+        { label: 'Games', href: '/games', icon: 'Gamepad2' },
+        { label: 'Tokens', href: '/pricing', icon: 'Coins' },
+      ],
+    },
+    {
+      title: 'EARNINGS',
+      items: [
+        { label: 'Affiliate', href: '/affiliate', icon: 'Link2' },
+      ],
+    },
+    {
+      title: 'SETTINGS',
+      items: [
+        { label: 'Account', href: '/account', icon: 'Settings' },
+        { label: 'Support', href: '/contact', icon: 'HelpCircle' },
+      ],
+    },
+  ],
+  routes: {
+    home: '/',
+    signIn: '/login',
+    signOut: '/login',
+    dashboard: '/account',
+    account: '/account',
+    profile: '/account',
+    support: '/contact',
+  },
+}

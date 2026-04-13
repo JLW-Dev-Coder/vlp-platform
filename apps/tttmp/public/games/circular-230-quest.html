@@ -1,0 +1,376 @@
+<!-- games/circular-230-quest.html -->
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Circular 230 Quest • Play • TaxTools Arcade</title>
+  <meta name="description" content="Play Circular 230 Quest. Access is verified server-side with an active play session." />
+
+  <!-- Canonical local assets -->
+  <link rel="icon" href="/assets/favicon.ico" />
+  <link rel="stylesheet" href="/styles/site.css" />
+
+  <!-- SDKs (local) -->
+  
+  
+
+  <!-- NOTE: The following are non-canonical (remote). Keep only if /styles/site.css does NOT provide Tailwind + these fonts.
+       If you want full canonical compliance, vendor these locally and remove the remote tags.
+  -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    .font-display { font-family: 'Fredoka One', cursive; }
+    .font-body { font-family: 'Nunito', sans-serif; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+      50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.8); }
+    }
+
+    @keyframes bounce-in {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slide-up {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(720deg); opacity: 0; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    .animate-bounce-in { animation: bounce-in 0.5s ease-out forwards; }
+    .animate-slide-up { animation: slide-up 0.4s ease-out forwards; }
+    .animate-shake { animation: shake 0.5s ease-in-out; }
+
+    .zone-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .zone-card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .quiz-option {
+      transition: all 0.2s ease;
+    }
+
+    .quiz-option:hover:not(:disabled) {
+      transform: scale(1.02);
+    }
+
+    .badge-container {
+      perspective: 1000px;
+    }
+
+    .badge-inner {
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .badge-container:hover .badge-inner {
+      transform: rotateY(180deg);
+    }
+
+    .game-map-path {
+      stroke-dasharray: 10 5;
+      animation: dash 20s linear infinite;
+    }
+
+    @keyframes dash {
+      to { stroke-dashoffset: -1000; }
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+    }
+
+    html, body { background: #020617; color: #fff; }
+
+    body { box-sizing: border-box; }
+
+    /* Status badge styling (matches Canva design) */
+    @keyframes pulse-indicator {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.9), inset 0 0 8px rgba(255, 255, 255, 0.5);
+      }
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+      border: 2px solid rgba(16, 185, 129, 0.35);
+      border-radius: 14px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .status-badge:hover {
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.15);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 12px;
+      height: 12px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), inset 0 0 6px rgba(255, 255, 255, 0.3);
+      animation: pulse-indicator 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .status-text {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="h-full font-body bg-slate-950 text-white">
+  <!-- PARTIAL:header -->
+
+  <!-- Status line required by Canonical UX safety -->
+  <div class="mx-auto max-w-6xl px-6 pt-4 pb-4 flex justify-center">
+    <div class="status-badge">
+      <span class="status-indicator" aria-hidden="true"></span>
+      <span id="status" class="status-text">Checking access…</span>
+    </div>
+  </div>
+
+  <div id="app" class="h-full w-full overflow-auto custom-scrollbar" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); padding-bottom: 6rem;">
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="h-full w-full flex items-center justify-center">
+      <div class="text-center">
+        <div class="w-16 h-16 border-4 border-indigo-300 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-white text-lg">Loading your adventure...</p>
+      </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="main-menu" class="hidden h-full w-full p-4 md:p-8 pb-24">
+      <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-8 animate-slide-up">
+          <h1 id="game-title" class="font-display text-4xl md:text-6xl text-white mb-2 drop-shadow-lg">🏛️ Circular 230 Quest</h1>
+          <p id="welcome-text" class="text-indigo-200 text-lg md:text-xl">Master the Rules of Practice Before the IRS!</p>
+        </header>
+
+        <!-- Avatar Selection -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+          <h2 class="font-display text-2xl text-white mb-4 text-center">Choose Your Tax Pro Avatar</h2>
+          <div id="avatar-selection" class="flex flex-wrap justify-center gap-4"></div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8 animate-slide-up" style="animation-delay: 0.2s;">
+          <h2 class="font-display text-2xl text-white mb-4 text-center">📊 Your Progress</h2>
+          <div class="flex flex-wrap justify-center items-center gap-8">
+            <div class="text-center">
+              <div class="text-4xl font-bold text-indigo-300" id="progress-percent">0%</div>
+              <p class="text-indigo-200">Overall Mastery</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-bold text-yellow-400" id="total-points">0</div>
+              <p class="text-indigo-200">Total Points</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-bold text-emerald-400" id="badges-earned">0/5</div>
+              <p class="text-indigo-200">Badges Earned</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone Map -->
+        <div class="mb-8 animate-slide-up" style="animation-delay: 0.3s;">
+          <h2 class="font-display text-2xl text-white mb-6 text-center">🗺️ Explore the Zones</h2>
+          <div id="zone-map" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
+        <!-- Badges Display -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 pb-8 mb-16 animate-slide-up" style="animation-delay: 0.4s;">
+          <h2 class="font-display text-2xl text-white mb-4 text-center">🏆 Badge Collection</h2>
+          <div id="badges-display" class="flex flex-wrap justify-center gap-6 pb-8"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quiz-screen" class="hidden h-full w-full p-4 md:p-8 pb-24 overflow-auto">
+      <div class="max-w-3xl mx-auto">
+
+        <!-- Quiz Header -->
+        <div class="flex items-center justify-between mb-6">
+          <button id="back-to-menu" class="flex items-center gap-2 text-white hover:text-indigo-200 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            Back to Map
+          </button>
+
+          <div class="flex items-center gap-4">
+            <div class="bg-white/20 rounded-full px-4 py-2">
+              <span class="text-white font-semibold">Question <span id="current-question">1</span>/<span id="total-questions">5</span></span>
+            </div>
+            <div class="bg-yellow-500/20 rounded-full px-4 py-2">
+              <span class="text-yellow-300 font-semibold">⭐ <span id="quiz-score">0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone Info Banner -->
+        <div id="zone-banner" class="rounded-2xl p-4 mb-6 text-center">
+          <h2 id="zone-title" class="font-display text-2xl text-white"></h2>
+          <p id="zone-subtitle" class="text-white/80"></p>
+        </div>
+
+        <!-- Question Card -->
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 mb-6 animate-slide-up">
+          <div class="mb-6">
+            <span id="question-type" class="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-semibold mb-4"></span>
+            <h3 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800"></h3>
+          </div>
+
+          <div id="options-container" class="space-y-3"></div>
+
+          <!-- Feedback Section -->
+          <div id="feedback-section" class="hidden mt-6 p-4 rounded-xl">
+            <div class="flex items-start gap-3">
+              <span id="feedback-icon" class="text-3xl"></span>
+              <div>
+                <h4 id="feedback-title" class="font-bold text-lg"></h4>
+                <p id="feedback-explanation" class="text-gray-600 mt-1"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Button -->
+        <div class="text-center">
+          <button id="next-question" class="hidden bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            Next Question →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden h-full w-full p-4 md:p-8 pb-24 overflow-auto">
+      <div class="max-w-2xl mx-auto text-center">
+        <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 animate-bounce-in">
+          <div id="results-icon" class="text-8xl mb-4"></div>
+          <h2 id="results-title" class="font-display text-4xl text-white mb-4"></h2>
+          <p id="results-message" class="text-indigo-200 text-xl mb-8"></p>
+
+          <div class="flex justify-center gap-8 mb-8">
+            <div class="text-center">
+              <div id="final-score" class="text-5xl font-bold text-yellow-400"></div>
+              <p class="text-indigo-200">Points Earned</p>
+            </div>
+            <div class="text-center">
+              <div id="correct-answers" class="text-5xl font-bold text-emerald-400"></div>
+              <p class="text-indigo-200">Correct Answers</p>
+            </div>
+          </div>
+
+          <!-- Badge Earned -->
+          <div id="badge-earned-section" class="hidden mb-8">
+            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 animate-pulse-glow">
+              <h3 class="font-display text-2xl text-white mb-2">🎉 Badge Earned!</h3>
+              <div id="earned-badge-display" class="text-6xl my-4"></div>
+              <p id="earned-badge-name" class="text-white font-semibold"></p>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button id="retry-quiz" class="bg-white/20 text-white font-bold py-3 px-6 rounded-xl hover:bg-white/30 transition-all">🔄 Try Again</button>
+            <button id="back-to-map" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-xl transition-all">🗺️ Back to Map</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certification Screen -->
+    <div id="certification-screen" class="hidden h-full w-full p-4 md:p-8 pb-24 overflow-auto">
+      <div class="max-w-3xl mx-auto text-center">
+        <div class="bg-gradient-to-br from-yellow-400/20 to-orange-500/20 backdrop-blur-sm rounded-3xl p-8 border-4 border-yellow-400/50 animate-bounce-in">
+          <div class="text-8xl mb-4">🎓</div>
+          <h2 class="font-display text-4xl md:text-5xl text-white mb-4">Congratulations!</h2>
+          <p class="text-indigo-200 text-xl mb-6">You've mastered all sections of Circular 230!</p>
+
+          <div class="bg-white rounded-2xl p-8 mb-8 shadow-2xl">
+            <div class="border-8 border-double border-indigo-600 rounded-xl p-6">
+              <h3 class="font-display text-3xl text-indigo-800 mb-4">Certificate of Mastery</h3>
+              <p class="text-gray-600 mb-4">This certifies that</p>
+              <p class="font-display text-2xl text-indigo-600 mb-4">Tax Professional</p>
+              <p class="text-gray-600 mb-4">has successfully completed</p>
+              <p class="font-bold text-xl text-gray-800 mb-4">31 CFR § 10 - Circular 230 Quest</p>
+              <div class="flex justify-center gap-4 mt-6">
+                <span class="text-4xl">🏆</span>
+                <span class="text-4xl">⭐</span>
+                <span class="text-4xl">🎖️</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="close-certification" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105">
+            Continue Your Journey
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARTIAL:footer -->
+
+  
+</body>
+</html>

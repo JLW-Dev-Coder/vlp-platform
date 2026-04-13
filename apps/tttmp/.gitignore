@@ -1,0 +1,12 @@
+# Next.js
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Cloudflare
+.cloudflare/
+
+# Local env
+.env*.local
