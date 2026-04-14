@@ -1,77 +1,69 @@
-@import "tailwindcss";
-@import "@vlp/member-ui/styles";
+@import '@vlp/member-ui/styles';
 
-@source "../app/app";
-@source "../components/member";
-@source "../../../packages/member-ui/src";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --color-brand-teal: #14b8a6;
-  --color-brand-teal-dark: #0d9488;
-  --color-brand-teal-darker: #0f766e;
-  --font-sans: var(--font-raleway), Inter, system-ui, -apple-system, sans-serif;
+@layer base {
+  :root {
+    --accent:        #14b8a6;
+    --accent-light:  #f0fdfa;
+    --accent-dark:   #0f766e;
+    --accent-text:   #0d6e66;
+    --accent-border: #99f6e4;
+    --max-width:     1280px;
+    --page-gutter:   clamp(1.25rem, 5vw, 3rem);
+    --header-height: 68px;
+
+    /* Surface & background */
+    --bg:             #0a0f1e;
+    --surface:        #111827;
+    --surface-border: #1f2937;
+
+    /* Text */
+    --text:           #f9fafb;
+    --text-muted:     #9ca3af;
+
+    /* Accent derived */
+    --accent-hover:   #0f766e;
+
+    /* Radius */
+    --radius:         10px;
+    --radius-md:      8px;
+    --radius-full:    9999px;
+
+    /* Transitions */
+    --transition-fast:   150ms ease;
+    --transition-normal: 250ms ease;
+
+    /* Shadows */
+    --shadow-xl: 0 24px 48px rgba(0,0,0,0.6);
+
+    /* TTMP brand overrides (teal) — structural vars from @vlp/member-ui/styles */
+    --member-accent: rgba(20,184,166,0.1);
+    --member-accent-strong: rgba(20,184,166,0.2);
+    --member-hero-bg: #042f2e;
+    --member-hero-bg-end: #021a19;
+  }
+
+  html {
+    background: var(--bg, #ffffff);
+  }
+
+  body {
+    background: var(--bg, #ffffff);
+    color: var(--text, #111827);
+    font-family: var(--font-raleway), Inter, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-dark); text-decoration: underline; }
+  h1, h2, h3, h4 { font-family: var(--font-raleway), sans-serif; line-height: 1.3; font-weight: 700; }
+  p { margin-bottom: 1rem; }
 }
-
-:root {
---accent:        #14b8a6;
-  --accent-light:  #f0fdfa;
-  --accent-dark:   #0f766e;
-  --accent-text:   #0d6e66;
-  --accent-border: #99f6e4;
-  --max-width:     1280px;
-  --page-gutter:   clamp(1.25rem, 5vw, 3rem);
-  --header-height: 68px;
-
-  /* Surface & background */
-  --bg:             #0a0f1e;
-  --surface:        #111827;
-  --surface-border: #1f2937;
-
-  /* Text */
-  --text:           #f9fafb;
-  --text-muted:     #9ca3af;
-
-  /* Accent derived */
-  --accent-hover:   #0f766e;
-
-  /* Radius */
-  --radius:         10px;
-  --radius-md:      8px;
-  --radius-full:    9999px;
-
-  /* Transitions */
-  --transition-fast:   150ms ease;
-  --transition-normal: 250ms ease;
-
-  /* Shadows */
-  --shadow-xl: 0 24px 48px rgba(0,0,0,0.6);
-
-  /* TTMP brand overrides (teal) — structural vars from @vlp/member-ui/styles */
-  --member-accent: rgba(20,184,166,0.1);
-  --member-accent-strong: rgba(20,184,166,0.2);
-  --member-hero-bg: #042f2e;
-  --member-hero-bg-end: #021a19;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html {
-  background: var(--bg, #ffffff);
-}
-
-body {
-  background: var(--bg, #ffffff);
-  color: var(--text, #111827);
-  font-family: var(--font-raleway), Inter, system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.7;
-  min-height: 100vh;
-}
-
-a { color: var(--accent); text-decoration: none; }
-a:hover { color: var(--accent-dark); text-decoration: underline; }
-h1, h2, h3, h4 { font-family: var(--font-raleway), sans-serif; line-height: 1.3; font-weight: 700; }
-p { margin-bottom: 1rem; }
 
 /* ── Page loading bar ───────────────────────── */
 .page-loader {
