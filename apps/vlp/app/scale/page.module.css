@@ -1141,3 +1141,234 @@
     font-size: 1.5rem;
   }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Social Opportunities                                                    */
+/* ---------------------------------------------------------------------- */
+.socialFilterBar {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+}
+
+.socialFilterBtn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.8);
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.socialFilterBtn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.socialFilterBtnActive {
+  color: #fff;
+  background-color: rgba(249, 115, 22, 0.25);
+}
+
+.oppCard {
+  padding: 1.25rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s;
+}
+
+.oppCard:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.oppCardDimmed {
+  opacity: 0.5;
+}
+
+.oppMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.7rem;
+  color: rgba(148, 163, 184, 0.75);
+  margin-bottom: 0.6rem;
+}
+
+.oppSubreddit {
+  font-weight: 700;
+  color: rgba(249, 115, 22, 0.9);
+}
+
+.oppTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0.35rem;
+  text-decoration: none;
+  display: block;
+}
+
+.oppTitle:hover {
+  color: rgb(249, 115, 22);
+}
+
+.oppSelftext {
+  font-size: 0.8rem;
+  color: rgba(148, 163, 184, 0.7);
+  line-height: 1.4;
+  margin-bottom: 0.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oppKeywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.oppKeywordBadge {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(20, 184, 166, 0.95);
+  background-color: rgba(20, 184, 166, 0.1);
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 9999px;
+}
+
+.oppReplies {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.oppRepliesLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.oppReplyBox {
+  position: relative;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.oppReplyBox:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.oppReplyLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.6);
+  margin-bottom: 0.25rem;
+}
+
+.oppReplyText {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.45;
+}
+
+.oppReplyCopied {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgb(74, 222, 128);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.oppActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.oppActionBtn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.oppActionBtn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.oppActionBtnGreen {
+  border-color: rgba(74, 222, 128, 0.3);
+  color: rgba(74, 222, 128, 0.9);
+}
+
+.oppActionBtnGreen:hover {
+  background-color: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.oppActionBtnRed {
+  border-color: rgba(248, 113, 113, 0.3);
+  color: rgba(248, 113, 113, 0.9);
+}
+
+.oppActionBtnRed:hover {
+  background-color: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+.socialScanBtn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: rgba(249, 115, 22, 0.9);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.socialScanBtn:hover {
+  background-color: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.5);
+}
+
+.socialScanBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

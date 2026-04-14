@@ -16972,6 +16972,97 @@ TTMP Support Team
   },
 
   // -------------------------------------------------------------------------
+  // Social Opportunities — Reddit Monitor
+  // -------------------------------------------------------------------------
+
+  // GET /v1/scale/social/opportunities — List Reddit opportunities (admin)
+  {
+    method: 'GET', pattern: '/v1/scale/social/opportunities',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const url = new URL(request.url);
+      const statusFilter = url.searchParams.get('status') || '';
+
+      // List opportunity files from the last 7 days
+      const opportunities = [];
+      for (let i = 0; i < 7; i++) {
+        const dateKey = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+        const prefix = `social/reddit/opportunities/${dateKey}/`;
+        const listed = await env.R2_VIRTUAL_LAUNCH.list({ prefix, limit: 100 });
+        for (const obj of (listed.objects || [])) {
+          try {
+            const r2Obj = await env.R2_VIRTUAL_LAUNCH.get(obj.key);
+            if (!r2Obj) continue;
+            const data = await r2Obj.json();
+            if (statusFilter && data.status !== statusFilter) continue;
+            opportunities.push(data);
+          } catch { /* skip malformed */ }
+        }
+      }
+
+      // Sort by discovered_at descending, limit 50
+      opportunities.sort((a, b) => (b.discovered_at || '').localeCompare(a.discovered_at || ''));
+      return json({ ok: true, opportunities: opportunities.slice(0, 50) }, 200, request);
+    },
+  },
+
+  // PATCH /v1/scale/social/opportunities/:post_id — Update opportunity status (admin)
+  {
+    method: 'PATCH', pattern: '/v1/scale/social/opportunities/:post_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await request.json().catch(() => null);
+      if (!body || !body.status || !['replied', 'dismissed'].includes(body.status)) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'status must be "replied" or "dismissed"' }, 400, request);
+      }
+
+      // Find the opportunity across the last 7 days
+      const postId = params.post_id;
+      for (let i = 0; i < 7; i++) {
+        const dateKey = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+        const key = `social/reddit/opportunities/${dateKey}/${postId}.json`;
+        const obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+        if (obj) {
+          const data = await obj.json();
+          data.status = body.status;
+          data.status_updated_at = new Date().toISOString();
+          await r2Put(env.R2_VIRTUAL_LAUNCH, key, data);
+          return json({ ok: true, post_id: postId, status: body.status }, 200, request);
+        }
+      }
+      return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+    },
+  },
+
+  // POST /v1/scale/social/scan-now — Manual trigger for Reddit monitor (admin)
+  {
+    method: 'POST', pattern: '/v1/scale/social/scan-now',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const log = await handleRedditMonitorCron(env);
+      return json({ ok: true, log }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Scale Assets (Public Route)
   // -------------------------------------------------------------------------
 
@@ -20644,6 +20735,190 @@ async function handleValidateEmailsCron(env, opts = {}) {
 }
 
 // ---------------------------------------------------------------------------
+// Reddit Social Monitor — Constants + Handler
+// ---------------------------------------------------------------------------
+
+const REDDIT_SUBREDDITS = [
+  'tax',
+  'taxpros',
+  'IRS',
+  'accounting',
+  'taxPros',
+  'personalfinance',
+];
+
+const REDDIT_KEYWORDS = [
+  'transcript', 'IRS transcript', 'account transcript',
+  'transaction code', 'code 846', 'code 971', 'code 570',
+  'code 766', 'code 768', 'code 841', 'code 898',
+  'refund hold', 'refund frozen', 'refund delayed',
+  'where is my refund', "where's my refund",
+  'IRS code', 'processing date', 'cycle code',
+  'notice issued', 'additional account action',
+  'penalty abatement', 'form 2848',
+];
+
+const IRS_CODES = {
+  '150': { meaning: 'Return filed and processed', check: "Look for the date — that's when the IRS accepted the return" },
+  '290': { meaning: 'Additional tax assessed', check: 'Compare to original return — IRS made an adjustment' },
+  '291': { meaning: 'Reduction in tax — IRS reduced what you owe', check: 'Often follows an amended return or audit resolution' },
+  '570': { meaning: 'Additional account action pending — refund is on hold', check: '571 or 572 after it means the hold was released' },
+  '571': { meaning: 'Resolved — hold released, processing continues', check: 'Should see 846 (refund) follow shortly' },
+  '572': { meaning: 'Resolved with adjustment — IRS made a change', check: 'Compare amounts to what was filed' },
+  '766': { meaning: 'Credit applied to account (Child Tax Credit, education credits, etc.)', check: 'Compare amount to what was claimed on the return' },
+  '768': { meaning: 'Earned Income Credit applied', check: 'PATH Act may delay refund until mid-February' },
+  '806': { meaning: 'W-2 or 1099 withholding credited', check: 'Should match total withholding from income documents' },
+  '841': { meaning: 'Refund cancelled', check: 'Look for reason code — often followed by adjustment codes' },
+  '846': { meaning: 'Refund issued', check: '841 after it means cancelled, 898/899 means offset to another debt' },
+  '898': { meaning: 'Refund offset to a non-IRS debt (student loans, child support)', check: 'Bureau of Fiscal Service handles the offset' },
+  '899': { meaning: 'Refund offset to a prior year tax balance', check: 'Check which year the balance was applied to' },
+  '971': { meaning: 'Notice issued — IRS sent a letter', check: 'Does NOT mean audit. Check what code follows — 972 means notice was revoked' },
+  '977': { meaning: 'Amended return (1040-X) received', check: 'Processing takes 16+ weeks' },
+};
+
+const TOOL_LINK = 'https://transcript.taxmonitor.pro/tools/code-lookup';
+
+function extractIrsCodes(text) {
+  const matches = [];
+  for (const code of Object.keys(IRS_CODES)) {
+    const re = new RegExp('\\bcode\\s*' + code + '\\b|\\b' + code + '\\b', 'i');
+    if (re.test(text)) matches.push(code);
+  }
+  return matches;
+}
+
+function generateSuggestedReplies(post) {
+  const text = ((post.title || '') + ' ' + (post.selftext || '')).toLowerCase();
+  const codes = extractIrsCodes(text);
+
+  // Scenario 1: Specific IRS code mentioned
+  if (codes.length > 0) {
+    const code = codes[0];
+    const info = IRS_CODES[code] || { meaning: 'IRS transaction code', check: 'Check what follows it on the transcript' };
+    const relatedHint = codes.length > 1
+      ? `Also check ${codes.slice(1).map(c => `code ${c}`).join(', ')}.`
+      : info.check;
+    return [
+      { label: 'Direct answer', text: `Code ${code} means ${info.meaning}. The key thing to check is what follows it on the transcript — ${relatedHint}` },
+      { label: 'Answer + tool link', text: `Code ${code} is ${info.meaning}. But one code alone doesn't tell the full story — check the sequence after it. I built a free IRS code lookup tool that covers every transaction code: ${TOOL_LINK}` },
+      { label: 'Empathetic + tool', text: `Transcripts are confusing — ${code} trips up a lot of people. It means ${info.meaning}. If you want to look up any other codes, this free tool breaks them all down in plain English: ${TOOL_LINK}` },
+    ];
+  }
+
+  // Scenario 2: Refund delays/status
+  if (/refund.*(hold|frozen|delay|status|where)/i.test(text) || /where.*(refund|my refund)/i.test(text)) {
+    return [
+      { label: 'Direct answer', text: "Pull the transcript and look for code 846 (refund issued). If it's not there, look for 570 (hold). If 570 is there with no 571 or 572 after it, the refund is still frozen." },
+      { label: 'Answer + tool link', text: `The transcript tells you exactly where things stand. Key codes: 846 = refund sent, 570 = hold, 971 = notice mailed. Check the dates on each — that's your timeline. Free code lookup: ${TOOL_LINK}` },
+      { label: 'Empathetic + tool', text: `The fastest way to figure this out is to check the transcript for code 846. If it's there, the refund was issued — but check what follows (841 = cancelled, 898/899 = offset). Free lookup tool: ${TOOL_LINK}` },
+    ];
+  }
+
+  // Scenario 3: Transcript reading / time spent
+  if (/transcript.*(read|review|time|confus|understand|decode)/i.test(text) || /(read|review|decode|understand).*transcript/i.test(text)) {
+    return [
+      { label: 'Direct answer', text: "The four codes that answer 80% of client questions: 150 (return posted), 846 (refund issued), 570 (hold), 971 (notice sent). Start there and you cut review time significantly." },
+      { label: 'Answer + tool link', text: `I tracked this across several practices — average transcript takes 15-20 minutes manually. The time is mostly spent looking up codes. I built a free lookup tool that handles that: ${TOOL_LINK}` },
+      { label: 'Empathetic + tool', text: `Most of the time spent on transcripts is code lookup. The analysis itself is pattern recognition that can be automated. Free code reference tool: ${TOOL_LINK}` },
+    ];
+  }
+
+  // Scenario 4: Generic fallback
+  return [
+    { label: 'Direct answer', text: "If you're dealing with IRS transcripts, the fastest way to decode them is checking the transaction codes in sequence. Each one tells you what the IRS did and when." },
+    { label: 'Helpful offer', text: "I work with IRS transcripts daily. Happy to help if you can share more details about what codes or dates you're seeing." },
+    { label: 'Tool link', text: `For quick IRS code lookups, I built a free tool that covers every transaction code in plain English: ${TOOL_LINK}` },
+  ];
+}
+
+async function handleRedditMonitorCron(env) {
+  const log = { subreddits_checked: 0, posts_scanned: 0, opportunities_found: 0, errors: [] };
+  const now = Date.now();
+  const cutoff48h = now - 48 * 60 * 60 * 1000;
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  for (const subreddit of REDDIT_SUBREDDITS) {
+    // Polite 2-second delay between subreddit fetches
+    if (log.subreddits_checked > 0) {
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    log.subreddits_checked++;
+
+    try {
+      const res = await fetch(`https://www.reddit.com/r/${subreddit}/new.json?limit=25`, {
+        headers: { 'User-Agent': 'TTMP-Monitor/1.0 (transcript.taxmonitor.pro)' },
+      });
+      if (!res.ok) {
+        log.errors.push({ subreddit, status: res.status });
+        continue;
+      }
+
+      const body = await res.json();
+      const posts = (body && body.data && body.data.children) || [];
+
+      for (const child of posts) {
+        const post = child.data;
+        if (!post || !post.id) continue;
+        log.posts_scanned++;
+
+        // Skip posts older than 48 hours
+        if ((post.created_utc || 0) * 1000 < cutoff48h) continue;
+
+        // Skip already-seen posts
+        const seenKey = `social/reddit/seen/${post.id}`;
+        const seenObj = await env.R2_VIRTUAL_LAUNCH.get(seenKey);
+        if (seenObj) continue;
+
+        // Keyword matching
+        const combined = ((post.title || '') + ' ' + (post.selftext || '')).toLowerCase();
+        const matchedKeywords = REDDIT_KEYWORDS.filter(kw => combined.includes(kw.toLowerCase()));
+        if (matchedKeywords.length === 0) continue;
+
+        // Extract IRS codes from combined text
+        const matchedCodes = extractIrsCodes(combined);
+
+        // Generate suggested replies
+        const suggestedReplies = generateSuggestedReplies(post);
+
+        // Build opportunity record
+        const opportunity = {
+          post_id: post.id,
+          subreddit: post.subreddit || subreddit,
+          title: post.title || '',
+          selftext: (post.selftext || '').slice(0, 1000),
+          author: post.author ? `u/${post.author}` : 'unknown',
+          url: `https://www.reddit.com${post.permalink || ''}`,
+          permalink: post.permalink || '',
+          created_utc: post.created_utc || 0,
+          score: post.score || 0,
+          num_comments: post.num_comments || 0,
+          matched_keywords: matchedKeywords,
+          matched_codes: matchedCodes,
+          suggested_replies: suggestedReplies,
+          status: 'new',
+          discovered_at: new Date().toISOString(),
+        };
+
+        // Write opportunity to R2
+        const oppKey = `social/reddit/opportunities/${todayKey}/${post.id}.json`;
+        await r2Put(env.R2_VIRTUAL_LAUNCH, oppKey, opportunity);
+
+        // Mark post as seen
+        await r2Put(env.R2_VIRTUAL_LAUNCH, seenKey, { seen_at: new Date().toISOString() });
+
+        log.opportunities_found++;
+      }
+    } catch (e) {
+      log.errors.push({ subreddit, error: String(e && e.message || e) });
+    }
+  }
+
+  // Write cron receipt
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `social/reddit/receipts/${new Date().toISOString()}.json`, log);
+  return log;
+}
+
+// ---------------------------------------------------------------------------
 // Fetch handler
 // ---------------------------------------------------------------------------
 
@@ -21040,6 +21315,19 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
+    // Reddit Social Monitor Cron — 04:00 and 16:00 UTC daily.
+    // Scans 6 subreddits for tax-transcript conversations, generates
+    // template reply suggestions, and stores opportunities in R2.
+    if (event && event.cron === '0 4,16 * * *') {
+      try {
+        const redditLog = await handleRedditMonitorCron(env);
+        console.log('Reddit monitor cron:', JSON.stringify(redditLog));
+      } catch (e) {
+        console.error('Reddit monitor cron failed:', e);
+      }
+      return;
+    }
+
     // FOIA Lead Enrichment Cron — 10:00 UTC daily.
     // Runs alongside the WLVLP auction settlement on the same trigger;
     // does not return early so subsequent unconditional cron blocks still run.
