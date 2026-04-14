@@ -3040,6 +3040,131 @@ const ROUTES = [
   },
 
   // -------------------------------------------------------------------------
+  // SUBMISSIONS (cross-platform reviews, case studies, testimonials)
+  // -------------------------------------------------------------------------
+
+  {
+    method: 'POST', pattern: '/v1/submissions',
+    handler: async (_method, _pattern, _params, request, env) => {
+      try {
+        const body = await parseBody(request);
+        const { platform, form_type, name, firm, anonymous, rating, content,
+                use_case, consent_publish, consent_marketing,
+                situation_industry, situation_firm_type, situation_description,
+                issue, findings, result_outcome, result_time_saved, result_dollar_impact,
+                profession, practice_area } = body ?? {};
+
+        if (!platform || !form_type) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'platform and form_type required' }, 400, request);
+        }
+        const validFormTypes = ['review', 'case_study', 'testimonial'];
+        if (!validFormTypes.includes(form_type)) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'form_type must be review, case_study, or testimonial' }, 400, request);
+        }
+        if (form_type === 'review' && (!rating || rating < 1 || rating > 5 || !content)) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'review requires rating (1-5) and content' }, 400, request);
+        }
+
+        const submissionId = `SUB_${crypto.randomUUID()}`;
+        const now = new Date().toISOString();
+        const displayName = anonymous ? 'Anonymous' : (name || 'Anonymous');
+
+        const record = {
+          submission_id: submissionId,
+          platform,
+          form_type,
+          display_name: displayName,
+          firm: anonymous ? null : (firm || null),
+          anonymous: anonymous ? 1 : 0,
+          rating: rating || null,
+          content: content || null,
+          use_case: use_case || null,
+          situation_industry: situation_industry || null,
+          situation_firm_type: situation_firm_type || null,
+          situation_description: situation_description || null,
+          issue: issue || null,
+          findings: findings || null,
+          result_outcome: result_outcome || null,
+          result_time_saved: result_time_saved || null,
+          result_dollar_impact: result_dollar_impact || null,
+          profession: profession || null,
+          practice_area: practice_area || null,
+          consent_publish: consent_publish ? 1 : 0,
+          consent_marketing: consent_marketing ? 1 : 0,
+          status: 'pending',
+          created_at: now,
+        };
+
+        // R2 authoritative write
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `submissions/${platform}/${submissionId}.json`, record);
+
+        // D1 projection
+        await d1Run(env.DB,
+          `INSERT INTO platform_submissions
+           (submission_id, platform, form_type, display_name, firm, anonymous, rating, content, use_case,
+            situation_industry, situation_firm_type, situation_description, issue, findings,
+            result_outcome, result_time_saved, result_dollar_impact, profession, practice_area,
+            consent_publish, consent_marketing, status, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [record.submission_id, record.platform, record.form_type, record.display_name,
+           record.firm, record.anonymous, record.rating, record.content, record.use_case,
+           record.situation_industry, record.situation_firm_type, record.situation_description,
+           record.issue, record.findings, record.result_outcome, record.result_time_saved,
+           record.result_dollar_impact, record.profession, record.practice_area,
+           record.consent_publish, record.consent_marketing, record.status, record.created_at]
+        );
+
+        return json({ ok: true, submission_id: submissionId }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Submission failed' }, 500, request);
+      }
+    },
+  },
+
+  {
+    method: 'GET', pattern: '/v1/submissions/public',
+    handler: async (_method, _pattern, _params, request, env) => {
+      try {
+        const url = new URL(request.url);
+        const platform = url.searchParams.get('platform');
+        const formType = url.searchParams.get('form_type');
+        const limit = Math.min(parseInt(url.searchParams.get('limit')) || 50, 100);
+
+        if (!platform) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'platform query param required' }, 400, request);
+        }
+
+        let query = "SELECT submission_id, display_name, firm, anonymous, rating, content, created_at, profession, practice_area FROM platform_submissions WHERE platform = ? AND status = 'approved'";
+        const params = [platform];
+
+        if (formType) {
+          query += " AND form_type = ?";
+          params.push(formType);
+        }
+
+        query += " ORDER BY created_at DESC LIMIT ?";
+        params.push(limit);
+
+        const result = await env.DB.prepare(query).bind(...params).all();
+        const submissions = (result.results || []).map(r => ({
+          id: r.submission_id,
+          display_name: r.display_name,
+          credential: r.profession || null,
+          firm: r.anonymous ? null : r.firm,
+          rating: r.rating,
+          content: r.content,
+          created_at: r.created_at,
+          anonymous: !!r.anonymous,
+        }));
+
+        return json({ ok: true, submissions }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to fetch submissions' }, 500, request);
+      }
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // ACCOUNTS
   // -------------------------------------------------------------------------
 
