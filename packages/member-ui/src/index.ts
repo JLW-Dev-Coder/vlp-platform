@@ -8,8 +8,15 @@ export { ContentCard } from './components/ContentCard'
 export { DataTable } from './components/DataTable'
 export { FullCalendar } from './components/FullCalendar'
 
+// Review Components
+export { ReviewSubmitPage } from './components/reviews/ReviewSubmitPage'
+export { ReviewDisplayPage } from './components/reviews/ReviewDisplayPage'
+export { ReviewCard } from './components/reviews/ReviewCard'
+
 // Types
 export type { PlatformConfig, NavSection, NavItem } from './types/config'
+export type { ReviewConfig, ReviewCardData } from './types/review'
+export type { ReviewCardProps } from './components/reviews/ReviewCard'
 export type { CalendarEvent } from './components/FullCalendar'
 
 // SEO utilities

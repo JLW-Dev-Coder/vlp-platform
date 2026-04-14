@@ -40,7 +40,7 @@ TTMP passes `ttmpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 ## Route Structure
 
 ### Marketing (public)
-`/`, `/about`, `/features`, `/pricing`, `/product`, `/affiliate`, `/contact`, `/demo`, `/resources/`, `/resources/help-center/`, `/resources/irs-phone-numbers/`, `/resources/transcript-codes/`, `/resources/[slug]`, `/legal/privacy`, `/legal/terms`, `/legal/refund`, `/magnets/guide`, `/magnets/lead-magnet`, `/magnets/section-7216`
+`/`, `/about`, `/features`, `/pricing`, `/product`, `/affiliate`, `/contact`, `/demo`, `/reviews`, `/reviews/submit`, `/resources/`, `/resources/help-center/`, `/resources/irs-phone-numbers/`, `/resources/transcript-codes/`, `/resources/[slug]`, `/legal/privacy`, `/legal/terms`, `/legal/refund`, `/magnets/guide`, `/magnets/lead-magnet`, `/magnets/section-7216`
 
 ### Member (protected — vlp_session cookie)
 `/app/dashboard/`, `/app/calendar/`, `/app/tools/`, `/app/token-usage/`, `/app/reports/`, `/app/report/`, `/app/receipts/`, `/app/affiliate/`, `/app/account/`, `/app/profile/`, `/app/support/`
