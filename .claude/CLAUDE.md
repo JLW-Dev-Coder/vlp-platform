@@ -53,7 +53,7 @@ Every platform that previously lived in its own repo is migrated here.
 | TCVLP | `taxclaim-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | WLVLP | `websitelotto-virtuallaunch-pro` | `npm run build` | `out` | static export |
 
-**TTMP deployment note:** TTMP uses Cloudflare Workers (not Pages) via `@opennextjs/cloudflare` and GitHub Actions CI/CD. All other platforms remain on Pages.
+**TTMP deployment note:** TTMP uses Cloudflare Workers (not Pages) via `@opennextjs/cloudflare` and GitHub Actions CI/CD. All other platforms remain on Pages. TTMP deploys exclusively from the vlp-platform monorepo (`apps/ttmp/`). The standalone `transcript.taxmonitor.pro` repo is deprecated and must not be used for builds or deploys. Its GitHub Actions workflow has been removed.
 
 ---
 
@@ -135,6 +135,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 5. **PlatformConfig drives branding.** Each app passes its `PlatformConfig` to shared `@vlp/member-ui` components. No hardcoded brand values in shared code.
 6. **Pre-task self-check:** Before writing code, confirm: (a) correct app directory, (b) backend vs. frontend, (c) existing contract check, (d) no duplicates.
 7. **CRITICAL: Every task must end with `git add . && git commit && git push`.** The monorepo deploys via GitHub Actions from the main branch. Uncommitted changes are not deployed. Never report a task as "done" without confirming the commit has been pushed to `origin/main`.
+8. **TTMP changes:** deploys from vlp-platform monorepo ONLY via GitHub Actions (`deploy-ttmp.yml`). Do NOT deploy from the standalone `transcript.taxmonitor.pro` repo — its deploy workflow has been deleted and the repo is deprecated.
 
 ---
 
