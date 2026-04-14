@@ -16935,6 +16935,42 @@ TTMP Support Team
     },
   },
 
+  // POST /v1/scale/cron/ingest-csv — Manual trigger for pending CSV ingestion
+  {
+    method: 'POST', pattern: '/v1/scale/cron/ingest-csv',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const authHeader = request.headers.get('authorization') || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      if (!env.SCALE_API_KEY || !token || token !== env.SCALE_API_KEY) {
+        return json({ ok: false, error: 'Unauthorized' }, 401, request);
+      }
+      const runLog = await handlePendingCsvIngestion(env);
+      return json({ ok: true, run_log: runLog }, 200, request);
+    },
+  },
+
+  // POST /v1/scale/cron/daily-batch — Manual trigger for daily campaign router
+  // (CSV ingestion + batch generation in one call)
+  {
+    method: 'POST', pattern: '/v1/scale/cron/daily-batch',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const authHeader = request.headers.get('authorization') || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      if (!env.SCALE_API_KEY || !token || token !== env.SCALE_API_KEY) {
+        return json({ ok: false, error: 'Unauthorized' }, 401, request);
+      }
+      let ingestLog = null;
+      try {
+        ingestLog = await handlePendingCsvIngestion(env);
+      } catch (e) {
+        console.error('Manual daily-batch: CSV ingestion failed:', e);
+        ingestLog = { error: String(e && e.message || e) };
+      }
+      const batchLog = await handleDailyBatchGeneration(env);
+      return json({ ok: true, ingest_log: ingestLog, batch_log: batchLog }, 200, request);
+    },
+  },
+
   // -------------------------------------------------------------------------
   // Scale Assets (Public Route)
   // -------------------------------------------------------------------------
@@ -18587,6 +18623,186 @@ async function handleWlvlpSite(slug, request, env) {
 }
 
 // ---------------------------------------------------------------------------
+// Pending CSV Ingestion — handlePendingCsvIngestion
+// ---------------------------------------------------------------------------
+// Reads CSV files from vlp-scale/prospects/pending/ (e.g. Clay exports),
+// parses them, maps fields to the FOIA master schema, deduplicates by email
+// against the existing master, appends new records, and moves processed CSVs
+// to vlp-scale/prospects/processed/. Called by the 12:00 UTC cron before the
+// daily campaign router so freshly uploaded prospects are immediately eligible.
+// ---------------------------------------------------------------------------
+
+function parseCsvText(text) {
+  const lines = text.split('\n');
+  if (lines.length < 2) return [];
+  // Parse header row (handles quoted headers)
+  const rawHeaders = [];
+  {
+    let inQ = false, cur = '';
+    for (const ch of lines[0]) {
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { rawHeaders.push(cur.trim()); cur = ''; continue; }
+      if (ch === '\r') continue;
+      cur += ch;
+    }
+    rawHeaders.push(cur.trim());
+  }
+  const records = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const values = [];
+    let inQ = false, cur = '';
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { values.push(cur.trim()); cur = ''; continue; }
+      if (ch === '\r') continue;
+      cur += ch;
+    }
+    values.push(cur.trim());
+    const record = {};
+    for (let j = 0; j < rawHeaders.length; j++) {
+      record[rawHeaders[j]] = values[j] || '';
+    }
+    records.push(record);
+  }
+  return records;
+}
+
+// Map common Clay / generic CSV field names → FOIA master field names.
+// Unmapped fields are preserved as-is so no data is lost.
+function mapCsvRowToMaster(row) {
+  const mapped = {};
+  const fieldMap = {
+    'first_name': 'First_NAME', 'firstname': 'First_NAME', 'first name': 'First_NAME',
+    'last_name': 'LAST_NAME', 'lastname': 'LAST_NAME', 'last name': 'LAST_NAME',
+    'email': 'email_found', 'email_address': 'email_found', 'work_email': 'email_found',
+    'profession': 'PROFESSION', 'title': 'PROFESSION', 'job_title': 'PROFESSION',
+    'city': 'BUS_ADDR_CITY', 'state': 'BUS_ST_CODE',
+    'company': 'DBA', 'company_name': 'DBA', 'organization': 'DBA',
+    'website': 'domain_clean', 'domain': 'domain_clean', 'company_domain': 'domain_clean',
+  };
+  for (const [key, value] of Object.entries(row)) {
+    const lower = key.toLowerCase().trim();
+    if (fieldMap[lower]) {
+      mapped[fieldMap[lower]] = value;
+    } else {
+      mapped[key] = value;
+    }
+  }
+  // Clay validates emails — mark as valid if we have one but no status
+  if (mapped.email_found && !mapped.email_status) {
+    mapped.email_status = 'valid';
+  }
+  // Normalize domain
+  if (mapped.domain_clean) {
+    mapped.domain_clean = mapped.domain_clean
+      .replace(/^https?:\/\//, '').replace(/^www\./, '')
+      .replace(/\/.*$/, '').toLowerCase().trim();
+  }
+  return mapped;
+}
+
+async function handlePendingCsvIngestion(env) {
+  // 1. List pending CSVs
+  const listed = await env.R2_VIRTUAL_LAUNCH.list({
+    prefix: 'vlp-scale/prospects/pending/', limit: 20,
+  });
+  const csvKeys = (listed.objects || []).filter(o => o.key.endsWith('.csv'));
+  if (csvKeys.length === 0) {
+    console.log('CSV ingestion: no pending CSVs found');
+    return { ingested: 0, new_records: 0, skipped_no_email: 0, skipped_duplicate: 0 };
+  }
+  console.log(`CSV ingestion: found ${csvKeys.length} pending CSV(s)`);
+
+  // 2. Read existing master
+  let existingRecords = [];
+  const existingEmails = new Set();
+  try {
+    const obj = await env.R2_VIRTUAL_LAUNCH.get(ENRICHMENT_R2_KEY);
+    if (obj) {
+      const text = await obj.text();
+      existingRecords = text.split('\n')
+        .filter(l => l.trim().length > 0)
+        .map(l => { try { return JSON.parse(l); } catch { return null; } })
+        .filter(r => r !== null);
+      for (const r of existingRecords) {
+        const e = (r.email_found || '').trim().toLowerCase();
+        if (e) existingEmails.add(e);
+      }
+    }
+  } catch (e) {
+    console.error('CSV ingestion: failed to read master:', e);
+    return { ingested: 0, new_records: 0, error: String(e && e.message || e) };
+  }
+
+  let totalNew = 0, totalSkippedNoEmail = 0, totalSkippedDuplicate = 0;
+  const processedKeys = [];
+
+  // 3. Process each CSV
+  for (const entry of csvKeys) {
+    try {
+      const csvObj = await env.R2_VIRTUAL_LAUNCH.get(entry.key);
+      if (!csvObj) continue;
+      const csvText = await csvObj.text();
+      const rows = parseCsvText(csvText);
+      let fileNew = 0;
+      for (const row of rows) {
+        const mapped = mapCsvRowToMaster(row);
+        const email = (mapped.email_found || '').trim().toLowerCase();
+        if (!email) { totalSkippedNoEmail++; continue; }
+        if (existingEmails.has(email)) { totalSkippedDuplicate++; continue; }
+        existingEmails.add(email);
+        mapped.csv_source = entry.key;
+        mapped.csv_ingested_at = new Date().toISOString();
+        existingRecords.push(mapped);
+        fileNew++;
+      }
+      totalNew += fileNew;
+      processedKeys.push(entry.key);
+      console.log(`CSV ingestion: ${entry.key} → ${rows.length} rows parsed, ${fileNew} new records`);
+    } catch (e) {
+      console.error(`CSV ingestion: failed to process ${entry.key}:`, e);
+    }
+  }
+
+  // 4. Write merged master back
+  if (totalNew > 0) {
+    const ndjson = existingRecords.map(r => JSON.stringify(r)).join('\n') + '\n';
+    await env.R2_VIRTUAL_LAUNCH.put(ENRICHMENT_R2_KEY, ndjson, {
+      httpMetadata: { contentType: 'application/x-ndjson' },
+    });
+    console.log(`CSV ingestion: wrote ${existingRecords.length} total records to master`);
+  }
+
+  // 5. Move processed CSVs to processed/
+  for (const key of processedKeys) {
+    const newKey = key.replace('/pending/', '/processed/');
+    try {
+      const obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+      if (obj) {
+        await env.R2_VIRTUAL_LAUNCH.put(newKey, await obj.arrayBuffer(), {
+          httpMetadata: { contentType: 'text/csv' },
+        });
+        await env.R2_VIRTUAL_LAUNCH.delete(key);
+      }
+    } catch (e) {
+      console.error(`CSV ingestion: failed to move ${key} → ${newKey}:`, e);
+    }
+  }
+
+  const result = {
+    ingested: processedKeys.length,
+    new_records: totalNew,
+    skipped_no_email: totalSkippedNoEmail,
+    skipped_duplicate: totalSkippedDuplicate,
+    master_total: existingRecords.length,
+  };
+  console.log('CSV ingestion complete:', JSON.stringify(result));
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Daily Campaign Router — handleDailyBatchGeneration
 // ---------------------------------------------------------------------------
 // Runs at 12:00 UTC daily. Reads the NDJSON master file, filters records that
@@ -18599,7 +18815,7 @@ async function handleWlvlpSite(slug, request, env) {
 // timestamp so the same record cannot be re-routed on a future day.
 // ---------------------------------------------------------------------------
 
-const DAILY_BATCH_CAP = 200;
+const DAILY_BATCH_CAP_DEFAULT = 200;
 const DAILY_ROUTE_TTMP = 0.65;
 const DAILY_ROUTE_VLP  = 0.90; // upper bound (0.65..0.90 = VLP, 0.90..1 = WLVLP)
 const ALLOWED_SEND_STATUSES = new Set(['valid', 'pattern_match', 'catch_all', 'pattern_unvalidated']);
@@ -19285,6 +19501,7 @@ async function handleDailyBatchGeneration(env) {
   const startedAt = new Date();
   const todayIso = startedAt.toISOString();
   const dateKey = todayIso.slice(0, 10);
+  const DAILY_BATCH_CAP = parseInt(env.SCALE_BATCH_SIZE || String(DAILY_BATCH_CAP_DEFAULT), 10);
 
   // 1. Read NDJSON master
   let records;
@@ -20887,12 +21104,17 @@ export default {
     }
 
     // Daily Campaign Router Cron — 12:00 UTC.
-    // Reads NDJSON master, filters send-eligible enriched leads, routes them
-    // into TTMP / VLP / WLVLP send queues with full 6-email content inline,
-    // capped at DAILY_BATCH_CAP per day. Replaces the legacy
-    // handleWlvlpBatchGeneration crawler — WLVLP records now use static
-    // templates and minimal asset pages instead of per-site crawls/scoring.
+    // Step 1: Ingest any pending CSVs (Clay uploads) into the NDJSON master.
+    // Step 2: Route send-eligible enriched leads into TTMP / VLP / WLVLP
+    // send queues with full 6-email content inline, capped at SCALE_BATCH_SIZE
+    // per day.
     if (event && event.cron === '0 12 * * *') {
+      try {
+        const ingestStats = await handlePendingCsvIngestion(env);
+        console.log('CSV ingestion cron:', JSON.stringify(ingestStats));
+      } catch (e) {
+        console.error('CSV ingestion cron failed:', e);
+      }
       try {
         const stats = await handleDailyBatchGeneration(env);
         console.log('Daily batch cron:', JSON.stringify(stats));
