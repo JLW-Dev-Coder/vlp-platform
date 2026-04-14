@@ -68,13 +68,13 @@ export default function HomePage() {
                 <div className={styles.heroScene}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://taxmonitor.pro/assets/images/super-hero-building-bg.svg"
+                    src="/assets/images/super-hero-building-bg.svg"
                     alt="Modern office building representing the professional environment"
                     className={styles.heroBgArt}
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://taxmonitor.pro/assets/images/super-hero-man.svg"
+                    src="/assets/images/super-hero-man.svg"
                     alt="Tax professional in a superhero pose revealing a TMP emblem"
                     className={styles.heroManArt}
                   />

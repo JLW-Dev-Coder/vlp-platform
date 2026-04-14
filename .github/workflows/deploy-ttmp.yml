@@ -27,7 +27,21 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Flush KV cache
-        run: cd apps/ttmp && npx wrangler kv bulk delete --namespace-id dda38413b0be42e6b7bcb3ff8308439e --force
+        run: |
+          cd apps/ttmp
+          npx wrangler kv key list --namespace-id dda38413b0be42e6b7bcb3ff8308439e | node -e "
+            let d='';
+            process.stdin.on('data',c=>d+=c);
+            process.stdin.on('end',()=>{
+              const keys=JSON.parse(d).map(k=>k.name);
+              if(keys.length===0){console.log('KV cache already empty');process.exit(0);}
+              require('fs').writeFileSync('/tmp/kv-keys.json',JSON.stringify(keys));
+              console.log('Found '+keys.length+' keys to delete');
+            })
+          "
+          if [ -f /tmp/kv-keys.json ]; then
+            npx wrangler kv bulk delete /tmp/kv-keys.json --namespace-id dda38413b0be42e6b7bcb3ff8308439e --force
+          fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
