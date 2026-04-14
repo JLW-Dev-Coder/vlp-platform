@@ -272,13 +272,13 @@ export function FullCalendar({
         <div className="flex items-center gap-3">
           <button
             onClick={goPrev}
-            className="rounded-lg border border-[--member-border] p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
+            className="rounded-lg border border-[var(--member-border)] p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={goNext}
-            className="rounded-lg border border-[--member-border] p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
+            className="rounded-lg border border-[var(--member-border)] p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -286,7 +286,7 @@ export function FullCalendar({
         </div>
         <button
           onClick={goToday}
-          className="rounded-lg border border-[--member-border] px-3 py-1.5 text-sm text-white/60 transition hover:bg-white/5 hover:text-white"
+          className="rounded-lg border border-[var(--member-border)] px-3 py-1.5 text-sm text-white/60 transition hover:bg-white/5 hover:text-white"
         >
           Today
         </button>
@@ -295,9 +295,9 @@ export function FullCalendar({
       {/* Calendar + slide-out panel wrapper */}
       <div className="relative flex">
         {/* Calendar grid */}
-        <div className={`flex-1 rounded-xl border border-[--member-border] bg-[--member-card] overflow-hidden transition-all duration-300 ${selectedDate ? 'mr-[360px] lg:mr-[380px]' : ''}`}>
+        <div className={`flex-1 rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] overflow-hidden transition-all duration-300 ${selectedDate ? 'mr-[360px] lg:mr-[380px]' : ''}`}>
           {/* Day-of-week header */}
-          <div className="grid grid-cols-7 border-b border-[--member-border]">
+          <div className="grid grid-cols-7 border-b border-[var(--member-border)]">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
               <div key={d} className="py-2 text-center text-xs font-medium uppercase tracking-wider text-white/40">
                 {d}
@@ -309,7 +309,7 @@ export function FullCalendar({
           {loading ? (
             <div className="grid grid-cols-7">
               {Array.from({ length: 42 }).map((_, i) => (
-                <div key={i} className="h-24 border-b border-r border-[--member-border] animate-pulse bg-white/[0.01]" />
+                <div key={i} className="h-24 border-b border-r border-[var(--member-border)] animate-pulse bg-white/[0.01]" />
               ))}
             </div>
           ) : (
@@ -325,7 +325,7 @@ export function FullCalendar({
                     data-calendar-cell
                     onClick={() => setSelectedDate(isSelected ? null : cell.key)}
                     className={`
-                      relative h-24 border-b border-r border-[--member-border] p-1 text-left transition
+                      relative h-24 border-b border-r border-[var(--member-border)] p-1 text-left transition
                       hover:bg-white/[0.03] focus:outline-none
                       ${!cell.inMonth ? 'opacity-30' : ''}
                       ${isSelected ? 'bg-white/[0.06] ring-1 ring-inset' : ''}
@@ -377,7 +377,7 @@ export function FullCalendar({
         <div
           ref={panelRef}
           className={`
-            fixed right-0 top-0 z-50 h-full w-full bg-[--member-bg] border-l border-[--member-border] shadow-2xl
+            fixed right-0 top-0 z-50 h-full w-full bg-[var(--member-bg)] border-l border-[var(--member-border)] shadow-2xl
             transition-transform duration-300 ease-in-out
             sm:w-[360px] lg:w-[380px]
             ${selectedDate ? 'translate-x-0' : 'translate-x-full'}
@@ -387,7 +387,7 @@ export function FullCalendar({
           {selectedDate && (
             <div className="flex h-full flex-col overflow-hidden lg:h-auto">
               {/* Panel header */}
-              <div className="flex items-center justify-between border-b border-[--member-border] px-5 py-4">
+              <div className="flex items-center justify-between border-b border-[var(--member-border)] px-5 py-4">
                 <div>
                   <h3 className="text-sm font-semibold text-white">
                     {formatLongDate(selectedDate)}
@@ -418,7 +418,7 @@ export function FullCalendar({
                       return (
                         <div
                           key={evt.id}
-                          className="group rounded-lg border border-[--member-border] bg-white/[0.02] p-4 transition hover:bg-white/[0.04]"
+                          className="group rounded-lg border border-[var(--member-border)] bg-white/[0.02] p-4 transition hover:bg-white/[0.04]"
                         >
                           {/* Source badge + title */}
                           <div className="flex items-start gap-3">

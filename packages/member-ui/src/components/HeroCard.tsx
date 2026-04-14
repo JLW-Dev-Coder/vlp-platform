@@ -23,7 +23,7 @@ export function HeroCard({
 }: HeroCardProps) {
   return (
     <div
-      className={`rounded-xl border bg-gradient-to-br from-[--member-hero-bg] to-[--member-hero-bg-end] p-6 ${className}`}
+      className={`rounded-xl border bg-gradient-to-br from-[var(--member-hero-bg)] to-[var(--member-hero-bg-end)] p-6 ${className}`}
       style={{ borderColor: `${brandColor}33` }}
     >
       {children ?? (

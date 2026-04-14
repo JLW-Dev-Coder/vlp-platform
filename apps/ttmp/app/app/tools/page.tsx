@@ -43,7 +43,7 @@ export default function ToolsPage() {
           {tools.map(tool => {
             const Icon = tool.icon
             return (
-              <div key={tool.title} className="rounded-xl border border-[--member-border] bg-[--member-card] p-5 transition hover:bg-[--member-card-hover]">
+              <div key={tool.title} className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5 transition hover:bg-[var(--member-card-hover)]">
                 <div className="flex flex-col gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/10">
                     <Icon className="h-5 w-5 text-teal-400" />

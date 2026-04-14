@@ -117,7 +117,7 @@ export default function DashboardClient() {
         <h2 className="mb-3 text-[11px] font-bold uppercase tracking-widest text-white/40">Quick Actions</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Link href="/app/tools/" className="group">
-            <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5 transition hover:bg-[--member-card-hover]">
+            <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5 transition hover:bg-[var(--member-card-hover)]">
               <div className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 transition group-hover:bg-teal-500/20">
                   <Upload className="h-5 w-5 text-teal-400" />
@@ -130,7 +130,7 @@ export default function DashboardClient() {
             </div>
           </Link>
           <Link href="/app/reports/" className="group">
-            <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5 transition hover:bg-[--member-card-hover]">
+            <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5 transition hover:bg-[var(--member-card-hover)]">
               <div className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 transition group-hover:bg-teal-500/20">
                   <FolderOpen className="h-5 w-5 text-teal-400" />
@@ -152,7 +152,7 @@ export default function DashboardClient() {
         ) : recentReports.length === 0 ? (
           <p className="text-sm text-white/40">No reports yet. Parse your first transcript to get started.</p>
         ) : (
-          <div className="divide-y divide-[--member-border]">
+          <div className="divide-y divide-[var(--member-border)]">
             {recentReports.map((report) => {
               const date = report.created_at
                 ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })

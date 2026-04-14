@@ -43,11 +43,11 @@ export default function ReportsClient() {
           <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-white/[0.08] border-t-teal-500" />
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5">
+        <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5">
           <p className="text-sm text-red-300">{error}</p>
         </div>
       ) : reports.length === 0 ? (
-        <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5">
+        <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5">
           <div className="py-8 text-center">
             <FileText className="mx-auto mb-3 h-10 w-10 text-white/15" />
             <p className="text-sm text-white/40">No reports yet</p>

@@ -14,7 +14,7 @@ export default function ReceiptsClient() {
         <p className="mt-1 text-sm text-white/50">View your purchase receipts and invoices</p>
       </div>
 
-      <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5">
+      <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5">
         <div className="py-12 text-center">
           <Receipt className="mx-auto mb-3 h-10 w-10 text-white/15" />
           <p className="text-sm text-white/40">No receipts yet</p>

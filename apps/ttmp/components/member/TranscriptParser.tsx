@@ -452,7 +452,7 @@ export default function TranscriptParser() {
   return (
     <>
       {/* Token bar */}
-      <div className="mb-4 flex items-center gap-2 rounded-xl border border-[--member-border] bg-[--member-card] px-5 py-3">
+      <div className="mb-4 flex items-center gap-2 rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] px-5 py-3">
         <span className="text-[13px] text-white/60">
           <span className="font-semibold text-teal-400">{balance}</span> token{balance !== 1 ? 's' : ''} available
         </span>
@@ -467,9 +467,9 @@ export default function TranscriptParser() {
       </div>
 
       {/* Parser card */}
-      <div className="rounded-xl border border-[--member-border] bg-[--member-card] overflow-hidden">
+      <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] overflow-hidden">
         {/* Flow steps */}
-        <div className="flex items-center border-b border-[--member-border] px-5 py-3.5">
+        <div className="flex items-center border-b border-[var(--member-border)] px-5 py-3.5">
           <div className="flex flex-1 items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-500/15 text-xs font-bold text-teal-400">&#10003;</span>
             <div>
@@ -519,7 +519,7 @@ export default function TranscriptParser() {
           <input ref={fileInputRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfFile(f) }} />
 
           {/* Logo upload */}
-          <div className="mt-4 border-t border-[--member-border] pt-4">
+          <div className="mt-4 border-t border-[var(--member-border)] pt-4">
             <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.06em] text-white/30">Firm Logo (optional)</span>
             <div className="flex flex-wrap items-center gap-2">
               <label className="cursor-pointer rounded-lg border border-white/[0.08] bg-[#07090f] px-3.5 py-1.5 text-[13px] font-semibold text-white/60 transition hover:border-white/20 hover:text-white">
@@ -534,7 +534,7 @@ export default function TranscriptParser() {
               <span className="text-xs text-white/40">{logoFileName || 'No file chosen \u2014 logo appears on saved reports'}</span>
             </div>
             {logoDataUrl && (
-              <div className="mt-2.5 flex items-center gap-3 rounded-lg border border-[--member-border] bg-[#07090f] p-2.5">
+              <div className="mt-2.5 flex items-center gap-3 rounded-lg border border-[var(--member-border)] bg-[#07090f] p-2.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={logoDataUrl} alt="Firm logo" className="h-12 w-12 rounded-md bg-[#0b0e1a] object-contain p-1" />
                 <div>
@@ -548,7 +548,7 @@ export default function TranscriptParser() {
       </div>
 
       {/* Output card */}
-      <div className="mt-4 rounded-xl border border-[--member-border] bg-[--member-card] p-5">
+      <div className="mt-4 rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5">
         <p className="mb-3.5 text-[15px] font-bold text-white/90">Output</p>
 
         <div className="mb-3.5 flex flex-wrap gap-2.5">
@@ -565,13 +565,13 @@ export default function TranscriptParser() {
 
         {balance === 0 && <p className="mb-3.5 text-[13px] text-amber-400">No tokens \u2014 purchase tokens to save reports.</p>}
 
-        <div className="mb-3.5 rounded-lg border border-[--member-border] bg-[#07090f] px-4 py-3 text-[13px] text-white/60">
+        <div className="mb-3.5 rounded-lg border border-[var(--member-border)] bg-[#07090f] px-4 py-3 text-[13px] text-white/60">
           {previewStatus}
         </div>
 
         <div className="mb-3.5 grid gap-2.5 md:grid-cols-2">
-          <div className="rounded-lg border border-[--member-border] bg-[#07090f] p-3.5">
-            <div className="mb-2.5 flex items-center justify-between border-b border-[--member-border] pb-2.5">
+          <div className="rounded-lg border border-[var(--member-border)] bg-[#07090f] p-3.5">
+            <div className="mb-2.5 flex items-center justify-between border-b border-[var(--member-border)] pb-2.5">
               <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-white/30">Raw text</span>
               <button type="button" className="text-xs font-semibold text-teal-400" onClick={() => handleCopy(rawText, 'raw')}>{copyRawLabel}</button>
             </div>
@@ -579,8 +579,8 @@ export default function TranscriptParser() {
               {rawText || '\u2014 awaiting extraction \u2014'}
             </pre>
           </div>
-          <div className="rounded-lg border border-[--member-border] bg-[#07090f] p-3.5">
-            <div className="mb-2.5 flex items-center justify-between border-b border-[--member-border] pb-2.5">
+          <div className="rounded-lg border border-[var(--member-border)] bg-[#07090f] p-3.5">
+            <div className="mb-2.5 flex items-center justify-between border-b border-[var(--member-border)] pb-2.5">
               <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-white/30">Structured JSON</span>
               <button type="button" className="text-xs font-semibold text-teal-400" onClick={() => handleCopy(jsonText, 'json')}>{copyJsonLabel}</button>
             </div>
@@ -591,13 +591,13 @@ export default function TranscriptParser() {
         </div>
 
         {/* Email section */}
-        <div className="border-t border-[--member-border] pt-3.5">
+        <div className="border-t border-[var(--member-border)] pt-3.5">
           <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.06em] text-white/30">Email report link to client</span>
           <div className="flex gap-2.5 items-end">
             <input
               type="email" placeholder="client@firm.com" autoComplete="email"
               value={emailInput} onChange={(e) => setEmailInput(e.target.value)}
-              className="flex-1 rounded-lg border border-[--member-border] bg-[#07090f] px-3.5 py-2.5 text-sm text-white/90 outline-none transition placeholder:text-white/30 focus:border-teal-500/40"
+              className="flex-1 rounded-lg border border-[var(--member-border)] bg-[#07090f] px-3.5 py-2.5 text-sm text-white/90 outline-none transition placeholder:text-white/30 focus:border-teal-500/40"
             />
             <button type="button" disabled={!previewSaved || !emailInput} onClick={handleEmailReport} className="rounded-lg bg-teal-500 px-5 py-2.5 text-sm font-bold text-black transition hover:opacity-90 disabled:opacity-35 disabled:cursor-not-allowed">
               Send link
@@ -610,7 +610,7 @@ export default function TranscriptParser() {
       {/* Purchase modal */}
       {purchaseModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" onClick={() => setPurchaseModalOpen(false)}>
-          <div className="w-full max-w-[560px] rounded-2xl border border-[--member-border] bg-[#0b0e1a] p-8" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-[560px] rounded-2xl border border-[var(--member-border)] bg-[#0b0e1a] p-8" onClick={(e) => e.stopPropagation()}>
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-bold text-white/90">Purchase Tokens</h2>
               <button type="button" onClick={() => setPurchaseModalOpen(false)} className="text-white/40 transition hover:text-white" aria-label="Close">
@@ -622,7 +622,7 @@ export default function TranscriptParser() {
             {pricingPackages.length > 0 && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {pricingPackages.map((pkg) => (
-                  <div key={pkg.price_id} className={`relative rounded-xl border bg-[#07090f] p-6 text-center transition hover:border-white/20 ${pkg.badge === 'Popular' ? 'border-teal-500/35' : 'border-[--member-border]'}`}>
+                  <div key={pkg.price_id} className={`relative rounded-xl border bg-[#07090f] p-6 text-center transition hover:border-white/20 ${pkg.badge === 'Popular' ? 'border-teal-500/35' : 'border-[var(--member-border)]'}`}>
                     {pkg.badge && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-teal-500 px-2.5 py-0.5 text-[10px] font-bold text-black">{pkg.badge}</div>}
                     <div className="mb-2.5 text-[13px] font-semibold text-white/60">{pkg.label}</div>
                     <div className="text-[32px] font-extrabold leading-none text-teal-400">{pkg.tokens}</div>

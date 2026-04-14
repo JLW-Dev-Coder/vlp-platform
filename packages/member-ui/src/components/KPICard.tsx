@@ -13,7 +13,7 @@ interface KPICardProps {
 
 export function KPICard({ label, value, subtitle, trend = 'neutral', icon: Icon, brandColor }: KPICardProps) {
   return (
-    <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5 transition hover:bg-[--member-card-hover]">
+    <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5 transition hover:bg-[var(--member-card-hover)]">
       <div className="flex items-center justify-between">
         <span className="text-xs uppercase tracking-widest text-white/40">{label}</span>
         {Icon && <Icon className="h-4 w-4 text-white/30" />}

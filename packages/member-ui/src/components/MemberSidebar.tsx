@@ -40,7 +40,7 @@ export function MemberSidebar({ config, onSignOut }: MemberSidebarProps) {
 
   return (
     <aside
-      className={`flex shrink-0 flex-col border-r border-white/[0.08] bg-[--member-bg] transition-[width] duration-200 ${
+      className={`flex shrink-0 flex-col border-r border-white/[0.08] bg-[var(--member-bg)] transition-[width] duration-200 ${
         collapsed ? 'w-[68px]' : 'w-[240px]'
       }`}
     >

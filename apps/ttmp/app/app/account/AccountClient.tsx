@@ -64,7 +64,7 @@ export default function AccountClient() {
                 Buy Tokens
               </Link>
             </div>
-            <div className="border-t border-[--member-border] pt-4">
+            <div className="border-t border-[var(--member-border)] pt-4">
               <span className="text-[11px] font-bold uppercase tracking-widest text-white/40">Payment History</span>
               <p className="mt-2 text-sm text-white/40">No payments yet</p>
             </div>

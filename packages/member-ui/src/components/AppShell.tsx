@@ -62,7 +62,7 @@ export function AppShell({ config, children }: AppShellProps) {
 
   return (
     <AppShellContext.Provider value={{ config, session, signOut }}>
-      <div className="flex h-screen overflow-hidden bg-[--member-bg]">
+      <div className="flex h-screen overflow-hidden bg-[var(--member-bg)]">
         <MemberSidebar config={config} onSignOut={signOut} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <MemberTopbar config={config} session={session} onSignOut={signOut} />

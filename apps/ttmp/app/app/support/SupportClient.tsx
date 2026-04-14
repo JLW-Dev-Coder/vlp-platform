@@ -36,7 +36,7 @@ export default function SupportClient() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5 transition hover:bg-[--member-card-hover]">
+        <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5 transition hover:bg-[var(--member-card-hover)]">
           <Calendar className="mb-3 h-5 w-5 text-teal-400" />
           <h3 className="text-base font-semibold text-white/90">Book a Call</h3>
           <p className="mt-1 text-sm text-white/40">10-minute support call with our team</p>
@@ -49,7 +49,7 @@ export default function SupportClient() {
             Schedule
           </a>
         </div>
-        <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5 transition hover:bg-[--member-card-hover]">
+        <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5 transition hover:bg-[var(--member-card-hover)]">
           <Book className="mb-3 h-5 w-5 text-teal-400" />
           <h3 className="text-base font-semibold text-white/90">Documentation</h3>
           <p className="mt-1 text-sm text-white/40">Guides and resources for TTMP</p>
@@ -78,7 +78,7 @@ export default function SupportClient() {
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
                 placeholder="Brief description of your issue"
-                className="w-full rounded-lg border border-[--member-border] bg-[#07090f] px-3.5 py-2.5 text-sm text-white/90 outline-none transition placeholder:text-white/30 focus:border-teal-500/40"
+                className="w-full rounded-lg border border-[var(--member-border)] bg-[#07090f] px-3.5 py-2.5 text-sm text-white/90 outline-none transition placeholder:text-white/30 focus:border-teal-500/40"
               />
             </div>
             <div>
@@ -88,7 +88,7 @@ export default function SupportClient() {
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Describe your issue in detail..."
                 rows={5}
-                className="w-full resize-none rounded-lg border border-[--member-border] bg-[#07090f] px-3.5 py-2.5 text-sm text-white/90 outline-none transition placeholder:text-white/30 focus:border-teal-500/40"
+                className="w-full resize-none rounded-lg border border-[var(--member-border)] bg-[#07090f] px-3.5 py-2.5 text-sm text-white/90 outline-none transition placeholder:text-white/30 focus:border-teal-500/40"
               />
             </div>
             {error && <p className="text-[13px] text-red-300">{error}</p>}
