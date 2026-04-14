@@ -69,9 +69,9 @@ The shared component library for all platform member areas. Contains:
 
 Apps depend on this package via workspace dependency: `"@vlp/member-ui": "*"`
 
-**Tailwind version split:** TTMP uses Tailwind CSS v4 (4.2.2) which uses `@source` directives in `globals.css` for content scanning. All other 7 apps use Tailwind CSS v3 which uses the `content` array in `tailwind.config.ts`. When adding new shared packages or component directories, both scan paths must be updated: add to `tailwind.config.ts` content array for v3 apps, and add `@source` directive in `globals.css` for TTMP.
+**Tailwind version:** All 8 apps use Tailwind CSS v3 (3.4.17) with the `content` array in `tailwind.config.ts` for content scanning. When adding new shared packages or component directories, add the path to each app's `tailwind.config.ts` content array.
 
-**CSS variable syntax (v3/v4 compat):** Always use `bg-[var(--member-card)]` (explicit `var()`) — never `bg-[--member-card]` (bare). Tailwind v3 auto-wraps bare custom properties with `var()`, but v4 does NOT, outputting invalid CSS like `background-color:--member-card`. The explicit `var()` syntax works in both versions.
+**CSS variable syntax:** Use `bg-[var(--member-card)]` (explicit `var()`) in arbitrary Tailwind classes. This is the safest form and avoids ambiguity.
 
 ---
 
