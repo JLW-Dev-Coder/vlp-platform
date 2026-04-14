@@ -13,8 +13,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { AppShell } from '@vlp/member-ui'
-import { tmpConfig } from '@/lib/platform-config'
+import { TmpAppShell } from '@/components/TmpAppShell'
 import AuthGuard from '@/components/AuthGuard'
 import {
   api,
@@ -426,13 +425,13 @@ export default function ClientReportPage() {
   return (
     <AuthGuard>
       {({ account }) => (
-        <AppShell config={tmpConfig}>
+        <TmpAppShell>
           <Suspense
             fallback={<div className={styles.loadingBox}>Loading…</div>}
           >
             <ReportPageInner />
           </Suspense>
-        </AppShell>
+        </TmpAppShell>
       )}
     </AuthGuard>
   )

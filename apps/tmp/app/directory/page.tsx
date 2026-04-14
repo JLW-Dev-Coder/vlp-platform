@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { api } from '@/lib/api'
@@ -66,9 +67,21 @@ function getSpecialtyClass(specialty: string): string {
 }
 
 export default function DirectoryPage() {
+  return (
+    <Suspense>
+      <DirectoryContent />
+    </Suspense>
+  )
+}
+
+function DirectoryContent() {
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get('q') ?? ''
+
   const [professionals, setProfessionals] = useState<Professional[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [nameQuery, setNameQuery] = useState(initialQuery)
   const [profession, setProfession] = useState('')
   const [specialty, setSpecialty] = useState('')
   const [availability, setAvailability] = useState('')
@@ -156,9 +169,16 @@ export default function DirectoryPage() {
     }
   }, [specialty, city, state, zip, fetchDirectory])
 
-  /* Client-side filtering for profession and availability */
+  /* Client-side filtering for name query, profession, and availability */
   const visibleProfessionals = professionals.filter((p) => {
     if (!showSamples && p.sample) return false
+    if (nameQuery) {
+      const q = nameQuery.toLowerCase()
+      const matchesName = p.name.toLowerCase().includes(q)
+      const matchesSpecialty = p.specialty.some((s) => s.toLowerCase().includes(q))
+      const matchesLocation = p.location.toLowerCase().includes(q)
+      if (!matchesName && !matchesSpecialty && !matchesLocation) return false
+    }
     if (profession) {
       const profLower = profession.toLowerCase()
       const match = p.specialty.some((s) => s.toLowerCase().includes(profLower)) ||
@@ -224,6 +244,17 @@ export default function DirectoryPage() {
         <section className={styles.filterSection}>
           <div className={styles.filterCard}>
             <div className={styles.filterGrid}>
+              <div className={styles.filterField}>
+                <label className={styles.filterFieldLabel}>Search</label>
+                <input
+                  type="text"
+                  className={styles.filterInput}
+                  placeholder="Name, specialty, or location..."
+                  value={nameQuery}
+                  onChange={(e) => setNameQuery(e.target.value)}
+                />
+              </div>
+
               <div className={styles.filterField}>
                 <label className={styles.filterFieldLabel}>City</label>
                 <input
@@ -319,11 +350,12 @@ export default function DirectoryPage() {
             </div>
 
             <div className={styles.filterActions}>
-              {(profession || specialty || availability || city || state || zip) && (
+              {(nameQuery || profession || specialty || availability || city || state || zip) && (
                 <button
                   type="button"
                   className={styles.clearBtn}
                   onClick={() => {
+                    setNameQuery('')
                     setProfession('')
                     setSpecialty('')
                     setAvailability('')
@@ -455,6 +487,7 @@ export default function DirectoryPage() {
                 type="button"
                 className={styles.retryBtn}
                 onClick={() => {
+                  setNameQuery('')
                   setProfession('')
                   setSpecialty('')
                   setAvailability('')

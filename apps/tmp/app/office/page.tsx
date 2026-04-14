@@ -1,7 +1,6 @@
 'use client'
 
-import { AppShell } from '@vlp/member-ui'
-import { tmpConfig } from '@/lib/platform-config'
+import { TmpAppShell } from '@/components/TmpAppShell'
 import AuthGuard from '@/components/AuthGuard'
 import OfficeContent from '@/app/dashboard/components/OfficeContent'
 
@@ -9,9 +8,9 @@ export default function OfficePage() {
   return (
     <AuthGuard>
       {({ account }) => (
-        <AppShell config={tmpConfig}>
+        <TmpAppShell>
           <OfficeContent account={account} />
-        </AppShell>
+        </TmpAppShell>
       )}
     </AuthGuard>
   )

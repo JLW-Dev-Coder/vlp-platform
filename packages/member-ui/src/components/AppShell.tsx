@@ -35,9 +35,10 @@ export function useAppShell() {
 interface AppShellProps {
   config: PlatformConfig
   children: React.ReactNode
+  onSearch?: (query: string) => void
 }
 
-export function AppShell({ config, children }: AppShellProps) {
+export function AppShell({ config, children, onSearch }: AppShellProps) {
   const [session, setSession] = useState<SessionData>({ email: null, avatar: null })
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export function AppShell({ config, children }: AppShellProps) {
       <div className="flex h-screen overflow-hidden bg-[var(--member-bg)]">
         <MemberSidebar config={config} onSignOut={signOut} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <MemberTopbar config={config} session={session} onSignOut={signOut} />
+          <MemberTopbar config={config} session={session} onSignOut={signOut} onSearch={onSearch} />
           <main className="flex-1 overflow-y-auto px-8 py-8 sidebar-scroll">
             {children}
           </main>

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AppShell } from '@vlp/member-ui'
-import { tmpConfig } from '@/lib/platform-config'
+import { TmpAppShell } from '@/components/TmpAppShell'
 import AuthGuard from '@/components/AuthGuard'
 import type { SessionUser } from '@/components/AuthGuard'
 
@@ -150,9 +149,9 @@ export default function DashboardPage() {
   return (
     <AuthGuard>
       {({ account }) => (
-        <AppShell config={tmpConfig}>
+        <TmpAppShell>
           <DashboardSPA account={account} />
-        </AppShell>
+        </TmpAppShell>
       )}
     </AuthGuard>
   )
