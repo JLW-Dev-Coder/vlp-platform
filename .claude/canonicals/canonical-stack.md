@@ -100,6 +100,10 @@ All 8 frontends share a common data model (accounts, sessions, memberships, bill
 
 R2 stores immutable receipts and canonical records. D1 is a queryable projection rebuilt from R2 data. This ensures data durability (R2 has 11 9s of durability) and allows D1 to be wiped and rebuilt from R2 without data loss.
 
+### Tailwind version split (v3 vs v4)
+
+TTMP uses Tailwind CSS v4 (4.2.2) which uses `@source` directives in `globals.css` for content scanning. All other 7 apps use Tailwind CSS v3 which uses the `content` array in `tailwind.config.ts`. When adding new shared packages or component directories, both scan paths must be updated: add to `tailwind.config.ts` content array for v3 apps, and add `@source` directive in `globals.css` for TTMP.
+
 ### Why static export for TMP, GVLP, TCVLP, WLVLP
 
 These platforms render entirely client-side. They fetch data from the Worker API at runtime. Static export eliminates cold-start latency, reduces Cloudflare costs, and simplifies deployments (just upload HTML/CSS/JS).

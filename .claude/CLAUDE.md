@@ -69,6 +69,8 @@ The shared component library for all platform member areas. Contains:
 
 Apps depend on this package via workspace dependency: `"@vlp/member-ui": "*"`
 
+**Tailwind version split:** TTMP uses Tailwind CSS v4 (4.2.2) which uses `@source` directives in `globals.css` for content scanning. All other 7 apps use Tailwind CSS v3 which uses the `content` array in `tailwind.config.ts`. When adding new shared packages or component directories, both scan paths must be updated: add to `tailwind.config.ts` content array for v3 apps, and add `@source` directive in `globals.css` for TTMP.
+
 ---
 
 ## 6. Canonical Documents
