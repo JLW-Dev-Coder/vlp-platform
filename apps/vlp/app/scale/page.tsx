@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
+import FormsPanel from './components/FormsPanel'
 import styles from './page.module.css'
 
 // ---------------------------------------------------------------------------
@@ -757,14 +758,9 @@ function PipelineView({
           )}
         </GlassCard>
 
-        <GlassCard className={styles.glassCardDimmed}>
+        <GlassCard>
           <GlassCardTitle>Forms</GlassCardTitle>
-          <div className={styles.glassCardPlaceholder}>
-            <svg className="w-8 h-8 text-slate-600 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span className={styles.glassCardMuted}>No form submission tracking wired yet</span>
-          </div>
+          <FormsPanel />
         </GlassCard>
       </div>
     </div>
