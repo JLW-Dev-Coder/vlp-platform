@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { TmpAppShell } from '@/components/TmpAppShell'
+import { AppShell } from '@vlp/member-ui'
+import { tmpConfig } from '@/lib/platform-config'
 import AuthGuard from '@/components/AuthGuard'
 import { api } from '@/lib/api'
 import type { SessionUser } from '@/components/AuthGuard'
@@ -67,9 +68,9 @@ export default function StatusPage() {
   return (
     <AuthGuard>
       {({ account }) => (
-        <TmpAppShell>
+        <AppShell config={tmpConfig}>
           <StatusContent account={account} />
-        </TmpAppShell>
+        </AppShell>
       )}
     </AuthGuard>
   )

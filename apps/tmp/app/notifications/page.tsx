@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ContentCard } from '@vlp/member-ui'
-import { TmpAppShell } from '@/components/TmpAppShell'
+import { AppShell } from '@vlp/member-ui'
 import AuthGuard from '@/components/AuthGuard'
 import type { SessionUser } from '@/components/AuthGuard'
 import { tmpConfig } from '@/lib/platform-config'
@@ -43,9 +43,9 @@ export default function NotificationsPage() {
   return (
     <AuthGuard>
       {({ account }) => (
-        <TmpAppShell>
+        <AppShell config={tmpConfig}>
           <NotificationsContent account={account} />
-        </TmpAppShell>
+        </AppShell>
       )}
     </AuthGuard>
   )

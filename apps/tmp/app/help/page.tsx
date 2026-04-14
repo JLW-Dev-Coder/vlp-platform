@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { ContentCard } from '@vlp/member-ui'
-import { TmpAppShell } from '@/components/TmpAppShell'
+import { AppShell } from '@vlp/member-ui'
+import { tmpConfig } from '@/lib/platform-config'
 import AuthGuard from '@/components/AuthGuard'
 
 interface FaqItem {
@@ -42,9 +43,9 @@ export default function HelpPage() {
   return (
     <AuthGuard>
       {() => (
-        <TmpAppShell>
+        <AppShell config={tmpConfig}>
           <HelpContent />
-        </TmpAppShell>
+        </AppShell>
       )}
     </AuthGuard>
   )

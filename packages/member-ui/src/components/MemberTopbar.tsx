@@ -2,20 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Search, Bell, HelpCircle, LogOut, Settings, UserCircle } from 'lucide-react'
+import { Bell, HelpCircle, LogOut, Settings, UserCircle } from 'lucide-react'
 import type { PlatformConfig } from '../types/config'
 
 interface MemberTopbarProps {
   config: PlatformConfig
   session: { email: string | null; avatar: string | null }
   onSignOut: () => void
-  onSearch?: (query: string) => void
   unreadNotifications?: number
 }
 
-export function MemberTopbar({ config, session, onSignOut, onSearch, unreadNotifications = 0 }: MemberTopbarProps) {
+export function MemberTopbar({ config, session, onSignOut, unreadNotifications = 0 }: MemberTopbarProps) {
   const [open, setOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const initial = session.email ? session.email[0].toUpperCase() : '?'
@@ -30,29 +28,10 @@ export function MemberTopbar({ config, session, onSignOut, onSearch, unreadNotif
     return () => document.removeEventListener('mousedown', handleOutside)
   }, [open])
 
-  function handleSearchSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const q = searchQuery.trim()
-    if (q && onSearch) onSearch(q)
-  }
-
   return (
     <header className="flex h-20 shrink-0 items-center justify-between border-b border-white/[0.08] bg-[var(--member-bg)]/80 px-6 backdrop-blur">
-      {/* Search */}
-      <form onSubmit={handleSearchSubmit} className="relative w-full max-w-md">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/30 outline-none transition"
-          style={{
-            // @ts-expect-error -- CSS custom property focus style handled via class
-            '--tw-ring-color': `${config.brandColor}66`,
-          }}
-        />
-      </form>
+      {/* Left side — spacer */}
+      <div />
 
       {/* Right actions */}
       <div className="flex items-center gap-1">
