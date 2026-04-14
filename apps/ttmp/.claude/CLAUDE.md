@@ -113,3 +113,4 @@ Output: `scale/batches/scale-batch-*.json` + `scale/gmail/email1/*.csv`
 - Never output `email: "undefined"` in scale pipeline
 - TTMP uses `@opennextjs/cloudflare` — do NOT switch to `@cloudflare/next-on-pages`
 - Canonical documents live at monorepo root `.claude/canonicals/` — never copy into this app
+- **CRITICAL: Every task must end with `git add . && git commit && git push`.** The monorepo deploys via GitHub Actions from the main branch. Uncommitted changes are not deployed. Never report a task as "done" without confirming the commit has been pushed to `origin/main`.

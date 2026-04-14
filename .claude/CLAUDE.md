@@ -130,6 +130,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 4. **Canonicals live at root.** `.claude/canonicals/` is the single source of truth. Apps reference, never copy.
 5. **PlatformConfig drives branding.** Each app passes its `PlatformConfig` to shared `@vlp/member-ui` components. No hardcoded brand values in shared code.
 6. **Pre-task self-check:** Before writing code, confirm: (a) correct app directory, (b) backend vs. frontend, (c) existing contract check, (d) no duplicates.
+7. **CRITICAL: Every task must end with `git add . && git commit && git push`.** The monorepo deploys via GitHub Actions from the main branch. Uncommitted changes are not deployed. Never report a task as "done" without confirming the commit has been pushed to `origin/main`.
 
 ---
 
