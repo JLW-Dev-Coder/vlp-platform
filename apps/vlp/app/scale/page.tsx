@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import FormsPanel from './components/FormsPanel'
+import PostsPanel from './components/PostsPanel'
 import styles from './page.module.css'
 
 // ---------------------------------------------------------------------------
@@ -390,7 +391,7 @@ export default function ScaleAnalyticsPage() {
               ? 'Cloudflare traffic across all 8 VLP repos'
               : tab === 'pipeline'
               ? 'Outreach pipeline metrics and live data'
-              : 'Reddit opportunities for TTMP outreach'}
+              : 'Social post tracker & Reddit opportunities'}
           </p>
         </div>
         <button
@@ -917,7 +918,17 @@ function SocialOpportunitiesView({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Posts tracker */}
+      <GlassCard>
+        <GlassCardTitle>Posts</GlassCardTitle>
+        <PostsPanel />
+      </GlassCard>
+
+      {/* Reddit Opportunities */}
+      <GlassCard>
+        <GlassCardTitle>Reddit Opportunities</GlassCardTitle>
+      <div className="space-y-4">
       {/* Controls row */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className={styles.socialFilterBar}>
@@ -1057,6 +1068,8 @@ function SocialOpportunitiesView({
           </div>
         ))
       )}
+    </div>
+      </GlassCard>
     </div>
   )
 }

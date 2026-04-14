@@ -17188,6 +17188,155 @@ TTMP Support Team
   },
 
   // -------------------------------------------------------------------------
+  // Social Posts — Manual post tracker for Scale dashboard
+  // -------------------------------------------------------------------------
+
+  // POST /v1/scale/social/posts — Create a social post log entry (admin)
+  {
+    method: 'POST', pattern: '/v1/scale/social/posts',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await request.json().catch(() => null);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const validPlatforms = ['linkedin', 'facebook', 'reddit', 'youtube', 'twitter'];
+      if (!body.platform || !validPlatforms.includes(body.platform)) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'platform must be one of: ' + validPlatforms.join(', ') }, 400, request);
+      }
+      if (!body.url || typeof body.url !== 'string' || !body.url.startsWith('https://')) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'url is required and must start with https://' }, 400, request);
+      }
+
+      const postId = 'SPOST_' + crypto.randomUUID();
+      const now = new Date().toISOString();
+      const record = {
+        post_id: postId,
+        platform: body.platform,
+        url: body.url,
+        campaign_day: typeof body.campaign_day === 'number' ? body.campaign_day : null,
+        campaign_name: body.campaign_name || null,
+        post_type: body.post_type || 'organic',
+        content_preview: body.content_preview ? String(body.content_preview).slice(0, 500) : null,
+        notes: body.notes || null,
+        engagement: { likes: 0, comments: 0, shares: 0, clicks: 0 },
+        created_at: now,
+      };
+
+      // Write to R2 (authoritative)
+      await r2Put(env.R2_VIRTUAL_LAUNCH, `social/posts/${postId}.json`, record);
+
+      // D1 projection
+      await d1Run(env.DB,
+        `INSERT INTO social_posts (post_id, platform, url, campaign_day, campaign_name, post_type, content_preview, notes, likes, comments, shares, clicks, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, ?)`,
+        [postId, record.platform, record.url, record.campaign_day, record.campaign_name, record.post_type, record.content_preview, record.notes, now],
+      );
+
+      return json({ ok: true, post_id: postId }, 201, request);
+    },
+  },
+
+  // GET /v1/scale/social/posts — List social posts (admin)
+  {
+    method: 'GET', pattern: '/v1/scale/social/posts',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const url = new URL(request.url);
+      const platform = url.searchParams.get('platform') || '';
+      const campaignName = url.searchParams.get('campaign_name') || '';
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+      const offset = parseInt(url.searchParams.get('offset') || '0', 10) || 0;
+
+      let sql = 'SELECT * FROM social_posts';
+      const conditions = [];
+      const params = [];
+      if (platform) { conditions.push('platform = ?'); params.push(platform); }
+      if (campaignName) { conditions.push('campaign_name = ?'); params.push(campaignName); }
+      if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ');
+      sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      params.push(limit, offset);
+
+      const results = await env.DB.prepare(sql).bind(...params).all();
+
+      // Also get total count for the same filters
+      let countSql = 'SELECT COUNT(*) as total FROM social_posts';
+      const countParams = [];
+      if (platform) { countParams.push(platform); }
+      if (campaignName) { countParams.push(campaignName); }
+      const condClauses = [];
+      if (platform) condClauses.push('platform = ?');
+      if (campaignName) condClauses.push('campaign_name = ?');
+      if (condClauses.length) countSql += ' WHERE ' + condClauses.join(' AND ');
+      const countRow = await env.DB.prepare(countSql).bind(...countParams).first();
+
+      return json({
+        ok: true,
+        posts: results.results || [],
+        total: countRow?.total || 0,
+      }, 200, request);
+    },
+  },
+
+  // PATCH /v1/scale/social/posts/:id — Update notes/engagement (admin)
+  {
+    method: 'PATCH', pattern: '/v1/scale/social/posts/:id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const postId = params.id;
+      const body = await request.json().catch(() => null);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      // Read existing from R2
+      const r2Key = `social/posts/${postId}.json`;
+      const existing = await env.R2_VIRTUAL_LAUNCH.get(r2Key);
+      if (!existing) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+      const record = await existing.json();
+
+      // Merge updates
+      if (body.notes !== undefined) record.notes = body.notes;
+      if (body.content_preview !== undefined) record.content_preview = String(body.content_preview).slice(0, 500);
+      if (body.engagement) {
+        if (!record.engagement) record.engagement = { likes: 0, comments: 0, shares: 0, clicks: 0 };
+        if (typeof body.engagement.likes === 'number') record.engagement.likes = body.engagement.likes;
+        if (typeof body.engagement.comments === 'number') record.engagement.comments = body.engagement.comments;
+        if (typeof body.engagement.shares === 'number') record.engagement.shares = body.engagement.shares;
+        if (typeof body.engagement.clicks === 'number') record.engagement.clicks = body.engagement.clicks;
+      }
+      record.updated_at = new Date().toISOString();
+
+      // Write back to R2
+      await r2Put(env.R2_VIRTUAL_LAUNCH, r2Key, record);
+
+      // Update D1 projection
+      const eng = record.engagement || {};
+      await d1Run(env.DB,
+        `UPDATE social_posts SET notes = ?, content_preview = ?, likes = ?, comments = ?, shares = ?, clicks = ? WHERE post_id = ?`,
+        [record.notes || null, record.content_preview || null, eng.likes || 0, eng.comments || 0, eng.shares || 0, eng.clicks || 0, postId],
+      );
+
+      return json({ ok: true, post_id: postId }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Scale Assets (Public Route)
   // -------------------------------------------------------------------------
 
