@@ -23,11 +23,8 @@ export function HeroCard({
 }: HeroCardProps) {
   return (
     <div
-      className={`rounded-xl border p-6 ${className}`}
-      style={{
-        background: `linear-gradient(135deg, ${brandColor}20, ${brandColor}08)`,
-        borderColor: `${brandColor}33`,
-      }}
+      className={`rounded-xl border bg-gradient-to-br from-[--member-hero-bg] to-[--member-hero-bg-end] p-6 ${className}`}
+      style={{ borderColor: `${brandColor}33` }}
     >
       {children ?? (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

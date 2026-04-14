@@ -3,6 +3,7 @@
 
 @source "../app/app";
 @source "../components/member";
+@source "../../../packages/member-ui/src";
 
 @theme {
   --color-brand-teal: #14b8a6;
