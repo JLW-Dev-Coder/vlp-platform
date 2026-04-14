@@ -224,3 +224,80 @@ Components read this config and render. No hardcoded platform values in shared c
 - Mobile: header collapses to hamburger menu, sidebar becomes a drawer
 - Active nav item highlighted with platform's theme color
 - Footer is identical structure across all platforms, only content differs via config
+
+---
+
+## 5. Layout Standards (Mandatory — All 8 Platforms)
+
+All marketing site pages and app pages must use the same container and spacing system so headers, footers, and content align perfectly across every platform.
+
+### Page container
+
+```
+Max width:     1280px (Tailwind: max-w-7xl)
+Side padding:  24px mobile (px-6), 32px tablet+ (md:px-8)
+Center:        mx-auto
+```
+
+Every top-level page section (hero, features, pricing, footer, etc.) wraps its content in:
+
+```html
+<div class="max-w-7xl mx-auto px-6 md:px-8">
+  <!-- section content -->
+</div>
+```
+
+The outer wrapper (full-width background color/gradient) can be 100vw. The inner content container is always `max-w-7xl mx-auto px-6 md:px-8`.
+
+### Header layout
+
+```
+Container:     max-w-7xl mx-auto px-6 md:px-8
+Height:        64px (h-16)
+Position:      sticky top-0 z-50, backdrop-blur
+Structure:     [Logo + Platform Name]  [Nav Items]  |  [Log In]  [CTA Button]
+```
+
+The `|` divider (visual separator between nav items and auth actions) is a thin vertical line: `border-l border-white/10 h-6 mx-4` or equivalent. It separates the content navigation (About, Features, Pricing, etc.) from the auth actions (Log In, CTA button).
+
+Nav items are spaced with `gap-6` (24px) between them. The CTA button uses the platform's theme color as background.
+
+### Footer layout
+
+```
+Container:     max-w-7xl mx-auto px-6 md:px-8
+Structure:     4-column grid (responsive: stack on mobile, 2-col tablet, 4-col desktop)
+Padding:       py-16 (64px top and bottom)
+Border top:    1px solid white/10
+```
+
+Footer columns use: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8`
+
+### App layout (authenticated pages)
+
+```
+Sidebar:       w-64 (256px) fixed left, collapsible to w-16 (64px)
+Topbar:        h-16 (64px) fixed top, full width minus sidebar
+Content area:  max-w-7xl mx-auto px-6 md:px-8 (within the remaining space)
+```
+
+### Breakpoints (Tailwind defaults)
+
+| Breakpoint | Width | Usage |
+|------------|-------|-------|
+| sm | 640px | Mobile landscape |
+| md | 768px | Tablet — switch to 2-col grids, larger padding |
+| lg | 1024px | Desktop — full nav, 4-col footer, sidebar visible |
+| xl | 1280px | Container max-width reached |
+| 2xl | 1536px | Content centered with increasing margin |
+
+### What this prevents
+
+- Headers that are wider than content sections
+- Footers with different padding than the rest of the page
+- Inconsistent margin between platforms
+- Content that touches the edge on one platform but has padding on another
+
+### Implementation
+
+These values are enforced through the shared layout components in `packages/member-ui`. Each app's root layout wraps pages with the shared container. Individual apps must NOT override the container width or padding unless they have an explicit reason documented in their `.claude/CLAUDE.md`.
