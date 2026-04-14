@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { uploadProspectCSV, getScaleStatus } from '@/lib/api/scale'
+import { uploadProspectCSV, getScaleStatus, triggerDailyBatch } from '@/lib/api/scale'
 import styles from '@/app/scale/page.module.css'
 
 // ---------------------------------------------------------------------------
@@ -352,6 +352,10 @@ export default function UploadTab() {
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null)
   const [statusLoading, setStatusLoading] = useState(true)
 
+  // Process Now (daily-batch trigger)
+  const [processing, setProcessing] = useState(false)
+  const [processResult, setProcessResult] = useState<{ ok: boolean; error?: string } | null>(null)
+
   const fetchStatus = useCallback(async () => {
     setStatusLoading(true)
     try {
@@ -365,6 +369,20 @@ export default function UploadTab() {
   }, [])
 
   useEffect(() => { fetchStatus() }, [fetchStatus])
+
+  const handleProcessNow = useCallback(async () => {
+    setProcessing(true)
+    setProcessResult(null)
+    try {
+      const result = await triggerDailyBatch()
+      setProcessResult(result)
+      if (result.ok) fetchStatus()
+    } catch (err) {
+      setProcessResult({ ok: false, error: String(err) })
+    } finally {
+      setProcessing(false)
+    }
+  }, [fetchStatus])
 
   // ---- File selection ----
   const handleFile = useCallback((f: File) => {
@@ -624,6 +642,55 @@ export default function UploadTab() {
 
       {/* Pipeline status panel */}
       <PipelineStatusPanel status={pipelineStatus} loading={statusLoading} onRefresh={fetchStatus} />
+
+      {/* Process Now — manual batch trigger */}
+      <div className={styles.glassCard}>
+        <div className={styles.glassCardTitle}>Manual Batch Processing</div>
+        <p style={{ fontSize: '0.8rem', color: 'rgba(148,163,184,0.7)', marginBottom: '1rem' }}>
+          Runs CSV ingestion + campaign batch generation immediately instead of waiting for the next scheduled cron.
+        </p>
+
+        {processResult && (
+          <div className={processResult.ok ? styles.uploadBannerSuccess : styles.uploadBannerError} style={{ marginBottom: '1rem' }}>
+            <svg style={{ width: 20, height: 20, flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {processResult.ok ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              )}
+            </svg>
+            <div>
+              <div style={{ fontWeight: 600 }}>{processResult.ok ? 'Batch processing complete' : 'Processing failed'}</div>
+              {processResult.error && (
+                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>{processResult.error}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleProcessNow}
+          disabled={processing}
+          className={styles.uploadButton}
+        >
+          {processing ? (
+            <>
+              <svg className={styles.spinner} viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                <circle className={styles.spinnerCircle} cx="12" cy="12" r="10" />
+              </svg>
+              Processing...
+            </>
+          ) : (
+            <>
+              <svg style={{ width: 16, height: 16 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Process Now
+            </>
+          )}
+        </button>
+      </div>
     </div>
   )
 }

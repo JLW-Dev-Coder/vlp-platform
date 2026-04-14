@@ -31,6 +31,26 @@ export async function uploadProspectCSV(csvText: string): Promise<{
   }
 }
 
+export async function triggerDailyBatch(): Promise<{
+  ok: boolean
+  ingest_log?: unknown
+  batch_log?: unknown
+  error?: string
+}> {
+  try {
+    const res = await fetch(`${API_URL}/v1/scale/cron/daily-batch`, {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+    })
+    const data = await res.json()
+    if (!res.ok) return { ok: false, error: data?.error ?? res.statusText }
+    return data
+  } catch (err) {
+    return { ok: false, error: String(err) }
+  }
+}
+
 export async function getScaleStatus(): Promise<{
   ok: boolean
   pending_csvs?: number

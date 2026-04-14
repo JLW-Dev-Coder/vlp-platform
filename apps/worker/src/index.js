@@ -17064,10 +17064,18 @@ TTMP Support Team
   {
     method: 'POST', pattern: '/v1/scale/cron/ingest-csv',
     handler: async (_method, _pattern, _params, request, env) => {
+      // Accept either session cookie (dashboard) or Bearer token (cron/CLI)
       const authHeader = request.headers.get('authorization') || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-      if (!env.SCALE_API_KEY || !token || token !== env.SCALE_API_KEY) {
-        return json({ ok: false, error: 'Unauthorized' }, 401, request);
+      const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      if (bearerToken && env.SCALE_API_KEY && bearerToken === env.SCALE_API_KEY) {
+        // Bearer token auth — valid
+      } else {
+        const { session, error } = await requireSession(request, env);
+        if (error) return error;
+        const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+        if (!adminEmails.includes(session.email)) {
+          return json({ ok: false, error: 'forbidden' }, 403, request);
+        }
       }
       const runLog = await handlePendingCsvIngestion(env);
       return json({ ok: true, run_log: runLog }, 200, request);
@@ -17079,10 +17087,18 @@ TTMP Support Team
   {
     method: 'POST', pattern: '/v1/scale/cron/daily-batch',
     handler: async (_method, _pattern, _params, request, env) => {
+      // Accept either session cookie (dashboard) or Bearer token (cron/CLI)
       const authHeader = request.headers.get('authorization') || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-      if (!env.SCALE_API_KEY || !token || token !== env.SCALE_API_KEY) {
-        return json({ ok: false, error: 'Unauthorized' }, 401, request);
+      const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      if (bearerToken && env.SCALE_API_KEY && bearerToken === env.SCALE_API_KEY) {
+        // Bearer token auth — valid
+      } else {
+        const { session, error } = await requireSession(request, env);
+        if (error) return error;
+        const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+        if (!adminEmails.includes(session.email)) {
+          return json({ ok: false, error: 'forbidden' }, 403, request);
+        }
       }
       let ingestLog = null;
       try {
