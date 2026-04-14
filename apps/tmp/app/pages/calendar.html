@@ -9,7 +9,7 @@
     <!-- =========================================================
          Cal OAuth Bridge (Approved Redirect URI -> VLP Worker)
          Cal redirects to: https://app.taxmonitor.pro/pages/calendar
-         We forward: code + state -> https://api.virtuallaunch.pro/cal/oauth/callback
+         We forward: code + state -> https://api.taxmonitor.pro/cal/oauth/callback
          ========================================================= -->
     <script>
       (function () {
@@ -30,7 +30,7 @@
           }
 
           if (code && state) {
-            const next = new URL("https://api.virtuallaunch.pro/cal/oauth/callback");
+            const next = new URL("https://api.taxmonitor.pro/cal/oauth/callback");
             next.searchParams.set("code", code);
             next.searchParams.set("state", state);
             window.location.replace(next.toString());

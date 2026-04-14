@@ -19,7 +19,7 @@ The frontend for Tax Monitor Pro — a Next.js static site that connects taxpaye
 
 ### Where it fits in the system
 
-TMP is the consumer-facing frontend. All backend logic, auth, billing, contracts, and data storage are handled by the VLP Worker at `api.virtuallaunch.pro`. TMP calls the VLP API exclusively through `lib/api.ts`.
+TMP is the consumer-facing frontend. All backend logic, auth, billing, contracts, and data storage are handled by the VLP Worker at `api.taxmonitor.pro`. TMP calls the VLP API exclusively through `lib/api.ts`.
 
 ---
 
@@ -31,7 +31,7 @@ TMP is the consumer-facing frontend. All backend logic, auth, billing, contracts
 | Styling | CSS Modules (no Tailwind, no inline styles) |
 | Build output | Static export (`out/`) |
 | Hosting | Cloudflare Pages |
-| API client | `lib/api.ts` → `api.virtuallaunch.pro` |
+| API client | `lib/api.ts` → `api.taxmonitor.pro` |
 | Auth | `vlp_session` HttpOnly cookie (managed by VLP Worker) |
 
 ---
@@ -129,7 +129,7 @@ No environment variables in this repo. All configuration lives in the VLP Worker
 - No contracts defined here — contracts belong in VLP repo
 - Auth uses `vlp_session` HttpOnly cookie managed by VLP Worker
 - Do not delete legacy HTML until corresponding .tsx achieves full feature parity
-- All API calls must target `api.virtuallaunch.pro` — never `api.taxmonitor.pro`
+- All API calls must target `api.taxmonitor.pro` (Custom Domain on VLP Worker)
 - CSS Modules only — no Tailwind, no inline styles
 - All fetch() calls via `lib/api.ts` only
 

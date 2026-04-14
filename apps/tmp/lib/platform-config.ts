@@ -6,7 +6,7 @@ export const tmpConfig: PlatformConfig = {
   brandColor: '#f97316',
   brandSubtitle: 'Pro Dashboard',
   logoText: 'TMP',
-  apiBaseUrl: 'https://api.virtuallaunch.pro',
+  apiBaseUrl: 'https://api.taxmonitor.pro',
   navSections: [
     {
       title: 'WORKSPACE',

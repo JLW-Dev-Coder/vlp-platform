@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.virtuallaunch.pro'
+const API_BASE = 'https://api.taxmonitor.pro'
 
 export class ApiError extends Error {
   status: number

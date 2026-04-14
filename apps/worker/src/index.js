@@ -2652,7 +2652,10 @@ const ROUTES = [
         const expMinutes = parseInt(env.MAGIC_LINK_EXPIRATION_MINUTES ?? '15', 10);
         const exp = Math.floor(Date.now() / 1000) + expMinutes * 60;
         const token = await signJwt({ email, redirect_uri: redirectUri, exp }, env.JWT_SECRET);
-        const link = `https://api.virtuallaunch.pro/v1/auth/magic-link/verify?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+        // Use api.taxmonitor.pro when the redirect targets a taxmonitor.pro domain (matches Google OAuth pattern)
+        const isTaxMonitor = redirectUri.includes('taxmonitor.pro')
+        const magicLinkApiBase = isTaxMonitor ? 'https://api.taxmonitor.pro' : 'https://api.virtuallaunch.pro'
+        const link = `${magicLinkApiBase}/v1/auth/magic-link/verify?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
         const emailHtml = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
