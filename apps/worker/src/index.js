@@ -14815,11 +14815,11 @@ TTMP Support Team
         };
         await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, canonicalData);
 
-        // Insert into D1
+        // Insert into D1 (coerce undefined → null for nullable columns)
         await d1Run(env.DB,
           `INSERT INTO tcvlp_form843_submissions (submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, penalty_type, penalty_amount, state, mailing_address, transcript_used, status, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, resolvedPenaltyType, resolvedTotal, stateAbbrev, mailing_address_raw, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
+          [submission_id, pro_id, taxpayer_name, taxpayer_email || null, String(tax_year), resolvedPenaltyType, String(resolvedTotal), stateAbbrev, mailing_address_raw, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
         );
 
         // --- PDF Generation via pdf-lib ---
