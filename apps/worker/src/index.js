@@ -14158,6 +14158,34 @@ TTMP Support Team
         }
       }
 
+      // Determine plan from Stripe subscription (if user already subscribed)
+      let plan = 'tcvlp_starter';
+      try {
+        const billing = await env.DB.prepare(
+          'SELECT stripe_customer_id FROM billing_customers WHERE account_id = ?'
+        ).bind(session.account_id).first();
+        if (billing?.stripe_customer_id && env.STRIPE_SECRET_KEY_VLP) {
+          const subs = await stripeGet(
+            `/subscriptions?customer=${billing.stripe_customer_id}&status=active&limit=10`,
+            env, env.STRIPE_SECRET_KEY_VLP
+          );
+          const pricePlanMap = {
+            [env.STRIPE_PRICE_TCVLP_STARTER]: 'tcvlp_starter',
+            [env.STRIPE_PRICE_TCVLP_PROFESSIONAL]: 'tcvlp_professional',
+            [env.STRIPE_PRICE_TCVLP_FIRM]: 'tcvlp_firm',
+          };
+          for (const sub of (subs.data || [])) {
+            for (const item of (sub.items?.data || [])) {
+              const mapped = pricePlanMap[item.price?.id];
+              if (mapped) { plan = mapped; break; }
+            }
+            if (plan !== 'tcvlp_starter') break;
+          }
+        }
+      } catch (e) {
+        console.error('TCVLP plan lookup error (non-fatal):', e);
+      }
+
       try {
         // Write receipt to R2
         const receiptKey = `tcvlp/receipts/onboarding/${pro_id}/${timestamp}.json`;
@@ -14170,6 +14198,7 @@ TTMP Support Team
           logo_url,
           welcome_message,
           slug: finalSlug,
+          plan,
           timestamp
         };
         await r2Put(env.R2_VIRTUAL_LAUNCH, receiptKey, receiptData);
@@ -14186,6 +14215,9 @@ TTMP Support Team
           welcome_message: welcome_message || null,
           stripe_customer_id: null,
           stripe_subscription_id: null,
+          plan,
+          firm_phone: null,
+          firm_website: null,
           status: 'active',
           created_at: timestamp,
           updated_at: timestamp
@@ -14194,9 +14226,9 @@ TTMP Support Team
 
         // Insert into D1
         await d1Run(env.DB,
-          `INSERT INTO tcvlp_pros (pro_id, account_id, slug, firm_name, display_name, logo_url, welcome_message, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [pro_id, session.account_id, finalSlug, firm_name, display_name, logo_url, welcome_message, null, null, 'active', timestamp, timestamp]
+          `INSERT INTO tcvlp_pros (pro_id, account_id, slug, firm_name, display_name, logo_url, welcome_message, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at, plan, firm_phone, firm_website)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [pro_id, session.account_id, finalSlug, firm_name, display_name || null, logo_url || null, welcome_message || null, null, null, 'active', timestamp, timestamp, plan, null, null]
         );
 
         return json({
@@ -14794,10 +14826,6 @@ TTMP Support Team
           'SELECT pro_id, plan, status, stripe_customer_id, stripe_subscription_id FROM tcvlp_pros WHERE account_id = ?'
         ).bind(session.account_id).first();
 
-        if (!pro) {
-          return json({ ok: true, active: false, plan: null, product_id: null }, 200, request);
-        }
-
         // Map plan to product_id for frontend reference
         const planProductMap = {
           tcvlp_starter: env.STRIPE_PRODUCT_TCVLP_STARTER,
@@ -14805,13 +14833,47 @@ TTMP Support Team
           tcvlp_firm: env.STRIPE_PRODUCT_TCVLP_FIRM,
         };
 
-        return json({
-          ok: true,
-          active: pro.status === 'active',
-          plan: pro.plan || 'tcvlp_starter',
-          product_id: planProductMap[pro.plan] || planProductMap.tcvlp_starter,
-          pro_id: pro.pro_id,
-        }, 200, request);
+        if (pro) {
+          return json({
+            ok: true,
+            active: pro.status === 'active',
+            plan: pro.plan || 'tcvlp_starter',
+            product_id: planProductMap[pro.plan] || planProductMap.tcvlp_starter,
+            pro_id: pro.pro_id,
+          }, 200, request);
+        }
+
+        // No pro record yet (onboarding in progress) — check Stripe directly
+        const billing = await env.DB.prepare(
+          'SELECT stripe_customer_id FROM billing_customers WHERE account_id = ?'
+        ).bind(session.account_id).first();
+
+        if (billing?.stripe_customer_id && env.STRIPE_SECRET_KEY_VLP) {
+          const subs = await stripeGet(
+            `/subscriptions?customer=${billing.stripe_customer_id}&status=active&limit=10`,
+            env, env.STRIPE_SECRET_KEY_VLP
+          );
+          const pricePlanMap = {
+            [env.STRIPE_PRICE_TCVLP_STARTER]: 'tcvlp_starter',
+            [env.STRIPE_PRICE_TCVLP_PROFESSIONAL]: 'tcvlp_professional',
+            [env.STRIPE_PRICE_TCVLP_FIRM]: 'tcvlp_firm',
+          };
+          for (const sub of (subs.data || [])) {
+            for (const item of (sub.items?.data || [])) {
+              const mapped = pricePlanMap[item.price?.id];
+              if (mapped) {
+                return json({
+                  ok: true,
+                  active: true,
+                  plan: mapped,
+                  product_id: planProductMap[mapped],
+                }, 200, request);
+              }
+            }
+          }
+        }
+
+        return json({ ok: true, active: false, plan: null, product_id: null }, 200, request);
       } catch (e) {
         console.error('TCVLP subscription status error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 500, request);
