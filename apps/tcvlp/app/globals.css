@@ -7,22 +7,22 @@
 @layer base {
   :root {
     /* TCVLP brand overrides for member-ui shared tokens */
-    --member-accent: rgba(239, 68, 68, 0.1);
-    --member-accent-strong: rgba(239, 68, 68, 0.2);
-    --member-hero-bg: #450a0a;
-    --member-hero-bg-end: #1c0505;
+    --member-accent: rgba(234, 179, 8, 0.1);
+    --member-accent-strong: rgba(234, 179, 8, 0.2);
+    --member-hero-bg: #422006;
+    --member-hero-bg-end: #1a0e03;
 
-    /* TCVLP legacy brand tokens (used by CSS module marketing pages) */
+    /* TCVLP brand tokens (used by CSS module marketing pages) */
     --color-bg:          #0f1117;
     --color-surface:     #161824;
     --color-surface-2:   #1e2130;
     --color-border:      #2a2d3e;
-    --color-red:         #dc2626;
-    --color-red-light:   #f87171;
-    --color-red-muted:   rgba(220, 38, 38, 0.15);
+    --color-brand:       #eab308;
+    --color-brand-light: #fbbf24;
+    --color-brand-dark:  #ca8a04;
+    --color-brand-muted: rgba(234, 179, 8, 0.15);
     --color-green:       #22c55e;
     --color-blue:        #3b82f6;
-    --color-yellow:      #eab308;
     --color-text-1:      #f1f1f4;
     --color-text-2:      #9ca3af;
     --color-text-3:      #6b7280;
@@ -72,8 +72,8 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--color-red);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.2);
 }
 
 input::placeholder, textarea::placeholder { color: var(--color-text-3); }
@@ -86,8 +86,8 @@ select option { background: var(--color-surface); }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); }
-  50%       { box-shadow: 0 0 24px 8px rgba(220, 38, 38, 0.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.3); }
+  50%       { box-shadow: 0 0 24px 8px rgba(234, 179, 8, 0.15); }
 }
 
 @keyframes shimmer {
@@ -106,8 +106,8 @@ select option { background: var(--color-surface); }
 }
 
 @keyframes urgencyPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.15); }
-  50%       { box-shadow: 0 0 40px rgba(220, 38, 38, 0.4), 0 0 60px rgba(220, 38, 38, 0.2); }
+  0%, 100% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.15); }
+  50%       { box-shadow: 0 0 40px rgba(234, 179, 8, 0.4), 0 0 60px rgba(234, 179, 8, 0.2); }
 }
 
 /* ── Print ───────────────────────────────────────────────────────────────── */

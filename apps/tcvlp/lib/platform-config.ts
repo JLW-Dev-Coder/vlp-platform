@@ -3,7 +3,7 @@ import type { PlatformConfig } from '@vlp/member-ui'
 export const tcvlpConfig: PlatformConfig = {
   brandName: 'TaxClaim Pro',
   brandAbbrev: 'TCVLP',
-  brandColor: '#ef4444',
+  brandColor: '#eab308',
   brandSubtitle: 'Penalty Abatement',
   logoText: 'TCP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',

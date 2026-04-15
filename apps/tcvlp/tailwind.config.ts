@@ -11,10 +11,11 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          red: '#ef4444',
-          rose: '#f43f5e',
-          400: '#f87171',
-          500: '#ef4444',
+          DEFAULT: '#eab308',
+          light: '#fbbf24',
+          dark: '#ca8a04',
+          400: '#fbbf24',
+          500: '#eab308',
         },
         ink: {
           900: '#0f1117',
@@ -25,7 +26,7 @@ const config: Config = {
         display: ['var(--font-display)', 'Raleway', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(to right, #ef4444, #dc2626)',
+        'gradient-brand': 'linear-gradient(to right, #eab308, #ca8a04)',
       },
     },
   },
