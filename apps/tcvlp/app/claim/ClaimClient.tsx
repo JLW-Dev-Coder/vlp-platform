@@ -30,7 +30,7 @@ const US_STATES = [
   'West Virginia','Wisconsin','Wyoming',
 ];
 
-const TAX_YEARS = [2020, 2021, 2022, 2023];
+const TAX_YEARS = [2019, 2020, 2021, 2022, 2023];
 
 /* ── SVG Icons (36×36 stroke, Canva reference) ───────────────────────────── */
 
