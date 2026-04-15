@@ -14146,11 +14146,13 @@ TTMP Support Team
         finalSlug = firm_name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
       }
 
-      // Check slug uniqueness
-      const existingPro = await env.DB.prepare("SELECT pro_id FROM tcvlp_pros WHERE slug = ?").bind(finalSlug).first();
+      // Check slug uniqueness (exclude own row for re-onboarding)
+      const existingPro = await env.DB.prepare(
+        "SELECT pro_id FROM tcvlp_pros WHERE slug = ? AND account_id != ?"
+      ).bind(finalSlug, session.account_id).first();
       if (existingPro) {
         if (slug) {
-          // User provided slug is taken
+          // User provided slug is taken by another account
           return json({ ok: false, error: 'SLUG_TAKEN', message: 'The requested slug is already in use' }, 409, request);
         } else {
           // Auto-generated slug is taken, add random suffix
@@ -14186,13 +14188,20 @@ TTMP Support Team
         console.error('TCVLP plan lookup error (non-fatal):', e);
       }
 
+      // Check if account already has a profile (re-onboarding)
+      const existingRow = await env.DB.prepare(
+        'SELECT pro_id, created_at FROM tcvlp_pros WHERE account_id = ?'
+      ).bind(session.account_id).first();
+      const finalProId = existingRow ? existingRow.pro_id : pro_id;
+      const createdAt = existingRow ? existingRow.created_at : timestamp;
+
       try {
         // Write receipt to R2
-        const receiptKey = `tcvlp/receipts/onboarding/${pro_id}/${timestamp}.json`;
+        const receiptKey = `tcvlp/receipts/onboarding/${finalProId}/${timestamp}.json`;
         const receiptData = {
           event_id: `EVT_${crypto.randomUUID()}`,
           account_id: session.account_id,
-          pro_id,
+          pro_id: finalProId,
           firm_name,
           display_name,
           logo_url,
@@ -14204,9 +14213,9 @@ TTMP Support Team
         await r2Put(env.R2_VIRTUAL_LAUNCH, receiptKey, receiptData);
 
         // Write canonical to R2
-        const canonicalKey = `tcvlp/pros/${pro_id}.json`;
+        const canonicalKey = `tcvlp/pros/${finalProId}.json`;
         const canonicalData = {
-          pro_id,
+          pro_id: finalProId,
           account_id: session.account_id,
           slug: finalSlug,
           firm_name,
@@ -14219,21 +14228,28 @@ TTMP Support Team
           firm_phone: null,
           firm_website: null,
           status: 'active',
-          created_at: timestamp,
+          created_at: createdAt,
           updated_at: timestamp
         };
         await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, canonicalData);
 
-        // Insert into D1
         await d1Run(env.DB,
           `INSERT INTO tcvlp_pros (pro_id, account_id, slug, firm_name, display_name, logo_url, welcome_message, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at, plan, firm_phone, firm_website)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [pro_id, session.account_id, finalSlug, firm_name, display_name || null, logo_url || null, welcome_message || null, null, null, 'active', timestamp, timestamp, plan, null, null]
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(account_id) DO UPDATE SET
+             slug = excluded.slug,
+             firm_name = excluded.firm_name,
+             display_name = excluded.display_name,
+             logo_url = excluded.logo_url,
+             welcome_message = excluded.welcome_message,
+             plan = excluded.plan,
+             updated_at = excluded.updated_at`,
+          [finalProId, session.account_id, finalSlug, firm_name, display_name || null, logo_url || null, welcome_message || null, null, null, 'active', createdAt, timestamp, plan, null, null]
         );
 
         return json({
           ok: true,
-          pro_id,
+          pro_id: finalProId,
           slug: finalSlug,
           landing_url: `https://${finalSlug}.taxclaim.virtuallaunch.pro`
         });
