@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react'
 import { renderMarkdown } from '@/components/scale/MarkdownRenderer'
 import UploadTab from '@/components/scale/UploadTab'
+import CampaignPostsTab from '../components/CampaignPostsTab'
+import OutreachTab from '../components/OutreachTab'
+import SocialTab from '../components/SocialTab'
 import styles from '../page.module.css'
 
 // ---------------------------------------------------------------------------
-// Workflow content (second tab)
+// Workflow content (last tab)
 // ---------------------------------------------------------------------------
 function WorkflowContent() {
   const [markdown, setMarkdown] = useState<string | null>(null)
@@ -57,9 +60,25 @@ function WorkflowContent() {
 }
 
 // ---------------------------------------------------------------------------
-// Page
+// Page — 5-tab outreach command center
 // ---------------------------------------------------------------------------
-type Tab = 'upload' | 'workflow'
+type Tab = 'upload' | 'posts' | 'outreach' | 'social' | 'workflow'
+
+const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
+  upload: 'Upload Clay CSV prospects and monitor the pipeline',
+  posts: '10-day campaign post generator with LinkedIn and Facebook copy',
+  outreach: 'LinkedIn cold connections from the prospect list with canned messages',
+  social: (
+    <>
+      Reddit opportunity monitor &amp; social post tracker
+    </>
+  ),
+  workflow: (
+    <>
+      Synced from <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-white/10 text-amber-400/90">scale/WORKFLOW.md</code> — push updates via <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-white/10 text-amber-400/90">node scale/push-workflow.js</code>
+    </>
+  ),
+}
 
 export default function WorkflowPage() {
   const [tab, setTab] = useState<Tab>('upload')
@@ -67,37 +86,32 @@ export default function WorkflowPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Workflow</h1>
+        <h1 className="text-2xl font-bold text-white">Outreach Command Center</h1>
         <p className="mt-1 text-sm text-slate-500 italic">
-          {tab === 'upload'
-            ? 'Upload Clay CSV prospects and monitor the pipeline'
-            : <>Synced from <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-white/10 text-amber-400/90">scale/WORKFLOW.md</code> — push updates via <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-white/10 text-amber-400/90">node scale/push-workflow.js</code></>
-          }
+          {TAB_DESCRIPTIONS[tab]}
         </p>
       </div>
 
       <div className={styles.tabBar} role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'upload'}
-          className={`${styles.tabButton} ${tab === 'upload' ? styles.tabButtonActive : ''}`}
-          onClick={() => setTab('upload')}
-        >
-          Upload
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'workflow'}
-          className={`${styles.tabButton} ${tab === 'workflow' ? styles.tabButtonActive : ''}`}
-          onClick={() => setTab('workflow')}
-        >
-          Workflow
-        </button>
+        {(['upload', 'posts', 'outreach', 'social', 'workflow'] as Tab[]).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            className={`${styles.tabButton} ${tab === t ? styles.tabButtonActive : ''}`}
+            onClick={() => setTab(t)}
+          >
+            {t === 'upload' ? 'Upload' : t === 'posts' ? 'Posts' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Social' : 'Workflow'}
+          </button>
+        ))}
       </div>
 
-      {tab === 'upload' ? <UploadTab /> : <WorkflowContent />}
+      {tab === 'upload' && <UploadTab />}
+      {tab === 'posts' && <CampaignPostsTab />}
+      {tab === 'outreach' && <OutreachTab />}
+      {tab === 'social' && <SocialTab />}
+      {tab === 'workflow' && <WorkflowContent />}
     </div>
   )
 }

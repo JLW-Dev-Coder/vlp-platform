@@ -17336,6 +17336,14 @@ TTMP Support Team
         if (typeof body.engagement.shares === 'number') record.engagement.shares = body.engagement.shares;
         if (typeof body.engagement.clicks === 'number') record.engagement.clicks = body.engagement.clicks;
       }
+      // Campaign post fields
+      if (body.scheduled_date !== undefined) record.scheduled_date = body.scheduled_date;
+      if (body.linkedin_url !== undefined) record.linkedin_url = body.linkedin_url;
+      if (body.fb_url !== undefined) record.fb_url = body.fb_url;
+      if (body.linkedin_body !== undefined) record.linkedin_body = body.linkedin_body;
+      if (body.fb_body !== undefined) record.fb_body = body.fb_body;
+      if (body.status !== undefined) record.status = body.status;
+      if (body.canva_direction !== undefined) record.canva_direction = body.canva_direction;
       record.updated_at = new Date().toISOString();
 
       // Write back to R2
@@ -17344,8 +17352,8 @@ TTMP Support Team
       // Update D1 projection
       const eng = record.engagement || {};
       await d1Run(env.DB,
-        `UPDATE social_posts SET notes = ?, content_preview = ?, likes = ?, comments = ?, shares = ?, clicks = ? WHERE post_id = ?`,
-        [record.notes || null, record.content_preview || null, eng.likes || 0, eng.comments || 0, eng.shares || 0, eng.clicks || 0, postId],
+        `UPDATE social_posts SET notes = ?, content_preview = ?, likes = ?, comments = ?, shares = ?, clicks = ?, scheduled_date = ?, linkedin_url = ?, fb_url = ?, linkedin_body = ?, fb_body = ?, status = ?, canva_direction = ? WHERE post_id = ?`,
+        [record.notes || null, record.content_preview || null, eng.likes || 0, eng.comments || 0, eng.shares || 0, eng.clicks || 0, record.scheduled_date || null, record.linkedin_url || null, record.fb_url || null, record.linkedin_body || null, record.fb_body || null, record.status || 'draft', record.canva_direction || null, postId],
       );
 
       return json({ ok: true, post_id: postId }, 200, request);
@@ -17387,6 +17395,404 @@ TTMP Support Team
         console.error('Scale asset read error:', error);
         return json({ error: 'not_found' }, 404, request);
       }
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Campaign Generator — 10-day post campaign templates
+  // -------------------------------------------------------------------------
+
+  // POST /v1/scale/campaigns/generate — Generate a 10-day campaign
+  {
+    method: 'POST', pattern: '/v1/scale/campaigns/generate',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await request.json().catch(() => null);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const platform = body.platform || 'ttmp';
+      const campaignName = body.campaign_name || 'Untitled Campaign';
+      const startDate = body.start_date || new Date().toISOString().slice(0, 10);
+      const numDays = Math.min(body.num_days || 10, 10);
+      const angle = body.angle || 'revenue_stream';
+
+      const CAMPAIGN_ANGLES = {
+        revenue_stream: {
+          name: 'Revenue Stream',
+          sequence: [
+            { day: 1, theme: 'problem_time_cost', headline: 'The time cost of manual transcript review' },
+            { day: 2, theme: 'problem_error_risk', headline: 'What gets missed reading transcripts manually' },
+            { day: 3, theme: 'problem_client_impact', headline: 'Client impact of slow or wrong transcript reads' },
+            { day: 4, theme: 'solution_intro', headline: 'Introducing the tool' },
+            { day: 5, theme: 'solution_math', headline: 'The ROI math' },
+            { day: 6, theme: 'solution_how', headline: 'How it works step by step' },
+            { day: 7, theme: 'authority', headline: 'Social proof and authority' },
+            { day: 8, theme: 'direct_offer', headline: 'Direct purchase CTA' },
+            { day: 9, theme: 'demo_offer', headline: 'Live demo offer' },
+            { day: 10, theme: 'urgency', headline: 'Urgency and recap' },
+          ],
+        },
+        tax_day: {
+          name: 'Tax Day',
+          sequence: [
+            { day: 1, theme: 'eve_of_tax_day', headline: 'What happens after April 15?' },
+            { day: 2, theme: 'tax_day_itself', headline: 'To every tax pro working today' },
+            { day: 3, theme: 'day_after', headline: 'The rush is over. Now what?' },
+            { day: 4, theme: 'service_flow', headline: 'How the client service works' },
+            { day: 5, theme: 'beautiful_delivery', headline: 'The professional report' },
+            { day: 6, theme: 'no_touch_intake', headline: 'Only get involved when expertise is needed' },
+            { day: 7, theme: 'client_supply', headline: 'Where clients come from year-round' },
+            { day: 8, theme: 'complex_cases', headline: 'The cases worth premium rates' },
+            { day: 9, theme: 'demo_revenue', headline: 'See what your May-December revenue looks like' },
+            { day: 10, theme: 'may_urgency', headline: 'May is coming -- are you ready?' },
+          ],
+        },
+      };
+
+      const selectedAngle = CAMPAIGN_ANGLES[angle] || CAMPAIGN_ANGLES.revenue_stream;
+      const campaignId = 'CAMP_' + crypto.randomUUID();
+      const now = new Date().toISOString();
+
+      // Template body generator
+      const LINKEDIN_TEMPLATES = {
+        // Revenue stream angle
+        problem_time_cost: 'How much time do you spend reading IRS transcripts each week?\n\nFor most tax professionals, it is hours. Line by line, code by code, cross-referencing what each transaction means.\n\nThat time adds up. And it comes directly out of billable hours.\n\nThere is a better way: transcript.taxmonitor.pro',
+        problem_error_risk: 'Reading IRS transcripts manually means relying on memory for hundreds of transaction codes.\n\nCode 570. Code 846. Code 971. Each one has specific implications for your client.\n\nMiss one, and the advice changes. The risk is real.\n\nFree lookup tool -- no account needed: transcript.taxmonitor.pro/tools/code-lookup',
+        problem_client_impact: 'Your clients are waiting for answers about their tax situation.\n\nEvery hour spent deciphering transcript codes is an hour they are waiting. And waiting clients become anxious clients.\n\nSpeed matters. Accuracy matters more.\n\nBoth are possible: transcript.taxmonitor.pro',
+        solution_intro: 'We built a tool that reads IRS transcripts in seconds.\n\nEnter any transaction code. Get the plain-English explanation immediately. No guessing, no cross-referencing, no wasted time.\n\nFree for every tax professional: transcript.taxmonitor.pro/tools/code-lookup',
+        solution_math: 'The math is simple.\n\nIf you spend 3 hours per week reading transcripts, that is 150+ hours per year.\n\nAt your billing rate, that is real revenue left on the table.\n\nAutomate the lookup. Keep the billable hours.\n\ntranscript.taxmonitor.pro',
+        solution_how: 'How it works:\n\n1. Enter any IRS transaction code\n2. Get the plain-English meaning instantly\n3. See related codes and what they signal together\n4. Copy the explanation for your client file\n\nNo account. No signup. No cost.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        authority: 'Tax professionals across the country are using this tool daily.\n\nCPAs, EAs, and tax attorneys have made it part of their workflow. The feedback has been consistent: it saves time and reduces errors.\n\nJoin them: transcript.taxmonitor.pro/tools/code-lookup',
+        direct_offer: 'If you read IRS transcripts as part of your practice, this tool was built for you.\n\nFree IRS transaction code lookup. Instant results. Professional grade.\n\nNo sales pitch. Just a useful tool.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        demo_offer: 'Want to see how the full transcript analysis works?\n\nBook a 15-minute demo. We will walk through a real transcript and show you what the tool catches that manual review misses.\n\nNo obligation. Just clarity.\n\nBook here: virtuallaunch.pro/pricing',
+        urgency: 'Tax season does not end on April 15.\n\nAmended returns, extension filings, audit responses -- they all involve transcripts.\n\nThe tool is free today. Start using it now.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        // Tax Day angle
+        eve_of_tax_day: 'Tomorrow is April 15. Tax Day.\n\nFor most Americans, it is the finish line. For tax professionals, it is the starting line for a different kind of work.\n\nAmended returns. Audit responses. Extension filings. Transcript reviews.\n\nThe work that happens after April 15 is where expertise matters most.\n\ntranscript.taxmonitor.pro',
+        tax_day_itself: 'To every tax professional working today:\n\nYou have spent months preparing returns, answering questions, and meeting deadlines.\n\nToday you finish the sprint. Tomorrow you start the marathon.\n\nWhen you are ready to streamline the transcript work, the tool is here.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        day_after: 'The rush is over.\n\nNow comes the work that actually builds your practice: complex cases, audit representation, advisory services.\n\nAll of it starts with reading transcripts accurately.\n\nFree code lookup -- instant results: transcript.taxmonitor.pro/tools/code-lookup',
+        service_flow: 'How the client service works:\n\n1. Client authorizes transcript access (Form 8821 or POA)\n2. You pull the transcript from IRS\n3. Our tool decodes every transaction code instantly\n4. You deliver a clear, professional analysis\n\nStep 3 used to take hours. Now it takes seconds.\n\ntranscript.taxmonitor.pro',
+        beautiful_delivery: 'Your clients deserve a professional report, not a photocopy of an IRS transcript with handwritten notes.\n\nThe tool generates clean, readable explanations of every code on the transcript.\n\nCopy it directly into your client deliverable.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        no_touch_intake: 'The best part of automating transcript code lookup:\n\nYou only get involved when your expertise is actually needed.\n\nLet the tool handle the mechanical decoding. You handle the judgment calls.\n\nThat is what your clients are paying for.\n\ntranscript.taxmonitor.pro',
+        client_supply: 'Where do clients come from between May and December?\n\nAmended returns. Late filers. Audit letters. Collection notices. Innocent spouse claims.\n\nEvery one of these starts with a transcript. And every transcript is full of codes that need decoding.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        complex_cases: 'The cases worth premium rates all have one thing in common:\n\nComplex transcripts.\n\nMultiple years. Amended returns. Penalties and abatements. Credits applied and reversed.\n\nDecode them all instantly: transcript.taxmonitor.pro/tools/code-lookup',
+        demo_revenue: 'What does your May through December revenue look like?\n\nIf you are only doing tax prep, those months are lean. But if you add transcript analysis and advisory services, every month has revenue potential.\n\nSee how: virtuallaunch.pro/pricing',
+        may_urgency: 'May is coming.\n\nThe extension deadline is October 15. Between now and then, every complex case starts with a transcript.\n\nAre you ready to handle them efficiently?\n\nFree tool. No signup. Start now: transcript.taxmonitor.pro/tools/code-lookup',
+      };
+
+      const FB_TEMPLATES = {
+        problem_time_cost: 'Tax pros: how many hours a week do you spend reading IRS transcripts?\n\nWe built a free tool that decodes every transaction code instantly. No signup needed.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        problem_error_risk: 'Code 570. Code 846. Code 971.\n\nIf you know what these mean from memory, you are in the minority. For everyone else, there is a free lookup tool.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        problem_client_impact: 'Your clients are waiting for transcript analysis. Speed it up with instant code lookup.\n\nFree for all tax professionals.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        solution_intro: 'New free tool for tax pros: enter any IRS transaction code, get the plain-English meaning instantly.\n\nNo account needed.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        solution_math: '150+ hours per year on transcript reading. What would you do with that time back?\n\nFree IRS code lookup tool: transcript.taxmonitor.pro/tools/code-lookup',
+        solution_how: 'Enter code. Get meaning. Done.\n\nFree IRS transcript code lookup for tax professionals.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        authority: 'CPAs, EAs, and tax attorneys across the country use this daily. Free IRS transcript code lookup.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        direct_offer: 'If you read IRS transcripts, this free tool will save you time every single day.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        demo_offer: 'See the full transcript analysis in action. Book a free 15-minute demo.\n\nvirtuallaunch.pro/pricing',
+        urgency: 'Tax season does not end on April 15. Neither should your tools.\n\nFree IRS code lookup: transcript.taxmonitor.pro/tools/code-lookup',
+        eve_of_tax_day: 'April 15 is the starting line for the real work. Amended returns, audits, extensions -- all start with transcripts.\n\nFree code lookup tool: transcript.taxmonitor.pro/tools/code-lookup',
+        tax_day_itself: 'Happy Tax Day to every professional finishing the sprint today. When you are ready for the marathon, the tool is here.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        day_after: 'The rush is over. Now comes the advisory work. Start with instant transcript code lookup.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        service_flow: 'Pull transcript. Decode instantly. Deliver to client. That simple.\n\nFree tool for tax pros: transcript.taxmonitor.pro/tools/code-lookup',
+        beautiful_delivery: 'Stop sending clients photocopied transcripts. Deliver clean, professional code explanations.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        no_touch_intake: 'Let the tool handle the mechanical decoding. You handle the judgment calls.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        client_supply: 'May through December clients all start with transcripts. Be ready.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        complex_cases: 'Complex cases = complex transcripts. Decode them all instantly.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+        demo_revenue: 'What does your off-season revenue look like? Add transcript advisory services.\n\nvirtuallaunch.pro/pricing',
+        may_urgency: 'May is coming. October 15 is closer than you think. Free transcript tool for the work ahead.\n\ntranscript.taxmonitor.pro/tools/code-lookup',
+      };
+
+      const CANVA_DIRECTIONS = {
+        problem_time_cost: 'Dark background. Clock icon dissolving into document pages. Text overlay: "Hours spent reading transcripts?" Professional, muted color palette.',
+        problem_error_risk: 'Split screen: left side shows blurry transcript codes, right side shows clear decoded text. Emphasize contrast between confusion and clarity.',
+        problem_client_impact: 'Professional setting. Client waiting at desk, clock on wall. Subtle urgency without being alarmist. Clean typography.',
+        solution_intro: 'Clean product screenshot or mockup of the code lookup tool. Simple interface, professional feel. Brand colors.',
+        solution_math: 'Calculator or ROI graphic. "150+ hours/year" prominently displayed. Simple math visualization. Professional.',
+        solution_how: 'Step 1-2-3-4 numbered layout. Clean icons for each step. Minimal text. Professional flow diagram feel.',
+        authority: 'Map of US with subtle dots showing usage. Or professional testimonial layout. Trust signals.',
+        direct_offer: 'Clean CTA design. Tool interface preview. "Free. No signup." prominently displayed. Professional.',
+        demo_offer: 'Calendar/booking visual. "15 minutes" prominently displayed. Professional, inviting.',
+        urgency: 'Calendar showing months ahead. Tax-related icons. "The work continues" theme. Professional urgency.',
+        eve_of_tax_day: 'Dark background. Calendar showing April 15 crossed out, April 16 circled. "What happens next?" Professional.',
+        tax_day_itself: 'Respectful, professional appreciation theme. "Thank you" to tax professionals. Warm but professional.',
+        day_after: 'Sunrise/new beginning visual. "The real work starts now." Clean, aspirational.',
+        service_flow: 'Process flow diagram. 4 clean steps. Professional icons. Simple and clear.',
+        beautiful_delivery: 'Side-by-side: messy handwritten notes vs clean report output. Professional contrast.',
+        no_touch_intake: 'Automation visual. Robot/tool handles mechanical work, professional handles strategy. Clean separation.',
+        client_supply: 'Calendar showing May-December. Revenue graph going up. Professional, optimistic.',
+        complex_cases: 'Complex document visual simplified. Magnifying glass on transcript. Professional, detailed.',
+        demo_revenue: 'Revenue chart with gap filled in. May-December highlighted. Professional, data-driven.',
+        may_urgency: 'Calendar flipping to May. Countdown feel. Professional urgency without panic.',
+      };
+
+      const posts = [];
+      for (let i = 0; i < Math.min(numDays, selectedAngle.sequence.length); i++) {
+        const dayInfo = selectedAngle.sequence[i];
+        const postId = 'SPOST_' + crypto.randomUUID();
+        const scheduledDate = new Date(startDate);
+        scheduledDate.setDate(scheduledDate.getDate() + i);
+        const dateStr = scheduledDate.toISOString().slice(0, 10);
+
+        const post = {
+          post_id: postId,
+          day: dayInfo.day,
+          scheduled_date: dateStr,
+          theme: dayInfo.theme,
+          headline: dayInfo.headline,
+          linkedin_body: LINKEDIN_TEMPLATES[dayInfo.theme] || '',
+          fb_body: FB_TEMPLATES[dayInfo.theme] || '',
+          canva_direction: CANVA_DIRECTIONS[dayInfo.theme] || '',
+          status: 'draft',
+          linkedin_url: null,
+          fb_url: null,
+          campaign_id: campaignId,
+          campaign_name: campaignName,
+          platform: platform,
+          notes: null,
+          created_at: now,
+        };
+
+        // Write to R2
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `social/posts/${postId}.json`, post);
+
+        // D1 projection
+        await d1Run(env.DB,
+          `INSERT INTO social_posts (post_id, platform, url, campaign_day, campaign_name, post_type, content_preview, notes, likes, comments, shares, clicks, created_at, linkedin_body, fb_body, linkedin_url, fb_url, scheduled_date, status, canva_direction, theme, headline, campaign_id)
+           VALUES (?, ?, '', ?, ?, 'campaign', ?, NULL, 0, 0, 0, 0, ?, ?, ?, NULL, NULL, ?, 'draft', ?, ?, ?, ?)`,
+          [postId, platform, dayInfo.day, campaignName, (LINKEDIN_TEMPLATES[dayInfo.theme] || '').slice(0, 500), now, LINKEDIN_TEMPLATES[dayInfo.theme] || '', FB_TEMPLATES[dayInfo.theme] || '', dateStr, CANVA_DIRECTIONS[dayInfo.theme] || '', dayInfo.theme, dayInfo.headline, campaignId],
+        );
+
+        posts.push(post);
+      }
+
+      // Store campaign manifest in R2
+      const manifest = {
+        campaign_id: campaignId,
+        campaign_name: campaignName,
+        platform,
+        angle,
+        start_date: startDate,
+        num_days: numDays,
+        post_ids: posts.map((p) => p.post_id),
+        created_at: now,
+      };
+      await r2Put(env.R2_VIRTUAL_LAUNCH, `social/campaigns/${campaignId}.json`, manifest);
+
+      return json({
+        ok: true,
+        campaign_id: campaignId,
+        campaign_name: campaignName,
+        posts,
+      }, 201, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Campaign Post Update — PATCH individual campaign posts
+  // -------------------------------------------------------------------------
+
+  // PATCH /v1/scale/social/posts/:id — Extended update for campaign posts (admin)
+  // (This extends the existing PATCH handler above with campaign-specific fields)
+
+  // -------------------------------------------------------------------------
+  // Outreach Connections — LinkedIn cold outreach tracking
+  // -------------------------------------------------------------------------
+
+  // POST /v1/scale/outreach/connections — Log a connection request
+  {
+    method: 'POST', pattern: '/v1/scale/outreach/connections',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await request.json().catch(() => null);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      if (!body.prospect_name) return json({ ok: false, error: 'BAD_REQUEST', message: 'prospect_name required' }, 400, request);
+
+      const outreachId = 'OREACH_' + crypto.randomUUID();
+      const now = new Date().toISOString();
+
+      const record = {
+        outreach_id: outreachId,
+        prospect_email: body.prospect_email || null,
+        prospect_name: body.prospect_name,
+        linkedin_url: body.linkedin_url || null,
+        message_template: body.message_template || null,
+        message_sent: body.message_sent || null,
+        status: body.status || 'sent',
+        notes: body.notes || null,
+        created_at: now,
+        updated_at: null,
+      };
+
+      // R2 authoritative
+      const emailHash = body.prospect_email
+        ? Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body.prospect_email)))).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
+        : outreachId;
+      await r2Put(env.R2_VIRTUAL_LAUNCH, `social/outreach/${emailHash}.json`, record);
+
+      // D1 projection
+      await d1Run(env.DB,
+        `INSERT INTO social_outreach (outreach_id, prospect_email, prospect_name, linkedin_url, message_template, message_sent, status, notes, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+        [outreachId, record.prospect_email, record.prospect_name, record.linkedin_url, record.message_template, record.message_sent, record.status, record.notes, now],
+      );
+
+      return json({ ok: true, outreach_id: outreachId }, 201, request);
+    },
+  },
+
+  // GET /v1/scale/outreach/connections — List outreach records
+  {
+    method: 'GET', pattern: '/v1/scale/outreach/connections',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const url = new URL(request.url);
+      const status = url.searchParams.get('status') || '';
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+      const offset = parseInt(url.searchParams.get('offset') || '0', 10) || 0;
+
+      let sql = 'SELECT * FROM social_outreach';
+      const conditions = [];
+      const params = [];
+      if (status) { conditions.push('status = ?'); params.push(status); }
+      if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ');
+      sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      params.push(limit, offset);
+
+      const results = await env.DB.prepare(sql).bind(...params).all();
+
+      let countSql = 'SELECT COUNT(*) as total FROM social_outreach';
+      const countParams = [];
+      if (status) { countParams.push(status); countSql += ' WHERE status = ?'; }
+      const countRow = await env.DB.prepare(countSql).bind(...countParams).first();
+
+      return json({
+        ok: true,
+        connections: results.results || [],
+        total: countRow?.total || 0,
+      }, 200, request);
+    },
+  },
+
+  // PATCH /v1/scale/outreach/connections/:id — Update outreach record
+  {
+    method: 'PATCH', pattern: '/v1/scale/outreach/connections/:id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const outreachId = params.id;
+      const body = await request.json().catch(() => null);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const sets = [];
+      const sqlParams = [];
+      if (body.status !== undefined) { sets.push('status = ?'); sqlParams.push(body.status); }
+      if (body.notes !== undefined) { sets.push('notes = ?'); sqlParams.push(body.notes); }
+      if (body.linkedin_url !== undefined) { sets.push('linkedin_url = ?'); sqlParams.push(body.linkedin_url); }
+      sets.push('updated_at = ?');
+      sqlParams.push(new Date().toISOString());
+      sqlParams.push(outreachId);
+
+      await d1Run(env.DB, `UPDATE social_outreach SET ${sets.join(', ')} WHERE outreach_id = ?`, sqlParams);
+
+      return json({ ok: true, outreach_id: outreachId }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Prospect LinkedIn/FB Fields
+  // -------------------------------------------------------------------------
+
+  // PATCH /v1/scale/prospects/:slug — Update prospect with LinkedIn/FB URLs
+  {
+    method: 'PATCH', pattern: '/v1/scale/prospects/:slug',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const slug = params.slug;
+      const body = await request.json().catch(() => null);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const r2Key = `vlp-scale/asset-pages/${slug}.json`;
+      const existing = await env.R2_VIRTUAL_LAUNCH.get(r2Key);
+      if (!existing) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+      const record = await existing.json();
+
+      if (body.linkedin_url !== undefined) record.linkedin_url = body.linkedin_url;
+      if (body.fb_url !== undefined) record.fb_url = body.fb_url;
+      record.updated_at = new Date().toISOString();
+
+      await r2Put(env.R2_VIRTUAL_LAUNCH, r2Key, record);
+
+      return json({ ok: true, slug }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Outreach Message Templates
+  // -------------------------------------------------------------------------
+
+  // GET /v1/scale/outreach/templates — Return canned message templates
+  {
+    method: 'GET', pattern: '/v1/scale/outreach/templates',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      return json({
+        ok: true,
+        templates: [
+          {
+            id: 'credential_specific',
+            label: '{credential} Connection',
+            body: 'Hi {First} -- I built a free IRS transcript code lookup tool that {credential}s are finding useful for quick reference. No pitch, just sharing something practical: transcript.taxmonitor.pro/tools/code-lookup',
+            variables: ['First', 'credential'],
+          },
+          {
+            id: 'location_specific',
+            label: 'Value-first',
+            body: 'Hi {First} -- as a {credential} in {City}, you probably read IRS transcripts weekly. I built a free code lookup that explains every transaction code in plain English. Thought you might find it useful: transcript.taxmonitor.pro/tools/code-lookup',
+            variables: ['First', 'credential', 'City'],
+          },
+          {
+            id: 'direct_tool',
+            label: 'Direct tool share',
+            body: 'Hi {First} -- free IRS code lookup tool for tax pros. Enter any IRS transaction code, get the plain-English explanation. No account, no signup: transcript.taxmonitor.pro/tools/code-lookup',
+            variables: ['First'],
+          },
+        ],
+      }, 200, request);
     },
   },
 
@@ -19197,6 +19603,8 @@ async function handlePendingCsvIngestion(env) {
 // ---------------------------------------------------------------------------
 
 const DAILY_BATCH_CAP_DEFAULT = 200;
+// Routing weights — overridden by env.SCALE_ROUTING_MODE = 'ttmp_only' (default)
+// When SCALE_ROUTING_MODE = 'split', use weighted random: 65% TTMP, 25% VLP, 10% WLVLP
 const DAILY_ROUTE_TTMP = 0.65;
 const DAILY_ROUTE_VLP  = 0.90; // upper bound (0.65..0.90 = VLP, 0.90..1 = WLVLP)
 const ALLOWED_SEND_STATUSES = new Set(['valid', 'pattern_match', 'catch_all', 'pattern_unvalidated']);
@@ -19963,11 +20371,18 @@ async function handleDailyBatchGeneration(env) {
       profession, cred, todayIso, baseDate: startedAt, domain,
     };
 
-    const roll = Math.random();
+    // SCALE_ROUTING_MODE: 'ttmp_only' (default) routes 100% to TTMP.
+    // 'split' uses weighted random: 65% TTMP, 25% VLP, 10% WLVLP.
+    const routingMode = (env.SCALE_ROUTING_MODE || 'ttmp_only').toLowerCase();
     let dest;
-    if (roll < DAILY_ROUTE_TTMP) dest = 'ttmp';
-    else if (roll < DAILY_ROUTE_VLP) dest = 'vlp';
-    else dest = 'wlvlp';
+    if (routingMode === 'split') {
+      const roll = Math.random();
+      if (roll < DAILY_ROUTE_TTMP) dest = 'ttmp';
+      else if (roll < DAILY_ROUTE_VLP) dest = 'vlp';
+      else dest = 'wlvlp';
+    } else {
+      dest = 'ttmp';
+    }
 
     if (dest === 'ttmp') {
       ttmpRecs.push(buildTtmpQueueRecord(r, ctx));

@@ -1,0 +1,384 @@
+/* CampaignPostsTab styles */
+.container {
+  position: relative;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  animation: slideIn 0.2s ease;
+}
+
+.toastSuccess {
+  background-color: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: rgb(52, 211, 153);
+}
+
+.toastError {
+  background-color: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: rgb(248, 113, 113);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Generator card */
+.generatorCard {
+  padding: 1.25rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  margin-bottom: 1.5rem;
+}
+
+.generatorTitle {
+  font-family: 'Raleway', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(148, 163, 184, 1);
+  margin-bottom: 1rem;
+}
+
+.generatorForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.formLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.formSelect,
+.formInput {
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.formSelect:focus,
+.formInput:focus {
+  border-color: rgba(249, 115, 22, 0.5);
+}
+
+.formSelect option {
+  background-color: rgb(15, 23, 42);
+}
+
+.generateBtn {
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(to right, rgb(249, 115, 22), rgb(245, 158, 11));
+  color: rgb(15, 23, 42);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.generateBtn:hover:not(:disabled) {
+  background: linear-gradient(to right, rgb(251, 146, 60), rgb(251, 191, 36));
+}
+
+.generateBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty state */
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 0.85rem;
+}
+
+/* Post list */
+.postList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Post card */
+.postCard {
+  padding: 1.25rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s;
+}
+
+.postCard:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.postCardDimmed {
+  opacity: 0.5;
+}
+
+.postCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.postCardDay {
+  font-family: 'Raleway', system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(249, 115, 22, 0.95);
+}
+
+.postCardDate {
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.postCardStatus {
+  margin-left: auto;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.statusDraft {
+  background-color: rgba(148, 163, 184, 0.15);
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.statusScheduled {
+  background-color: rgba(96, 165, 250, 0.15);
+  color: rgba(96, 165, 250, 0.95);
+}
+
+.statusPosted {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: rgba(74, 222, 128, 0.95);
+}
+
+.statusSkipped {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: rgba(248, 113, 113, 0.9);
+}
+
+.postCardHeadline {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 1rem;
+}
+
+/* Post section (LinkedIn / Facebook / Canva) */
+.postSection {
+  padding: 0.75rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.postSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.postSectionLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.postSectionActions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.smallBtn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.smallBtn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.smallBtnGreen {
+  border-color: rgba(74, 222, 128, 0.3);
+  color: rgba(74, 222, 128, 0.9);
+}
+
+.smallBtnGreen:hover {
+  background-color: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.smallBtnBlue {
+  border-color: rgba(96, 165, 250, 0.3);
+  color: rgba(96, 165, 250, 0.9);
+}
+
+.smallBtnBlue:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+.smallBtnMuted {
+  border-color: rgba(148, 163, 184, 0.2);
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.smallBtnMuted:hover {
+  background-color: rgba(148, 163, 184, 0.08);
+}
+
+.postedCheck {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(74, 222, 128, 0.9);
+}
+
+.postBody {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  padding: 0.5rem 0;
+}
+
+.postBodyTextarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+
+.postBodyTextarea:focus {
+  border-color: rgba(249, 115, 22, 0.5);
+}
+
+.urlRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.urlLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.6);
+  flex-shrink: 0;
+}
+
+.urlInput {
+  flex: 1;
+  padding: 0.3rem 0.5rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.375rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  outline: none;
+}
+
+.urlInput:focus {
+  border-color: rgba(249, 115, 22, 0.4);
+}
+
+/* Notes */
+.notesRow {
+  padding-top: 0.5rem;
+}
+
+.notesInput {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.375rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  outline: none;
+}
+
+.notesInput:focus {
+  border-color: rgba(249, 115, 22, 0.4);
+}
+
+/* Card actions */
+.postCardActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .generatorForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .postSectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+}
