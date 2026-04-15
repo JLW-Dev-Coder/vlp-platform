@@ -740,6 +740,20 @@ function extractTextOperators(content) {
     // Collect all text ops with their position in the block for ordering
     const ops = [];
 
+    // Detect line-break operators: Td with Y-offset, TD, T*
+    // These indicate the text moved to a new line within the same BT/ET block
+    const tdRegex = /[-\d.]+\s+([-\d.]+)\s+Td/g;
+    let tdMatch;
+    while ((tdMatch = tdRegex.exec(block)) !== null) {
+      const yOffset = parseFloat(tdMatch[1]);
+      if (yOffset !== 0) ops.push({ pos: tdMatch.index, text: '\n' });
+    }
+    const tStarRegex = /\bT\*/g;
+    let tStarMatch;
+    while ((tStarMatch = tStarRegex.exec(block)) !== null) {
+      ops.push({ pos: tStarMatch.index, text: '\n' });
+    }
+
     // Tj operator: (text) Tj
     const tjRegex = /\(([^)]*)\)\s*Tj/g;
     let tjMatch;
@@ -748,16 +762,31 @@ function extractTextOperators(content) {
       if (text) ops.push({ pos: tjMatch.index, text });
     }
     // TJ operator (array): [(text) kern (text)] TJ
-    const tjArrayRegex = /\[((?:[^]]*?))\]\s*TJ/gi;
+    // Kerning values < -100 indicate word boundaries (space between fragments)
+    const tjArrayRegex = /\[([^\]]*)\]\s*TJ/gi;
     let arrMatch;
     while ((arrMatch = tjArrayRegex.exec(block)) !== null) {
-      const innerRegex = /\(([^)]*)\)/g;
-      let innerMatch;
-      const parts = [];
-      while ((innerMatch = innerRegex.exec(arrMatch[1])) !== null) {
-        parts.push(decodePdfString(innerMatch[1]));
+      const arrayContent = arrMatch[1];
+      // Parse alternating text strings and kerning numbers
+      const tokenRegex = /\(([^)]*)\)|([-]?\d+(?:\.\d+)?)/g;
+      let token;
+      let result = '';
+      let lastWasKernSpace = false;
+      while ((token = tokenRegex.exec(arrayContent)) !== null) {
+        if (token[1] !== undefined) {
+          // Text string
+          result += decodePdfString(token[1]);
+          lastWasKernSpace = false;
+        } else if (token[2] !== undefined) {
+          // Kerning value — large negative means word boundary
+          const kern = parseFloat(token[2]);
+          if (kern < -100 && !lastWasKernSpace) {
+            result += ' ';
+            lastWasKernSpace = true;
+          }
+        }
       }
-      const text = parts.join('').trim();
+      const text = result.trim();
       if (text) ops.push({ pos: arrMatch.index, text });
     }
     // ' and " operators (move to next line and show text)
@@ -768,10 +797,19 @@ function extractTextOperators(content) {
       if (text) ops.push({ pos: quoteMatch.index, text });
     }
 
-    // Sort by position in the block and join with spaces
+    // Sort by position in the block; use newline markers as line separators
     ops.sort((a, b) => a.pos - b.pos);
     if (ops.length > 0) {
-      outputLines.push(ops.map(o => o.text).join(' '));
+      let line = '';
+      for (const o of ops) {
+        if (o.text === '\n') {
+          if (line.trim()) outputLines.push(line.trim());
+          line = '';
+        } else {
+          line += (line ? ' ' : '') + o.text;
+        }
+      }
+      if (line.trim()) outputLines.push(line.trim());
     }
   }
   return outputLines.join('\n');
@@ -15007,11 +15045,13 @@ TTMP Support Team
       }
 
       const safeName = (submission.taxpayer_name || 'taxpayer').replace(/[^a-zA-Z0-9 -]/g, '').replace(/\s+/g, '-');
+      const corsHeaders = getCorsHeaders(request);
       return new Response(pdfObject.body, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="Form-843-${safeName}.pdf"`,
           'Cache-Control': 'private, no-cache',
+          ...corsHeaders,
         },
       });
     },
