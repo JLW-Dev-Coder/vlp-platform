@@ -14716,6 +14716,7 @@ TTMP Support Team
         const stripeSession = await stripePost('/checkout/sessions', {
           mode: 'subscription',
           line_items: [{ price: price_id, quantity: 1 }],
+          allow_promotion_codes: true,
           success_url,
           cancel_url,
           metadata: {
