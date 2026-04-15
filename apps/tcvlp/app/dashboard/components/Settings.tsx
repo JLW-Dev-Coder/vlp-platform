@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Session, TaxPro, ProfileData, getProfile, updateProfile, tcvlpOnboarding } from '@/lib/api';
+import { Session, TaxPro, ProfileData, getProfile, updateProfile } from '@/lib/api';
 import styles from './shared.module.css';
 
 interface Props {
@@ -26,9 +26,11 @@ export default function Settings({ session, pro, onUpdated }: Props) {
     getProfile().then((p: ProfileData | null) => {
       if (cancelled || !p) return;
       if (p.firm_name) setFirmName(p.firm_name);
+      if (p.display_name) setDisplayName(p.display_name);
+      if (p.welcome_message) setWelcomeMessage(p.welcome_message);
       if (p.firm_phone) setFirmPhone(p.firm_phone);
       if (p.firm_website) setFirmWebsite(p.firm_website);
-      if (p.firm_logo_url) setFirmLogoUrl(p.firm_logo_url);
+      if (p.logo_url) setFirmLogoUrl(p.logo_url);
     });
     return () => { cancelled = true; };
   }, []);
@@ -38,21 +40,22 @@ export default function Settings({ session, pro, onUpdated }: Props) {
     setSaving(true);
     setError('');
     try {
-      // Keep the existing onboarding update (firm_name, display_name, welcome_message)
-      // so client-facing landing page copy stays in sync.
-      const updated = await tcvlpOnboarding({
+      const result = await updateProfile({
         firm_name: firmName,
         display_name: displayName,
         welcome_message: welcomeMessage,
-      });
-      onUpdated(updated);
-
-      // Persist white-label branding fields via the profile endpoint.
-      await updateProfile({
-        firm_name: firmName,
+        logo_url: firmLogoUrl,
         firm_phone: firmPhone,
         firm_website: firmWebsite,
-        firm_logo_url: firmLogoUrl,
+      });
+      onUpdated({
+        pro_id: result.pro_id || pro?.pro_id || '',
+        account_id: result.account_id || session.account_id,
+        slug: result.slug || pro?.slug || '',
+        firm_name: result.firm_name || firmName,
+        display_name: result.display_name,
+        welcome_message: result.welcome_message,
+        logo_url: result.logo_url,
       });
 
       setSaved(true);

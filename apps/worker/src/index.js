@@ -14268,6 +14268,111 @@ TTMP Support Team
     },
   },
 
+  // GET /v1/tcvlp/profile — authenticated pro's own profile
+  {
+    method: 'GET', pattern: '/v1/tcvlp/profile',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      try {
+        const pro = await env.DB.prepare(
+          "SELECT pro_id, firm_name, display_name, logo_url, welcome_message, slug, firm_phone, firm_website FROM tcvlp_pros WHERE account_id = ?"
+        ).bind(session.account_id).first();
+
+        if (!pro) {
+          return json({ ok: false, error: 'NOT_FOUND', message: 'No professional profile found for this account' }, 404, request);
+        }
+
+        return json({
+          ok: true,
+          pro_id: pro.pro_id,
+          account_id: session.account_id,
+          email: session.email,
+          firm_name: pro.firm_name,
+          display_name: pro.display_name,
+          welcome_message: pro.welcome_message,
+          logo_url: pro.logo_url,
+          slug: pro.slug,
+          firm_phone: pro.firm_phone,
+          firm_website: pro.firm_website,
+        });
+      } catch (e) {
+        console.error('TCVLP get profile error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to fetch profile' }, 500, request);
+      }
+    },
+  },
+
+  // PATCH /v1/tcvlp/profile — update authenticated pro's profile
+  {
+    method: 'PATCH', pattern: '/v1/tcvlp/profile',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      if (!body) {
+        return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      }
+
+      try {
+        const existing = await env.DB.prepare(
+          "SELECT pro_id, slug, firm_name, display_name, logo_url, welcome_message, firm_phone, firm_website FROM tcvlp_pros WHERE account_id = ?"
+        ).bind(session.account_id).first();
+
+        if (!existing) {
+          return json({ ok: false, error: 'NOT_FOUND', message: 'No professional profile found for this account' }, 404, request);
+        }
+
+        const timestamp = new Date().toISOString();
+        const updated = {
+          firm_name: body.firm_name ?? existing.firm_name,
+          display_name: body.display_name ?? existing.display_name,
+          welcome_message: body.welcome_message ?? existing.welcome_message,
+          logo_url: body.logo_url ?? body.firm_logo_url ?? existing.logo_url,
+          firm_phone: body.firm_phone ?? existing.firm_phone,
+          firm_website: body.firm_website ?? existing.firm_website,
+        };
+
+        // Update D1
+        await d1Run(env.DB,
+          `UPDATE tcvlp_pros SET firm_name = ?, display_name = ?, welcome_message = ?, logo_url = ?, firm_phone = ?, firm_website = ?, updated_at = ? WHERE account_id = ?`,
+          [updated.firm_name, updated.display_name, updated.welcome_message, updated.logo_url, updated.firm_phone, updated.firm_website, timestamp, session.account_id]
+        );
+
+        // Update R2 canonical
+        const canonicalKey = `tcvlp/pros/${existing.pro_id}.json`;
+        const canonicalObj = await env.R2_VIRTUAL_LAUNCH.get(canonicalKey);
+        let canonical = {};
+        if (canonicalObj) {
+          try { canonical = JSON.parse(await canonicalObj.text()); } catch {}
+        }
+        const updatedCanonical = {
+          ...canonical,
+          ...updated,
+          updated_at: timestamp,
+        };
+        await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, updatedCanonical);
+
+        return json({
+          ok: true,
+          pro_id: existing.pro_id,
+          firm_name: updated.firm_name,
+          display_name: updated.display_name,
+          welcome_message: updated.welcome_message,
+          logo_url: updated.logo_url,
+          slug: existing.slug,
+          firm_phone: updated.firm_phone,
+          firm_website: updated.firm_website,
+        });
+      } catch (e) {
+        console.error('TCVLP update profile error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to update profile' }, 500, request);
+      }
+    },
+  },
+
   // GET /v1/tcvlp/mailing-address?state=XX
   {
     method: 'GET', pattern: '/v1/tcvlp/mailing-address',

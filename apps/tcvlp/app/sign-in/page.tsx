@@ -11,7 +11,7 @@ function SignInForm() {
   const redirect = searchParams.get('redirect') ?? '/dashboard';
 
   const magicLinkUrl = `${API_BASE}/v1/auth/magic-link?platform=tcvlp&redirect=${encodeURIComponent(redirect)}`;
-  const googleUrl = `${API_BASE}/v1/auth/google?platform=tcvlp&redirect=${encodeURIComponent(redirect)}`;
+  const googleUrl = `${API_BASE}/v1/auth/google/start?return_to=${encodeURIComponent(`https://taxclaim.virtuallaunch.pro${redirect}`)}`;
 
   return (
     <div className={styles.card}>

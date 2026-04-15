@@ -25,7 +25,7 @@ function OnboardingContent({ session }: { session: Session }) {
   // Step 1
   const [firmName, setFirmName] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [welcomeMessage, setWelcomeMessage] = useState('');
+  const [welcomeMessage, setWelcomeMessage] = useState('Welcome. Submit your penalty details below and I will prepare your Form 843 claim.');
 
   // Step 2
   const [slug, setSlug] = useState('');

@@ -158,14 +158,16 @@ export async function downloadForm843(formId: string): Promise<Blob> {
 // ── Profile ───────────────────────────────────────────────────────────────────
 
 export interface ProfileData {
+  pro_id?: string;
   account_id?: string;
   email?: string;
   firm_name?: string;
+  display_name?: string;
+  welcome_message?: string;
+  logo_url?: string;
+  slug?: string;
   firm_phone?: string;
   firm_website?: string;
-  firm_logo_url?: string;
-  brand_color?: string;
-  slug?: string;
 }
 
 export async function getProfile(): Promise<ProfileData | null> {
@@ -178,9 +180,11 @@ export async function getProfile(): Promise<ProfileData | null> {
 
 export async function updateProfile(data: {
   firm_name?: string;
+  display_name?: string;
+  welcome_message?: string;
+  logo_url?: string;
   firm_phone?: string;
   firm_website?: string;
-  firm_logo_url?: string;
 }): Promise<ProfileData> {
   return apiFetch<ProfileData>('/v1/tcvlp/profile', {
     method: 'PATCH',
