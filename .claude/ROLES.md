@@ -44,6 +44,6 @@ Last updated: 2026-04-13
 
 ## 3. Owner
 
-- **James** — sole owner and operator
+- **JLW** — sole owner and operator
 - Both Claude roles report to James
 - All pricing, tier, and business decisions require owner sign-off
