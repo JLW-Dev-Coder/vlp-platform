@@ -77,11 +77,23 @@ These features exist on every platform. The Worker routes are shared; each platf
 
 ## TCVLP — TaxClaim Pro
 
+**Tiers:** Starter ($10/mo), Professional ($29/mo), Firm ($79/mo)
+
 | Feature | Worker Route | R2 Key | D1 Table | Frontend Path | Status |
 |---------|-------------|--------|----------|---------------|--------|
-| Auto Form 843 Generator | POST /v1/tcvlp/forms/843/generate, POST /v1/tcvlp/forms/843/submit | forms/843/{id}.json | form843_submissions | /claim/[slug] | live |
-| Unlimited Client Access | Controlled by membership tier check | — | — | /dashboard (gated by tier) | live |
-| White-Labeled Hosted Site | POST /v1/tcvlp/landing-page/create | landing-pages/{slug}.json | landing_pages | /dashboard/sites | partial — creation works, management UI incomplete |
+| Form 843 Generation | POST /v1/tcvlp/forms/843/generate, POST /v1/tcvlp/forms/843/submit | forms/843/{id}.json | form843_submissions | /claim/[slug] | live |
+| Branded Claim Page | GET /v1/tcvlp/profile | landing-pages/{slug}.json | landing_pages | /claim/[slug] | partial — frontend live, Worker route pending |
+| Penalty Calculations | Part of POST /v1/tcvlp/forms/843/generate | forms/843/{id}.json | form843_submissions | /claim/[slug] | live |
+| Taxpayer Dashboard | GET /v1/tcvlp/submissions, GET /v1/tcvlp/stats | forms/843/{id}.json | form843_submissions | /dashboard | live |
+| Kwong v. US Deadline Tools | N/A (client-side) | — | — | DeadlineBanner.tsx, KwongCard.tsx | live |
+| Unlimited Claim Pages | Needs slug-per-office routing | landing-pages/{slug}.json | landing_pages | /claim/[slug] | planned |
+| Priority Generation | Needs queue priority flag on POST /v1/tcvlp/forms/843/generate | — | — | N/A (backend queue priority) | planned |
+| Bulk Export | Needs bulk download route | forms/843/exports/{id}.zip | — | Needs new page/component | planned |
+| Transcript Integration | Needs cross-platform token route | — | — | Needs TTMP API bridge component | planned |
+| White-Label Branding | PATCH /v1/tcvlp/profile | landing-pages/{slug}.json | landing_pages | /claim/[slug] (partial) | partial — frontend partial, Worker pending |
+| Multi-Practitioner Access | Needs team/member routes | teams/{id}.json | teams | Needs team management UI | planned |
+| API Access | Needs API key management | api-keys/{id}.json | api_keys | N/A (API-only) | planned |
+| Dedicated Support | POST /v1/support/tickets (needs priority flag) | support/{id}.json | support_tickets | /dashboard/support | partial — live, needs priority flag |
 
 ---
 
@@ -125,7 +137,7 @@ These features exist on every platform. The Worker routes are shared; each platf
 | VLP | 14 | 10 | 2 | 2 |
 | TMP | 13 | 8 | 1 | 4 |
 | TTTMP | 10 | 8 | 0 | 2 |
-| TCVLP | 8 | 7 | 1 | 0 |
+| TCVLP | 20 | 9 | 5 | 6 |
 | WLVLP | 10 | 9 | 0 | 1 |
 | GVLP | 7 | 5 | 1 | 1 |
 | DVLP | 9 | 7 | 0 | 2 |

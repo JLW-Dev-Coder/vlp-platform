@@ -2,7 +2,7 @@
 
 **System:** TCVLP — TaxClaim Pro
 **Product:** Automated Form 843 generation + penalty abatement platform
-**Price:** $10/mo flat (Stripe: `prod_UCK4SzsEnjp19U`, `price_1TDvQe9ROeyeXOqek1fpOWWH`)
+**Tiers:** Starter $10/mo (`prod_UCK4SzsEnjp19U`), Professional $29/mo (`prod_UKy33CcU8nh21Y`), Firm $79/mo (`prod_UKy3UTHKIfNG6H`)
 **Last updated:** 2026-04-14
 **Objective:** Convert tax professionals into paying TCVLP subscribers by leveraging the Kwong v. US deadline and the pain of manual Form 843 preparation
 
@@ -11,7 +11,7 @@
 ## 1. Header (Identity)
 
 - **System:** VLP SCALE for TCVLP
-- **Product being sold:** TaxClaim Pro — automated Form 843 generation + penalty abatement ($10/mo flat)
+- **Product being sold:** TaxClaim Pro — automated Form 843 generation + penalty abatement (Starter $10/mo, Professional $29/mo, Firm $79/mo)
 - **Last updated:** 2026-04-14
 - **Objective:** Acquire tax professionals (CPAs, EAs, tax attorneys) handling individual penalty abatement through cold email outreach, social campaigns, and cross-sell from existing TTMP subscribers
 
@@ -19,9 +19,9 @@
 
 ## 2. Objective
 
-VLP SCALE for TCVLP generates personalized outreach packages — emails, asset pages, and tracking metadata — to convert tax professionals into $10/mo TCVLP subscribers. The primary angle is the Kwong v. US deadline (July 2026), which creates a time-bound window for penalty abatement on penalties assessed between January 2020 and July 2023. TCVLP eliminates the manual burden of preparing Form 843 for each affected client.
+VLP SCALE for TCVLP generates personalized outreach packages — emails, asset pages, and tracking metadata — to convert tax professionals into TCVLP subscribers (Starter $10/mo, Professional $29/mo, Firm $79/mo). The primary angle is the Kwong v. US deadline (July 2026), which creates a time-bound window for penalty abatement on penalties assessed between January 2020 and July 2023. TCVLP eliminates the manual burden of preparing Form 843 for each affected client.
 
-**Breakeven:** 14 subscribers at $10/mo covers ~$134/mo stack cost (shared across all platforms).
+**Breakeven:** 6 Starter subscribers ($60/mo) or 5 Professional ($145/mo) or 2 Firm ($158/mo) covers ~$134/mo stack cost (shared across all platforms). Blended target: 10 subscribers across tiers.
 
 **Primary audience:** Tax professionals (CPAs, EAs, tax attorneys) handling individual penalty abatement cases.
 
@@ -106,7 +106,7 @@ All cold outreach sent by VLP Worker cron via Gmail API. Templates live inline o
 **Body structure:**
 1. Reference Email 1
 2. Lead with asset page URL showing personalized penalty estimate and time savings
-3. Quantify: "At $10/mo, one Form 843 covers the cost"
+3. Quantify: "Starting at $10/mo, one Form 843 covers the cost"
 4. CTAs: asset page + Cal.com booking (cal.com/tax-monitor-pro/tcvlp-intro)
 
 ### Email 3 — Final follow-up + booking (Day +7)
@@ -138,7 +138,7 @@ All cold outreach sent by VLP Worker cron via Gmail API. Templates live inline o
 - Eligible penalty window: January 2020 – July 2023
 
 ### Asset page CTAs
-1. "Start generating Form 843s" → pricing page ($10/mo)
+1. "Start generating Form 843s" → pricing page (3 tiers from $10/mo)
 2. "Book an intro call" → cal.com/tax-monitor-pro/tcvlp-intro
 3. "How it works" → taxclaim.virtuallaunch.pro/demo
 
@@ -202,7 +202,7 @@ Asset page views per slug, CTA clicks per slug (which CTA), demo page views
 Bookings created via cal.com/tax-monitor-pro/tcvlp-intro, cancellations, attended calls
 
 ### Sales (Stripe)
-Payment succeeded for `prod_UCK4SzsEnjp19U`, subscriber count, MRR, churn rate
+Payment succeeded for any TCVLP product (`prod_UCK4SzsEnjp19U`, `prod_UKy33CcU8nh21Y`, `prod_UKy3UTHKIfNG6H`), subscriber count by tier, MRR, churn rate
 
 ### Kwong-specific
 Penalty estimates generated, Form 843s generated, deadline countdown engagement
@@ -248,7 +248,7 @@ Applies to all outreach across all platforms. No exceptions.
 - Reposition from deadline urgency to ongoing efficiency value
 - Cross-platform compound: TTMP → TCVLP → VLP membership funnel
 - Build Form 843 case study library for SEO
-- Target: 50+ subscribers at $10/mo = $500/mo recurring
+- Target: 50+ subscribers across tiers = $1,000+/mo blended MRR
 
 ---
 

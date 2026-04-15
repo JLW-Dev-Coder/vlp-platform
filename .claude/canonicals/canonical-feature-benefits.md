@@ -83,13 +83,25 @@ This file complements `canonical-feature-matrix.md` (which maps features to rout
 
 ## TCVLP — TaxClaim Pro
 
-**Audience:** Tax professionals handling penalty abatement cases for clients.
+**Audience:** CPAs, EAs, tax attorneys handling IRS penalty abatement cases for clients.
 
-| Feature | What It Does For You |
-|---------|---------------------|
-| Auto Form 843 Generator | Enter your client's penalty details and get a preparation guide for IRS Form 843 in minutes. The tool calculates applicable penalties, identifies abatement arguments based on the Kwong v. US ruling, and produces a document your client can file. Hours of manual form preparation reduced to a guided workflow. |
-| Unlimited Client Access | Your subscription covers every client, not a per-case fee. Handle 5 penalty abatement cases or 50 — the cost is the same. Predictable expenses for an unpredictable caseload. |
-| White-Labeled Hosted Site | A branded landing page with your firm name, logo, and contact info where your clients submit their penalty details. Share the URL with clients and they self-serve the intake. You look professional, they feel supported, and you spend zero time on data collection. |
+**Tiers:** Starter ($10/mo), Professional ($29/mo), Firm ($79/mo)
+
+| Feature | What It Does For You | Available In |
+|---------|---------------------|-------------|
+| Form 843 Generation | Auto-generate IRS Form 843 penalty abatement claims from taxpayer data in minutes, not hours. Enter penalty details or parse a transcript, and the tool calculates amounts, identifies Kwong v. US arguments, and produces a ready-to-file document. | All tiers |
+| Branded Claim Page | Your clients visit your branded landing page to submit penalty details — your firm name, your logo, your URL. Share the link, they self-serve the intake, you spend zero time on data collection. | All tiers |
+| Penalty Calculations | Automated penalty and interest calculations pulled from IRS transcript data — no manual math. The tool identifies applicable penalty codes, computes abatement amounts, and pre-fills Form 843 fields. | All tiers |
+| Taxpayer Dashboard | Your clients track their claim status, view submissions, and download documents from one dashboard. They see progress without calling your office. | All tiers |
+| Kwong v. US Deadline Tools | Built-in eligibility checker for the Kwong ruling window (Jan 2020 – July 2023 penalties). Flags which clients qualify, shows the deadline countdown, and alerts you when the July 2026 window is closing. | All tiers |
+| Unlimited Claim Pages | Create separate branded claim pages for each office, partner, or practice area — no per-page limit. Each page gets its own slug and branding. One subscription, unlimited intake points. | Professional, Firm |
+| Priority Generation | Form 843 PDFs generated ahead of the queue — critical when processing 30+ clients before the July deadline. Your generations complete first while Starter tier users wait in the standard queue. | Professional, Firm |
+| Bulk Export | Export all generated Form 843 PDFs as a single ZIP for batch mailing or filing. Select a date range or client list, download one file, send to the mailroom. No clicking through individual PDFs. | Professional, Firm |
+| Transcript Integration | Direct connection to Tax Transcript AI (TTMP) — parse transcripts and auto-populate penalty data into Form 843. Upload a transcript on TTMP, and the parsed penalty data flows directly into your claim form. No re-keying. | Professional, Firm |
+| White-Label Branding | Remove all TaxClaim Pro branding from client-facing pages — your clients see only your firm identity. Logo, colors, domain, footer — everything says your firm, not ours. | Firm |
+| Multi-Practitioner Access | Add associates, paralegals, or partners to your account — each with their own login and claim management. See who generated which forms, track per-practitioner volume, and manage permissions. | Firm |
+| API Access | Programmatic Form 843 generation for firms with custom workflows or existing case management software. REST API with your API key — integrate claim generation into your existing tools. | Firm |
+| Dedicated Support | Priority support queue with direct access — response within 4 business hours. Your tickets go to the front of the line. Named support contact for your firm. | Firm |
 
 ---
 
