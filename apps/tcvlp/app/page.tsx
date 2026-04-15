@@ -11,24 +11,71 @@ export const metadata: Metadata = {
     'Generate IRS Form 843 penalty abatement requests from transcript data in minutes. The Kwong v. US window closes July 2026. Three tiers from $10/mo.',
 };
 
+function DocIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="16" y2="17" />
+    </svg>
+  );
+}
+
+function CalendarClockIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <circle cx="12" cy="16" r="2" />
+      <line x1="12" y1="16" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+function BuildingIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <line x1="9" y1="6" x2="9" y2="6.01" />
+      <line x1="15" y1="6" x2="15" y2="6.01" />
+      <line x1="9" y1="10" x2="9" y2="10.01" />
+      <line x1="15" y1="10" x2="15" y2="10.01" />
+      <line x1="9" y1="14" x2="9" y2="14.01" />
+      <line x1="15" y1="14" x2="15" y2="14.01" />
+      <path d="M9 18h6v4H9z" />
+    </svg>
+  );
+}
+
+function BoltIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
+
 const VALUE_CARDS = [
   {
-    icon: '\u{1F4C4}',
+    icon: <DocIcon />,
     title: 'Automated Form 843',
     body: 'Enter penalty data, generate a complete Form 843. Print and mail.',
   },
   {
-    icon: '\u{1F4C5}',
+    icon: <CalendarClockIcon />,
     title: 'Kwong Deadline Built In',
     body: 'Eligibility checker flags which client penalties fall in the Jan 2020 \u2013 July 2023 window.',
   },
   {
-    icon: '\u{1F3E2}',
+    icon: <BuildingIcon />,
     title: 'Branded Client Pages',
     body: 'Your clients submit penalty details through your branded landing page.',
   },
   {
-    icon: '\u26A1',
+    icon: <BoltIcon />,
     title: '5 Minutes vs 30',
     body: 'Manual Form 843 prep takes 30 minutes per client. This takes 5.',
   },
@@ -232,7 +279,105 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. Social Proof — Stats */}
+      {/* 4. Kwong v. US Ruling */}
+      <section className={styles.kwongSection} id="kwong">
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>The Kwong v. US Ruling</h2>
+          </div>
+
+          <div className={styles.kwongCard}>
+            <p className={styles.kwongSummary}>
+              On November 25, 2025, the U.S. Court of Federal Claims ruled in <em>Kwong v. United States</em> that
+              Internal Revenue Code Section 7508A(d) required mandatory postponement of federal tax deadlines during
+              the COVID-19 national disaster period. The court found the IRS lacked authority to assess failure-to-file
+              penalties, failure-to-pay penalties, and underpayment interest on obligations due between January 20, 2020,
+              and July 10, 2023.
+            </p>
+
+            <div className={styles.kwongGrid}>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Case</span>
+                <span className={styles.kwongValue}>Kwong v. United States, No. 23-267</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Court</span>
+                <span className={styles.kwongValue}>U.S. Court of Federal Claims</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Judge</span>
+                <span className={styles.kwongValue}>Molly R. Silfen</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Decided</span>
+                <span className={styles.kwongValue}>November 25, 2025</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Citation</span>
+                <span className={styles.kwongValueAccent}>179 Fed. Cl. 382 (2025)</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Statute</span>
+                <span className={styles.kwongValue}>IRC &sect;7508A(d)</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Eligible window</span>
+                <span className={styles.kwongValue}>January 20, 2020 &mdash; July 10, 2023</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Filing deadline</span>
+                <span className={styles.kwongValueAccent}>July 10, 2026</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Eligible penalties</span>
+                <span className={styles.kwongValue}>Failure-to-file, failure-to-pay, underpayment interest</span>
+              </div>
+              <div className={styles.kwongDetail}>
+                <span className={styles.kwongLabel}>Required form</span>
+                <span className={styles.kwongValue}>IRS Form 843 (Claim for Refund and Request for Abatement)</span>
+              </div>
+            </div>
+
+            <div className={styles.kwongSources}>
+              <h3 className={styles.kwongSourcesTitle}>Sources</h3>
+              <ul className={styles.kwongSourceList}>
+                <li>
+                  <a href="https://law.justia.com/cases/federal/district-courts/federal-claims/cofce/1:2023cv00267/47175/38/" target="_blank" rel="noopener noreferrer">
+                    Justia &mdash; Full docket
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.govinfo.gov/app/details/USCOURTS-cofc-1_23-cv-00267/USCOURTS-cofc-1_23-cv-00267-0" target="_blank" rel="noopener noreferrer">
+                    GovInfo &mdash; Official court filing
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.bipc.com/is-the-irs-holding-your-money-how-the-kwong-ruling-impacts-pandemic-era-tax-refunds-for-individuals,-companies,-and-non-profit-organizations" target="_blank" rel="noopener noreferrer">
+                    Buchanan Ingersoll &amp; Rooney &mdash; Analysis
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.jdsupra.com/legalnews/kwong-decision-provides-opportunity-for-6536283/" target="_blank" rel="noopener noreferrer">
+                    Venable LLP via JD Supra &mdash; Analysis
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.taxcontroversy360.com/2025/12/major-update-potential-refund-opportunity-for-interest-and-penalty-amounts-accrued-during-covid-19-federally-declared-disaster/" target="_blank" rel="noopener noreferrer">
+                    Tax Controversy 360 &mdash; Detailed analysis
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <p className={styles.kwongDisclaimer}>
+              This information is provided for educational purposes only and does not constitute legal or tax advice.
+              Consult a qualified tax professional before filing any claim. The Kwong ruling may be subject to appeal.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Social Proof — Stats */}
       <section className={styles.statsSection} id="stats">
         <div className={styles.sectionInner}>
           <div className={styles.sectionHeader}>
@@ -249,7 +394,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Pricing Preview */}
+      {/* 6. Pricing Preview */}
       <section className={styles.pricingSection} id="pricing">
         <div className={styles.sectionInner}>
           <div className={styles.sectionHeader}>
@@ -286,7 +431,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. FAQ */}
+      {/* 7. FAQ */}
       <section className={styles.faqSection} id="faq">
         <div className={styles.sectionInner}>
           <div className={styles.sectionHeader}>
@@ -303,7 +448,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. Final CTA */}
+      {/* 8. Final CTA */}
       <section className={styles.finalCta} id="cta">
         <div className={styles.sectionInner}>
           <p className={styles.finalCtaText}>
@@ -315,7 +460,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. Footer */}
+      {/* 9. Footer */}
       <Footer />
     </div>
   );

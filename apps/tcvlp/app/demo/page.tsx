@@ -8,10 +8,61 @@ export const metadata: Metadata = {
   title: 'Demo — How Your Clients Claim Their Refund | TaxClaim Pro',
 };
 
+function TranscriptIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="16" y2="17" />
+      <line x1="8" y1="9" x2="10" y2="9" />
+    </svg>
+  );
+}
+
+function ShieldCheckIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <polyline points="9 12 11 14 15 10" />
+    </svg>
+  );
+}
+
+function FileGenerateIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" y1="11" x2="12" y2="17" />
+      <line x1="9" y1="14" x2="15" y2="14" />
+    </svg>
+  );
+}
+
+function PrinterIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9" />
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+      <rect x="6" y="14" width="12" height="8" />
+    </svg>
+  );
+}
+
+function MailSendIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <polyline points="22 7 12 13 2 7" />
+    </svg>
+  );
+}
+
 const STEPS = [
   {
     n: 1,
-    icon: '📄',
+    icon: <TranscriptIcon />,
     title: 'Pull Your Transcripts',
     items: [
       <>Access your IRS transcript at <a href="https://www.irs.gov/individuals/get-transcript" target="_blank" rel="noopener noreferrer">irs.gov/get-transcript</a> or call <strong>800-908-9946</strong></>,
@@ -20,7 +71,7 @@ const STEPS = [
   },
   {
     n: 2,
-    icon: '🛡',
+    icon: <ShieldCheckIcon />,
     title: 'Confirm Your Eligibility',
     items: [
       <>Review penalties or interest assessed between <strong>Jan 20, 2020 – July 10, 2023</strong></>,
@@ -30,7 +81,7 @@ const STEPS = [
   },
   {
     n: 3,
-    icon: '📝',
+    icon: <FileGenerateIcon />,
     title: 'Generate Your Preparation Guide',
     items: [
       <>Visit your tax pro&apos;s branded page and click <strong>Generate Preparation Guide</strong></>,
@@ -40,7 +91,7 @@ const STEPS = [
   },
   {
     n: 4,
-    icon: '🖨',
+    icon: <PrinterIcon />,
     title: 'Print & Review the Guide',
     items: [
       <>The preparation guide is clearly watermarked <strong>&quot;PREPARATION GUIDE — NOT AN OFFICIAL IRS FORM&quot;</strong></>,
@@ -50,7 +101,7 @@ const STEPS = [
   },
   {
     n: 5,
-    icon: '📬',
+    icon: <MailSendIcon />,
     title: 'Mail to the IRS',
     items: [
       <>Mail your completed Form 843 to the address shown in the preparation guide (based on your state)</>,

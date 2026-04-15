@@ -1,15 +1,14 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import DeadlineBanner from '@/components/DeadlineBanner';
 import Footer from '@/components/Footer';
+import { createTcvlpCheckout } from '@/lib/api';
 import styles from './pricing.module.css';
 
-export const metadata: Metadata = {
-  title: 'Pricing — TaxClaim Pro',
-  description:
-    'TaxClaim Pro pricing: Starter $10/mo, Professional $29/mo, Firm $79/mo. Automate IRS Form 843 penalty abatement claims.',
-};
+// metadata moved to layout.tsx for client component compatibility
 
 const STRIPE_PRICES = {
   starter: 'price_1TDvQe9ROeyeXOqek1fpOWWH',
@@ -106,6 +105,33 @@ function XIcon() {
 }
 
 export default function PricingPage() {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCheckout(priceId: string, tierName: string) {
+    setLoading(tierName);
+    setError(null);
+    try {
+      const session = await createTcvlpCheckout(priceId);
+      const checkoutUrl = session.url || session.session_url;
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        setError('Unable to start checkout. Please try again.');
+        setLoading(null);
+      }
+    } catch (err) {
+      // If 401/unauthenticated, redirect to sign-in with checkout intent
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('401') || msg.includes('403')) {
+        window.location.href = `/sign-in?redirect=/pricing`;
+      } else {
+        setError('Checkout failed. Please try again or contact support.');
+        setLoading(null);
+      }
+    }
+  }
+
   return (
     <div className={styles.root}>
       <DeadlineBanner />
@@ -123,6 +149,7 @@ export default function PricingPage() {
 
       <section className={styles.tiersSection}>
         <div className={styles.tiersInner}>
+          {error && <p className={styles.errorMsg}>{error}</p>}
           <div className={styles.tiersGrid}>
             {TIERS.map((tier) => (
               <div key={tier.name} className={tier.popular ? styles.tierCardPopular : styles.tierCard}>
@@ -134,12 +161,13 @@ export default function PricingPage() {
                   <span className={styles.priceAmount}>{tier.price}</span>
                   <span className={styles.pricePeriod}>/mo</span>
                 </div>
-                <Link
-                  href={`/sign-in?redirect=/onboarding&price_id=${tier.priceId}`}
+                <button
+                  onClick={() => handleCheckout(tier.priceId, tier.name)}
+                  disabled={loading !== null}
                   className={tier.popular ? styles.ctaBtn : styles.ctaBtnOutline}
                 >
-                  Get Started
-                </Link>
+                  {loading === tier.name ? 'Redirecting...' : 'Get Started'}
+                </button>
                 <ul className={styles.featureList}>
                   {tier.features.map((f) => (
                     <li key={f.name} className={f.included ? styles.featureIncluded : styles.featureExcluded}>
@@ -198,9 +226,13 @@ export default function PricingPage() {
           <p className={styles.ctaText}>
             The Kwong window closes in July 2026. Start generating Form 843 claims for your clients today.
           </p>
-          <Link href={`/sign-in?redirect=/onboarding&price_id=${STRIPE_PRICES.starter}`} className={styles.ctaBtn}>
-            Get Started &mdash; $10/mo
-          </Link>
+          <button
+            onClick={() => handleCheckout(STRIPE_PRICES.starter, 'Starter')}
+            disabled={loading !== null}
+            className={styles.ctaBtn}
+          >
+            {loading ? 'Redirecting...' : 'Get Started \u2014 $10/mo'}
+          </button>
         </div>
       </section>
 
