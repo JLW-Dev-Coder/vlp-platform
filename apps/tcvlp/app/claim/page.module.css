@@ -623,6 +623,96 @@
   margin-bottom: 0.5rem;
 }
 
+/* ── Penalty Section ────────────────────────────────────────────────────── */
+
+.penaltySection {
+  margin-top: 0.25rem;
+}
+
+.penaltySectionTitle {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-3);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #2a2d3e;
+}
+
+.totalField input {
+  background: #1a1d2a !important;
+  border-color: rgba(234, 179, 8, 0.3) !important;
+  color: #eab308 !important;
+  font-weight: 700;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  cursor: default;
+}
+
+.totalFieldRef {
+  font-size: 0.6875rem;
+  color: var(--color-text-3);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* ── No Eligible Penalties ──────────────────────────────────────────────── */
+
+.noEligibleBox {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-left: 3px solid #f59e0b;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: #fde047;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.noEligibleBox strong {
+  color: #fbbf24;
+}
+
+/* ── Disclaimer ─────────────────────────────────────────────────────────── */
+
+.disclaimerWrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.disclaimerCheckbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 4px;
+  border: 2px solid #4b5563;
+  background: transparent;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  cursor: pointer;
+  accent-color: #eab308;
+}
+
+.disclaimerCheckbox:checked {
+  border-color: #eab308;
+  background: #eab308;
+}
+
+.disclaimerLabel {
+  font-size: 0.8125rem;
+  color: var(--color-text-3);
+  line-height: 1.6;
+  cursor: pointer;
+  user-select: none;
+}
+
 /* ── Mailing Box ─────────────────────────────────────────────────────────── */
 
 .mailingBox {

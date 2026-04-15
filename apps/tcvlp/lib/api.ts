@@ -131,9 +131,10 @@ export interface Form843Data {
   email?: string;
   state: string;
   tax_year: number;
-  penalty_type: string;
-  penalty_amount: number;
-  interest_amount?: number;
+  failure_to_file: number;
+  failure_to_pay: number;
+  interest_amount: number;
+  total_amount: number;
   mailing_address: MailingAddress;
 }
 

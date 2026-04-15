@@ -14610,15 +14610,26 @@ TTMP Support Team
       }
 
       const {
-        pro_id, taxpayer_name, taxpayer_email, tax_year, penalty_type, penalty_amount,
+        pro_id, taxpayer_name, taxpayer_email, tax_year,
+        // New 3-field penalty structure
+        failure_to_file, failure_to_pay, interest_amount, total_amount,
+        // Legacy single-field (backwards compat)
+        penalty_type, penalty_amount,
         state, transcript_used,
         ssn_ein, spouse_name, spouse_ssn, address, apt_suite, city, zip_code,
         ein, phone, irc_section
       } = body;
 
-      if (!pro_id || !taxpayer_name || !tax_year || !penalty_type || !state) {
-        return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['pro_id', 'taxpayer_name', 'tax_year', 'penalty_type', 'state'] }, 400, request);
+      if (!pro_id || !taxpayer_name || !tax_year || !state) {
+        return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['pro_id', 'taxpayer_name', 'tax_year', 'state'] }, 400, request);
       }
+
+      // Resolve amounts: prefer new 3-field structure, fall back to legacy
+      const ftf = parseFloat(failure_to_file) || 0;
+      const ftp = parseFloat(failure_to_pay) || 0;
+      const ioa = parseFloat(interest_amount) || 0;
+      const resolvedTotal = total_amount ? parseFloat(total_amount) : (ftf + ftp + ioa) || parseFloat(penalty_amount) || 0;
+      const resolvedPenaltyType = penalty_type || [ftf && 'Failure to File', ftp && 'Failure to Pay'].filter(Boolean).join(' and ') || 'Penalty';
 
       // Validate state
       if (!IRS_843_MAILING_ADDRESSES[state.toUpperCase()]) {
@@ -14651,8 +14662,12 @@ TTMP Support Team
           taxpayer_name,
           taxpayer_email,
           tax_year,
-          penalty_type,
-          penalty_amount,
+          penalty_type: resolvedPenaltyType,
+          failure_to_file: ftf,
+          failure_to_pay: ftp,
+          interest_amount: ioa,
+          total_amount: resolvedTotal,
+          penalty_amount: resolvedTotal,
           state: state.toUpperCase(),
           mailing_address,
           transcript_used: transcript_used ? 1 : 0,
@@ -14668,8 +14683,12 @@ TTMP Support Team
           taxpayer_name,
           taxpayer_email: taxpayer_email || null,
           tax_year,
-          penalty_type,
-          penalty_amount: penalty_amount || null,
+          penalty_type: resolvedPenaltyType,
+          failure_to_file: ftf,
+          failure_to_pay: ftp,
+          interest_amount: ioa,
+          total_amount: resolvedTotal,
+          penalty_amount: resolvedTotal,
           state: state.toUpperCase(),
           mailing_address,
           transcript_used: transcript_used ? 1 : 0,
@@ -14683,7 +14702,7 @@ TTMP Support Team
         await d1Run(env.DB,
           `INSERT INTO tcvlp_form843_submissions (submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, penalty_type, penalty_amount, state, mailing_address, transcript_used, status, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, penalty_type, penalty_amount, state.toUpperCase(), mailing_address, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
+          [submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, resolvedPenaltyType, resolvedTotal, state.toUpperCase(), mailing_address, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
         );
 
         // --- PDF Generation via pdf-lib ---
@@ -14720,9 +14739,9 @@ TTMP Support Team
         setField('topmostSubform[0].Page1[0].f1_16[0]', `01/01/${tax_year}`);
         setField('topmostSubform[0].Page1[0].f1_17[0]', `12/31/${tax_year}`);
 
-        // Line 2: Amount
-        if (penalty_amount) {
-          setField('topmostSubform[0].Page1[0].f1_18[0]', String(penalty_amount));
+        // Line 2: Amount (total of all penalty + interest)
+        if (resolvedTotal) {
+          setField('topmostSubform[0].Page1[0].f1_18[0]', String(resolvedTotal));
         }
 
         // Line 4e: Income tax checkbox
@@ -14738,10 +14757,17 @@ TTMP Support Team
         // Line 7c: Reasonable cause
         checkBox('topmostSubform[0].Page2[0].c2_15[2]');
 
-        // Line 8: Explanation
-        const explanation = `Claim for refund of ${penalty_type} penalty assessed for tax year ${tax_year}. `
+        // Line 8: Explanation — itemize all three penalty types
+        const amountLines = [];
+        if (ftf) amountLines.push(`Failure-to-File penalty: $${ftf.toFixed(2)}`);
+        if (ftp) amountLines.push(`Failure-to-Pay penalty: $${ftp.toFixed(2)}`);
+        if (ioa) amountLines.push(`Interest on penalties: $${ioa.toFixed(2)}`);
+        const amountDetail = amountLines.length > 0 ? amountLines.join('; ') + '. ' : '';
+        const explanation = `Claim for refund of penalties assessed for tax year ${tax_year}. `
+          + amountDetail
+          + `Total refund requested: $${resolvedTotal.toFixed(2)}. `
           + `Per Kwong v. United States, No. 22-1993T (Fed. Cl. 2023), the U.S. Court of Federal Claims held that the IRS exceeded its authority in assessing certain penalties between January 20, 2020 and July 10, 2023. `
-          + `Taxpayer requests abatement and refund of $${penalty_amount || '[amount]'} in penalties assessed during this period. `
+          + `Taxpayer requests abatement and refund of the above penalties assessed during this period. `
           + `This claim is timely filed before the July 10, 2026 deadline established by the court.`;
         setField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]', explanation);
 
@@ -14766,8 +14792,12 @@ TTMP Support Team
           preparation_guide: {
             taxpayer_name,
             tax_year,
-            penalty_type,
-            penalty_amount: penalty_amount || 'To be determined',
+            penalty_type: resolvedPenaltyType,
+            failure_to_file: ftf,
+            failure_to_pay: ftp,
+            interest_amount: ioa,
+            total_amount: resolvedTotal,
+            penalty_amount: resolvedTotal || 'To be determined',
             state: state.toUpperCase(),
             mailing_address,
             kwong_citation: 'Kwong v. United States, No. 22-1993T (Fed. Cl. 2023)',

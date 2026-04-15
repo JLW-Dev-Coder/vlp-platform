@@ -30,13 +30,6 @@ const US_STATES = [
   'West Virginia','Wisconsin','Wyoming',
 ];
 
-const PENALTY_TYPES = [
-  'Failure to File',
-  'Failure to Pay',
-  'Estimated Tax Penalty',
-  'Other',
-];
-
 const TAX_YEARS = [2020, 2021, 2022, 2023];
 
 /* ── SVG Icons (36×36 stroke, Canva reference) ───────────────────────────── */
@@ -178,9 +171,11 @@ export default function ClaimClient({ pro, slug }: Props) {
   const [mailingAddress, setMailingAddress] = useState<MailingAddress | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [taxYear, setTaxYear] = useState<number>(2023);
-  const [penaltyType, setPenaltyType] = useState('Failure to Pay');
-  const [penaltyAmount, setPenaltyAmount] = useState('');
-  const [interestAmount, setInterestAmount] = useState('');
+  const [failureToFile, setFailureToFile] = useState('');
+  const [failureToPay, setFailureToPay] = useState('');
+  const [interestOnPenalties, setInterestOnPenalties] = useState('');
+  const [disclaimerChecked, setDisclaimerChecked] = useState(false);
+  const [noEligibleDates, setNoEligibleDates] = useState<string[]>([]);
 
   /* Generation (Step 3 → 4) */
   const [generating, setGenerating] = useState(false);
@@ -236,7 +231,31 @@ export default function ClaimClient({ pro, slug }: Props) {
       if (result.kwong_penalties) {
         const kp = result.kwong_penalties;
         if (kp.tax_years.length) setTaxYear(Number(kp.tax_years[kp.tax_years.length - 1]));
-        if (kp.total_amount) setPenaltyAmount(kp.total_amount.toFixed(2));
+
+        /* Map transaction codes to three penalty fields */
+        let ftf = 0; // Code 160 — Failure-to-File
+        let ftp = 0; // Code 276 — Failure-to-Pay / Late Payment
+        let interest = 0; // Codes 196, 199 — Interest
+        for (const t of kp.transactions) {
+          const code = String(t.code).trim();
+          if (code === '160') ftf += Math.abs(t.amount);
+          else if (code === '276') ftp += Math.abs(t.amount);
+          else if (code === '196' || code === '199') interest += Math.abs(t.amount);
+        }
+        if (ftf) setFailureToFile(ftf.toFixed(2));
+        if (ftp) setFailureToPay(ftp.toFixed(2));
+        if (interest) setInterestOnPenalties(interest.toFixed(2));
+
+        /* If no Kwong-eligible penalties found, show dates */
+        if (kp.transactions.length === 0) {
+          const allDates = (result as { all_transaction_dates?: string[] }).all_transaction_dates ?? [];
+          setNoEligibleDates(allDates);
+        } else {
+          setNoEligibleDates([]);
+        }
+      } else {
+        /* No kwong_penalties at all — transcript had no eligible items */
+        setNoEligibleDates([]);
       }
       /* Stay on Step 3 — form fields are auto-populated */
     } catch (err) {
@@ -269,14 +288,18 @@ export default function ClaimClient({ pro, slug }: Props) {
     setGenerating(true);
     setGenError('');
     try {
+      const ftf = parseFloat(failureToFile) || 0;
+      const ftp = parseFloat(failureToPay) || 0;
+      const iop = parseFloat(interestOnPenalties) || 0;
       const result = await generateForm843({
         pro_id: pro.pro_id,
         full_name: fullName,
         state,
         tax_year: taxYear,
-        penalty_type: penaltyType,
-        penalty_amount: parseFloat(penaltyAmount),
-        interest_amount: interestAmount ? parseFloat(interestAmount) : undefined,
+        failure_to_file: ftf,
+        failure_to_pay: ftp,
+        interest_amount: iop,
+        total_amount: ftf + ftp + iop,
         mailing_address: mailingAddress,
       });
       setForm843Result(result);
@@ -319,7 +342,9 @@ export default function ClaimClient({ pro, slug }: Props) {
   };
 
   const progressPct = (step / 5) * 100;
-  const canGenerate = fullName && state && mailingAddress && penaltyAmount && taxYear;
+  const totalAmount = (parseFloat(failureToFile) || 0) + (parseFloat(failureToPay) || 0) + (parseFloat(interestOnPenalties) || 0);
+  const hasAnyAmount = totalAmount > 0;
+  const canGenerate = fullName && state && mailingAddress && hasAnyAmount && taxYear && disclaimerChecked;
 
   /* ── Render ─────────────────────────────────────────────────────────────── */
 
@@ -650,40 +675,82 @@ export default function ClaimClient({ pro, slug }: Props) {
                   </div>
                 )}
 
-                <div className={styles.field}>
-                  <label className={styles.label}>Penalty Type <span className={styles.required}>*</span></label>
-                  <select value={penaltyType} onChange={(e) => setPenaltyType(e.target.value)}>
-                    {PENALTY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
+                {/* Penalty & Interest Amounts */}
+                <div className={styles.penaltySection}>
+                  <div className={styles.penaltySectionTitle}>Penalty &amp; Interest Amounts</div>
 
-                <div className={styles.formRow}>
+                  {noEligibleDates.length > 0 && (
+                    <div className={styles.noEligibleBox}>
+                      <strong>No penalties within the Kwong eligibility window</strong> (Jan 20, 2020 — Jul 10, 2023) were found in this transcript.
+                      {noEligibleDates.length > 0 && (
+                        <> The penalties on this transcript were assessed on {noEligibleDates.join(', ')}.</>
+                      )}
+                      {' '}You can still enter amounts manually if you believe they qualify.
+                    </div>
+                  )}
+
                   <div className={styles.field}>
-                    <label className={styles.label}>Penalty Amount ($) <span className={styles.required}>*</span></label>
+                    <label className={styles.label}>Failure-to-File Penalty ($)</label>
                     <input
                       type="number"
                       step="0.01"
                       min="0"
-                      value={penaltyAmount}
-                      onChange={(e) => setPenaltyAmount(e.target.value)}
+                      value={failureToFile}
+                      onChange={(e) => setFailureToFile(e.target.value)}
                       placeholder="0.00"
-                      required
                     />
                   </div>
-                  <div className={styles.field}>
-                    <label className={styles.label}>Interest Amount ($)</label>
+
+                  <div className={styles.field} style={{ marginTop: '1rem' }}>
+                    <label className={styles.label}>Failure-to-Pay Penalty ($)</label>
                     <input
                       type="number"
                       step="0.01"
                       min="0"
-                      value={interestAmount}
-                      onChange={(e) => setInterestAmount(e.target.value)}
+                      value={failureToPay}
+                      onChange={(e) => setFailureToPay(e.target.value)}
                       placeholder="0.00"
                     />
+                  </div>
+
+                  <div className={styles.field} style={{ marginTop: '1rem' }}>
+                    <label className={styles.label}>Interest on Penalties ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={interestOnPenalties}
+                      onChange={(e) => setInterestOnPenalties(e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className={`${styles.field} ${styles.totalField}`} style={{ marginTop: '1.25rem' }}>
+                    <label className={styles.label}>Total Refund Requested ($)</label>
+                    <input
+                      type="text"
+                      value={totalAmount > 0 ? totalAmount.toFixed(2) : '0.00'}
+                      readOnly
+                      tabIndex={-1}
+                    />
+                    <div className={styles.totalFieldRef}>IRS Form 843, Item 2: Amount to be refunded or abated</div>
                   </div>
                 </div>
 
                 {genError && <div className={styles.errorMsg}>{genError}</div>}
+
+                {/* Verification disclaimer */}
+                <label className={styles.disclaimerWrap}>
+                  <input
+                    type="checkbox"
+                    className={styles.disclaimerCheckbox}
+                    checked={disclaimerChecked}
+                    onChange={(e) => setDisclaimerChecked(e.target.checked)}
+                  />
+                  <span className={styles.disclaimerLabel}>
+                    I have reviewed the amounts above against my IRS transcript and confirm they are accurate. I understand this generates a preparation guide, not an official IRS filing.
+                  </span>
+                </label>
               </div>
 
               <div className={styles.btnRow}>
@@ -691,6 +758,7 @@ export default function ClaimClient({ pro, slug }: Props) {
                   className={styles.primaryBtn}
                   onClick={handleGenerate}
                   disabled={generating || !canGenerate || subActive === false}
+                  title={!disclaimerChecked ? 'Please confirm the disclaimer above' : undefined}
                 >
                   {generating ? 'Generating...' : subActive === false ? 'Subscription Required' : 'Generate Form'}
                 </button>
