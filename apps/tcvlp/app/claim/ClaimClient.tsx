@@ -293,7 +293,7 @@ export default function ClaimClient({ pro, slug }: Props) {
       const iop = parseFloat(interestOnPenalties) || 0;
       const result = await generateForm843({
         pro_id: pro.pro_id,
-        full_name: fullName,
+        taxpayer_name: fullName,
         state,
         tax_year: taxYear,
         failure_to_file: ftf,

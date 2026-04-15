@@ -127,8 +127,8 @@ export async function uploadTranscript(formData: FormData): Promise<TranscriptRe
 
 export interface Form843Data {
   pro_id: string;
-  full_name: string;
-  email?: string;
+  taxpayer_name: string;
+  taxpayer_email?: string;
   state: string;
   tax_year: number;
   failure_to_file: number;
