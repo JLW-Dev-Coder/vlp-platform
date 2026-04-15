@@ -14706,6 +14706,12 @@ TTMP Support Team
         return json({ ok: false, error: 'BAD_REQUEST', message: 'Invalid TCVLP price_id' }, 400, request);
       }
 
+      // TCVLP price IDs live on the VLP Stripe account — must use STRIPE_SECRET_KEY_VLP.
+      const vlpSecretKey = env.STRIPE_SECRET_KEY_VLP;
+      if (!vlpSecretKey) {
+        return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY_VLP is not set' }, 503, request);
+      }
+
       try {
         const stripeSession = await stripePost('/checkout/sessions', {
           mode: 'subscription',
@@ -14717,7 +14723,7 @@ TTMP Support Team
             platform: 'tcvlp',
             plan_key,
           },
-        }, env, env.STRIPE_SECRET_KEY);
+        }, env, vlpSecretKey);
 
         return json({ ok: true, url: stripeSession.url, session_id: stripeSession.id }, 200, request);
       } catch (e) {
