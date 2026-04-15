@@ -660,62 +660,121 @@ async function getCurrentTokenBalance(env, accountId) {
 // ---------------------------------------------------------------------------
 // PDF text extraction — lightweight, Worker-compatible
 // Handles digitally generated PDFs (IRS transcripts). Does NOT handle scanned
-// image PDFs. Extracts text from PDF stream objects by decoding FlateDecode
-// streams and pulling BT...ET text blocks.
+// image PDFs. Decompresses FlateDecode streams via DecompressionStream API,
+// then extracts BT...ET text blocks.
 // ---------------------------------------------------------------------------
-function extractTextFromPdf(pdfBytes) {
+async function decompressFlate(bytes) {
+  for (const fmt of ['deflate', 'deflate-raw']) {
+    try {
+      const ds = new DecompressionStream(fmt);
+      const writer = ds.writable.getWriter();
+      writer.write(bytes);
+      writer.close();
+      const reader = ds.readable.getReader();
+      const chunks = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      let len = 0;
+      for (const c of chunks) len += c.length;
+      const result = new Uint8Array(len);
+      let off = 0;
+      for (const c of chunks) { result.set(c, off); off += c.length; }
+      return new TextDecoder('latin1').decode(result);
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+async function extractTextFromPdf(pdfBytes) {
   const raw = new TextDecoder('latin1').decode(pdfBytes);
   const textChunks = [];
 
-  // Strategy 1: Extract text operators from uncompressed PDF stream objects
-  const streamRegex = /stream\r?\n([\s\S]*?)endstream/g;
-  let streamMatch;
-  while ((streamMatch = streamRegex.exec(raw)) !== null) {
-    const textFromStream = extractTextOperators(streamMatch[1]);
-    if (textFromStream) textChunks.push(textFromStream);
+  // Strategy 1: Find stream blocks, decompress FlateDecode, extract text ops
+  const streamMarker = /stream\r?\n/g;
+  let sm;
+  while ((sm = streamMarker.exec(raw)) !== null) {
+    const streamStart = sm.index + sm[0].length;
+    const endIdx = raw.indexOf('endstream', streamStart);
+    if (endIdx === -1) continue;
+
+    const lookback = raw.substring(Math.max(0, sm.index - 500), sm.index);
+    const isFlate = lookback.includes('/FlateDecode');
+
+    if (isFlate) {
+      try {
+        const compressed = pdfBytes.slice(streamStart, endIdx);
+        const decompressed = await decompressFlate(compressed);
+        if (decompressed) {
+          const text = extractTextOperators(decompressed);
+          if (text && text.trim().length > 5) textChunks.push(text);
+        }
+      } catch { /* skip failed stream */ }
+    } else {
+      const content = raw.substring(streamStart, endIdx);
+      const text = extractTextOperators(content);
+      if (text && text.trim().length > 5) textChunks.push(text);
+    }
   }
 
-  // Strategy 2: Direct pattern scan for IRS transcript data in raw PDF bytes
-  // IRS transcripts are digitally generated — transaction codes, dates, and
-  // amounts appear as readable text even without full stream decompression.
-  const directText = extractDirectText(raw);
-  if (directText) textChunks.push(directText);
+  // Strategy 2: Direct pattern scan as fallback (uncompressed text in raw PDF)
+  if (textChunks.join('').trim().length < 20) {
+    const directText = extractDirectText(raw);
+    if (directText) textChunks.push(directText);
+  }
 
   return textChunks.join('\n').trim();
 }
 
 function extractTextOperators(content) {
-  const chunks = [];
+  const outputLines = [];
   // Match text between BT (begin text) and ET (end text) blocks
   const btEtRegex = /BT\s([\s\S]*?)ET/g;
   let btMatch;
   while ((btMatch = btEtRegex.exec(content)) !== null) {
     const block = btMatch[1];
-    // Extract text from Tj operator: (text) Tj
+    // Collect all text ops with their position in the block for ordering
+    const ops = [];
+
+    // Tj operator: (text) Tj
     const tjRegex = /\(([^)]*)\)\s*Tj/g;
     let tjMatch;
     while ((tjMatch = tjRegex.exec(block)) !== null) {
-      chunks.push(decodePdfString(tjMatch[1]));
+      const text = decodePdfString(tjMatch[1]).trim();
+      if (text) ops.push({ pos: tjMatch.index, text });
     }
-    // Extract text from TJ operator (array of strings): [(text) 123 (text)] TJ
+    // TJ operator (array): [(text) kern (text)] TJ
     const tjArrayRegex = /\[((?:[^]]*?))\]\s*TJ/gi;
     let arrMatch;
     while ((arrMatch = tjArrayRegex.exec(block)) !== null) {
       const innerRegex = /\(([^)]*)\)/g;
       let innerMatch;
+      const parts = [];
       while ((innerMatch = innerRegex.exec(arrMatch[1])) !== null) {
-        chunks.push(decodePdfString(innerMatch[1]));
+        parts.push(decodePdfString(innerMatch[1]));
       }
+      const text = parts.join('').trim();
+      if (text) ops.push({ pos: arrMatch.index, text });
     }
-    // Extract from ' and " operators (move to next line and show text)
+    // ' and " operators (move to next line and show text)
     const quoteRegex = /\(([^)]*)\)\s*['"]/g;
     let quoteMatch;
     while ((quoteMatch = quoteRegex.exec(block)) !== null) {
-      chunks.push(decodePdfString(quoteMatch[1]));
+      const text = decodePdfString(quoteMatch[1]).trim();
+      if (text) ops.push({ pos: quoteMatch.index, text });
     }
-    if (chunks.length > 0) chunks.push('\n');
+
+    // Sort by position in the block and join with spaces
+    ops.sort((a, b) => a.pos - b.pos);
+    if (ops.length > 0) {
+      outputLines.push(ops.map(o => o.text).join(' '));
+    }
   }
-  return chunks.join('');
+  return outputLines.join('\n');
 }
 
 function extractDirectText(raw) {
@@ -1624,6 +1683,29 @@ const GVLP_GAME_UNLOCK = {
 };
 
 // TCVLP Business Rules (hardcoded)
+const STATE_NAME_TO_ABBREV = {
+  'ALABAMA': 'AL', 'ALASKA': 'AK', 'ARIZONA': 'AZ', 'ARKANSAS': 'AR',
+  'CALIFORNIA': 'CA', 'COLORADO': 'CO', 'CONNECTICUT': 'CT', 'DELAWARE': 'DE',
+  'DISTRICT OF COLUMBIA': 'DC', 'FLORIDA': 'FL', 'GEORGIA': 'GA', 'HAWAII': 'HI',
+  'IDAHO': 'ID', 'ILLINOIS': 'IL', 'INDIANA': 'IN', 'IOWA': 'IA',
+  'KANSAS': 'KS', 'KENTUCKY': 'KY', 'LOUISIANA': 'LA', 'MAINE': 'ME',
+  'MARYLAND': 'MD', 'MASSACHUSETTS': 'MA', 'MICHIGAN': 'MI', 'MINNESOTA': 'MN',
+  'MISSISSIPPI': 'MS', 'MISSOURI': 'MO', 'MONTANA': 'MT', 'NEBRASKA': 'NE',
+  'NEVADA': 'NV', 'NEW HAMPSHIRE': 'NH', 'NEW JERSEY': 'NJ', 'NEW MEXICO': 'NM',
+  'NEW YORK': 'NY', 'NORTH CAROLINA': 'NC', 'NORTH DAKOTA': 'ND', 'OHIO': 'OH',
+  'OKLAHOMA': 'OK', 'OREGON': 'OR', 'PENNSYLVANIA': 'PA', 'RHODE ISLAND': 'RI',
+  'SOUTH CAROLINA': 'SC', 'SOUTH DAKOTA': 'SD', 'TENNESSEE': 'TN', 'TEXAS': 'TX',
+  'UTAH': 'UT', 'VERMONT': 'VT', 'VIRGINIA': 'VA', 'WASHINGTON': 'WA',
+  'WEST VIRGINIA': 'WV', 'WISCONSIN': 'WI', 'WYOMING': 'WY',
+};
+
+function resolveStateAbbrev(input) {
+  if (!input) return null;
+  const upper = input.trim().toUpperCase();
+  if (IRS_843_MAILING_ADDRESSES[upper]) return upper;
+  return STATE_NAME_TO_ABBREV[upper] || null;
+}
+
 const IRS_843_MAILING_ADDRESSES = {
   'AL': 'Internal Revenue Service, Austin, TX 73301-0030',
   'AK': 'Internal Revenue Service, Ogden, UT 84201-0030',
@@ -14426,21 +14508,31 @@ TTMP Support Team
     },
   },
 
-  // GET /v1/tcvlp/mailing-address?state=XX
+  // GET /v1/tcvlp/mailing-address?state=XX (accepts abbreviation or full name)
   {
     method: 'GET', pattern: '/v1/tcvlp/mailing-address',
     handler: async (_method, _pattern, _params, request, env) => {
       const url = new URL(request.url);
-      const state = url.searchParams.get('state');
+      const stateInput = url.searchParams.get('state');
+      const abbrev = resolveStateAbbrev(stateInput);
 
-      if (!state || !IRS_843_MAILING_ADDRESSES[state.toUpperCase()]) {
-        return json({ ok: false, error: 'STATE_NOT_FOUND', message: 'Invalid state code provided' }, 404, request);
+      if (!abbrev || !IRS_843_MAILING_ADDRESSES[abbrev]) {
+        return json({ ok: false, error: 'STATE_NOT_FOUND', message: 'Invalid state provided' }, 404, request);
       }
 
+      const fullAddr = IRS_843_MAILING_ADDRESSES[abbrev];
+      // Parse "Internal Revenue Service, City, ST ZIP" into structured address
+      const parts = fullAddr.split(',').map(s => s.trim());
+      const street = parts[0] || 'Internal Revenue Service';
+      const cityStateZip = parts.slice(1).join(', ').trim();
+      const cszMatch = cityStateZip.match(/^(.+),\s*(\w{2})\s+([\d-]+)$/);
+
       return json({
-        ok: true,
-        state: state.toUpperCase(),
-        address: IRS_843_MAILING_ADDRESSES[state.toUpperCase()]
+        street,
+        city: cszMatch ? cszMatch[1] : cityStateZip,
+        state: cszMatch ? cszMatch[2] : abbrev,
+        zip: cszMatch ? cszMatch[3] : '',
+        full: fullAddr,
       });
     },
   },
@@ -14470,41 +14562,53 @@ TTMP Support Team
       // Parse IRS transcript text into structured transactions (from TTMP logic)
       function parseTranscriptText(text) {
         const transactions = [];
-        const lines = text.split('\n');
-        // Pattern: 3-digit code at line start, description, date (MM-DD-YYYY), amount
-        const txPattern = /^\s*(\d{3})\s+(.+?)\s+(\d{2}[-/]\d{2}[-/]\d{4})\s+[-]?\$?([\d,]+\.?\d{0,2})/;
-        const txPatternAlt = /^\s*(\d{3})\s+(.+?)\s+(\d{2}[-/]\d{2}[-/]\d{4})\s+([-]?[\d,]+\.?\d{0,2})/;
+        const seen = new Set();
 
-        for (const line of lines) {
-          let match = line.match(txPattern);
-          if (!match) match = line.match(txPatternAlt);
-          if (!match) continue;
-
+        function addTx(match, context) {
           const code = match[1];
-          const descRaw = match[2].trim();
           const rawDate = match[3].replace(/\//g, '-');
-          const rawAmount = match[4].replace(/,/g, '');
+          const rawAmount = match[4].replace(/[$,]/g, '');
           const amount = parseFloat(rawAmount);
-
-          // Normalize date from MM-DD-YYYY to YYYY-MM-DD
           const dateParts = rawDate.split('-');
           let isoDate = rawDate;
           if (dateParts.length === 3 && dateParts[2].length === 4) {
             isoDate = `${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
           }
-
-          // Check for negative indicator
-          const isNegative = line.includes('-$') || (line.match(/\(\$?[\d,]+\.?\d*\)/) !== null);
-
+          // Skip bogus dates like 00-00-0000
+          if (isoDate.startsWith('0000')) return;
+          const key = `${code}-${isoDate}-${Math.abs(amount)}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          const isNegative = context.includes('-$') || /\(\$?[\d,]+\.?\d*\)/.test(context);
           if (!isNaN(amount)) {
             transactions.push({
               code,
               date: isoDate,
               amount: isNegative && amount > 0 ? -amount : amount,
-              description: IRS_CODE_DESCRIPTIONS[code] || descRaw,
+              description: IRS_CODE_DESCRIPTIONS[code] || match[2].trim(),
             });
           }
         }
+
+        // Strategy 1: Line-by-line matching (handles optional 8-digit cycle number)
+        const lines = text.split('\n');
+        const txPattern = /^\s*(\d{3})\s+(.+?)\s+(?:\d{8}\s+)?(\d{2}[-/]\d{2}[-/]\d{4})\s+[-]?\$?([\d,]+\.?\d{0,2})/;
+        const txPatternAlt = /^\s*(\d{3})\s+(.+?)\s+(?:\d{8}\s+)?(\d{2}[-/]\d{2}[-/]\d{4})\s+([-]?\$?[\d,]+\.?\d{0,2})/;
+        for (const line of lines) {
+          let match = line.match(txPattern);
+          if (!match) match = line.match(txPatternAlt);
+          if (match) addTx(match, line);
+        }
+
+        // Strategy 2: Global scan on full text (for continuous/fragmented extraction)
+        if (transactions.length === 0) {
+          const globalRegex = /\b(\d{3})\s+([A-Za-z][\w\s]*?)\s+(?:\d{8}\s+)?(\d{2}[-/]\d{2}[-/]\d{4})\s+(-?\$?[\d,]+\.?\d{0,2})/g;
+          let gm;
+          while ((gm = globalRegex.exec(text)) !== null) {
+            addTx(gm, text.substring(gm.index, gm.index + gm[0].length + 10));
+          }
+        }
+
         return transactions;
       }
 
@@ -14525,7 +14629,7 @@ TTMP Support Team
 
         // Extract text from PDF
         const pdfBytes = await pdfFile.arrayBuffer();
-        const extractedText = extractTextFromPdf(new Uint8Array(pdfBytes));
+        const extractedText = await extractTextFromPdf(new Uint8Array(pdfBytes));
 
         if (!extractedText || extractedText.trim().length < 20) {
           return json({
@@ -14631,9 +14735,10 @@ TTMP Support Team
       const resolvedTotal = total_amount ? parseFloat(total_amount) : (ftf + ftp + ioa) || parseFloat(penalty_amount) || 0;
       const resolvedPenaltyType = penalty_type || [ftf && 'Failure to File', ftp && 'Failure to Pay'].filter(Boolean).join(' and ') || 'Penalty';
 
-      // Validate state
-      if (!IRS_843_MAILING_ADDRESSES[state.toUpperCase()]) {
-        return json({ ok: false, error: 'INVALID_STATE', message: 'Invalid state code provided' }, 400, request);
+      // Validate state (accepts full name or abbreviation)
+      const stateAbbrev = resolveStateAbbrev(state);
+      if (!stateAbbrev || !IRS_843_MAILING_ADDRESSES[stateAbbrev]) {
+        return json({ ok: false, error: 'INVALID_STATE', message: 'Invalid state provided' }, 400, request);
       }
 
       // Validate tax year
@@ -14650,7 +14755,19 @@ TTMP Support Team
 
       const timestamp = new Date().toISOString();
       const submission_id = `SUB_${crypto.randomUUID()}`;
-      const mailing_address = IRS_843_MAILING_ADDRESSES[state.toUpperCase()];
+      const mailing_address_raw = IRS_843_MAILING_ADDRESSES[stateAbbrev];
+      // Parse into structured address for frontend
+      const addrParts = mailing_address_raw.split(',').map(s => s.trim());
+      const addrStreet = addrParts[0] || 'Internal Revenue Service';
+      const addrCityStateZip = addrParts.slice(1).join(', ').trim();
+      const addrCsz = addrCityStateZip.match(/^(.+),\s*(\w{2})\s+([\d-]+)$/);
+      const mailing_address = {
+        street: addrStreet,
+        city: addrCsz ? addrCsz[1] : addrCityStateZip,
+        state: addrCsz ? addrCsz[2] : stateAbbrev,
+        zip: addrCsz ? addrCsz[3] : '',
+        full: mailing_address_raw,
+      };
 
       try {
         // Write receipt to R2
@@ -14689,8 +14806,8 @@ TTMP Support Team
           interest_amount: ioa,
           total_amount: resolvedTotal,
           penalty_amount: resolvedTotal,
-          state: state.toUpperCase(),
-          mailing_address,
+          state: stateAbbrev,
+          mailing_address: mailing_address_raw,
           transcript_used: transcript_used ? 1 : 0,
           status: 'draft',
           created_at: timestamp,
@@ -14702,7 +14819,7 @@ TTMP Support Team
         await d1Run(env.DB,
           `INSERT INTO tcvlp_form843_submissions (submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, penalty_type, penalty_amount, state, mailing_address, transcript_used, status, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, resolvedPenaltyType, resolvedTotal, state.toUpperCase(), mailing_address, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
+          [submission_id, pro_id, taxpayer_name, taxpayer_email, tax_year, resolvedPenaltyType, resolvedTotal, stateAbbrev, mailing_address_raw, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
         );
 
         // --- PDF Generation via pdf-lib ---
@@ -14798,7 +14915,7 @@ TTMP Support Team
             interest_amount: ioa,
             total_amount: resolvedTotal,
             penalty_amount: resolvedTotal || 'To be determined',
-            state: state.toUpperCase(),
+            state: stateAbbrev,
             mailing_address,
             kwong_citation: 'Kwong v. United States, No. 22-1993T (Fed. Cl. 2023)',
             claim_basis: 'Claim for refund of penalties assessed between January 20, 2020 and July 10, 2023 under the Kwong decision. The U.S. Court of Federal Claims held that the IRS exceeded its authority in assessing certain penalties during this period.',
