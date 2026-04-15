@@ -120,7 +120,7 @@ function OnboardingContent({ session }: { session: Session }) {
   const STEPS = [
     { n: 1, label: 'Firm Details' },
     { n: 2, label: 'Your Slug' },
-    { n: 3, label: 'Payment' },
+    { n: 3, label: 'Launch' },
   ];
 
   return (
