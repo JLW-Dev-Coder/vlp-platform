@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import Header from '@/components/Header';
-import { Session, getProBySlug, createCheckout, tcvlpOnboarding } from '@/lib/api';
+import { Session, getProBySlug, createCheckout, tcvlpOnboarding, getSubscriptionStatus } from '@/lib/api';
 import styles from './page.module.css';
 
 // Slug generation
@@ -35,6 +35,9 @@ function OnboardingContent({ session }: { session: Session }) {
   // Step 3
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [error, setError] = useState('');
+  const [subActive, setSubActive] = useState(false);
+  const [subPlan, setSubPlan] = useState('');
+  const [subLoading, setSubLoading] = useState(false);
 
   // Auto-suggest slug from firm name
   useEffect(() => {
@@ -61,6 +64,20 @@ function OnboardingContent({ session }: { session: Session }) {
     return () => clearTimeout(t);
   }, [slug, checkSlug]);
 
+  // Check subscription status when entering step 3
+  useEffect(() => {
+    if (step !== 3) return;
+    let cancelled = false;
+    setSubLoading(true);
+    getSubscriptionStatus().then((status) => {
+      if (cancelled) return;
+      setSubActive(status.active);
+      setSubPlan(status.plan || 'TaxClaim Pro');
+      setSubLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [step]);
+
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
     setStep(2);
@@ -70,6 +87,18 @@ function OnboardingContent({ session }: { session: Session }) {
     e.preventDefault();
     if (!slugAvailable) return;
     setStep(3);
+  };
+
+  const handleContinueActive = async () => {
+    setCheckoutLoading(true);
+    setError('');
+    try {
+      await tcvlpOnboarding({ firm_name: firmName, display_name: displayName, welcome_message: welcomeMessage, slug });
+      router.push('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setCheckoutLoading(false);
+    }
   };
 
   const handleCheckout = async () => {
@@ -163,7 +192,7 @@ function OnboardingContent({ session }: { session: Session }) {
             <h1 className={styles.title}>Choose Your URL Slug</h1>
             <form onSubmit={handleStep2} className={styles.form}>
               <div className={styles.field}>
-                <label className={styles.label}>Subdomain Slug</label>
+                <label className={styles.label}>URL Slug</label>
                 <input
                   type="text"
                   value={slug}
@@ -176,7 +205,7 @@ function OnboardingContent({ session }: { session: Session }) {
                 {slug && (
                   <div className={styles.slugPreview}>
                     <span className={styles.slugPreviewUrl}>
-                      {slug}.taxclaim.virtuallaunch.pro
+                      taxclaim.virtuallaunch.pro/claim?slug={slug}
                     </span>
                     {checkingSlug && <span className={styles.slugChecking}>Checking…</span>}
                     {!checkingSlug && slugAvailable === true && (
@@ -210,20 +239,42 @@ function OnboardingContent({ session }: { session: Session }) {
               <h2 className={styles.summaryTitle}>Your Setup Summary</h2>
               <div className={styles.summaryRow}><span>Firm Name</span><strong>{firmName}</strong></div>
               {displayName && <div className={styles.summaryRow}><span>Display Name</span><strong>{displayName}</strong></div>}
-              <div className={styles.summaryRow}><span>Your URL</span><strong>{slug}.taxclaim.virtuallaunch.pro</strong></div>
-              <div className={styles.summaryRow}><span>Plan</span><strong>TaxClaim Pro — $10/month</strong></div>
+              <div className={styles.summaryRow}><span>Your URL</span><strong>taxclaim.virtuallaunch.pro/claim?slug={slug}</strong></div>
+              {!subActive && <div className={styles.summaryRow}><span>Plan</span><strong>TaxClaim Pro — $10/month</strong></div>}
             </div>
 
             {error && <div className={styles.errorMsg}>{error}</div>}
 
-            <button
-              className={styles.payBtn}
-              onClick={handleCheckout}
-              disabled={checkoutLoading}
-            >
-              {checkoutLoading ? 'Redirecting to Stripe…' : 'Pay $10/month → Activate Now'}
-            </button>
-            <p className={styles.payNote}>Cancel anytime. Deadline: July 10, 2026.</p>
+            {subLoading ? (
+              <div className={styles.subChecking}>Checking subscription status…</div>
+            ) : subActive ? (
+              <>
+                <div className={styles.subActiveBox}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Subscription active — {subPlan}</span>
+                </div>
+                <button
+                  className={styles.continueBtn}
+                  onClick={handleContinueActive}
+                  disabled={checkoutLoading}
+                >
+                  {checkoutLoading ? 'Saving…' : 'Continue →'}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className={styles.payBtn}
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading}
+                >
+                  {checkoutLoading ? 'Redirecting to Stripe…' : 'Pay $10/month → Activate Now'}
+                </button>
+                <p className={styles.payNote}>Cancel anytime. Deadline: July 10, 2026.</p>
+              </>
+            )}
           </div>
         )}
       </div>
