@@ -56,7 +56,8 @@ export interface TaxPro {
 
 export async function getProBySlug(slug: string): Promise<TaxPro | null> {
   try {
-    return await apiFetch<TaxPro>(`/v1/tcvlp/pro/by-slug/${encodeURIComponent(slug)}`);
+    const result = await apiFetch<{ ok: boolean; pro: TaxPro }>(`/v1/tcvlp/pro/by-slug/${encodeURIComponent(slug)}`);
+    return result.pro ?? null;
   } catch {
     return null;
   }
@@ -64,7 +65,9 @@ export async function getProBySlug(slug: string): Promise<TaxPro | null> {
 
 export async function getPro(pro_id: string): Promise<TaxPro | null> {
   try {
-    return await apiFetch<TaxPro>(`/v1/tcvlp/pro/${encodeURIComponent(pro_id)}`);
+    const result = await apiFetch<{ ok: boolean } & TaxPro>(`/v1/tcvlp/pro/${encodeURIComponent(pro_id)}`);
+    const { ok, ...pro } = result;
+    return pro as TaxPro;
   } catch {
     return null;
   }

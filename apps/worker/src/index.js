@@ -126,7 +126,6 @@ const ALLOWED_ORIGINS = [
 
 function getCorsHeaders(request) {
   const origin = request?.headers?.get('Origin') || '';
-  console.log('CORS DEBUG — Origin:', JSON.stringify(origin), 'Match:', ALLOWED_ORIGINS.includes(origin));
   const allowedOrigin = ALLOWED_ORIGINS.includes(origin)
     ? origin
     : 'https://virtuallaunch.pro';
@@ -14267,7 +14266,7 @@ TTMP Support Team
       const { pro_id } = params;
 
       try {
-        const pro = await env.DB.prepare("SELECT firm_name, display_name, logo_url, welcome_message, slug FROM tcvlp_pros WHERE pro_id = ? AND status = 'active'").bind(pro_id).first();
+        const pro = await env.DB.prepare("SELECT pro_id, firm_name, display_name, logo_url, welcome_message, slug FROM tcvlp_pros WHERE pro_id = ? AND status = 'active'").bind(pro_id).first();
 
         if (!pro) {
           return json({ ok: false, error: 'NOT_FOUND', message: 'Professional not found' }, 404, request);
@@ -14275,12 +14274,13 @@ TTMP Support Team
 
         return json({
           ok: true,
+          pro_id: pro.pro_id,
           firm_name: pro.firm_name,
           display_name: pro.display_name,
           logo_url: pro.logo_url,
           welcome_message: pro.welcome_message,
           slug: pro.slug
-        });
+        }, 200, request);
       } catch (e) {
         console.error('TCVLP get pro error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to fetch professional profile' }, 500, request);
@@ -14532,7 +14532,7 @@ TTMP Support Team
             ok: true,
             parsed: false,
             message: 'Could not extract text from this PDF. Please enter penalty details manually.',
-          });
+          }, 200, request);
         }
 
         // Parse transcript into structured transactions
@@ -14550,7 +14550,7 @@ TTMP Support Team
             },
             all_transactions_count: 0,
             kwong_eligible_count: 0,
-          });
+          }, 200, request);
         }
 
         // Filter for Kwong window: Jan 20, 2020 – Jul 10, 2023
@@ -14592,7 +14592,7 @@ TTMP Support Team
           },
           all_transactions_count: transactions.length,
           kwong_eligible_count: kwongTransactions.length,
-        });
+        }, 200, request);
       } catch (e) {
         console.error('TCVLP transcript upload error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to process transcript' }, 500, request);
