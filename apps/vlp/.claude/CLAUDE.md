@@ -27,7 +27,7 @@ VLP passes `vlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 
 ## VLP-Specific Features (not shared)
 
-- **Scale dashboard** (`app/scale/`) — operator-only admin panel for CRM, cross-platform analytics, workflow
+- **Scale dashboard** (`app/scale/`) — operator-only admin panel for CRM, cross-platform analytics, workflow. The `/scale/workflow` page has 6 tabs: **Planner** (default — daily workflow checklist with campaign day rotation, Kwong countdown, FB/Reddit targets, Cal.com links), Upload, Posts, Outreach, Social, Workflow
 - **Client Pool** (`app/(member)/client-pool/`) — client case management with compliance forms (2848, 8821)
 - **Compliance components** (`app/(member)/client-pool/[clientId]/compliance/`) — IRS form entry, SSN fields, accordion sections
 - **ActivityItem** / **StatusBadge** — VLP-specific display components in `app/(member)/components/`

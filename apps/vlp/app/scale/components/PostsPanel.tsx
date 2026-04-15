@@ -116,7 +116,7 @@ export default function PostsPanel() {
 
   // Toast
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const showToast = useCallback((type: 'success' | 'error', text: string) => {
     setToast({ type, text })

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { renderMarkdown } from '@/components/scale/MarkdownRenderer'
 import UploadTab from '@/components/scale/UploadTab'
 import CampaignPostsTab from '../components/CampaignPostsTab'
+import DailyWorkflowPlanner from '../components/DailyWorkflowPlanner'
 import OutreachTab from '../components/OutreachTab'
 import SocialTab from '../components/SocialTab'
 import styles from '../page.module.css'
@@ -62,9 +63,10 @@ function WorkflowContent() {
 // ---------------------------------------------------------------------------
 // Page — 5-tab outreach command center
 // ---------------------------------------------------------------------------
-type Tab = 'upload' | 'posts' | 'outreach' | 'social' | 'workflow'
+type Tab = 'planner' | 'upload' | 'posts' | 'outreach' | 'social' | 'workflow'
 
 const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
+  planner: 'Daily workflow planner — what to do today across email, social, content, and bookings',
   upload: 'Upload Clay CSV prospects and monitor the pipeline',
   posts: '10-day campaign post generator with LinkedIn and Facebook copy',
   outreach: 'LinkedIn cold connections from the prospect list with canned messages',
@@ -81,7 +83,7 @@ const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
 }
 
 export default function WorkflowPage() {
-  const [tab, setTab] = useState<Tab>('upload')
+  const [tab, setTab] = useState<Tab>('planner')
 
   return (
     <div className="space-y-6">
@@ -93,7 +95,7 @@ export default function WorkflowPage() {
       </div>
 
       <div className={styles.tabBar} role="tablist">
-        {(['upload', 'posts', 'outreach', 'social', 'workflow'] as Tab[]).map((t) => (
+        {(['planner', 'upload', 'posts', 'outreach', 'social', 'workflow'] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -102,11 +104,12 @@ export default function WorkflowPage() {
             className={`${styles.tabButton} ${tab === t ? styles.tabButtonActive : ''}`}
             onClick={() => setTab(t)}
           >
-            {t === 'upload' ? 'Upload' : t === 'posts' ? 'Posts' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Social' : 'Workflow'}
+            {t === 'planner' ? 'Planner' : t === 'upload' ? 'Upload' : t === 'posts' ? 'Posts' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Social' : 'Workflow'}
           </button>
         ))}
       </div>
 
+      {tab === 'planner' && <DailyWorkflowPlanner />}
       {tab === 'upload' && <UploadTab />}
       {tab === 'posts' && <CampaignPostsTab />}
       {tab === 'outreach' && <OutreachTab />}
