@@ -121,7 +121,7 @@ apps/worker/
 
 ## 9. D1 Tables
 
-48 migration files defining tables for: accounts, sessions, memberships, billing_customers, tokens, cal_connections, bookings, profiles, support_tickets, notifications, vlp_preferences, google_calendar, cal_tokens, oauth_state, tool_sessions, transcript_jobs, ttmp_reports, compliance, avatars, dvlp (developers, jobs, reviews, canned_responses), gvlp (operators, visitor_sessions, game_plays), tcvlp (pros, form843_submissions), wlvlp (templates, purchases, site_configs, bids, scratch_tickets, seed_templates), affiliates, handoff_tokens, client_pool, votes, scratch_promo, calcom integration.
+51 migration files defining tables for: accounts, sessions, memberships, billing_customers, tokens, cal_connections, bookings, profiles, support_tickets, notifications, vlp_preferences, google_calendar, cal_tokens, oauth_state, tool_sessions, transcript_jobs, ttmp_reports, compliance, avatars, dvlp (developers, jobs, reviews, canned_responses), gvlp (operators, visitor_sessions, game_plays), tcvlp (pros, form843_submissions), wlvlp (templates, purchases, site_configs, bids, scratch_tickets, seed_templates), affiliates, handoff_tokens, client_pool, votes, scratch_promo, calcom integration.
 
 ---
 

@@ -1233,6 +1233,10 @@ function getPriceId(planKey, billingInterval, env) {
     'vlp_advanced/yearly':  env.STRIPE_PRICE_VLP_ADVANCED_YEARLY,
     'vlp_scale/monthly':    env.STRIPE_PRICE_VLP_SCALE_MONTHLY,
     'vlp_scale/yearly':     env.STRIPE_PRICE_VLP_SCALE_YEARLY,
+    // TCVLP tiers (monthly only)
+    'tcvlp_starter/monthly':      env.STRIPE_PRICE_TCVLP_STARTER,
+    'tcvlp_professional/monthly': env.STRIPE_PRICE_TCVLP_PROFESSIONAL,
+    'tcvlp_firm/monthly':         env.STRIPE_PRICE_TCVLP_FIRM,
   };
   return map[`${planKey}/${billingInterval}`] ?? null;
 }
@@ -4129,9 +4133,10 @@ const ROUTES = [
             // Handle TCVLP subscriptions
             if (platform === 'tcvlp' && account_id) {
               try {
+                const tcvlpPlan = plan_key || 'tcvlp_starter';
                 await d1Run(env.DB,
-                  'UPDATE tcvlp_pros SET stripe_customer_id = ?, stripe_subscription_id = ?, status = ?, updated_at = ? WHERE account_id = ?',
-                  [obj.customer, obj.subscription, 'active', now, account_id]
+                  'UPDATE tcvlp_pros SET stripe_customer_id = ?, stripe_subscription_id = ?, plan = ?, status = ?, updated_at = ? WHERE account_id = ?',
+                  [obj.customer, obj.subscription, tcvlpPlan, 'active', now, account_id]
                 );
               } catch (e) {
                 console.error('TCVLP Stripe webhook error:', e);
@@ -14635,6 +14640,90 @@ TTMP Support Team
           'Cache-Control': 'private, no-cache',
         },
       });
+    },
+  },
+
+  // GET /v1/tcvlp/subscription/status
+  // Returns the current user's TCVLP subscription tier and status.
+  {
+    method: 'GET', pattern: '/v1/tcvlp/subscription/status',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      try {
+        const pro = await env.DB.prepare(
+          'SELECT pro_id, plan, status, stripe_customer_id, stripe_subscription_id FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+
+        if (!pro) {
+          return json({ ok: true, active: false, plan: null, product_id: null }, 200, request);
+        }
+
+        // Map plan to product_id for frontend reference
+        const planProductMap = {
+          tcvlp_starter: env.STRIPE_PRODUCT_TCVLP_STARTER,
+          tcvlp_professional: env.STRIPE_PRODUCT_TCVLP_PROFESSIONAL,
+          tcvlp_firm: env.STRIPE_PRODUCT_TCVLP_FIRM,
+        };
+
+        return json({
+          ok: true,
+          active: pro.status === 'active',
+          plan: pro.plan || 'tcvlp_starter',
+          product_id: planProductMap[pro.plan] || planProductMap.tcvlp_starter,
+          pro_id: pro.pro_id,
+        }, 200, request);
+      } catch (e) {
+        console.error('TCVLP subscription status error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/tcvlp/checkout/sessions
+  // Creates a Stripe Checkout session for a TCVLP subscription tier.
+  {
+    method: 'POST', pattern: '/v1/tcvlp/checkout/sessions',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      const { price_id, success_url, cancel_url } = body ?? {};
+      if (!price_id || !success_url || !cancel_url) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'price_id, success_url, cancel_url required' }, 400, request);
+      }
+
+      // Validate the price_id is one of the three TCVLP tiers
+      const validPrices = {
+        [env.STRIPE_PRICE_TCVLP_STARTER]: 'tcvlp_starter',
+        [env.STRIPE_PRICE_TCVLP_PROFESSIONAL]: 'tcvlp_professional',
+        [env.STRIPE_PRICE_TCVLP_FIRM]: 'tcvlp_firm',
+      };
+      const plan_key = validPrices[price_id];
+      if (!plan_key) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'Invalid TCVLP price_id' }, 400, request);
+      }
+
+      try {
+        const stripeSession = await stripePost('/checkout/sessions', {
+          mode: 'subscription',
+          line_items: [{ price: price_id, quantity: 1 }],
+          success_url,
+          cancel_url,
+          metadata: {
+            account_id: session.account_id,
+            platform: 'tcvlp',
+            plan_key,
+          },
+        }, env, env.STRIPE_SECRET_KEY);
+
+        return json({ ok: true, url: stripeSession.url, session_id: stripeSession.id }, 200, request);
+      } catch (e) {
+        console.error('TCVLP checkout session error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 502, request);
+      }
     },
   },
 
