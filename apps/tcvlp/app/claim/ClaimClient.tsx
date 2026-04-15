@@ -170,7 +170,7 @@ export default function ClaimClient({ pro, slug }: Props) {
   const [state, setState] = useState('');
   const [mailingAddress, setMailingAddress] = useState<MailingAddress | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(false);
-  const [taxYear, setTaxYear] = useState<number>(2023);
+  const [taxYear, setTaxYear] = useState<number | ''>('');
   const [failureToFile, setFailureToFile] = useState('');
   const [failureToPay, setFailureToPay] = useState('');
   const [interestOnPenalties, setInterestOnPenalties] = useState('');
@@ -227,6 +227,7 @@ export default function ClaimClient({ pro, slug }: Props) {
       fd.append('transcript', transcriptFile);
       if (pro.pro_id) fd.append('pro_id', pro.pro_id);
       const result = await uploadTranscript(fd);
+      console.log('[TCVLP] Transcript upload response:', JSON.stringify(result, null, 2));
       setTranscript(result);
       if (result.kwong_penalties) {
         const kp = result.kwong_penalties;
@@ -295,7 +296,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         pro_id: pro.pro_id,
         taxpayer_name: fullName,
         state,
-        tax_year: taxYear,
+        tax_year: taxYear as number,
         failure_to_file: ftf,
         failure_to_pay: ftp,
         interest_amount: iop,
@@ -650,7 +651,8 @@ export default function ClaimClient({ pro, slug }: Props) {
                 <div className={styles.formRow}>
                   <div className={styles.field}>
                     <label className={styles.label}>Tax Period <span className={styles.required}>*</span></label>
-                    <select value={taxYear} onChange={(e) => setTaxYear(Number(e.target.value))}>
+                    <select value={taxYear} onChange={(e) => setTaxYear(e.target.value ? Number(e.target.value) : '')}>
+                      <option value="">Select year</option>
                       {TAX_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
