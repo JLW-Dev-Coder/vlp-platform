@@ -39,7 +39,7 @@ TCVLP passes `tcvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 ## TCVLP Features
 
 ### All Tiers (Starter, Professional, Firm)
-- **Form 843 Generation** (`app/claim/`) — auto-generate IRS Form 843 penalty abatement claims — live
+- **Form 843 Generation** (`app/claim/`) — 5-step wizard: (1) Pull Transcript, (2) Verify Eligibility (Kwong window Jan 20 2020 – Jul 10 2023), (3) Generate Form 843 (form fields + generateForm843 API), (4) Print & Mail (filing deadline Jul 10 2026, mailing address by state), (5) Need Help? (pro contact card). Yellow theme, SVG icons, dark cards. — live
 - **Branded Claim Page** (`app/claim/`) — firm-branded landing page for client intake — live (GET /v1/tcvlp/profile, GET/PATCH profile routes)
 - **Penalty Calculations** (`app/claim/`) — automated penalty/interest calculations from transcript data — live
 - **Taxpayer Dashboard** (`app/dashboard/`) — client claim status, submissions, document downloads — live

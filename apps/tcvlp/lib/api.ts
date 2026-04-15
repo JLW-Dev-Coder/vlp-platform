@@ -48,6 +48,8 @@ export interface TaxPro {
   display_name?: string;
   welcome_message?: string;
   logo_url?: string;
+  firm_phone?: string;
+  firm_website?: string;
   subscription_status?: string;
   submission_count?: number;
 }
@@ -128,6 +130,7 @@ export interface Form843Data {
   tax_year: number;
   penalty_type: string;
   penalty_amount: number;
+  interest_amount?: number;
   mailing_address: MailingAddress;
 }
 
