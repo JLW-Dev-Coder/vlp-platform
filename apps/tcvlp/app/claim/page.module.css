@@ -46,7 +46,7 @@
   font-size: 0.9375rem;
 }
 
-/* ── Pro Header ───────────────────────────────────────────────────────────── */
+/* ── Pro Header ──────────────────────────────────────────────────────────── */
 
 .proHeader {
   position: sticky;
@@ -99,7 +99,7 @@
   color: var(--color-text-3);
 }
 
-/* ── Main ─────────────────────────────────────────────────────────────────── */
+/* ── Main ────────────────────────────────────────────────────────────────── */
 
 .main {
   max-width: 40rem;
@@ -110,13 +110,13 @@
   gap: 1.5rem;
 }
 
-/* ── Subscription Gate ────────────────────────────────────────────────────── */
+/* ── Subscription Gate ───────────────────────────────────────────────────── */
 
 .subGateBanner {
   background: rgba(220, 38, 38, 0.1);
   border: 1px solid rgba(220, 38, 38, 0.3);
   color: #fca5a5;
-  border-radius: 0.75rem;
+  border-radius: 10px;
   padding: 1rem 1.25rem;
   font-size: 0.9375rem;
 }
@@ -128,121 +128,148 @@
   margin-left: 0.25rem;
 }
 
-/* ── Welcome Card ─────────────────────────────────────────────────────────── */
+/* ── Welcome Card ────────────────────────────────────────────────────────── */
 
 .welcomeCard {
   background: rgba(234, 179, 8, 0.06);
   border: 1px solid rgba(234, 179, 8, 0.2);
-  border-radius: 0.75rem;
+  border-radius: 10px;
   padding: 1rem 1.25rem;
   font-size: 0.9375rem;
   color: var(--color-text-2);
   line-height: 1.6;
 }
 
-/* ── Progress Bar ─────────────────────────────────────────────────────────── */
+/* ── Page Title ──────────────────────────────────────────────────────────── */
 
-.progressBarWrap {
-  background: var(--color-surface-2);
-  border-radius: 9999px;
-  height: 6px;
-  overflow: hidden;
-  position: relative;
+.pageTitleWrap {
+  text-align: center;
 }
 
-.progressBarFill {
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-text-1);
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-2);
+  margin-top: 0.5rem;
+}
+
+/* ── Progress Bar ────────────────────────────────────────────────────────── */
+
+.progressWrap {
+  margin-bottom: 0.25rem;
+}
+
+.progressTrack {
+  background: #2a2d3e;
+  border-radius: 2px;
+  height: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
   height: 100%;
   background: #eab308;
-  border-radius: 9999px;
+  border-radius: 2px;
   transition: width 0.4s ease;
-  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.6);
+  animation: glowPulse 2s ease-in-out infinite;
 }
 
-.progressLabel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.progressText {
+.progressStepLabel {
   font-size: 0.75rem;
   color: var(--color-text-3);
-  font-weight: 500;
+  margin-top: 0.5rem;
 }
 
-/* ── Card ─────────────────────────────────────────────────────────────────── */
+/* ── Step Card ───────────────────────────────────────────────────────────── */
 
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  padding: 1.75rem;
+.stepCard {
+  border: 1px solid #2a2d3e;
+  background: #161824;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
   animation: fadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+.stepCard:hover {
+  border-color: #3a3d4e;
 }
 
-/* ── Step Badge ───────────────────────────────────────────────────────────── */
+/* ── Step Header ─────────────────────────────────────────────────────────── */
+
+.stepHeader {
+  background: linear-gradient(135deg, #1a1d2a, #161824);
+  border-bottom: 1px solid #2a2d3e;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.stepHeaderIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Step Badge ──────────────────────────────────────────────────────────── */
 
 .stepBadge {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  background: rgba(234, 179, 8, 0.15);
-  color: #eab308;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  margin-bottom: 1rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  width: fit-content;
 }
 
-/* ── Step Header ──────────────────────────────────────────────────────────── */
-
-.stepHeader {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.stepIconWrap {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.75rem;
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
+/* ── Step Title ──────────────────────────────────────────────────────────── */
 
 .stepTitle {
   font-family: var(--font-display);
   font-size: 1.375rem;
   font-weight: 700;
   color: var(--color-text-1);
-  margin-bottom: 0.25rem;
+}
+
+/* ── Step Body ───────────────────────────────────────────────────────────── */
+
+.stepBody {
+  padding: 28px;
 }
 
 .stepDesc {
   font-size: 0.9375rem;
   color: var(--color-text-2);
   line-height: 1.6;
+  margin-bottom: 1.25rem;
 }
 
-/* ── Info Boxes ───────────────────────────────────────────────────────────── */
+/* ── Info Boxes ──────────────────────────────────────────────────────────── */
 
 .infoBox {
-  border-radius: 0.625rem;
-  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  padding: 16px;
   font-size: 0.9375rem;
   line-height: 1.6;
   margin-bottom: 1.25rem;
@@ -251,28 +278,28 @@
 
 .infoBoxBlue {
   composes: infoBox;
-  background: rgba(59, 130, 246, 0.06);
+  background: rgba(59, 130, 246, 0.1);
   border-left-color: #3b82f6;
   color: #93c5fd;
 }
 
 .infoBoxYellow {
   composes: infoBox;
-  background: rgba(234, 179, 8, 0.06);
-  border-left-color: #eab308;
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: #f59e0b;
   color: #fde047;
 }
 
 .infoBoxGreen {
   composes: infoBox;
-  background: rgba(34, 197, 94, 0.06);
+  background: rgba(34, 197, 94, 0.1);
   border-left-color: #22c55e;
   color: #4ade80;
 }
 
 .infoBoxRed {
   composes: infoBox;
-  background: rgba(220, 38, 38, 0.08);
+  background: rgba(220, 38, 38, 0.1);
   border-left-color: #dc2626;
   color: #fca5a5;
 }
@@ -288,23 +315,31 @@
   font-weight: 500;
 }
 
-/* ── Eligibility List ─────────────────────────────────────────────────────── */
+/* ── Expected Time Note ──────────────────────────────────────────────────── */
+
+.expectedTime {
+  font-size: 0.8125rem;
+  color: var(--color-text-3);
+  margin-bottom: 1.25rem;
+}
+
+/* ── Eligibility List ────────────────────────────────────────────────────── */
 
 .eligibilityList {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
 
 .eligibleItem {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.875rem 1rem;
-  background: rgba(34, 197, 94, 0.06);
-  border: 1px solid rgba(34, 197, 94, 0.15);
-  border-radius: 0.625rem;
+  gap: 12px;
+  padding: 14px;
+  background: #1a1d2a;
+  border-left: 3px solid #22c55e;
+  border-radius: 8px;
 }
 
 .eligibleIcon {
@@ -316,8 +351,8 @@
 
 .eligibleLabel {
   font-size: 0.9375rem;
-  font-weight: 600;
-  color: #4ade80;
+  font-weight: 700;
+  color: var(--color-text-1);
   margin-bottom: 0.125rem;
 }
 
@@ -327,15 +362,12 @@
   line-height: 1.5;
 }
 
-.ineligibleNote {
-  padding: 0.875rem 1rem;
-  background: rgba(234, 179, 8, 0.06);
-  border: 1px solid rgba(234, 179, 8, 0.15);
-  border-radius: 0.625rem;
-  font-size: 0.875rem;
-  color: #fde047;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
+.eligibleTag {
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #22c55e;
+  letter-spacing: 0.04em;
 }
 
 .kwongWindow {
@@ -347,7 +379,7 @@
   padding: 1rem;
   background: rgba(234, 179, 8, 0.08);
   border: 1px solid rgba(234, 179, 8, 0.2);
-  border-radius: 0.75rem;
+  border-radius: 10px;
   margin-bottom: 1.5rem;
 }
 
@@ -355,12 +387,29 @@
   color: #eab308;
 }
 
-/* ── Upload Area ──────────────────────────────────────────────────────────── */
+/* ── Upload Section (Step 3) ─────────────────────────────────────────────── */
+
+.uploadSection {
+  margin-bottom: 1.25rem;
+}
+
+.uploadLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #d1d5db;
+  margin-bottom: 0.25rem;
+}
+
+.uploadHint {
+  font-size: 0.8125rem;
+  color: var(--color-text-3);
+  margin-bottom: 0.75rem;
+}
 
 .uploadArea {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .fileInput {
@@ -373,12 +422,12 @@
   align-items: center;
   gap: 0.75rem;
   padding: 2rem;
-  border: 2px dashed var(--color-border);
-  border-radius: 0.75rem;
+  border: 2px dashed #2a2d3e;
+  border-radius: 10px;
   cursor: pointer;
   color: var(--color-text-3);
   font-size: 0.875rem;
-  transition: border-color var(--transition);
+  transition: border-color 0.15s ease;
   text-align: center;
 }
 
@@ -401,7 +450,7 @@
   gap: 0.75rem;
 }
 
-/* ── Transcript Result ────────────────────────────────────────────────────── */
+/* ── Transcript Result ───────────────────────────────────────────────────── */
 
 .transcriptResult {
   display: flex;
@@ -414,7 +463,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
   color: #4ade80;
@@ -425,7 +474,7 @@
 .transcriptSummary {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -450,7 +499,7 @@
 .transactionTable {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
+  border-radius: 8px;
   overflow-x: auto;
   font-size: 0.8125rem;
 }
@@ -479,7 +528,7 @@
 
 .tRow2:last-child { border-bottom: none; }
 
-/* ── Form ─────────────────────────────────────────────────────────────────── */
+/* ── Form ────────────────────────────────────────────────────────────────── */
 
 .form {
   display: flex;
@@ -520,22 +569,22 @@
   font-size: 0.9375rem;
   font-family: inherit;
   color: var(--color-text-1);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
+  background: #0f1117;
+  border: 1px solid #2a2d3e;
+  border-radius: 8px;
   outline: none;
-  transition: border-color var(--transition);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .field input::placeholder,
 .field textarea::placeholder {
-  color: var(--color-text-3);
+  color: #6b7280;
 }
 
 .field input:hover,
 .field select:hover,
 .field textarea:hover {
-  border-color: var(--color-text-3);
+  border-color: #3a3d4e;
 }
 
 .field input:focus,
@@ -566,7 +615,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.25);
   color: #4ade80;
@@ -574,12 +623,12 @@
   margin-bottom: 0.5rem;
 }
 
-/* ── Mailing Box ──────────────────────────────────────────────────────────── */
+/* ── Mailing Box ─────────────────────────────────────────────────────────── */
 
 .mailingBox {
-  background: rgba(59, 130, 246, 0.06);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 0.75rem;
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
+  border-radius: 10px;
   padding: 1.25rem;
   margin-bottom: 1.25rem;
 }
@@ -598,12 +647,12 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-1);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
   line-height: 1.6;
   white-space: pre-line;
 }
 
-/* ── Mailing Tips ─────────────────────────────────────────────────────────── */
+/* ── Mailing Tips ────────────────────────────────────────────────────────── */
 
 .tipsList {
   display: flex;
@@ -630,14 +679,14 @@
   margin-top: 0.5rem;
 }
 
-/* ── Deadline Box ─────────────────────────────────────────────────────────── */
+/* ── Deadline Box ────────────────────────────────────────────────────────── */
 
 .deadlineBox {
   text-align: center;
   padding: 1.25rem;
   background: rgba(220, 38, 38, 0.08);
   border: 2px solid rgba(220, 38, 38, 0.25);
-  border-radius: 0.75rem;
+  border-radius: 10px;
   margin-bottom: 1.5rem;
 }
 
@@ -657,7 +706,7 @@
   color: #fca5a5;
 }
 
-/* ── Download Buttons ─────────────────────────────────────────────────────── */
+/* ── Download Buttons ────────────────────────────────────────────────────── */
 
 .downloadBtns {
   display: flex;
@@ -673,27 +722,32 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.875rem;
-  border-radius: 0.75rem;
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
   color: var(--color-text-1);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--transition);
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.downloadBtn:hover { background: var(--color-border); }
+.downloadBtn:hover {
+  background: #22253a;
+  border-color: #3a3d4e;
+}
+
 .downloadBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Contact Card ─────────────────────────────────────────────────────────── */
+/* ── Contact Card ────────────────────────────────────────────────────────── */
 
 .contactCard {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
+  background: #1a1d2a;
+  border: 1px solid #22c55e;
+  border-left: 3px solid #22c55e;
+  border-radius: 10px;
+  padding: 20px;
   text-align: center;
   margin-bottom: 1.5rem;
 }
@@ -716,7 +770,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 
 .contactDetailRow {
@@ -733,6 +786,12 @@
   text-decoration: underline;
 }
 
+.contactPhone {
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
+/* ── Reach Out ───────────────────────────────────────────────────────────── */
+
 .reachOutTitle {
   font-size: 0.875rem;
   font-weight: 600;
@@ -741,12 +800,19 @@
   margin-top: 0.5rem;
 }
 
+.reachOutCard {
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 1.5rem;
+}
+
 .reachOutList {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   text-align: left;
-  margin-bottom: 1.5rem;
 }
 
 .reachOutItem {
@@ -758,106 +824,12 @@
   line-height: 1.5;
 }
 
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
-
-.primaryBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.875rem;
-  border-radius: 0.75rem;
-  background: #eab308;
-  color: #000;
-  font-weight: 700;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  text-align: center;
-  transition: opacity var(--transition);
-}
-
-.primaryBtn:hover { opacity: 0.9; }
-.primaryBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.secondaryBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  background: transparent;
-  border: 1px solid rgba(234, 179, 8, 0.4);
-  color: #eab308;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  transition: border-color var(--transition), background var(--transition);
-}
-
-.secondaryBtn:hover {
-  border-color: #eab308;
-  background: rgba(234, 179, 8, 0.06);
-}
-
-.skipBtn {
-  width: 100%;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-2);
-  font-size: 0.9375rem;
-  cursor: pointer;
-  transition: border-color var(--transition);
-}
-
-.skipBtn:hover { border-color: var(--color-text-2); }
-
-.backBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  color: var(--color-text-3);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 1.25rem;
-  transition: color var(--transition);
-}
-
-.backBtn:hover { color: var(--color-text-1); }
-
-.btnRow {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-/* ── Error ────────────────────────────────────────────────────────────────── */
-
-.errorMsg {
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.3);
-  color: #fca5a5;
-  font-size: 0.875rem;
-}
-
-/* ── Address Box (inline in form) ─────────────────────────────────────────── */
+/* ── Address Box (inline in form) ────────────────────────────────────────── */
 
 .addressBox {
   background: rgba(34, 197, 94, 0.06);
   border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 0.5rem;
+  border-radius: 8px;
   padding: 0.875rem;
   margin-top: 0.375rem;
 }
@@ -878,24 +850,115 @@
   font-weight: 500;
 }
 
-/* ── IRS Link ─────────────────────────────────────────────────────────────── */
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
 
-.irsLink {
-  color: var(--color-blue);
-  text-decoration: underline;
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  background: #eab308;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.3);
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────────── */
+.primaryBtn:hover {
+  background: #ca8a04;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(234, 179, 8, 0.4);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  background: transparent;
+  border: 1.5px solid #eab308;
+  color: #eab308;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.secondaryBtn:hover {
+  background: #eab308;
+  color: #1a1a2e;
+}
+
+.secondaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Error ───────────────────────────────────────────────────────────────── */
+
+.errorMsg {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #fca5a5;
+  font-size: 0.875rem;
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(234, 179, 8, 0.6); }
+  50% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.8); }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 480px) {
-  .card {
-    padding: 1.25rem;
-    border-radius: 0.75rem;
+  .stepCard {
+    border-radius: 10px;
   }
 
   .stepHeader {
+    padding: 16px;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.75rem;
+  }
+
+  .stepBody {
+    padding: 20px;
   }
 
   .stepTitle {
@@ -906,24 +969,25 @@
     grid-template-columns: 1fr;
   }
 
-  .btnRow {
-    flex-direction: column;
-  }
-
   .deadlineDate {
     font-size: 1.25rem;
   }
 
   .contactCard {
-    padding: 1.25rem;
+    padding: 16px;
   }
 }
 
-/* ── Print ────────────────────────────────────────────────────────────────── */
+/* ── Print ───────────────────────────────────────────────────────────────── */
 
 @media print {
-  .proHeader, .progressBarWrap, .progressLabel, .welcomeCard, .backBtn, .subGateBanner { display: none !important; }
-  .card { border: none; padding: 0; }
+  .proHeader,
+  .progressWrap,
+  .welcomeCard,
+  .subGateBanner { display: none !important; }
+  .stepCard { border: none; }
+  .stepHeader { background: none; border: none; }
+  .stepBody { padding: 0; }
   .root { background: #fff; }
   .stepTitle { color: #000; }
   .stepDesc { color: #333; }
