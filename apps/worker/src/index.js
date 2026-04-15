@@ -14240,27 +14240,32 @@ TTMP Support Team
     },
   },
 
-  // GET /v1/tcvlp/pro/by-slug/:slug
+  // GET /v1/tcvlp/pro/by-slug/:slug — public, no auth required
   {
     method: 'GET', pattern: '/v1/tcvlp/pro/by-slug/:slug',
     handler: async (_method, _pattern, params, request, env) => {
       const { slug } = params;
 
       try {
-        const pro = await env.DB.prepare("SELECT firm_name, display_name, logo_url, welcome_message, slug FROM tcvlp_pros WHERE slug = ? AND status = 'active'").bind(slug).first();
+        const pro = await env.DB.prepare(
+          "SELECT firm_name, display_name, welcome_message, logo_url, slug, pro_id FROM tcvlp_pros WHERE slug = ?"
+        ).bind(slug).first();
 
         if (!pro) {
-          return json({ ok: false, error: 'NOT_FOUND', message: 'Professional not found' }, 404, request);
+          return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
         }
 
         return json({
           ok: true,
-          firm_name: pro.firm_name,
-          display_name: pro.display_name,
-          logo_url: pro.logo_url,
-          welcome_message: pro.welcome_message,
-          slug: pro.slug
-        });
+          pro: {
+            firm_name: pro.firm_name,
+            display_name: pro.display_name,
+            welcome_message: pro.welcome_message,
+            logo_url: pro.logo_url,
+            slug: pro.slug,
+            pro_id: pro.pro_id,
+          },
+        }, 200, request);
       } catch (e) {
         console.error('TCVLP get pro by slug error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to fetch professional profile' }, 500, request);
@@ -14749,10 +14754,38 @@ TTMP Support Team
   },
 
   // GET /v1/tcvlp/subscription/status
-  // Returns the current user's TCVLP subscription tier and status.
+  // Supports two modes:
+  //   1. Authenticated (session cookie) — returns full status for the logged-in user
+  //   2. Public (?slug=) — returns { active, plan } only, no sensitive data
   {
     method: 'GET', pattern: '/v1/tcvlp/subscription/status',
     handler: async (_method, _pattern, _params, request, env) => {
+      const url = new URL(request.url);
+      const slugParam = url.searchParams.get('slug');
+
+      // Public slug-based lookup — no auth required
+      if (slugParam) {
+        try {
+          const pro = await env.DB.prepare(
+            'SELECT plan, status FROM tcvlp_pros WHERE slug = ?'
+          ).bind(slugParam).first();
+
+          if (!pro) {
+            return json({ ok: true, active: false, plan: null }, 200, request);
+          }
+
+          return json({
+            ok: true,
+            active: pro.status === 'active',
+            plan: pro.plan || 'tcvlp_starter',
+          }, 200, request);
+        } catch (e) {
+          console.error('TCVLP subscription status (slug) error:', e);
+          return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 500, request);
+        }
+      }
+
+      // Authenticated mode — full status for the logged-in user
       const { session, error } = await requireSession(request, env);
       if (error) return error;
 
