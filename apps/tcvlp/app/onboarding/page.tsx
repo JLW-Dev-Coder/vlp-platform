@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import Header from '@/components/Header';
 import { Session, getProBySlug, createCheckout, tcvlpOnboarding, getSubscriptionStatus } from '@/lib/api';
+import { tierLabel } from '@/lib/tiers';
 import styles from './page.module.css';
 
 // Slug generation
@@ -253,7 +254,7 @@ function OnboardingContent({ session }: { session: Session }) {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span>Subscription active — {subPlan}</span>
+                  <span>Subscription active — {tierLabel(subPlan)}</span>
                 </div>
                 <button
                   className={styles.continueBtn}
