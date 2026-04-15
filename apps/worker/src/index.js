@@ -14741,10 +14741,10 @@ TTMP Support Team
         return json({ ok: false, error: 'INVALID_STATE', message: 'Invalid state provided' }, 400, request);
       }
 
-      // Validate tax year
+      // Validate tax year (2019 added for Kwong eligibility)
       const yearNum = parseInt(tax_year);
-      if (yearNum < 2020 || yearNum > 2023) {
-        return json({ ok: false, error: 'INVALID_TAX_YEAR', message: 'Tax year must be between 2020-2023' }, 400, request);
+      if (yearNum < 2019 || yearNum > 2023) {
+        return json({ ok: false, error: 'INVALID_TAX_YEAR', message: 'Tax year must be between 2019-2023' }, 400, request);
       }
 
       // Verify pro exists
