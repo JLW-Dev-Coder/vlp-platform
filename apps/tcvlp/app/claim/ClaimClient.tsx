@@ -30,7 +30,8 @@ const US_STATES = [
   'West Virginia','Wisconsin','Wyoming',
 ];
 
-const TAX_YEARS = [2019, 2020, 2021, 2022, 2023];
+const KWONG_MIN_YEAR = 2020;
+const KWONG_MAX_YEAR = 2023;
 
 /* ── SVG Icons (36×36 stroke, Canva reference) ───────────────────────────── */
 
@@ -159,10 +160,19 @@ interface Props {
 export default function ClaimClient({ pro, slug }: Props) {
   const [step, setStep] = useState(1);
 
-  /* Transcript upload (now in Step 3) */
+  /* Multi-transcript upload (Step 3) */
+  type ParsedTranscript = {
+    fileName: string;
+    taxYear: number | null;
+    failureToFile: number;
+    failureToPay: number;
+    interest: number;
+    transactions: { date: string; code: string; amount: number; description: string }[];
+    result: TranscriptResult;
+  };
+  const [parsedTranscripts, setParsedTranscripts] = useState<ParsedTranscript[]>([]);
   const [transcriptFile, setTranscriptFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [transcript, setTranscript] = useState<TranscriptResult | null>(null);
   const [uploadError, setUploadError] = useState('');
 
   /* Form fields (Step 3) */
@@ -170,7 +180,6 @@ export default function ClaimClient({ pro, slug }: Props) {
   const [state, setState] = useState('');
   const [mailingAddress, setMailingAddress] = useState<MailingAddress | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(false);
-  const [taxYear, setTaxYear] = useState<number | ''>('');
   const [failureToFile, setFailureToFile] = useState('');
   const [failureToPay, setFailureToPay] = useState('');
   const [interestOnPenalties, setInterestOnPenalties] = useState('');
@@ -218,6 +227,19 @@ export default function ClaimClient({ pro, slug }: Props) {
 
   /* ── Handlers ───────────────────────────────────────────────────────────── */
 
+  /* Recalculate aggregated penalty sums from all parsed transcripts */
+  const recalcFromTranscripts = (transcripts: ParsedTranscript[]) => {
+    let ftf = 0, ftp = 0, interest = 0;
+    for (const t of transcripts) {
+      ftf += t.failureToFile;
+      ftp += t.failureToPay;
+      interest += t.interest;
+    }
+    setFailureToFile(ftf ? ftf.toFixed(2) : '');
+    setFailureToPay(ftp ? ftp.toFixed(2) : '');
+    setInterestOnPenalties(interest ? interest.toFixed(2) : '');
+  };
+
   const handleUploadTranscript = async () => {
     if (!transcriptFile) return;
     setUploading(true);
@@ -228,42 +250,59 @@ export default function ClaimClient({ pro, slug }: Props) {
       if (pro.pro_id) fd.append('pro_id', pro.pro_id);
       const result = await uploadTranscript(fd);
       console.log('[TCVLP] Transcript upload response:', JSON.stringify(result, null, 2));
-      setTranscript(result);
+
+      let parsedYear: number | null = null;
+      let ftf = 0, ftp = 0, interest = 0;
+      let transactions: { date: string; code: string; amount: number; description: string }[] = [];
+
       if (result.kwong_penalties) {
         const kp = result.kwong_penalties;
-        if (kp.tax_years.length) setTaxYear(Number(kp.tax_years[kp.tax_years.length - 1]));
+        if (kp.tax_years.length) parsedYear = Number(kp.tax_years[kp.tax_years.length - 1]);
+        transactions = kp.transactions;
 
-        /* Map transaction codes to three penalty fields */
-        let ftf = 0; // Code 160 — Failure-to-File
-        let ftp = 0; // Code 276 — Failure-to-Pay / Late Payment
-        let interest = 0; // Codes 196, 199 — Interest
         for (const t of kp.transactions) {
           const code = String(t.code).trim();
           if (code === '160') ftf += Math.abs(t.amount);
           else if (code === '276') ftp += Math.abs(t.amount);
           else if (code === '196' || code === '199') interest += Math.abs(t.amount);
         }
-        if (ftf) setFailureToFile(ftf.toFixed(2));
-        if (ftp) setFailureToPay(ftp.toFixed(2));
-        if (interest) setInterestOnPenalties(interest.toFixed(2));
 
-        /* If no Kwong-eligible penalties found, show dates */
         if (kp.transactions.length === 0) {
           const allDates = (result as { all_transaction_dates?: string[] }).all_transaction_dates ?? [];
           setNoEligibleDates(allDates);
         } else {
           setNoEligibleDates([]);
         }
-      } else {
-        /* No kwong_penalties at all — transcript had no eligible items */
-        setNoEligibleDates([]);
       }
-      /* Stay on Step 3 — form fields are auto-populated */
+
+      const entry: ParsedTranscript = {
+        fileName: transcriptFile.name,
+        taxYear: parsedYear,
+        failureToFile: ftf,
+        failureToPay: ftp,
+        interest,
+        transactions,
+        result,
+      };
+
+      const updated = [...parsedTranscripts, entry];
+      setParsedTranscripts(updated);
+      recalcFromTranscripts(updated);
+
+      /* Reset file input for next upload */
+      setTranscriptFile(null);
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleRemoveTranscript = (index: number) => {
+    const updated = parsedTranscripts.filter((_, i) => i !== index);
+    setParsedTranscripts(updated);
+    recalcFromTranscripts(updated);
+    if (updated.length === 0) setNoEligibleDates([]);
   };
 
   const handleStateChange = async (s: string) => {
@@ -279,6 +318,19 @@ export default function ClaimClient({ pro, slug }: Props) {
       setLoadingAddress(false);
     }
   };
+
+  /* Derived: detected tax years from uploaded transcripts */
+  const detectedTaxYears = parsedTranscripts
+    .map((t) => t.taxYear)
+    .filter((y): y is number => y !== null);
+  const uniqueDetectedYears = [...new Set(detectedTaxYears)].sort();
+  const hasOutOfRangeYear = uniqueDetectedYears.some((y) => y < KWONG_MIN_YEAR || y > KWONG_MAX_YEAR);
+  const allOutOfRange = uniqueDetectedYears.length > 0 && uniqueDetectedYears.every((y) => y < KWONG_MIN_YEAR || y > KWONG_MAX_YEAR);
+
+  /* Tax year to send in payload: first detected year, or 0 to indicate full range */
+  const payloadTaxYear = uniqueDetectedYears.length > 0
+    ? uniqueDetectedYears.filter((y) => y >= KWONG_MIN_YEAR && y <= KWONG_MAX_YEAR)[0] ?? uniqueDetectedYears[0]
+    : 2020; // default to start of Kwong range if no transcript
 
   const handleGenerate = async () => {
     if (!mailingAddress) return;
@@ -296,7 +348,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         pro_id: pro.pro_id,
         taxpayer_name: fullName,
         state,
-        tax_year: taxYear as number,
+        tax_year: payloadTaxYear,
         failure_to_file: ftf,
         failure_to_pay: ftp,
         interest_amount: iop,
@@ -345,7 +397,7 @@ export default function ClaimClient({ pro, slug }: Props) {
   const progressPct = (step / 5) * 100;
   const totalAmount = (parseFloat(failureToFile) || 0) + (parseFloat(failureToPay) || 0) + (parseFloat(interestOnPenalties) || 0);
   const hasAnyAmount = totalAmount > 0;
-  const canGenerate = fullName && state && mailingAddress && hasAnyAmount && taxYear && disclaimerChecked;
+  const canGenerate = fullName && state && mailingAddress && hasAnyAmount && disclaimerChecked && !allOutOfRange;
 
   /* ── Render ─────────────────────────────────────────────────────────────── */
 
@@ -555,73 +607,75 @@ export default function ClaimClient({ pro, slug }: Props) {
                 <p>Your claim will include IRS-compliant language referencing penalty relief under the Kwong decision.</p>
               </div>
 
-              {/* Transcript upload area */}
+              {/* Transcript upload area — multi-file */}
               <div className={styles.uploadSection}>
-                <div className={styles.uploadLabel}>Upload your IRS Account Transcript (optional)</div>
+                <div className={styles.uploadLabel}>
+                  {parsedTranscripts.length > 0
+                    ? 'Upload another transcript'
+                    : 'Upload IRS Account Transcripts (one or more)'}
+                </div>
                 <div className={styles.uploadHint}>We&apos;ll automatically identify Kwong-eligible penalties</div>
 
-                {transcript ? (
-                  <div className={styles.transcriptResult}>
-                    <div className={styles.transcriptSuccess}>
-                      <CheckCircle size={18} /> Transcript processed successfully
-                    </div>
-                    {transcript.kwong_penalties && (
-                      <>
-                        <div className={styles.transcriptSummary}>
-                          <div className={styles.tRow}><span>Total eligible penalty</span><strong>${transcript.kwong_penalties.total_amount.toFixed(2)}</strong></div>
-                          <div className={styles.tRow}><span>Tax years</span><strong>{transcript.kwong_penalties.tax_years.join(', ')}</strong></div>
-                          <div className={styles.tRow}><span>Eligible transactions</span><strong>{transcript.kwong_eligible_count ?? transcript.kwong_penalties.transactions.length}</strong></div>
+                {/* Summary cards for already-uploaded transcripts */}
+                {parsedTranscripts.length > 0 && (
+                  <div className={styles.transcriptList}>
+                    {parsedTranscripts.map((pt, idx) => {
+                      const penaltyCount = pt.transactions.length;
+                      const totalAmt = pt.failureToFile + pt.failureToPay + pt.interest;
+                      return (
+                        <div key={idx} className={styles.transcriptCard}>
+                          <div className={styles.transcriptCardInfo}>
+                            <span className={styles.transcriptCardYear}>
+                              {pt.taxYear ? `${pt.taxYear} transcript` : pt.fileName}
+                            </span>
+                            <span className={styles.transcriptCardDetails}>
+                              {penaltyCount} {penaltyCount === 1 ? 'penalty' : 'penalties'} found (${totalAmt.toFixed(2)})
+                            </span>
+                          </div>
+                          <button
+                            className={styles.transcriptRemoveBtn}
+                            onClick={() => handleRemoveTranscript(idx)}
+                            type="button"
+                          >
+                            x remove
+                          </button>
                         </div>
-                        {transcript.kwong_penalties.transactions.length > 0 && (
-                          <>
-                            <h3 className={styles.tSubhead}>Eligible Transactions</h3>
-                            <div className={styles.transactionTable}>
-                              <div className={styles.tHead}>
-                                <span>Date</span><span>Code</span><span>Amount</span><span>Description</span>
-                              </div>
-                              {transcript.kwong_penalties.transactions.map((t, i) => (
-                                <div key={i} className={styles.tRow2}>
-                                  <span>{t.date}</span><span>{t.code}</span><span>${t.amount.toFixed(2)}</span><span>{t.description}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className={styles.uploadArea}>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      id="transcriptFile"
-                      className={styles.fileInput}
-                      onChange={(e) => setTranscriptFile(e.target.files?.[0] ?? null)}
-                    />
-                    <label htmlFor="transcriptFile" className={styles.fileLabel}>
-                      {transcriptFile ? (
-                        <span className={styles.fileName}>
-                          <SmallDocIcon />
-                          {transcriptFile.name}
-                        </span>
-                      ) : (
-                        <>
-                          <UploadIcon />
-                          <span>Drag and drop or click to upload PDF</span>
-                        </>
-                      )}
-                    </label>
-                    {uploadError && <div className={styles.errorMsg}>{uploadError}</div>}
-                    {transcriptFile && (
-                      <div className={styles.uploadBtns}>
-                        <button className={styles.secondaryBtn} onClick={handleUploadTranscript} disabled={uploading}>
-                          {uploading ? 'Processing...' : 'Upload & Auto-Fill'}
-                        </button>
-                      </div>
-                    )}
+                      );
+                    })}
                   </div>
                 )}
+
+                {/* Upload input — always visible */}
+                <div className={styles.uploadArea}>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    id="transcriptFile"
+                    className={styles.fileInput}
+                    onChange={(e) => { setTranscriptFile(e.target.files?.[0] ?? null); e.target.value = ''; }}
+                  />
+                  <label htmlFor="transcriptFile" className={styles.fileLabel}>
+                    {transcriptFile ? (
+                      <span className={styles.fileName}>
+                        <SmallDocIcon />
+                        {transcriptFile.name}
+                      </span>
+                    ) : (
+                      <>
+                        <UploadIcon />
+                        <span>Drag and drop or click to upload PDF</span>
+                      </>
+                    )}
+                  </label>
+                  {uploadError && <div className={styles.errorMsg}>{uploadError}</div>}
+                  {transcriptFile && (
+                    <div className={styles.uploadBtns}>
+                      <button className={styles.secondaryBtn} onClick={handleUploadTranscript} disabled={uploading}>
+                        {uploading ? 'Processing...' : 'Upload & Auto-Fill'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Subscription gate within form */}
@@ -637,9 +691,9 @@ export default function ClaimClient({ pro, slug }: Props) {
 
               {/* Form fields */}
               <div className={styles.form}>
-                {transcript && (
+                {parsedTranscripts.length > 0 && (
                   <div className={styles.prefillNotice}>
-                    <CheckCircle size={16} /> Pre-filled from your transcript
+                    <CheckCircle size={16} /> Pre-filled from {parsedTranscripts.length === 1 ? 'your transcript' : `${parsedTranscripts.length} transcripts`}
                   </div>
                 )}
 
@@ -650,11 +704,30 @@ export default function ClaimClient({ pro, slug }: Props) {
 
                 <div className={styles.formRow}>
                   <div className={styles.field}>
-                    <label className={styles.label}>Tax Period <span className={styles.required}>*</span></label>
-                    <select value={taxYear} onChange={(e) => setTaxYear(e.target.value ? Number(e.target.value) : '')}>
-                      <option value="">Select year</option>
-                      {TAX_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-                    </select>
+                    <label className={styles.label}>Tax Period</label>
+                    {uniqueDetectedYears.length === 0 ? (
+                      <div className={styles.taxPeriodReadonly}>
+                        <div className={styles.taxPeriodValue}>
+                          {KWONG_MIN_YEAR} &mdash; {KWONG_MAX_YEAR} (Kwong eligibility window)
+                        </div>
+                      </div>
+                    ) : hasOutOfRangeYear && allOutOfRange ? (
+                      <div className={`${styles.taxPeriodReadonly} ${styles.taxPeriodWarning}`}>
+                        <div className={styles.taxPeriodValue}>
+                          {uniqueDetectedYears.join(', ')} &mdash; Outside Kwong eligibility window ({KWONG_MIN_YEAR}-{KWONG_MAX_YEAR})
+                        </div>
+                        <div className={styles.taxPeriodWarningNote}>
+                          This transcript covers a tax period outside the Kwong v. US ruling window. Penalties from this period are not eligible for abatement under this claim.
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.taxPeriodReadonly}>
+                        <div className={styles.taxPeriodValue}>
+                          {uniqueDetectedYears.join(', ')}
+                        </div>
+                        <span className={styles.taxPeriodDetected}>Detected from transcript</span>
+                      </div>
+                    )}
                   </div>
                   <div className={styles.field}>
                     <label className={styles.label}>State <span className={styles.required}>*</span></label>
@@ -760,9 +833,9 @@ export default function ClaimClient({ pro, slug }: Props) {
                   className={styles.primaryBtn}
                   onClick={handleGenerate}
                   disabled={generating || !canGenerate || subActive === false}
-                  title={!disclaimerChecked ? 'Please confirm the disclaimer above' : undefined}
+                  title={allOutOfRange ? 'Tax period outside Kwong eligibility window' : !disclaimerChecked ? 'Please confirm the disclaimer above' : undefined}
                 >
-                  {generating ? 'Generating...' : subActive === false ? 'Subscription Required' : 'Generate Form'}
+                  {generating ? 'Generating...' : subActive === false ? 'Subscription Required' : allOutOfRange ? 'Not Eligible' : 'Generate Form'}
                 </button>
                 <button className={styles.secondaryBtn} onClick={() => setStep(2)}>
                   Go Back

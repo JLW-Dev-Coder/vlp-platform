@@ -26,7 +26,7 @@ function OnboardingContent({ session }: { session: Session }) {
   // Step 1
   const [firmName, setFirmName] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [welcomeMessage, setWelcomeMessage] = useState('Welcome. Submit your penalty details below and I will prepare your Form 843 claim.');
+  const [welcomeMessage, setWelcomeMessage] = useState('Welcome. Submit your penalty details below and select "Notify Me" so our team can alert you when to check your IRS transcript for updates and keep you informed of any related claim developments.');
 
   // Step 2
   const [slug, setSlug] = useState('');

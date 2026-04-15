@@ -102,7 +102,7 @@
 /* ── Main ────────────────────────────────────────────────────────────────── */
 
 .main {
-  max-width: 40rem;
+  max-width: 60rem;
   margin: 0 auto;
   padding: 2rem 1rem;
   display: flex;
@@ -1019,6 +1019,102 @@
   border: 1px solid rgba(220, 38, 38, 0.3);
   color: #fca5a5;
   font-size: 0.875rem;
+}
+
+/* ── Tax Period Read-Only ────────────────────────────────────────────────── */
+
+.taxPeriodReadonly {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.taxPeriodValue {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  color: var(--color-text-1);
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.taxPeriodDetected {
+  font-size: 0.75rem;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.taxPeriodWarning .taxPeriodValue {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.taxPeriodWarningNote {
+  font-size: 0.8125rem;
+  color: #fde047;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  line-height: 1.5;
+  margin-top: 0.25rem;
+}
+
+/* ── Multi-Transcript Summary ───────────────────────────────────────────── */
+
+.transcriptList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.transcriptCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--color-text-2);
+}
+
+.transcriptCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.transcriptCardYear {
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.transcriptCardDetails {
+  font-size: 0.8125rem;
+  color: var(--color-text-3);
+}
+
+.transcriptRemoveBtn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8125rem;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.transcriptRemoveBtn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* ── Animations ──────────────────────────────────────────────────────────── */
