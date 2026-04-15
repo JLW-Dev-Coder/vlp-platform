@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Session, TaxPro } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Session, TaxPro, getSubscriptionStatus, SubscriptionStatus } from '@/lib/api';
+import { tierLabel, tierPrice } from '@/lib/tiers';
 import styles from './shared.module.css';
 
 interface Props {
@@ -11,7 +13,12 @@ interface Props {
 
 export default function Overview({ session, pro }: Props) {
   const [copied, setCopied] = useState(false);
+  const [sub, setSub] = useState<SubscriptionStatus | null>(null);
   const landingUrl = pro?.slug ? `https://${pro.slug}.taxclaim.virtuallaunch.pro` : null;
+
+  useEffect(() => {
+    getSubscriptionStatus().then(setSub);
+  }, []);
 
   const handleCopy = () => {
     if (!landingUrl) return;
@@ -20,6 +27,8 @@ export default function Overview({ session, pro }: Props) {
       setTimeout(() => setCopied(false), 2000);
     });
   };
+
+  const currentTier = sub?.plan || 'tcvlp_starter';
 
   return (
     <div>
@@ -42,9 +51,9 @@ export default function Overview({ session, pro }: Props) {
           <div className={styles.statValue}>{pro?.slug ?? '—'}</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statLabel}>Subscription</div>
-          <div className={styles.statValue} style={{ color: pro?.subscription_status === 'active' ? '#4ade80' : '#f87171' }}>
-            {pro?.subscription_status ?? 'Inactive'}
+          <div className={styles.statLabel}>Plan</div>
+          <div className={styles.statValue} style={{ color: sub?.active ? '#fbbf24' : '#f87171' }}>
+            {sub?.active ? `${tierLabel(currentTier)} ($${tierPrice(currentTier)}/mo)` : 'Inactive'}
           </div>
         </div>
         <div className={styles.statCard}>
@@ -52,6 +61,19 @@ export default function Overview({ session, pro }: Props) {
           <div className={styles.statValue}>{pro?.submission_count ?? 0}</div>
         </div>
       </div>
+
+      {sub?.active && currentTier === 'tcvlp_starter' && (
+        <div className={styles.urlCard}>
+          <div className={styles.urlCardLabel}>Upgrade for More Features</div>
+          <p className={styles.urlNote}>
+            You are on the Starter plan. Upgrade to Professional ($29/mo) for unlimited claim pages,
+            priority generation, bulk export, and transcript integration.
+          </p>
+          <Link href="/pricing" style={{ color: 'var(--color-brand)', textDecoration: 'underline', fontSize: '0.875rem' }}>
+            View Plans →
+          </Link>
+        </div>
+      )}
 
       {landingUrl && (
         <div className={styles.urlCard}>
@@ -61,12 +83,17 @@ export default function Overview({ session, pro }: Props) {
               {landingUrl}
             </a>
             <button className={styles.copyBtn} onClick={handleCopy}>
-              {copied ? '✓ Copied' : 'Copy URL'}
+              {copied ? 'Copied' : 'Copy URL'}
             </button>
           </div>
           <p className={styles.urlNote}>Share this URL with clients to start their Kwong claim preparation.</p>
         </div>
       )}
+
+      <div className={styles.deadlineCard}>
+        <strong>Deadline:</strong> Kwong claim window closes <strong>July 10, 2026</strong>.
+        Keep your subscription active to serve clients through this window.
+      </div>
     </div>
   );
 }

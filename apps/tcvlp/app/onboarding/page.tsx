@@ -80,7 +80,7 @@ function OnboardingContent({ session }: { session: Session }) {
       await tcvlpOnboarding({ firm_name: firmName, display_name: displayName, welcome_message: welcomeMessage, slug });
       // Then redirect to Stripe
       const checkout = await createCheckout(session.account_id, 'tcvlp');
-      window.location.href = checkout.session_url;
+      window.location.href = checkout.session_url || checkout.url || '/dashboard';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       setCheckoutLoading(false);

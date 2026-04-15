@@ -72,13 +72,17 @@ export default function ClaimClient({ pro, slug }: Props) {
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
 
-  // Subscription gating — pro must have active subscription for unlimited client access
+  // Subscription gating — pro must have active subscription
   const [subActive, setSubActive] = useState<boolean | null>(null);
+  const [subPlan, setSubPlan] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
     if (slug) {
       checkSubscription(slug).then((s) => {
-        if (!cancelled) setSubActive(s.active);
+        if (!cancelled) {
+          setSubActive(s.active);
+          setSubPlan(s.plan ?? null);
+        }
       });
     }
     return () => { cancelled = true; };

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Session, TaxPro, createCheckout } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import { Session, TaxPro, getSubscriptionStatus, createTcvlpCheckout, SubscriptionStatus } from '@/lib/api';
+import { TcvlpTier, tierLabel, tierPrice, STRIPE_PRICES } from '@/lib/tiers';
 import styles from './shared.module.css';
 
 interface Props {
@@ -9,75 +10,126 @@ interface Props {
   session: Session;
 }
 
-export default function Upgrade({ pro, session }: Props) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+const TIER_FEATURES: Record<TcvlpTier, string[]> = {
+  tcvlp_starter: [
+    'Form 843 generation',
+    'Branded claim page (1)',
+    'Penalty calculations',
+    'Taxpayer dashboard',
+    'Kwong eligibility checker',
+    'Email support',
+  ],
+  tcvlp_professional: [
+    'Everything in Starter',
+    'Unlimited claim pages',
+    'Priority generation',
+    'Bulk PDF export (ZIP)',
+    'Transcript integration (TTMP)',
+  ],
+  tcvlp_firm: [
+    'Everything in Professional',
+    'White-label branding',
+    'Multi-practitioner access',
+    'API access',
+    'Dedicated support (4hr SLA)',
+  ],
+};
 
-  const handleUpgrade = async () => {
-    setLoading(true);
+const TIERS: TcvlpTier[] = ['tcvlp_starter', 'tcvlp_professional', 'tcvlp_firm'];
+
+export default function Upgrade({ pro, session }: Props) {
+  const [loading, setLoading] = useState<TcvlpTier | null>(null);
+  const [error, setError] = useState('');
+  const [sub, setSub] = useState<SubscriptionStatus | null>(null);
+
+  useEffect(() => {
+    getSubscriptionStatus().then(setSub);
+  }, []);
+
+  const currentTier = (sub?.plan || null) as TcvlpTier | null;
+  const isActive = sub?.active ?? false;
+
+  const handleCheckout = async (tier: TcvlpTier) => {
+    setLoading(tier);
     setError('');
     try {
-      const checkout = await createCheckout(session.account_id, 'tcvlp');
-      window.location.href = checkout.session_url;
+      const result = await createTcvlpCheckout(STRIPE_PRICES[tier]);
+      const url = result.url || result.session_url;
+      if (url) {
+        window.location.href = url;
+      } else {
+        setError('Failed to get checkout URL');
+        setLoading(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start checkout');
-      setLoading(false);
+      setLoading(null);
     }
   };
-
-  const isActive = pro?.subscription_status === 'active';
 
   return (
     <div>
       <h1 className={styles.pageTitle}>Plan & Billing</h1>
 
-      <div className={styles.planCard}>
-        <div className={styles.planHeader}>
-          <span className={styles.planName}>TaxClaim Pro</span>
-          <span className={`${styles.planStatus} ${isActive ? styles.statusActive : styles.statusInactive}`}>
-            {isActive ? 'Active' : 'Inactive'}
-          </span>
-        </div>
-        <div className={styles.planPrice}>
-          <span className={styles.planAmount}>$10</span>
-          <span className={styles.planPeriod}>/month</span>
-        </div>
-        <ul className={styles.planFeatures}>
-          {[
-            'Branded subdomain landing page',
-            'Unlimited Form 843 preparation guides',
-            'IRS transcript upload & auto-fill',
-            'State-based mailing address lookup',
-            'Submission tracking via email',
-          ].map((f) => (
-            <li key={f} className={styles.planFeature}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              {f}
-            </li>
-          ))}
-        </ul>
+      {error && <div className={styles.errorMsg}>{error}</div>}
 
-        {!isActive && (
-          <>
-            {error && <div className={styles.errorMsg}>{error}</div>}
-            <button className={styles.saveBtn} onClick={handleUpgrade} disabled={loading}>
-              {loading ? 'Redirecting to Stripe…' : 'Subscribe — $10/month'}
-            </button>
-          </>
-        )}
+      <div className={styles.tiersGrid}>
+        {TIERS.map((tier) => {
+          const isCurrent = isActive && currentTier === tier;
+          return (
+            <div
+              key={tier}
+              className={`${styles.planCard} ${tier === 'tcvlp_professional' ? styles.planCardPopular : ''}`}
+            >
+              {tier === 'tcvlp_professional' && (
+                <div className={styles.popularBadge}>Most Popular</div>
+              )}
+              <div className={styles.planHeader}>
+                <span className={styles.planName}>{tierLabel(tier)}</span>
+                {isCurrent && (
+                  <span className={`${styles.planStatus} ${styles.statusActive}`}>Current Plan</span>
+                )}
+              </div>
+              <div className={styles.planPrice}>
+                <span className={styles.planAmount}>${tierPrice(tier)}</span>
+                <span className={styles.planPeriod}>/month</span>
+              </div>
+              <ul className={styles.planFeatures}>
+                {TIER_FEATURES[tier].map((f) => (
+                  <li key={f} className={styles.planFeature}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
 
-        {isActive && (
-          <p className={styles.hint} style={{ textAlign: 'center', marginTop: '1rem' }}>
-            To manage your subscription or cancel, contact{' '}
-            <a href="/support" style={{ color: 'var(--color-blue)', textDecoration: 'underline' }}>support</a>.
-          </p>
-        )}
+              {isCurrent ? (
+                <p className={styles.hint} style={{ textAlign: 'center', marginTop: '1rem' }}>
+                  To manage your subscription or cancel, contact{' '}
+                  <a href="/support" style={{ color: 'var(--color-blue)', textDecoration: 'underline' }}>support</a>.
+                </p>
+              ) : (
+                <button
+                  className={styles.saveBtn}
+                  onClick={() => handleCheckout(tier)}
+                  disabled={loading !== null}
+                >
+                  {loading === tier
+                    ? 'Redirecting to Stripe...'
+                    : isCurrent
+                    ? 'Current Plan'
+                    : `Subscribe — $${tierPrice(tier)}/mo`}
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className={styles.deadlineCard}>
-        <strong>⏰ Reminder:</strong> Kwong claim deadline is <strong>July 10, 2026</strong>.
+        <strong>Deadline:</strong> Kwong claim deadline is <strong>July 10, 2026</strong>.
         Keep your subscription active to serve clients through this window.
       </div>
     </div>

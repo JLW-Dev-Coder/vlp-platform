@@ -120,12 +120,12 @@
 }
 
 .warningBox {
-  background: rgba(220, 38, 38, 0.08);
-  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.25);
   border-radius: 0.75rem;
   padding: 1rem 1.25rem;
   font-size: 0.875rem;
-  color: #fca5a5;
+  color: #fde68a;
   margin-bottom: 1.75rem;
   display: flex;
   align-items: center;
@@ -161,12 +161,12 @@
 }
 
 .deadlineCard {
-  background: rgba(220, 38, 38, 0.08);
-  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.25);
   border-radius: 0.75rem;
   padding: 1rem 1.25rem;
   font-size: 0.875rem;
-  color: #fca5a5;
+  color: #fde68a;
   margin-top: 1.5rem;
 }
 
@@ -228,14 +228,15 @@
 .saveBtn {
   padding: 0.875rem 1.5rem;
   border-radius: 0.5rem;
-  background: var(--color-red);
-  color: #fff;
+  background: var(--color-brand);
+  color: #000;
   font-weight: 700;
   font-size: 1rem;
   border: none;
   cursor: pointer;
   transition: opacity var(--transition);
   align-self: flex-start;
+  width: 100%;
 }
 
 .saveBtn:hover { opacity: 0.9; }
@@ -345,4 +346,34 @@
   color: var(--color-text-2);
   font-size: 0.875rem;
   line-height: 1.6;
+}
+
+/* ── Tiers Grid (Upgrade page) ──────────────────────────────────────────────── */
+
+.tiersGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .tiersGrid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.planCardPopular {
+  composes: planCard;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 24px rgba(234, 179, 8, 0.15);
+}
+
+.popularBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--color-brand);
+  color: #000;
+  margin-bottom: 0.75rem;
 }

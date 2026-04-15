@@ -192,6 +192,8 @@ export async function updateProfile(data: {
 export interface SubscriptionStatus {
   active: boolean;
   plan?: string;
+  product_id?: string;
+  pro_id?: string;
 }
 
 export async function checkSubscription(slug: string): Promise<SubscriptionStatus> {
@@ -204,10 +206,20 @@ export async function checkSubscription(slug: string): Promise<SubscriptionStatu
   }
 }
 
+export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
+  try {
+    return await apiFetch<SubscriptionStatus>('/v1/tcvlp/subscription/status');
+  } catch {
+    return { active: false };
+  }
+}
+
 // ── Checkout ──────────────────────────────────────────────────────────────────
 
 export interface CheckoutSession {
-  session_url: string;
+  session_url?: string;
+  url?: string;
+  session_id?: string;
 }
 
 export async function createCheckout(
@@ -217,6 +229,17 @@ export async function createCheckout(
   return apiFetch<CheckoutSession>('/v1/checkout/sessions', {
     method: 'POST',
     body: JSON.stringify({ account_id, platform }),
+  });
+}
+
+export async function createTcvlpCheckout(price_id: string): Promise<CheckoutSession> {
+  return apiFetch<CheckoutSession>('/v1/tcvlp/checkout/sessions', {
+    method: 'POST',
+    body: JSON.stringify({
+      price_id,
+      success_url: `${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard?checkout=success`,
+      cancel_url: `${typeof window !== 'undefined' ? window.location.origin : ''}/pricing`,
+    }),
   });
 }
 
