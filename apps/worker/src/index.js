@@ -14450,7 +14450,7 @@ TTMP Support Team
 
       try {
         const pro = await env.DB.prepare(
-          "SELECT pro_id, firm_name, display_name, logo_url, welcome_message, slug, firm_phone, firm_website FROM tcvlp_pros WHERE account_id = ?"
+          "SELECT pro_id, firm_name, display_name, logo_url, welcome_message, slug, firm_phone, firm_website, notifications_enabled FROM tcvlp_pros WHERE account_id = ?"
         ).bind(session.account_id).first();
 
         if (!pro) {
@@ -14469,6 +14469,7 @@ TTMP Support Team
           slug: pro.slug,
           firm_phone: pro.firm_phone,
           firm_website: pro.firm_website,
+          notifications_enabled: pro.notifications_enabled === 1 || pro.notifications_enabled === null,
         });
       } catch (e) {
         console.error('TCVLP get profile error:', e);
@@ -14491,7 +14492,7 @@ TTMP Support Team
 
       try {
         const existing = await env.DB.prepare(
-          "SELECT pro_id, slug, firm_name, display_name, logo_url, welcome_message, firm_phone, firm_website FROM tcvlp_pros WHERE account_id = ?"
+          "SELECT pro_id, slug, firm_name, display_name, logo_url, welcome_message, firm_phone, firm_website, notifications_enabled FROM tcvlp_pros WHERE account_id = ?"
         ).bind(session.account_id).first();
 
         if (!existing) {
@@ -14499,6 +14500,9 @@ TTMP Support Team
         }
 
         const timestamp = new Date().toISOString();
+        const notificationsEnabled = body.notifications_enabled !== undefined
+          ? (body.notifications_enabled ? 1 : 0)
+          : (existing.notifications_enabled ?? 1);
         const updated = {
           firm_name: body.firm_name ?? existing.firm_name,
           display_name: body.display_name ?? existing.display_name,
@@ -14506,12 +14510,13 @@ TTMP Support Team
           logo_url: body.logo_url ?? body.firm_logo_url ?? existing.logo_url,
           firm_phone: body.firm_phone ?? existing.firm_phone,
           firm_website: body.firm_website ?? existing.firm_website,
+          notifications_enabled: notificationsEnabled,
         };
 
         // Update D1
         await d1Run(env.DB,
-          `UPDATE tcvlp_pros SET firm_name = ?, display_name = ?, welcome_message = ?, logo_url = ?, firm_phone = ?, firm_website = ?, updated_at = ? WHERE account_id = ?`,
-          [updated.firm_name, updated.display_name, updated.welcome_message, updated.logo_url, updated.firm_phone, updated.firm_website, timestamp, session.account_id]
+          `UPDATE tcvlp_pros SET firm_name = ?, display_name = ?, welcome_message = ?, logo_url = ?, firm_phone = ?, firm_website = ?, notifications_enabled = ?, updated_at = ? WHERE account_id = ?`,
+          [updated.firm_name, updated.display_name, updated.welcome_message, updated.logo_url, updated.firm_phone, updated.firm_website, updated.notifications_enabled, timestamp, session.account_id]
         );
 
         // Update R2 canonical
@@ -14524,6 +14529,7 @@ TTMP Support Team
         const updatedCanonical = {
           ...canonical,
           ...updated,
+          notifications_enabled: updated.notifications_enabled === 1,
           updated_at: timestamp,
         };
         await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, updatedCanonical);
@@ -14538,6 +14544,7 @@ TTMP Support Team
           slug: existing.slug,
           firm_phone: updated.firm_phone,
           firm_website: updated.firm_website,
+          notifications_enabled: updated.notifications_enabled === 1,
         });
       } catch (e) {
         console.error('TCVLP update profile error:', e);
@@ -14978,7 +14985,7 @@ TTMP Support Team
         return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
       }
 
-      const { submission_id, confirmed } = body;
+      const { submission_id, confirmed, notify_opt_in, notify_email, notify_phone, notify_preference } = body;
 
       if (!submission_id || !confirmed) {
         return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['submission_id', 'confirmed'] }, 400, request);
@@ -14987,17 +14994,32 @@ TTMP Support Team
       const timestamp = new Date().toISOString();
 
       try {
-        // Update D1 status
+        // Update D1 status + notification fields
         const result = await env.DB.prepare(
-          "UPDATE tcvlp_form843_submissions SET status = 'submitted', updated_at = ? WHERE submission_id = ?"
-        ).bind(timestamp, submission_id).run();
+          `UPDATE tcvlp_form843_submissions
+           SET status = 'submitted', updated_at = ?,
+               notify_opt_in = ?, notify_email = ?, notify_phone = ?, notify_preference = ?
+           WHERE submission_id = ?`
+        ).bind(
+          timestamp,
+          notify_opt_in ? 1 : 0,
+          notify_email || null,
+          notify_phone || null,
+          notify_preference || null,
+          submission_id
+        ).run();
 
         if (result.changes === 0) {
           return json({ ok: false, error: 'SUBMISSION_NOT_FOUND', message: 'Submission not found' }, 404, request);
         }
 
+        // Fetch full submission for notification email
+        const submission = await env.DB.prepare(
+          'SELECT * FROM tcvlp_form843_submissions WHERE submission_id = ?'
+        ).bind(submission_id).first();
+
         // Update R2 canonical
-        const canonicalKey = `tcvlp/form843/${submission_id.split('_')[1]}/${submission_id}.json`;
+        const canonicalKey = `tcvlp/form843/${submission ? submission.pro_id : submission_id.split('_')[1]}/${submission_id}.json`;
         const canonicalData = await r2Get(env.R2_VIRTUAL_LAUNCH, canonicalKey);
 
         if (canonicalData) {
@@ -15005,7 +15027,66 @@ TTMP Support Team
           parsedData.status = 'submitted';
           parsedData.submitted_at = timestamp;
           parsedData.updated_at = timestamp;
+          parsedData.notify_opt_in = notify_opt_in ? true : false;
+          parsedData.notify_email = notify_email || null;
+          parsedData.notify_phone = notify_phone || null;
+          parsedData.notify_preference = notify_preference || null;
           await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, parsedData);
+        }
+
+        // Send email notification to tax pro
+        if (submission && submission.pro_id) {
+          try {
+            const pro = await env.DB.prepare(
+              'SELECT pro_id, firm_name, notifications_enabled FROM tcvlp_pros WHERE pro_id = ?'
+            ).bind(submission.pro_id).first();
+
+            if (pro && (pro.notifications_enabled === 1 || pro.notifications_enabled === null)) {
+              // Look up pro's email via account
+              const account = await env.DB.prepare(
+                'SELECT email FROM accounts WHERE account_id = (SELECT account_id FROM tcvlp_pros WHERE pro_id = ?)'
+              ).bind(submission.pro_id).first();
+
+              if (account && account.email) {
+                const totalAmt = parseFloat(submission.penalty_amount) || 0;
+                const contactInfo = notify_email || notify_phone || 'Not provided';
+                const prefLabel = notify_preference === 'sms' ? 'Text/SMS' : notify_preference === 'phone' ? 'Phone' : 'Email';
+
+                const emailHtml = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a2e;">
+  <div style="background: #eab308; padding: 20px 24px; border-radius: 8px 8px 0 0;">
+    <h1 style="margin: 0; font-size: 18px; color: #1a1a2e;">New Form 843 Submission</h1>
+  </div>
+  <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <p style="margin: 0 0 16px; font-size: 15px; color: #374151;">
+      A new Form 843 preparation guide has been submitted through your TaxClaim Pro page.
+    </p>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Taxpayer</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${submission.taxpayer_name}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Tax Period</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${submission.tax_year}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">State</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${submission.state}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Total Claim</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px; color: #059669;">$${totalAmt.toFixed(2)}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Notification Preference</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${notify_opt_in ? prefLabel : 'Not opted in'}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Contact</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${contactInfo}</td></tr>
+    </table>
+    <a href="https://taxclaim.virtuallaunch.pro/dashboard" style="display: inline-block; padding: 10px 24px; background: #eab308; color: #1a1a2e; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">View in Dashboard</a>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0 12px;" />
+    <p style="margin: 0; font-size: 12px; color: #9ca3af;">TaxClaim Pro — taxclaim.virtuallaunch.pro</p>
+  </div>
+</div>`;
+
+                await sendEmail(
+                  account.email,
+                  `New Form 843 Submission — ${submission.taxpayer_name}`,
+                  emailHtml,
+                  env
+                );
+              }
+            }
+          } catch (emailErr) {
+            console.error('[TCVLP] Notification email failed:', emailErr?.message || emailErr);
+            // Non-blocking — submission still succeeds
+          }
         }
 
         return json({

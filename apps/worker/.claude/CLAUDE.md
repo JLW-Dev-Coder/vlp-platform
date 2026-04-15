@@ -105,7 +105,7 @@ apps/worker/
 │   ├── form843-template.js   # Base64-encoded Form 843 PDF template
 │   └── helpers/
 │       └── contract-loader.js # Federated contract registry loader
-├── migrations/               # D1 migration SQL files (0001–0047)
+├── migrations/               # D1 migration SQL files (0001–0053)
 ├── contracts/                # Versioned JSON contract schemas
 │   ├── contract-registry.json
 │   ├── webhook-registry.json
@@ -121,7 +121,14 @@ apps/worker/
 
 ## 9. D1 Tables
 
-51 migration files defining tables for: accounts, sessions, memberships, billing_customers, tokens, cal_connections, bookings, profiles, support_tickets, notifications, vlp_preferences, google_calendar, cal_tokens, oauth_state, tool_sessions, transcript_jobs, ttmp_reports, compliance, avatars, dvlp (developers, jobs, reviews, canned_responses), gvlp (operators, visitor_sessions, game_plays), tcvlp (pros, form843_submissions), wlvlp (templates, purchases, site_configs, bids, scratch_tickets, seed_templates), affiliates, handoff_tokens, client_pool, votes, scratch_promo, calcom integration.
+53 migration files defining tables for: accounts, sessions, memberships, billing_customers, tokens, cal_connections, bookings, profiles, support_tickets, notifications, vlp_preferences, google_calendar, cal_tokens, oauth_state, tool_sessions, transcript_jobs, ttmp_reports, compliance, avatars, dvlp (developers, jobs, reviews, canned_responses), gvlp (operators, visitor_sessions, game_plays), tcvlp (pros with notifications_enabled, form843_submissions with notify_opt_in/notify_email/notify_phone/notify_preference), wlvlp (templates, purchases, site_configs, bids, scratch_tickets, seed_templates), affiliates, handoff_tokens, client_pool, votes, scratch_promo, calcom integration.
+
+### TCVLP Notification Flow
+When `POST /v1/tcvlp/forms/843/submit` is called, the handler:
+1. Stores notification fields (`notify_opt_in`, `notify_email`, `notify_phone`, `notify_preference`) in D1 and R2
+2. Looks up the tax pro's email via `tcvlp_pros.pro_id` → `accounts.email`
+3. If `tcvlp_pros.notifications_enabled` is true (default), sends an email via Resend with submission details
+4. Email sending is non-blocking — submission succeeds even if email fails
 
 ---
 

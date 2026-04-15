@@ -154,10 +154,19 @@ export async function generateForm843(data: Form843Data): Promise<Form843Result>
   });
 }
 
-export async function submitForm843(submission_id: string): Promise<{ success: boolean }> {
+export interface SubmitForm843Data {
+  submission_id: string;
+  confirmed?: boolean;
+  notify_opt_in?: boolean;
+  notify_email?: string;
+  notify_phone?: string;
+  notify_preference?: 'email' | 'phone' | 'sms';
+}
+
+export async function submitForm843(data: SubmitForm843Data): Promise<{ success: boolean }> {
   return apiFetch<{ success: boolean }>('/v1/tcvlp/forms/843/submit', {
     method: 'POST',
-    body: JSON.stringify({ submission_id }),
+    body: JSON.stringify({ confirmed: true, ...data }),
   });
 }
 
@@ -183,6 +192,7 @@ export interface ProfileData {
   slug?: string;
   firm_phone?: string;
   firm_website?: string;
+  notifications_enabled?: boolean;
 }
 
 export async function getProfile(): Promise<ProfileData | null> {
@@ -200,6 +210,7 @@ export async function updateProfile(data: {
   logo_url?: string;
   firm_phone?: string;
   firm_website?: string;
+  notifications_enabled?: boolean;
 }): Promise<ProfileData> {
   return apiFetch<ProfileData>('/v1/tcvlp/profile', {
     method: 'PATCH',

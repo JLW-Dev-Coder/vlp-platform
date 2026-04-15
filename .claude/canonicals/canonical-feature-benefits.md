@@ -101,6 +101,8 @@ This file complements `canonical-feature-matrix.md` (which maps features to rout
 | White-Label Branding | Remove all TaxClaim Pro branding from client-facing pages — your clients see only your firm identity. Logo, colors, domain, footer — everything says your firm, not ours. | Firm |
 | Multi-Practitioner Access | Add associates, paralegals, or partners to your account — each with their own login and claim management. See who generated which forms, track per-practitioner volume, and manage permissions. | Firm |
 | API Access | Programmatic Form 843 generation for firms with custom workflows or existing case management software. REST API with your API key — integrate claim generation into your existing tools. | Firm |
+| Submission Notifications | Get an email alert when a client submits a Form 843 through your branded page — includes taxpayer name, claim amount, and contact preference. Never miss a new filing. Toggle on/off from your dashboard settings. | All tiers |
+| Client Contact Preferences | Clients choose how they want to be reached — email, phone, or text. Their preference is stored with their submission so you know exactly how to follow up. Opt-in consent is captured at submission time. | All tiers |
 | Dedicated Support | Priority support queue with direct access — response within 4 business hours. Your tickets go to the front of the line. Named support contact for your firm. | Firm |
 
 ---

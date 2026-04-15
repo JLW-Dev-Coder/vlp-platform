@@ -17,6 +17,7 @@ export default function Settings({ session, pro, onUpdated }: Props) {
   const [firmPhone, setFirmPhone] = useState('');
   const [firmWebsite, setFirmWebsite] = useState('');
   const [firmLogoUrl, setFirmLogoUrl] = useState(pro?.logo_url ?? '');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -31,6 +32,7 @@ export default function Settings({ session, pro, onUpdated }: Props) {
       if (p.firm_phone) setFirmPhone(p.firm_phone);
       if (p.firm_website) setFirmWebsite(p.firm_website);
       if (p.logo_url) setFirmLogoUrl(p.logo_url);
+      if (p.notifications_enabled !== undefined) setNotificationsEnabled(p.notifications_enabled !== false);
     });
     return () => { cancelled = true; };
   }, []);
@@ -47,6 +49,7 @@ export default function Settings({ session, pro, onUpdated }: Props) {
         logo_url: firmLogoUrl,
         firm_phone: firmPhone,
         firm_website: firmWebsite,
+        notifications_enabled: notificationsEnabled,
       });
       onUpdated({
         pro_id: result.pro_id || pro?.pro_id || '',
@@ -151,6 +154,21 @@ export default function Settings({ session, pro, onUpdated }: Props) {
             className={styles.textarea}
           />
           <span className={styles.hint}>Displayed on your client-facing landing page</span>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={notificationsEnabled}
+              onChange={(e) => setNotificationsEnabled(e.target.checked)}
+              style={{ width: '1.125rem', height: '1.125rem', accentColor: '#eab308', cursor: 'pointer' }}
+            />
+            Receive email when a client submits a Form 843
+          </label>
+          <span className={styles.hint}>
+            When enabled, you will receive an email notification with submission details each time a client confirms filing through your branded page.
+          </span>
         </div>
 
         {error && <div className={styles.errorMsg}>{error}</div>}

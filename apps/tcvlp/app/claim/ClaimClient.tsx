@@ -14,6 +14,7 @@ import {
   downloadForm843,
   submitForm843,
   checkSubscription,
+  SubmitForm843Data,
 } from '@/lib/api';
 import styles from './page.module.css';
 
@@ -194,6 +195,12 @@ export default function ClaimClient({ pro, slug }: Props) {
   /* Download / submit (Step 4 → 5) */
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
+
+  /* Notification opt-in (Step 4) */
+  const [notifyOptIn, setNotifyOptIn] = useState(false);
+  const [notifyPreference, setNotifyPreference] = useState<'email' | 'phone' | 'sms'>('email');
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyPhone, setNotifyPhone] = useState('');
 
   /* Subscription */
   const [subActive, setSubActive] = useState<boolean | null>(null);
@@ -386,7 +393,15 @@ export default function ClaimClient({ pro, slug }: Props) {
   const handleMarkSubmitted = async () => {
     if (form843Result) {
       try {
-        await submitForm843(form843Result.submission_id);
+        const submitData: SubmitForm843Data = {
+          submission_id: form843Result.submission_id,
+          confirmed: true,
+          notify_opt_in: notifyOptIn,
+          notify_email: notifyEmail || undefined,
+          notify_phone: notifyPhone || undefined,
+          notify_preference: notifyOptIn ? notifyPreference : undefined,
+        };
+        await submitForm843(submitData);
       } catch {
         /* still advance — they may have already filed */
       }
@@ -903,6 +918,99 @@ export default function ClaimClient({ pro, slug }: Props) {
                     <div className={styles.tipBullet} />
                     <span>Allow <strong>6–8 weeks</strong> for the IRS to process your claim</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Notify Me opt-in card */}
+              <div className={styles.notifyCard} onClick={() => setNotifyOptIn(!notifyOptIn)}>
+                <input
+                  type="checkbox"
+                  className={styles.notifyCheckbox}
+                  checked={notifyOptIn}
+                  onChange={(e) => { e.stopPropagation(); setNotifyOptIn(e.target.checked); }}
+                />
+                <div className={styles.notifyContent}>
+                  <span className={styles.notifyLabel}>
+                    Notify me when I need to check my IRS transcript for updates on my claim and of any related news on this claim or related claims.
+                  </span>
+                  <span className={styles.notifySmall}>
+                    By checking this box, you allow the tax professional and their team to contact you about this claim or related claims via your preferred contact method below.
+                  </span>
+                </div>
+              </div>
+
+              {/* Contact preference fields */}
+              <div className={styles.contactPrefs}>
+                <div className={styles.contactPrefsTitle}>Preferred contact method:</div>
+                <div className={styles.radioGroup}>
+                  <div className={styles.radioRow}>
+                    <input
+                      type="radio"
+                      id="pref-email"
+                      name="notifyPref"
+                      className={styles.radioInput}
+                      checked={notifyPreference === 'email'}
+                      onChange={() => setNotifyPreference('email')}
+                    />
+                    <label htmlFor="pref-email" className={styles.radioLabel}>Email</label>
+                    <input
+                      type="email"
+                      className={styles.radioFieldInput}
+                      placeholder="you@example.com"
+                      value={notifyEmail}
+                      onChange={(e) => setNotifyEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.radioRow}>
+                    <input
+                      type="radio"
+                      id="pref-phone"
+                      name="notifyPref"
+                      className={styles.radioInput}
+                      checked={notifyPreference === 'phone'}
+                      onChange={() => setNotifyPreference('phone')}
+                    />
+                    <label htmlFor="pref-phone" className={styles.radioLabel}>Phone</label>
+                    <input
+                      type="tel"
+                      className={styles.radioFieldInput}
+                      placeholder="(555) 123-4567"
+                      value={notifyPhone}
+                      onChange={(e) => setNotifyPhone(e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.radioRow}>
+                    <input
+                      type="radio"
+                      id="pref-sms"
+                      name="notifyPref"
+                      className={styles.radioInput}
+                      checked={notifyPreference === 'sms'}
+                      onChange={() => setNotifyPreference('sms')}
+                    />
+                    <label htmlFor="pref-sms" className={styles.radioLabel}>Text/SMS</label>
+                    <input
+                      type="tel"
+                      className={styles.radioFieldInput}
+                      placeholder="(555) 123-4567"
+                      value={notifyPhone}
+                      onChange={(e) => setNotifyPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.contactEmailField}>
+                  <label className={styles.label}>Email <span style={{ color: '#eab308' }}>*</span></label>
+                  <input
+                    type="email"
+                    placeholder="Required for submission confirmation"
+                    value={notifyEmail}
+                    onChange={(e) => setNotifyEmail(e.target.value)}
+                    required
+                  />
+                  <span className={styles.hint} style={{ color: 'var(--color-text-3)' }}>
+                    Required regardless of preference — your submission confirmation is sent via email.
+                  </span>
                 </div>
               </div>
 
