@@ -49,7 +49,7 @@ TCVLP passes `tcvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 - **Unlimited Claim Pages** — separate branded pages per office/partner — not started
 - **Priority Generation** — Form 843 PDFs generated ahead of queue — not started
 - **Bulk Export** — ZIP download of all generated Form 843 PDFs — not started
-- **Transcript Integration** — direct TTMP transcript parsing into Form 843 — not started
+- **Transcript Integration** — direct TTMP transcript parsing into Form 843 — live (parseTranscriptText in Worker, auto-populates Kwong penalties on upload)
 
 ### Firm Only
 - **White-Label Branding** (`app/claim/`) — remove all TaxClaim Pro branding — frontend partial, Worker pending

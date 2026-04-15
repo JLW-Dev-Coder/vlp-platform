@@ -14446,16 +14446,75 @@ TTMP Support Team
   },
 
   // POST /v1/tcvlp/transcript/upload
+  //
+  // parseTranscriptText — extract IRS transaction lines from raw PDF text.
+  // Adapted from the TTMP transcript parser (lines 9511-9549).
+  // Returns: Array<{ code, date, amount, description }>
+  //
   {
     method: 'POST', pattern: '/v1/tcvlp/transcript/upload',
     handler: async (_method, _pattern, _params, request, env) => {
+      // IRS transaction code descriptions used for Kwong-eligible penalties
+      const IRS_CODE_DESCRIPTIONS = {
+        '160': 'Failure-to-File Penalty',
+        '170': 'Estimated Tax Penalty',
+        '196': 'Interest Charged',
+        '199': 'Interest Charged',
+        '270': 'Failure-to-Pay Penalty',
+        '276': 'Penalty for Bad Check',
+        '304': 'Late Filing Penalty',
+        '306': 'Failure-to-Pay Tax Penalty',
+        '308': 'Failure-to-Pay Interest',
+      };
+
+      // Parse IRS transcript text into structured transactions (from TTMP logic)
+      function parseTranscriptText(text) {
+        const transactions = [];
+        const lines = text.split('\n');
+        // Pattern: 3-digit code at line start, description, date (MM-DD-YYYY), amount
+        const txPattern = /^\s*(\d{3})\s+(.+?)\s+(\d{2}[-/]\d{2}[-/]\d{4})\s+[-]?\$?([\d,]+\.?\d{0,2})/;
+        const txPatternAlt = /^\s*(\d{3})\s+(.+?)\s+(\d{2}[-/]\d{2}[-/]\d{4})\s+([-]?[\d,]+\.?\d{0,2})/;
+
+        for (const line of lines) {
+          let match = line.match(txPattern);
+          if (!match) match = line.match(txPatternAlt);
+          if (!match) continue;
+
+          const code = match[1];
+          const descRaw = match[2].trim();
+          const rawDate = match[3].replace(/\//g, '-');
+          const rawAmount = match[4].replace(/,/g, '');
+          const amount = parseFloat(rawAmount);
+
+          // Normalize date from MM-DD-YYYY to YYYY-MM-DD
+          const dateParts = rawDate.split('-');
+          let isoDate = rawDate;
+          if (dateParts.length === 3 && dateParts[2].length === 4) {
+            isoDate = `${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
+          }
+
+          // Check for negative indicator
+          const isNegative = line.includes('-$') || (line.match(/\(\$?[\d,]+\.?\d*\)/) !== null);
+
+          if (!isNaN(amount)) {
+            transactions.push({
+              code,
+              date: isoDate,
+              amount: isNegative && amount > 0 ? -amount : amount,
+              description: IRS_CODE_DESCRIPTIONS[code] || descRaw,
+            });
+          }
+        }
+        return transactions;
+      }
+
       try {
         const formData = await request.formData();
-        const pdfFile = formData.get('file');
+        const pdfFile = formData.get('transcript');
         const pro_id = formData.get('pro_id');
 
         if (!pdfFile || !pro_id) {
-          return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['file', 'pro_id'] }, 400, request);
+          return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['transcript', 'pro_id'] }, 400, request);
         }
 
         // Verify pro exists
@@ -14468,21 +14527,41 @@ TTMP Support Team
         const pdfBytes = await pdfFile.arrayBuffer();
         const extractedText = extractTextFromPdf(new Uint8Array(pdfBytes));
 
-        if (!extractedText) {
-          return json({ ok: false, error: 'EXTRACTION_FAILED', message: 'Failed to extract text from PDF' }, 400, request);
+        if (!extractedText || extractedText.trim().length < 20) {
+          return json({
+            ok: true,
+            parsed: false,
+            message: 'Could not extract text from this PDF. Please enter penalty details manually.',
+          });
         }
 
-        // Parse transcript and filter for Kwong window
+        // Parse transcript into structured transactions
         const transactions = parseTranscriptText(extractedText);
+
+        if (transactions.length === 0) {
+          return json({
+            ok: true,
+            parsed: true,
+            kwong_penalties: {
+              total_amount: 0,
+              tax_years: [],
+              transactions: [],
+              date_range: { start: '2020-01-20', end: '2023-07-10' },
+            },
+            all_transactions_count: 0,
+            kwong_eligible_count: 0,
+          });
+        }
 
         // Filter for Kwong window: Jan 20, 2020 – Jul 10, 2023
         const kwongStart = new Date('2020-01-20');
         const kwongEnd = new Date('2023-07-10');
-        const penaltyCodes = ['160', '270', '276', '304', '306', '308'];
+        // Penalty codes + interest codes eligible under Kwong v. United States
+        const kwongCodes = ['160', '170', '270', '276', '304', '306', '308', '196', '199'];
 
         const kwongTransactions = transactions.filter(tx => {
           const txDate = new Date(tx.date);
-          return txDate >= kwongStart && txDate <= kwongEnd && penaltyCodes.includes(tx.code.replace('TC ', ''));
+          return txDate >= kwongStart && txDate <= kwongEnd && kwongCodes.includes(tx.code);
         });
 
         // Calculate totals
@@ -14490,8 +14569,7 @@ TTMP Support Team
         const taxYears = new Set();
 
         kwongTransactions.forEach(tx => {
-          totalAmount += parseFloat(tx.amount) || 0;
-          // Extract tax year from date or description
+          totalAmount += Math.abs(tx.amount);
           const year = new Date(tx.date).getFullYear();
           if (year >= 2020 && year <= 2023) {
             taxYears.add(year.toString());
@@ -14500,17 +14578,20 @@ TTMP Support Team
 
         return json({
           ok: true,
+          parsed: true,
           kwong_penalties: {
             total_amount: parseFloat(totalAmount.toFixed(2)),
             tax_years: Array.from(taxYears).sort(),
             transactions: kwongTransactions.map(tx => ({
-              date: tx.date,
               code: tx.code,
-              amount: parseFloat(tx.amount) || 0,
-              description: tx.description || 'Penalty assessment'
+              date: tx.date,
+              amount: Math.abs(tx.amount),
+              description: tx.description,
             })),
-            date_range: 'Jan 20, 2020 – Jul 10, 2023'
-          }
+            date_range: { start: '2020-01-20', end: '2023-07-10' },
+          },
+          all_transactions_count: transactions.length,
+          kwong_eligible_count: kwongTransactions.length,
         });
       } catch (e) {
         console.error('TCVLP transcript upload error:', e);

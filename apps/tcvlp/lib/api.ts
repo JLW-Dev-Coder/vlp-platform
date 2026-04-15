@@ -92,9 +92,17 @@ export interface TranscriptTransaction {
 }
 
 export interface TranscriptResult {
-  total_penalty_amount: number;
-  tax_years: number[];
-  transactions: TranscriptTransaction[];
+  ok: boolean;
+  parsed: boolean;
+  message?: string;
+  kwong_penalties?: {
+    total_amount: number;
+    tax_years: string[];
+    transactions: TranscriptTransaction[];
+    date_range: { start: string; end: string };
+  };
+  all_transactions_count?: number;
+  kwong_eligible_count?: number;
 }
 
 export async function uploadTranscript(formData: FormData): Promise<TranscriptResult> {

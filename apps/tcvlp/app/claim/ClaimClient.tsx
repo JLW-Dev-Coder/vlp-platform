@@ -113,20 +113,37 @@ export default function ClaimClient({ pro, slug }: Props) {
       if (pro.pro_id) fd.append('pro_id', pro.pro_id);
       const result = await uploadTranscript(fd);
       setTranscript(result);
-      if (result.tax_years.length) setTaxYear(result.tax_years[result.tax_years.length - 1]);
-      if (result.total_penalty_amount) setpenaltyAmountFromTranscript(result.total_penalty_amount);
-      setStep(2);
+
+      if (result.parsed && result.kwong_penalties && (result.kwong_eligible_count ?? 0) > 0) {
+        // Auto-populate from the largest eligible penalty
+        const sorted = [...result.kwong_penalties.transactions].sort((a, b) => b.amount - a.amount);
+        const largest = sorted[0];
+        if (largest) {
+          setPenaltyAmount(result.kwong_penalties.total_amount.toFixed(2));
+          // Set tax year from largest penalty
+          const year = new Date(largest.date).getFullYear();
+          if (year >= 2020 && year <= 2023) setTaxYear(year);
+          // Map code to penalty type
+          const codeToType: Record<string, string> = {
+            '160': 'Failure to File', '304': 'Failure to File',
+            '270': 'Failure to Pay', '276': 'Failure to Pay',
+            '306': 'Failure to Pay', '308': 'Failure to Pay',
+            '170': 'Estimated Tax Penalty',
+          };
+          if (codeToType[largest.code]) setPenaltyType(codeToType[largest.code]);
+        }
+        if (result.kwong_penalties.tax_years.length) {
+          const years = result.kwong_penalties.tax_years.map(Number);
+          setTaxYear(years[years.length - 1]);
+        }
+      }
+      // Don't auto-advance — let user see transcript results first
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
   };
-
-  function setpenaltyAmountFromTranscript(amount: number) {
-    setTranscript((prev) => prev); // keep transcript in state
-    setPenaltyAmount(amount.toFixed(2));
-  }
 
   const handleStateChange = async (s: string) => {
     setState(s);
@@ -266,25 +283,55 @@ export default function ClaimClient({ pro, slug }: Props) {
 
             {transcript ? (
               <div className={styles.transcriptResult}>
-                <div className={styles.transcriptSuccess}>✓ Transcript processed successfully</div>
-                <div className={styles.transcriptSummary}>
-                  <div className={styles.tRow}><span>Total penalty found</span><strong>${transcript.total_penalty_amount.toFixed(2)}</strong></div>
-                  <div className={styles.tRow}><span>Tax years</span><strong>{transcript.tax_years.join(', ')}</strong></div>
-                </div>
-                <h3 className={styles.tSubhead}>Transactions Found</h3>
-                <div className={styles.transactionTable}>
-                  <div className={styles.tHead}>
-                    <span>Date</span><span>Code</span><span>Amount</span><span>Description</span>
-                  </div>
-                  {transcript.transactions.map((t, i) => (
-                    <div key={i} className={styles.tRow2}>
-                      <span>{t.date}</span><span>{t.code}</span><span>${t.amount.toFixed(2)}</span><span>{t.description}</span>
+                {/* Case 1: Parse failed — could not read PDF */}
+                {!transcript.parsed && (
+                  <>
+                    <div className={styles.errorMsg}>{transcript.message || 'Could not extract text from this PDF. Please enter penalty details manually.'}</div>
+                    <button className={styles.primaryBtn} onClick={() => setStep(2)}>
+                      Enter Details Manually →
+                    </button>
+                  </>
+                )}
+
+                {/* Case 2: Parsed but no Kwong-eligible penalties */}
+                {transcript.parsed && (transcript.kwong_eligible_count ?? 0) === 0 && (
+                  <>
+                    <div className={styles.transcriptSuccess}>✓ Transcript processed — {transcript.all_transactions_count ?? 0} transactions found</div>
+                    <div className={styles.errorMsg}>No Kwong-eligible penalties found in this transcript. You can enter penalty details manually below.</div>
+                    <button className={styles.primaryBtn} onClick={() => setStep(2)}>
+                      Enter Details Manually →
+                    </button>
+                  </>
+                )}
+
+                {/* Case 3: Parsed with Kwong-eligible penalties */}
+                {transcript.parsed && (transcript.kwong_eligible_count ?? 0) > 0 && transcript.kwong_penalties && (
+                  <>
+                    <div className={styles.transcriptSuccess}>
+                      ✓ {transcript.kwong_eligible_count} Kwong-eligible penalties found totaling ${transcript.kwong_penalties.total_amount.toFixed(2)}
                     </div>
-                  ))}
-                </div>
-                <button className={styles.primaryBtn} onClick={() => setStep(2)}>
-                  Use These Values →
-                </button>
+                    <div className={styles.transcriptSummary}>
+                      <div className={styles.tRow}><span>Total penalty amount</span><strong>${transcript.kwong_penalties.total_amount.toFixed(2)}</strong></div>
+                      <div className={styles.tRow}><span>Tax years</span><strong>{transcript.kwong_penalties.tax_years.join(', ')}</strong></div>
+                      <div className={styles.tRow}><span>All transactions</span><strong>{transcript.all_transactions_count}</strong></div>
+                      <div className={styles.tRow}><span>Kwong-eligible</span><strong>{transcript.kwong_eligible_count}</strong></div>
+                    </div>
+                    <h3 className={styles.tSubhead}>Kwong-Eligible Transactions</h3>
+                    <div className={styles.transactionTable}>
+                      <div className={styles.tHead}>
+                        <span>Date</span><span>Code</span><span>Amount</span><span>Description</span>
+                      </div>
+                      {transcript.kwong_penalties.transactions.map((t, i) => (
+                        <div key={i} className={styles.tRow2}>
+                          <span>{t.date}</span><span>{t.code}</span><span>${t.amount.toFixed(2)}</span><span>{t.description}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button className={styles.primaryBtn} onClick={() => setStep(2)}>
+                      Use These Values →
+                    </button>
+                  </>
+                )}
               </div>
             ) : (
               <div className={styles.uploadArea}>
