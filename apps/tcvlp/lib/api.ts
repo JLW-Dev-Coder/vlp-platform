@@ -27,7 +27,8 @@ export interface Session {
 
 export async function getSession(): Promise<Session | null> {
   try {
-    return await apiFetch<Session>('/v1/auth/session');
+    const result = await apiFetch<{ ok: boolean; session: Session }>('/v1/auth/session');
+    return result.session ?? null;
   } catch {
     return null;
   }

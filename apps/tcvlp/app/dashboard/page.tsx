@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import Header from '@/components/Header';
-import { Session, TaxPro, getPro } from '@/lib/api';
+import { Session, TaxPro, getPro, getSubscriptionStatus, SubscriptionStatus } from '@/lib/api';
 import dynamic from 'next/dynamic';
 import Overview from './components/Overview';
 
@@ -27,18 +27,23 @@ const NAV_ITEMS: { id: View; label: string }[] = [
 function DashboardContent({ session }: { session: Session }) {
   const [view, setView] = useState<View>('overview');
   const [pro, setPro] = useState<TaxPro | null>(null);
+  const [sub, setSub] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPostCheckout] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('checkout') === 'success';
+  });
 
   useEffect(() => {
-    if (session.pro_id) {
-      getPro(session.pro_id)
-        .then((p) => setPro(p))
-        .finally(() => setLoading(false));
-    } else {
-      const timer = setTimeout(() => setLoading(false), 0);
-      return () => clearTimeout(timer);
-    }
-  }, [session.pro_id]);
+    getSubscriptionStatus().then(async (s) => {
+      setSub(s);
+      if (s.pro_id) {
+        const p = await getPro(s.pro_id);
+        setPro(p);
+      }
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <div className={styles.root}>
@@ -47,7 +52,7 @@ function DashboardContent({ session }: { session: Session }) {
         <aside className={styles.sidebar}>
           <div className={styles.sidebarTop}>
             <div className={styles.accountChip}>
-              <div className={styles.avatar}>{session.email[0].toUpperCase()}</div>
+              <div className={styles.avatar}>{(session.email ?? '?')[0].toUpperCase()}</div>
               <div className={styles.accountInfo}>
                 <span className={styles.accountEmail}>{session.email}</span>
                 <span className={styles.accountRole}>Tax Professional</span>
@@ -78,11 +83,19 @@ function DashboardContent({ session }: { session: Session }) {
             <div className={styles.loadingState}>Loading…</div>
           ) : (
             <>
-              {view === 'overview' && <Overview session={session} pro={pro} />}
+              {isPostCheckout && !sub?.active && (
+                <div className={styles.loadingState} style={{ padding: '1rem', marginBottom: '1rem', background: '#1a1a2e', borderRadius: '0.5rem', textAlign: 'center' }}>
+                  Your subscription is being activated. This may take a few seconds.{' '}
+                  <button onClick={() => window.location.reload()} style={{ color: '#fbbf24', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    Refresh
+                  </button>
+                </div>
+              )}
+              {view === 'overview' && <Overview session={session} pro={pro} sub={sub} />}
               {view === 'embed' && <EmbedLink pro={pro} />}
               {view === 'submissions' && <Submissions />}
               {view === 'settings' && <Settings session={session} pro={pro} onUpdated={setPro} />}
-              {view === 'upgrade' && <Upgrade pro={pro} session={session} />}
+              {view === 'upgrade' && <Upgrade pro={pro} session={session} sub={sub} />}
             </>
           )}
         </main>

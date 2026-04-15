@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Session, TaxPro, getSubscriptionStatus, createTcvlpCheckout, SubscriptionStatus } from '@/lib/api';
+import { useState } from 'react';
+import { Session, TaxPro, createTcvlpCheckout, SubscriptionStatus } from '@/lib/api';
 import { TcvlpTier, tierLabel, tierPrice, STRIPE_PRICES } from '@/lib/tiers';
 import styles from './shared.module.css';
 
 interface Props {
   pro: TaxPro | null;
   session: Session;
+  sub: SubscriptionStatus | null;
 }
 
 const TIER_FEATURES: Record<TcvlpTier, string[]> = {
@@ -37,14 +38,9 @@ const TIER_FEATURES: Record<TcvlpTier, string[]> = {
 
 const TIERS: TcvlpTier[] = ['tcvlp_starter', 'tcvlp_professional', 'tcvlp_firm'];
 
-export default function Upgrade({ pro, session }: Props) {
+export default function Upgrade({ pro, session, sub }: Props) {
   const [loading, setLoading] = useState<TcvlpTier | null>(null);
   const [error, setError] = useState('');
-  const [sub, setSub] = useState<SubscriptionStatus | null>(null);
-
-  useEffect(() => {
-    getSubscriptionStatus().then(setSub);
-  }, []);
 
   const currentTier = (sub?.plan || null) as TcvlpTier | null;
   const isActive = sub?.active ?? false;

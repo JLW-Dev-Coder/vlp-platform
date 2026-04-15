@@ -1,24 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { Session, TaxPro, getSubscriptionStatus, SubscriptionStatus } from '@/lib/api';
+import { Session, TaxPro, SubscriptionStatus } from '@/lib/api';
 import { tierLabel, tierPrice } from '@/lib/tiers';
 import styles from './shared.module.css';
 
 interface Props {
   session: Session;
   pro: TaxPro | null;
+  sub: SubscriptionStatus | null;
 }
 
-export default function Overview({ session, pro }: Props) {
+export default function Overview({ session, pro, sub }: Props) {
   const [copied, setCopied] = useState(false);
-  const [sub, setSub] = useState<SubscriptionStatus | null>(null);
   const landingUrl = pro?.slug ? `https://${pro.slug}.taxclaim.virtuallaunch.pro` : null;
-
-  useEffect(() => {
-    getSubscriptionStatus().then(setSub);
-  }, []);
 
   const handleCopy = () => {
     if (!landingUrl) return;
