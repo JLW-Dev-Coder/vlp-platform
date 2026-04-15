@@ -14986,30 +14986,18 @@ TTMP Support Team
   {
     method: 'GET', pattern: '/v1/tcvlp/forms/843/:submission_id/download',
     handler: async (_method, _pattern, params, request, env) => {
-      const { error, session } = await requireSession(request, env);
-      if (error) return error;
-
+      // Public route — submission UUID is the access key (unguessable)
       const { submission_id } = params;
       if (!submission_id) {
         return json({ ok: false, error: 'MISSING_SUBMISSION_ID' }, 400, request);
       }
 
-      // Verify the session account owns this submission (no IDOR)
       const submission = await env.DB.prepare(
-        'SELECT submission_id, taxpayer_name, pro_id FROM tcvlp_form843_submissions WHERE submission_id = ?'
+        'SELECT submission_id, taxpayer_name FROM tcvlp_form843_submissions WHERE submission_id = ?'
       ).bind(submission_id).first();
 
       if (!submission) {
         return json({ ok: false, error: 'NOT_FOUND', message: 'Form 843 submission not found' }, 404, request);
-      }
-
-      // Check that the pro's account matches the session account
-      const pro = await env.DB.prepare(
-        'SELECT account_id FROM tcvlp_pros WHERE pro_id = ?'
-      ).bind(submission.pro_id).first();
-
-      if (!pro || pro.account_id !== session.account_id) {
-        return json({ ok: false, error: 'FORBIDDEN', message: 'You do not have access to this form' }, 403, request);
       }
 
       // Read PDF from R2
