@@ -34,7 +34,7 @@ html { scroll-behavior: smooth; height: 100%; }
 body {
   background: linear-gradient(180deg, #07070A 0%, #0D0D15 40%, #12121A 100%);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
   min-height: 100vh;
 }
 

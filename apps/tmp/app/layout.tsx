@@ -1,14 +1,28 @@
 import type { Metadata } from 'next'
-import { Raleway } from 'next/font/google'
+import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google'
 import { BusinessJsonLd } from '@vlp/member-ui'
 import './globals.css'
 import Footer from '@/components/Footer'
 
-const raleway = Raleway({
+const sora = Sora({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  variable: '--font-sora',
   display: 'swap',
-  variable: '--font-raleway',
+  weight: ['600', '700'],
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+  weight: ['400', '500', '600'],
+})
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-plex-mono',
+  display: 'swap',
+  weight: ['400', '500'],
 })
 
 export const metadata: Metadata = {
@@ -26,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={raleway.variable}>
+    <html lang="en" className={`${sora.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>

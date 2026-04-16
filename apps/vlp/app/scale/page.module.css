@@ -149,7 +149,7 @@
 }
 
 .repoCardLabel {
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: var(--font-sora), system-ui, sans-serif;
   font-size: 1.125rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.95);
@@ -274,7 +274,7 @@
 }
 
 .metricSectionTitle {
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: var(--font-sora), system-ui, sans-serif;
   font-size: 0.875rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -749,7 +749,7 @@
 .workflowMarkdown h5,
 .workflowMarkdown h6 {
   color: rgba(255, 255, 255, 0.95);
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: var(--font-sora), system-ui, sans-serif;
   font-weight: 700;
   margin-top: 1.5rem;
   margin-bottom: 0.6rem;
@@ -820,7 +820,7 @@
 }
 
 .workflowMarkdown code {
-  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
   font-size: 0.78rem;
   padding: 0.1rem 0.35rem;
   background-color: rgba(255, 255, 255, 0.07);
@@ -943,7 +943,7 @@
 }
 
 .glassCardTitle {
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: var(--font-sora), system-ui, sans-serif;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;

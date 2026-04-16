@@ -1,13 +1,27 @@
 import type { Metadata } from 'next';
-import { Raleway } from 'next/font/google';
+import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
 import { BusinessJsonLd } from '@vlp/member-ui';
 import './globals.css';
 
-const raleway = Raleway({
+const sora = Sora({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  variable: '--font-sora',
   display: 'swap',
-  variable: '--font-raleway',
+  weight: ['600', '700'],
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+  weight: ['400', '500', '600'],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-plex-mono',
+  display: 'swap',
+  weight: ['400', '500'],
 });
 
 export const metadata: Metadata = {
@@ -28,15 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={raleway.variable}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${sora.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
       <body>
         <BusinessJsonLd
           name="Games VLP"

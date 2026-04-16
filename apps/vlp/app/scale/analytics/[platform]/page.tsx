@@ -149,7 +149,7 @@ const sectionHeading: React.CSSProperties = {
 }
 
 const kpiNumber: React.CSSProperties = {
-  fontFamily: "'Raleway', system-ui, sans-serif",
+  fontFamily: 'var(--font-sora), system-ui, sans-serif',
   fontSize: '1.75rem',
   fontWeight: 700,
   color: 'rgba(255, 255, 255, 0.95)',
@@ -324,7 +324,7 @@ function DonutChart({ cached, total }: { cached: number; total: number }) {
           strokeDasharray={`${cachedLen} ${uncachedLen}`}
           transform="rotate(-90 50 50)" />
         {/* Center text */}
-        <text x="50" y="47" textAnchor="middle" fill="rgba(255,255,255,0.95)" fontSize="14" fontWeight="700" fontFamily="'Raleway', system-ui">{pct(cached, total)}</text>
+        <text x="50" y="47" textAnchor="middle" fill="rgba(255,255,255,0.95)" fontSize="14" fontWeight="700" fontFamily="var(--font-sora), system-ui">{pct(cached, total)}</text>
         <text x="50" y="60" textAnchor="middle" fill="rgba(148,163,184,0.7)" fontSize="6">cache ratio</text>
       </svg>
       <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>

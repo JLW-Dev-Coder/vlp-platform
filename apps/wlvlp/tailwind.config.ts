@@ -27,7 +27,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Sora', 'var(--font-raleway)', 'DM Sans', 'Inter', 'system-ui', 'sans-serif'],
+        sora: ['var(--font-sora)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-plex-mono)', 'ui-monospace', 'monospace'],
       },
       backgroundImage: {
         'gradient-brand': 'linear-gradient(to right, #a855f7, #8b5cf6)',

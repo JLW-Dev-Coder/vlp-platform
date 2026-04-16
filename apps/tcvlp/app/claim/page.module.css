@@ -363,7 +363,7 @@
 }
 
 .eligibleTag {
-  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-family: var(--font-plex-mono), 'Courier New', monospace;
   font-size: 0.75rem;
   font-weight: 700;
   color: #22c55e;
@@ -645,7 +645,7 @@
   border-color: rgba(234, 179, 8, 0.3) !important;
   color: #eab308 !important;
   font-weight: 700;
-  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-family: var(--font-plex-mono), 'Courier New', monospace;
   cursor: default;
 }
 
@@ -772,7 +772,7 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-1);
-  font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
+  font-family: var(--font-plex-mono), 'Courier New', Courier, monospace;
   line-height: 1.6;
   white-space: pre-line;
 }
@@ -912,7 +912,7 @@
 }
 
 .contactPhone {
-  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-family: var(--font-plex-mono), 'Courier New', monospace;
 }
 
 /* ── Reach Out ───────────────────────────────────────────────────────────── */

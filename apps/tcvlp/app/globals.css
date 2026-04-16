@@ -27,8 +27,8 @@
     --color-text-2:      #9ca3af;
     --color-text-3:      #6b7280;
     --color-text-4:      #4b5563;
-    --font-display:      'Raleway', Arial, sans-serif;
-    --font-body:         'DM Sans', sans-serif;
+    --font-display:      var(--font-sora), system-ui, sans-serif;
+    --font-body:         var(--font-dm-sans), system-ui, sans-serif;
     --max-width:         72rem;
     --transition:        0.15s ease;
   }

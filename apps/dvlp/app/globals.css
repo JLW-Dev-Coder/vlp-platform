@@ -23,7 +23,7 @@ html, body {
   padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -248,7 +248,7 @@ html, body {
   border: none;
   cursor: pointer;
   transition: all .15s;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
 }
 .btn-primary:hover { background: linear-gradient(135deg, #34d399, #10b981); box-shadow: 0 4px 16px rgba(16,185,129,.28); }
 .btn-primary:disabled { background: #1e293b; color: #475569; cursor: not-allowed; box-shadow: none; }
@@ -266,7 +266,7 @@ html, body {
   border: 1px solid rgba(51,65,85,.6);
   cursor: pointer;
   transition: all .15s;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
 }
 .btn-secondary:hover { border-color: rgba(16,185,129,.25); color: #e2e8f0; background: rgba(16,185,129,.04); }
 .btn-secondary:disabled { opacity: .4; cursor: not-allowed; }
@@ -284,7 +284,7 @@ html, body {
   border: 1px solid rgba(239,68,68,.18);
   cursor: pointer;
   transition: all .15s;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
 }
 .btn-danger:hover { background: rgba(239,68,68,.2); border-color: rgba(239,68,68,.35); }
 .btn-sm { padding: 4px 12px; font-size: .7rem; }
@@ -297,7 +297,7 @@ html, body {
   border-radius: 8px;
   padding: 10px 14px;
   font-size: .8rem;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   transition: border-color .15s, box-shadow .15s;
   width: 100%;
 }

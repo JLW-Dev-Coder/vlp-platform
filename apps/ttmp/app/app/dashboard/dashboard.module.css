@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: #07090f;
   color: #f9fafb;
-  font-family: var(--font-raleway), system-ui, sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
 }
 
 .sidebar {

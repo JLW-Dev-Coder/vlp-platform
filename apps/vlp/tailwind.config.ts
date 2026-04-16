@@ -29,7 +29,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-raleway)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sora: ['var(--font-sora)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-plex-mono)', 'ui-monospace', 'monospace'],
       },
       backgroundImage: {
         // Keep hex values in sync with brand.primary and brand.hover above.

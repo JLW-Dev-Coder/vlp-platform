@@ -18,7 +18,7 @@
   }
 
   body {
-    font-family: var(--font-raleway), Inter, system-ui, sans-serif;
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
     background-color: var(--surface-bg);
     color: var(--text-primary);
     overflow-x: hidden;
