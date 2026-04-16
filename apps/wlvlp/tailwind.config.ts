@@ -22,6 +22,7 @@ const config: Config = {
           light: 'rgba(168, 85, 247, 0.15)',
           glow: 'rgba(168, 85, 247, 0.40)',
           'text-on-primary': '#ffffff',
+          'gradient-to': 'rgba(168, 85, 247, 0.15)',
         },
         ink: {
           900: '#07070A',

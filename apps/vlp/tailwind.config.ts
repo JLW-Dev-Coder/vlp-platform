@@ -20,6 +20,7 @@ const config: Config = {
           light: 'rgba(249, 115, 22, 0.15)',
           glow: 'rgba(249, 115, 22, 0.40)',
           'text-on-primary': '#ffffff',
+          'gradient-to': '#f59e0b',
         },
         ink: {
           900: '#0f172a',

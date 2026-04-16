@@ -23,6 +23,7 @@ const config: Config = {
           light: 'rgba(20, 184, 166, 0.15)',
           glow: 'rgba(20, 184, 166, 0.40)',
           'text-on-primary': '#ffffff',
+          'gradient-to': 'rgba(20, 184, 166, 0.15)',
         },
       },
       fontFamily: {
