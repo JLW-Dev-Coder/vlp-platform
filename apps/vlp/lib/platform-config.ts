@@ -61,4 +61,45 @@ export const vlpConfig: PlatformConfig = {
     profile: '/profile',
     support: '/support',
   },
+  marketing: {
+    tagline: 'Launch systems for tax professionals',
+    summary: 'Membership platform for tax professionals who want calmer launches, cleaner operations, and a repeatable client acquisition system.',
+    ctaLabel: 'Start Here →',
+    ctaPath: '/contact',
+    megaMenu: {
+      discover: [
+        { label: 'About', href: '/about', description: 'Why Virtual Launch Pro exists' },
+        { label: 'Contact', href: '/contact', description: 'Talk to our team or start intake' },
+        { label: 'Blog', href: '/blog', description: 'Insights and growth content for tax pros' },
+      ],
+      explore: [
+        { label: 'Booking', href: '/features/booking', description: 'See the booking workflow in action' },
+        { label: 'Public Profile', href: '/features/public-profile', description: 'Preview the professional profile experience' },
+        { label: 'Help Center', href: '/help', description: 'Answers, guides, and support' },
+        { label: 'Pricing', href: '/pricing' },
+      ],
+      toolsExtras: [
+        { label: 'Platform Overview', href: '/features' },
+        { label: 'Integration Guide', href: '/how-it-works' },
+        { label: 'Partner Program', href: '/affiliate' },
+      ],
+      ctaText: 'Need a cleaner launch system than duct tape, calendar links, and prayer?',
+      ctaMagnetLabel: 'Contact Sales →',
+      ctaMagnetPath: '/contact',
+    },
+    footerTagline: 'Calm launch systems',
+    footerResources: [
+      { label: 'Blog', href: '/blog' },
+      { label: 'Transcript Central', href: 'https://taxmonitor.pro/resources/transcript-central', external: true },
+      { label: 'How to Read IRS Transcripts', href: 'https://transcript.taxmonitor.pro/resources/how-to-read-irs-transcripts', external: true },
+      { label: 'Tax Monitor Pro', href: 'https://taxmonitor.pro', external: true },
+      { label: 'Transcript Automation', href: 'https://transcript.taxmonitor.pro', external: true },
+      { label: 'TaxTools Arcade', href: 'https://taxtools.taxmonitor.pro', external: true },
+      { label: 'Affiliate Program', href: '/affiliate' },
+    ],
+    footerLegal: [
+      { label: 'Privacy', href: '/legal/privacy' },
+      { label: 'Terms', href: '/legal/terms' },
+    ],
+  },
 }
