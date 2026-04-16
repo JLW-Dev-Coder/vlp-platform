@@ -62,6 +62,7 @@ theme: {
         light: '<hex>',
         glow: '<hex>',                // used for focus rings + emphasis
         'text-on-primary': '<hex>',   // foreground on brand.primary surfaces
+        'gradient-to': '<hex>',       // 7th (optional) — blueprint §4.5; second color for two-tone gradients; falls back to brand.light when unset
       },
     },
   },
@@ -444,5 +445,6 @@ Documented here so cleanup is scheduled, not forgotten. Each item gets its own c
 | 2026-04-15 | Two-layer token architecture documented (shared + per-app) | Matches shipped reality; shared=`packages/member-ui`, per-app=`apps/<app>` |
 | 2026-04-15 | §§9, 10, 11 preserved (dropdown, phone, self-check) with token updates | Working content, strongest in prior version |
 | 2026-04-15 | Cleanup list (§13) added instead of inline TODO notes | Scheduled drift, not forgotten drift |
+| 2026-04-16 | Document new `brand.gradient-to` token in §2.1 example | Mirrors blueprint §4.5 addition; keeps per-app tailwind config template in sync. |
 
 Append-only. Do not rewrite prior entries.

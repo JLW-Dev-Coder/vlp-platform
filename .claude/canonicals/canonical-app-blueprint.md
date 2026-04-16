@@ -91,7 +91,13 @@ Every app's `tailwind.config.ts` MUST define these six brand tokens:
 | `brand.glow` | Focus rings, shadows, emphasis |
 | `brand.text-on-primary` | Foreground color when placed on `brand.primary` |
 
-Apps may define additional tokens. They may NOT rename or omit these six.
+Apps SHOULD also define this optional 7th token:
+
+| Token | Purpose |
+|-------|---------|
+| `brand.gradient-to` | Second color for two-tone brand gradients (logo squares, hero backgrounds, CTA accents). Falls back to `brand.light` when unset. |
+
+Apps may define additional tokens. They may NOT rename or omit the six required.
 
 ### 4.6 Per-platform colors
 Brand color values are **per-app** and live in each app's `tailwind.config.ts` under `theme.extend.colors.brand`. This file does not embed hex values — embedding creates drift.
@@ -280,5 +286,6 @@ Changes to `tailwind.config.ts` in any app require:
 | 2026-04-15 | Per-platform colors = reference only (§4.6) | Registry fix of 4 apps proved hex-in-docs creates drift |
 | 2026-04-15 | §4.7 changed from dark-only to dark-today-light-planned | Owner wants user toggle in profile; scoped as follow-up project |
 | 2026-04-15 | §4.18 reduced-motion scoped to new work + grandfather | Consistency with §4.9 retrofit strategy |
+| 2026-04-16 | Added optional `brand.gradient-to` 7th brand token | Two-tone brand gradients in shared MarketingHeader/Footer logos looked flat when `brand.light` was an alpha-tinted variant of `brand.primary` (e.g. TCVLP yellow → 15%-alpha yellow). Proper second color produces richer brand identity per platform. |
 
 Append-only. Do not rewrite prior entries.
