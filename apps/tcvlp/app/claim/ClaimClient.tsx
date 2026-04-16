@@ -223,7 +223,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         <div className={styles.notFoundCard}>
           <h1 className={styles.notFoundTitle}>Page Not Available</h1>
           <p className={styles.notFoundSub}>
-            The page <strong>{slug}.taxclaim.virtuallaunch.pro</strong> is not currently active.
+            The page <strong>taxclaim.virtuallaunch.pro/claim?slug={slug}</strong> is not currently active.
             If you received this link from a tax professional, please contact them directly.
           </p>
           <Link href="/" className={styles.notFoundLink}>Learn about TaxClaim Pro →</Link>
@@ -815,15 +815,12 @@ export default function ClaimClient({ pro, slug }: Props) {
                     />
                   </div>
 
-                  <div className={`${styles.field} ${styles.totalField}`} style={{ marginTop: '1.25rem' }}>
-                    <label className={styles.label}>Total Refund Requested ($)</label>
-                    <input
-                      type="text"
-                      value={totalAmount > 0 ? totalAmount.toFixed(2) : '0.00'}
-                      readOnly
-                      tabIndex={-1}
-                    />
-                    <div className={styles.totalFieldRef}>IRS Form 843, Item 2: Amount to be refunded or abated</div>
+                  <div className={styles.totalFieldHero}>
+                    <label className={styles.totalFieldHeroLabel}>Total Refund Requested</label>
+                    <div className={styles.totalFieldHeroAmount}>
+                      ${totalAmount > 0 ? totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                    </div>
+                    <div className={styles.totalFieldHeroRef}>IRS Form 843, Item 2: Amount to be refunded or abated</div>
                   </div>
                 </div>
 
@@ -1040,6 +1037,10 @@ export default function ClaimClient({ pro, slug }: Props) {
               <button className={styles.secondaryBtn} onClick={handleMarkSubmitted}>
                 Form submitted
               </button>
+
+              <button className={styles.goBackBtn} onClick={() => setStep(3)}>
+                Go Back
+              </button>
             </div>
           </div>
         )}
@@ -1139,6 +1140,10 @@ export default function ClaimClient({ pro, slug }: Props) {
                   Contact your tax professional directly for personalized assistance with your Form 843 claim.
                 </div>
               )}
+
+              <button className={styles.goBackBtn} onClick={() => setStep(4)}>
+                Go Back
+              </button>
             </div>
           </div>
         )}

@@ -14,7 +14,7 @@ interface Props {
 
 export default function Overview({ session, pro, sub }: Props) {
   const [copied, setCopied] = useState(false);
-  const landingUrl = pro?.slug ? `https://${pro.slug}.taxclaim.virtuallaunch.pro` : null;
+  const landingUrl = pro?.slug ? `https://taxclaim.virtuallaunch.pro/claim?slug=${pro.slug}` : null;
 
   const handleCopy = () => {
     if (!landingUrl) return;

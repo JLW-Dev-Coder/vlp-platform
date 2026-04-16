@@ -59,7 +59,7 @@ function SignInForm() {
 
       <p className={styles.footer}>
         Don&apos;t have an account?{' '}
-        <Link href="/sign-in?redirect=/onboarding" className={styles.footerLink}>
+        <Link href="/sign-in" className={styles.footerLink}>
           Sign up — $10/month
         </Link>
       </p>

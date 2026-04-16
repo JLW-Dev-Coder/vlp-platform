@@ -15138,6 +15138,42 @@ TTMP Support Team
     },
   },
 
+  // GET /v1/tcvlp/submissions
+  // Returns submissions for the authenticated pro
+  {
+    method: 'GET', pattern: '/v1/tcvlp/submissions',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const session = await getSession(request, env);
+      if (!session) {
+        return json({ ok: false, error: 'UNAUTHORIZED' }, 401, request);
+      }
+
+      try {
+        // Look up pro_id from session account
+        const pro = await env.DB.prepare(
+          'SELECT pro_id FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+
+        if (!pro) {
+          return json({ ok: true, submissions: [] }, 200, request);
+        }
+
+        const rows = await env.DB.prepare(
+          `SELECT submission_id, taxpayer_name, taxpayer_email, tax_year, penalty_type, penalty_amount,
+                  state, status, created_at, updated_at, notify_opt_in, notify_email, notify_phone, notify_preference
+           FROM tcvlp_form843_submissions
+           WHERE pro_id = ?
+           ORDER BY created_at DESC
+           LIMIT 100`
+        ).bind(pro.pro_id).all();
+
+        return json({ ok: true, submissions: rows.results || [] }, 200, request);
+      } catch (err) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: err.message }, 500, request);
+      }
+    },
+  },
+
   // GET /v1/tcvlp/subscription/status
   // Supports two modes:
   //   1. Authenticated (session cookie) — returns full status for the logged-in user

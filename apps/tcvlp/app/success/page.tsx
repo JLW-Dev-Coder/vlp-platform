@@ -11,7 +11,7 @@ function SuccessContent() {
   const slug = searchParams.get('slug') ?? '';
   const [copied, setCopied] = useState(false);
 
-  const landingUrl = slug ? `https://${slug}.taxclaim.virtuallaunch.pro` : '';
+  const landingUrl = slug ? `https://taxclaim.virtuallaunch.pro/claim?slug=${slug}` : '';
 
   const handleCopy = () => {
     if (!landingUrl) return;

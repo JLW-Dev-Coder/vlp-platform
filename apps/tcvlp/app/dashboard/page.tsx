@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import Header from '@/components/Header';
-import { Session, TaxPro, getPro, getSubscriptionStatus, SubscriptionStatus } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { Session, TaxPro, getPro, getProfile, getSubscriptionStatus, SubscriptionStatus } from '@/lib/api';
 import dynamic from 'next/dynamic';
 import Overview from './components/Overview';
 
@@ -25,6 +26,7 @@ const NAV_ITEMS: { id: View; label: string }[] = [
 ];
 
 function DashboardContent({ session }: { session: Session }) {
+  const router = useRouter();
   const [view, setView] = useState<View>('overview');
   const [pro, setPro] = useState<TaxPro | null>(null);
   const [sub, setSub] = useState<SubscriptionStatus | null>(null);
@@ -35,15 +37,27 @@ function DashboardContent({ session }: { session: Session }) {
   });
 
   useEffect(() => {
-    getSubscriptionStatus().then(async (s) => {
+    async function load() {
+      const s = await getSubscriptionStatus();
       setSub(s);
+      let p: TaxPro | null = null;
       if (s.pro_id) {
-        const p = await getPro(s.pro_id);
-        setPro(p);
+        p = await getPro(s.pro_id);
       }
+      if (!p) {
+        // Check profile as fallback — if no pro record at all, redirect to onboarding
+        const profile = await getProfile();
+        if (!profile?.pro_id) {
+          router.replace('/onboarding');
+          return;
+        }
+        p = await getPro(profile.pro_id);
+      }
+      setPro(p);
       setLoading(false);
-    });
-  }, []);
+    }
+    load();
+  }, [router]);
 
   return (
     <div className={styles.root}>

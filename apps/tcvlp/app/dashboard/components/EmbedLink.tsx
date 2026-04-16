@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 import { TaxPro } from '@/lib/api';
 import styles from './shared.module.css';
 
@@ -10,7 +11,17 @@ interface Props {
 
 export default function EmbedLink({ pro }: Props) {
   const [copied, setCopied] = useState(false);
-  const landingUrl = pro?.slug ? `https://${pro.slug}.taxclaim.virtuallaunch.pro` : null;
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const landingUrl = pro?.slug ? `https://taxclaim.virtuallaunch.pro/claim?slug=${pro.slug}` : null;
+
+  useEffect(() => {
+    if (!landingUrl) return;
+    QRCode.toDataURL(landingUrl, {
+      width: 200,
+      margin: 2,
+      color: { dark: '#1a1a2e', light: '#ffffff' },
+    }).then(setQrDataUrl).catch(() => {});
+  }, [landingUrl]);
 
   const handleCopy = () => {
     if (!landingUrl) return;
@@ -43,13 +54,21 @@ export default function EmbedLink({ pro }: Props) {
           </div>
 
           <div className={styles.infoCard}>
-            <div className={styles.qrPlaceholder}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" /><path d="M14 14h7v7" /><path d="M14 14v3h3" />
-              </svg>
-              <span>QR code generation coming soon</span>
-            </div>
+            {qrDataUrl ? (
+              <div className={styles.qrPlaceholder}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrDataUrl} alt="QR code for your landing page" width={200} height={200} style={{ borderRadius: '0.5rem' }} />
+                <span>Scan to visit your landing page</span>
+              </div>
+            ) : (
+              <div className={styles.qrPlaceholder}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" /><path d="M14 14h7v7" /><path d="M14 14v3h3" />
+                </svg>
+                <span>Generating QR code…</span>
+              </div>
+            )}
           </div>
 
           <div className={styles.instructionsCard}>
@@ -61,6 +80,10 @@ export default function EmbedLink({ pro }: Props) {
               <li>Print the QR code and include it in mailings</li>
             </ul>
           </div>
+
+          <a href="/onboarding" style={{ color: '#eab308', fontSize: '0.875rem', textDecoration: 'none', marginTop: '1rem', display: 'inline-block' }}>
+            Edit your hosted page settings →
+          </a>
         </>
       )}
     </div>

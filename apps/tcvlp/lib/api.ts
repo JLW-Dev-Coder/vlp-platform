@@ -179,6 +179,34 @@ export async function downloadForm843(formId: string): Promise<Blob> {
   return res.blob();
 }
 
+// ── Submissions ──────────────────────────────────────────────────────────────
+
+export interface Submission {
+  submission_id: string;
+  taxpayer_name: string;
+  taxpayer_email?: string;
+  tax_year: string;
+  penalty_type: string;
+  penalty_amount?: string;
+  state: string;
+  status: string;
+  created_at: string;
+  updated_at?: string;
+  notify_opt_in?: number;
+  notify_email?: string;
+  notify_phone?: string;
+  notify_preference?: string;
+}
+
+export async function getSubmissions(): Promise<Submission[]> {
+  try {
+    const result = await apiFetch<{ ok: boolean; submissions: Submission[] }>('/v1/tcvlp/submissions');
+    return result.submissions ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // ── Profile ───────────────────────────────────────────────────────────────────
 
 export interface ProfileData {
