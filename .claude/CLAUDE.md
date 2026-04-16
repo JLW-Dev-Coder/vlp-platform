@@ -29,14 +29,16 @@ Every platform that previously lived in its own repo is migrated here.
 | Platform | Abbrev | Domain | App Dir | Adapter | Brand Color |
 |----------|--------|--------|---------|---------|-------------|
 | Virtual Launch Pro | VLP | virtuallaunch.pro | `apps/vlp` | `@cloudflare/next-on-pages` | `#f97316` (orange) |
-| Tax Monitor Pro | TMP | taxmonitor.pro | `apps/tmp` | static export | `#3b82f6` (blue) |
+| Tax Monitor Pro | TMP | taxmonitor.pro | `apps/tmp` | static export | `#f59e0b` (amber) |
 | Transcript Tax Monitor | TTMP | transcript.taxmonitor.pro | `apps/ttmp` | `@opennextjs/cloudflare` (Workers) | `#14b8a6` (teal) |
 | Tax Tools Arcade | TTTMP | taxtools.taxmonitor.pro | `apps/tttmp` | `@cloudflare/next-on-pages` | `#8b5cf6` (violet) |
-| Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | `@cloudflare/next-on-pages` | `#06b6d4` (cyan) |
-| Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | static export | `#ef4444` (red) |
+| Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | `@cloudflare/next-on-pages` | `#3b82f6` (blue) |
+| Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | static export | `#22c55e` (green) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | static export | `#eab308` (yellow) |
-| Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | static export | `#ec4899` (pink) |
+| Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | static export | `#a855f7` (purple) |
 | VLP Worker | — | api.virtuallaunch.pro | `apps/worker` | Cloudflare Worker | — |
+
+**Authoritative source:** each app's `tailwind.config.ts` at `theme.extend.colors.brand.500`. If this table and the Tailwind config diverge, the Tailwind config wins. Update this table whenever a platform's brand color changes.
 
 ---
 
