@@ -51,14 +51,14 @@ export default function ProfilePreviewPage() {
       <HeroCard brandColor="#f97316">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
           {/* Avatar — profile.avatar (initials_only fallback) */}
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-orange to-brand-amber text-2xl font-bold text-white">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-amber text-2xl font-bold text-white">
             JW
           </div>
 
           {/* Info — hero.headline, hero.location_label, hero.years_experience_label, hero.credential_badges */}
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-white">Jamie Williams</h2>
-            <p className="mt-1 text-sm font-medium text-brand-orange">Enrolled Agent</p>
+            <p className="mt-1 text-sm font-medium text-brand-primary">Enrolled Agent</p>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-white/40">
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
@@ -88,7 +88,7 @@ export default function ProfilePreviewPage() {
           <h3 className="text-xs uppercase tracking-widest text-white/40">Services Offered</h3>
           <div className="mt-4 flex flex-wrap gap-2">
             {['IRS Collections Defense', 'Tax Resolution', 'Tax Preparation', 'Audit Defense', 'Penalty Abatement', 'Tax Planning'].map((s) => (
-              <span key={s} className="inline-flex items-center gap-1 rounded-full border border-brand-orange/20 bg-brand-orange/5 px-3 py-1 text-xs font-medium text-brand-orange">
+              <span key={s} className="inline-flex items-center gap-1 rounded-full border border-brand-primary/20 bg-brand-primary/5 px-3 py-1 text-xs font-medium text-brand-primary">
                 <Check className="h-3 w-3" />
                 {s}
               </span>
@@ -127,7 +127,7 @@ export default function ProfilePreviewPage() {
         </p>
         <a
           href="/profile/pro-jamie-l-williams-ea-edl3nv"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
         >
           View Live Public Profile
           <ExternalLink className="h-4 w-4" />

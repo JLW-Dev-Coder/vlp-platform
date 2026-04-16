@@ -47,7 +47,7 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
         <div>
           <label className="mb-2 flex items-center justify-between text-sm text-[var(--text-primary)]">
             <span>{clientsField.label}</span>
-            <span className="font-semibold text-brand-orange">{clients}</span>
+            <span className="font-semibold text-brand-primary">{clients}</span>
           </label>
           <input
             type="range"
@@ -68,7 +68,7 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
         <div>
           <label className="mb-2 flex items-center justify-between text-sm text-[var(--text-primary)]">
             <span>{valueField.label}</span>
-            <span className="font-semibold text-brand-orange">${engValue.toLocaleString()}</span>
+            <span className="font-semibold text-brand-primary">${engValue.toLocaleString()}</span>
           </label>
           <input
             type="range"
@@ -88,7 +88,7 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
         {/* Result box */}
         <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 backdrop-blur"
              style={{ borderLeft: '4px solid #f97316' }}>
-          <p className="text-3xl font-bold text-brand-orange md:text-4xl">
+          <p className="text-3xl font-bold text-brand-primary md:text-4xl">
             ${annual.toLocaleString()} per year
           </p>
           <p className="mt-3 leading-relaxed text-[var(--text-muted)]">

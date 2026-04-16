@@ -8,7 +8,7 @@ const variants: Record<string, string> = {
   'in progress': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   upcoming: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   assigned: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  available: 'bg-brand-orange/10 text-brand-orange border-brand-orange/20',
+  available: 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
   cancelled: 'bg-red-500/10 text-red-400 border-red-500/20',
   'no-show': 'bg-red-500/10 text-red-400 border-red-500/20',
   resolved: 'bg-white/5 text-white/50 border-white/10',

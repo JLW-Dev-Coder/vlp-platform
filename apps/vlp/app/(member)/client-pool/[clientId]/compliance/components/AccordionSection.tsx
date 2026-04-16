@@ -21,7 +21,7 @@ export default function AccordionSection({
   const [open, setOpen] = useState(defaultOpen)
 
   const badgeTones: Record<string, string> = {
-    orange: 'bg-brand-orange/20 text-brand-orange',
+    orange: 'bg-brand-primary/20 text-brand-primary',
     red: 'bg-red-500/20 text-red-400',
     green: 'bg-green-500/20 text-green-400',
   }

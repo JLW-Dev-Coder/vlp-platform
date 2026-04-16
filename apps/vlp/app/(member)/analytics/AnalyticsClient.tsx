@@ -178,7 +178,7 @@ export default function AnalyticsClient() {
                   className="w-full rounded-t-md overflow-hidden"
                   style={{ height: `${Math.max(4, (bar.value / bar.max) * 140)}px` }}
                 >
-                  <div className="h-full w-full bg-gradient-to-t from-brand-orange to-brand-amber opacity-80" />
+                  <div className="h-full w-full bg-gradient-to-t from-brand-primary to-brand-amber opacity-80" />
                 </div>
                 <span className="text-[11px] text-white/40">{bar.label}</span>
               </div>
@@ -211,7 +211,7 @@ export default function AnalyticsClient() {
               </div>
               <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-white/5">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-orange to-brand-amber"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber"
                   style={{
                     width: `${past.length > 0 ? Math.round(((past.length - noShows) / past.length) * 100) : 0}%`,
                   }}
@@ -317,11 +317,11 @@ export default function AnalyticsClient() {
       </div>
 
       <HeroCard brandColor="#f97316">
-        <h3 className="text-xs uppercase tracking-widest text-brand-orange/70">Key Insights</h3>
+        <h3 className="text-xs uppercase tracking-widest text-brand-primary/70">Key Insights</h3>
         <div className="mt-5 grid gap-6 sm:grid-cols-3">
           <div className="flex gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-orange/10">
-              <TrendingUp className="h-4 w-4 text-brand-orange" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10">
+              <TrendingUp className="h-4 w-4 text-brand-primary" />
             </div>
             <div>
               <p className="text-sm font-medium text-white">
@@ -333,8 +333,8 @@ export default function AnalyticsClient() {
             </div>
           </div>
           <div className="flex gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-orange/10">
-              <CheckCircle className="h-4 w-4 text-brand-orange" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10">
+              <CheckCircle className="h-4 w-4 text-brand-primary" />
             </div>
             <div>
               <p className="text-sm font-medium text-white">
@@ -346,8 +346,8 @@ export default function AnalyticsClient() {
             </div>
           </div>
           <div className="flex gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-orange/10">
-              <Users className="h-4 w-4 text-brand-orange" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10">
+              <Users className="h-4 w-4 text-brand-primary" />
             </div>
             <div>
               <p className="text-sm font-medium text-white">{total} total bookings</p>

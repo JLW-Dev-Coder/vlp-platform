@@ -12,16 +12,17 @@ const config: Config = {
       colors: {
         // VLP design tokens mapped to Tailwind
         brand: {
-          orange: '#f97316',
-          amber: '#f59e0b',
-          400: '#fb923c',
-          500: '#f97316',
+          // Canonical six-token brand scale (see canonical-style.md §13)
           primary: '#f97316',
           hover: '#f97e29',
           dark: '#d46213',
           light: 'rgba(249, 115, 22, 0.15)',
           glow: 'rgba(249, 115, 22, 0.40)',
           'text-on-primary': '#ffffff',
+          // Legacy aliases — retained for secondary-color usage (gradient endpoints, accent contrast).
+          // No canonical slot for these shades; keep until replaced platform-wide.
+          amber: '#f59e0b',
+          400: '#fb923c',
         },
         ink: {
           900: '#0f172a',
@@ -31,7 +32,8 @@ const config: Config = {
         sans: ['var(--font-raleway)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(to right, #f97316, #f59e0b)',
+        // Keep hex values in sync with brand.primary and brand.hover above.
+        'gradient-brand': 'linear-gradient(to right, #f97316, #f97e29)',
       },
     },
   },

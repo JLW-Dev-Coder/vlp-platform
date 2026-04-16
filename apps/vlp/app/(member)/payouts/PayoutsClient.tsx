@@ -114,8 +114,8 @@ export default function PayoutsClient() {
       <div className="grid gap-4 sm:grid-cols-2">
         <HeroCard brandColor="#f97316">
           <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-brand-orange" />
-            <h3 className="text-xs uppercase tracking-widest text-brand-orange/70">Total Pending Payout</h3>
+            <DollarSign className="h-4 w-4 text-brand-primary" />
+            <h3 className="text-xs uppercase tracking-widest text-brand-primary/70">Total Pending Payout</h3>
           </div>
           <p className="mt-4 text-4xl font-bold text-white">{centsToDollars(pendingTotal)}</p>
           <p className="mt-2 text-sm text-white/50">
@@ -123,7 +123,7 @@ export default function PayoutsClient() {
           </p>
           <button
             disabled={pendingTotal < minThresholdCents}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Request Payout
           </button>
@@ -158,8 +158,8 @@ export default function PayoutsClient() {
       {affiliate?.connect_status !== 'active' && (
         <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-orange/10">
-              <Landmark className="h-7 w-7 text-brand-orange" />
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-primary/10">
+              <Landmark className="h-7 w-7 text-brand-primary" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-white">Connect your bank account</h3>
@@ -169,7 +169,7 @@ export default function PayoutsClient() {
             </div>
             <a
               href="/affiliate"
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
             >
               Connect Bank Account
             </a>
@@ -220,7 +220,7 @@ export default function PayoutsClient() {
                       <td className="px-5 py-3.5 text-white/70">{planLabel(c)}</td>
                       <td className="px-5 py-3.5 text-white/70">{centsToDollars(fee)}</td>
                       <td className="px-5 py-3.5 text-white/70">{centsToDollars(platform)}</td>
-                      <td className="px-5 py-3.5 font-medium text-brand-orange">
+                      <td className="px-5 py-3.5 font-medium text-brand-primary">
                         {centsToDollars(payout)}
                       </td>
                       <td className="px-5 py-3.5">
@@ -258,7 +258,7 @@ export default function PayoutsClient() {
                     {planLabel(c)} · {statusLabel(c.status)}
                   </p>
                 </div>
-                <p className="text-sm font-medium text-brand-orange">
+                <p className="text-sm font-medium text-brand-primary">
                   {centsToDollars(payoutCents(c))}
                 </p>
               </div>

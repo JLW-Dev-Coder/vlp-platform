@@ -87,7 +87,7 @@ export default function CookieConsent() {
             <button
               type="button"
               onClick={() => setPanelOpen((o) => !o)}
-              className="text-xs font-bold text-brand-400 underline decoration-white/20 underline-offset-4 hover:text-brand-500"
+              className="text-xs font-bold text-brand-400 underline decoration-white/20 underline-offset-4 hover:text-brand-primary"
             >
               Manage preferences
             </button>
@@ -104,7 +104,7 @@ export default function CookieConsent() {
           <button
             type="button"
             onClick={acceptAll}
-            className="inline-flex items-center justify-center rounded-xl bg-brand-500 px-4 py-3 text-xs font-bold text-ink-900 hover:bg-brand-400"
+            className="inline-flex items-center justify-center rounded-xl bg-brand-primary px-4 py-3 text-xs font-bold text-ink-900 hover:bg-brand-400"
           >
             Accept all
           </button>
@@ -183,7 +183,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={savePreferences}
-                className="inline-flex items-center justify-center rounded-xl bg-brand-500 px-4 py-3 text-xs font-bold text-ink-900 hover:bg-brand-400"
+                className="inline-flex items-center justify-center rounded-xl bg-brand-primary px-4 py-3 text-xs font-bold text-ink-900 hover:bg-brand-400"
               >
                 Save preferences
               </button>

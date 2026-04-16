@@ -58,7 +58,7 @@ export default function StepCard({ step, selected, onSelect }: StepCardProps) {
       disabled={!isClickable}
       className={`group relative w-full rounded-xl border bg-[--member-card] p-4 text-left transition ${
         cardBorder[step.status]
-      } ${selected ? 'ring-2 ring-brand-orange/40' : ''} ${
+      } ${selected ? 'ring-2 ring-brand-primary/40' : ''} ${
         isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
       } ${step.status === 'current' ? 'shadow-[0_0_20px_rgba(245,158,11,0.08)]' : ''}`}
     >
@@ -75,7 +75,7 @@ export default function StepCard({ step, selected, onSelect }: StepCardProps) {
         >
           <Icon
             className={`h-4.5 w-4.5 ${
-              step.status === 'locked' ? 'text-white/20' : 'text-brand-orange'
+              step.status === 'locked' ? 'text-white/20' : 'text-brand-primary'
             }`}
           />
         </div>

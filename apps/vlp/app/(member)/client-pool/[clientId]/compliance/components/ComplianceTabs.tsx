@@ -36,7 +36,7 @@ export default function ComplianceTabs({ active, onChange, mfjOffset }: Props) {
               onClick={() => onChange(tab.id)}
               className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 isActive
-                  ? 'border-brand-orange text-white'
+                  ? 'border-brand-primary text-white'
                   : 'border-transparent text-white/50 hover:text-white/80'
               }`}
             >

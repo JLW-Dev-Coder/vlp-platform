@@ -88,7 +88,7 @@ export default function ReportsPage() {
       <HeroCard brandColor="#f97316">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-widest text-brand-orange/70">Most Recent Report</p>
+            <p className="text-xs uppercase tracking-widest text-brand-primary/70">Most Recent Report</p>
             <h2 className="mt-2 text-xl font-semibold text-white">{featuredReport.title}</h2>
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-white/60">
               <span className="inline-flex items-center gap-1.5">
@@ -104,11 +104,11 @@ export default function ReportsPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
+            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
               <Download className="h-4 w-4" />
               Download
             </button>
-            <button className="inline-flex items-center gap-2 rounded-lg border border-brand-orange/30 px-4 py-2 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10">
+            <button className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10">
               <Share2 className="h-4 w-4" />
               Share
             </button>

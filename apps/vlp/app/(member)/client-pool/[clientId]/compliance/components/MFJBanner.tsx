@@ -39,7 +39,7 @@ export default function MFJBanner({ scope, onScopeChange, onClose }: Props) {
                 onClick={() => onScopeChange('primary')}
                 className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                   scope === 'primary'
-                    ? 'border-brand-orange bg-brand-orange/15 text-white'
+                    ? 'border-brand-primary bg-brand-primary/15 text-white'
                     : 'border-purple-500/25 bg-[#0a0e27]/40 text-white/80 hover:bg-[#0a0e27]/60'
                 }`}
               >
@@ -50,7 +50,7 @@ export default function MFJBanner({ scope, onScopeChange, onClose }: Props) {
                 onClick={() => onScopeChange('spouse')}
                 className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                   scope === 'spouse'
-                    ? 'border-brand-orange bg-brand-orange/15 text-white'
+                    ? 'border-brand-primary bg-brand-primary/15 text-white'
                     : 'border-purple-500/25 bg-[#0a0e27]/40 text-white/80 hover:bg-[#0a0e27]/60'
                 }`}
               >

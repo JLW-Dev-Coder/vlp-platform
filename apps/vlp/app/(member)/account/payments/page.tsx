@@ -19,7 +19,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-orange transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -31,7 +31,7 @@ const paymentRows = [
     amount: '$49.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-orange transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -43,7 +43,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-orange transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -55,7 +55,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-orange transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -67,7 +67,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-orange transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -100,15 +100,15 @@ export default function PaymentsPage() {
         <h3 className="text-xs uppercase tracking-widest text-white/40">Payment Method</h3>
         <div className="mt-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-              <CreditCard className="h-4 w-4 text-brand-orange" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+              <CreditCard className="h-4 w-4 text-brand-primary" />
             </div>
             <div>
               <p className="text-sm font-medium text-white">Visa ending in 4242</p>
               <p className="text-xs text-white/40">Expires 12/2028</p>
             </div>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-lg border border-brand-orange/30 px-4 py-2 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10">
+          <button className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10">
             Update
           </button>
         </div>

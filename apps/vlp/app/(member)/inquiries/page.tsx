@@ -41,7 +41,7 @@ export default function InquiriesPage() {
             key={tab.label}
             className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition ${
               tab.label === activeTab
-                ? 'text-brand-orange'
+                ? 'text-brand-primary'
                 : 'text-white/50 hover:text-white/70'
             }`}
           >
@@ -49,14 +49,14 @@ export default function InquiriesPage() {
             <span
               className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-medium ${
                 tab.label === activeTab
-                  ? 'bg-brand-orange/20 text-brand-orange'
+                  ? 'bg-brand-primary/20 text-brand-primary'
                   : 'bg-white/10 text-white/40'
               }`}
             >
               {tab.count}
             </span>
             {tab.label === activeTab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-orange" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-primary" />
             )}
           </button>
         ))}
@@ -68,14 +68,14 @@ export default function InquiriesPage() {
         <input
           type="text"
           placeholder="Search by name or service..."
-          className="w-full rounded-xl border border-[--member-border] bg-[--member-card] py-3 pl-11 pr-4 text-sm text-white placeholder-white/30 outline-none transition focus:border-brand-orange/40 focus:bg-[--member-card-hover]"
+          className="w-full rounded-xl border border-[--member-border] bg-[--member-card] py-3 pl-11 pr-4 text-sm text-white placeholder-white/30 outline-none transition focus:border-brand-primary/40 focus:bg-[--member-card-hover]"
         />
       </div>
 
       {/* Empty state */}
       <div className="flex flex-col items-center justify-center rounded-xl border border-[--member-border] bg-[--member-card] px-6 py-16 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-orange/10">
-          <Inbox className="h-8 w-8 text-brand-orange/60" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10">
+          <Inbox className="h-8 w-8 text-brand-primary/60" />
         </div>
         <h3 className="mt-5 text-lg font-semibold text-white">No inquiries yet</h3>
         <p className="mt-2 max-w-sm text-sm text-white/50">
@@ -84,13 +84,13 @@ export default function InquiriesPage() {
           leads.
         </p>
         <div className="mt-6 flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
+          <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
             <Copy className="h-4 w-4" />
             Copy Profile Link
           </button>
           <Link
             href="/profile"
-            className="inline-flex items-center gap-2 rounded-lg border border-brand-orange/30 px-4 py-2 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10"
+            className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
           >
             <ExternalLink className="h-4 w-4" />
             View Profile

@@ -3,7 +3,7 @@
 import { ReactNode } from 'react'
 
 const baseInputClass =
-  'w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 transition focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20 disabled:opacity-60'
+  'w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 transition focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 disabled:opacity-60'
 
 export function Label({ children }: { children: ReactNode }) {
   return (
@@ -103,7 +103,7 @@ export function Checkbox({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-brand-orange accent-brand-orange focus:ring-brand-orange/20"
+        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-brand-primary accent-brand-primary focus:ring-brand-primary/20"
       />
       <div>
         <p className="text-sm font-medium text-white">{label}</p>
@@ -124,7 +124,7 @@ export function Pill({
     green: 'bg-green-500/20 text-green-400 border-green-500/30',
     amber: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     red: 'bg-red-500/20 text-red-400 border-red-500/30',
-    orange: 'bg-brand-orange/20 text-brand-orange border-brand-orange/30',
+    orange: 'bg-brand-primary/20 text-brand-primary border-brand-primary/30',
     neutral: 'bg-white/10 text-white/60 border-white/10',
   }
   return (

@@ -65,7 +65,7 @@ function formatRelative(iso: string | null | undefined): string {
 function dotForActivity(type: string): string {
   if (type === 'report') return 'bg-emerald-400'
   if (type === 'booking') return 'bg-blue-400'
-  if (type === 'support') return 'bg-brand-orange'
+  if (type === 'support') return 'bg-brand-primary'
   return 'bg-white/30'
 }
 
@@ -73,7 +73,7 @@ function Toggle({ enabled }: { enabled: boolean }) {
   return (
     <button
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-        enabled ? 'bg-brand-orange' : 'bg-white/10'
+        enabled ? 'bg-brand-primary' : 'bg-white/10'
       }`}
     >
       <span
@@ -135,8 +135,8 @@ export default function NotificationsClient() {
             return (
               <div key={setting.title} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                    <Icon className="h-4 w-4 text-brand-orange" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                    <Icon className="h-4 w-4 text-brand-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">{setting.title}</p>

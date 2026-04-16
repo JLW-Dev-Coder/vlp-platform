@@ -127,8 +127,8 @@ export default function AccountClient() {
           <h3 className="text-xs uppercase tracking-widest text-white/40">Account Details</h3>
           <div className="mt-5 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                <Mail className="h-4 w-4 text-brand-orange" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                <Mail className="h-4 w-4 text-brand-primary" />
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-widest text-white/40">Email</p>
@@ -136,8 +136,8 @@ export default function AccountClient() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                <CalendarDays className="h-4 w-4 text-brand-orange" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                <CalendarDays className="h-4 w-4 text-brand-primary" />
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-widest text-white/40">Account Created</p>
@@ -147,8 +147,8 @@ export default function AccountClient() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                <CheckCircle2 className="h-4 w-4 text-brand-orange" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                <CheckCircle2 className="h-4 w-4 text-brand-primary" />
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-widest text-white/40">Account Status</p>
@@ -163,12 +163,12 @@ export default function AccountClient() {
         <HeroCard brandColor="#f97316">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs uppercase tracking-widest text-brand-orange/70">Current Plan</p>
-              <p className="mt-2 text-3xl font-bold text-brand-orange">{tierInfo.label}</p>
+              <p className="text-xs uppercase tracking-widest text-brand-primary/70">Current Plan</p>
+              <p className="mt-2 text-3xl font-bold text-brand-primary">{tierInfo.label}</p>
               <p className="mt-1 text-sm text-white/50">{tierInfo.price}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-orange/20">
-              <Crown className="h-5 w-5 text-brand-orange" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary/20">
+              <Crown className="h-5 w-5 text-brand-primary" />
             </div>
           </div>
           <ul className="mt-5 space-y-2.5">
@@ -193,8 +193,8 @@ export default function AccountClient() {
           <div className="mt-5 space-y-3">
             {membership?.stripe_customer_id ? (
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                  <CreditCard className="h-4 w-4 text-brand-orange" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                  <CreditCard className="h-4 w-4 text-brand-primary" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">
@@ -250,8 +250,8 @@ export default function AccountClient() {
         <div className="mt-5 divide-y divide-[--member-border]">
           <div className="flex items-center justify-between py-4 first:pt-0">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                <KeyRound className="h-4 w-4 text-brand-orange" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                <KeyRound className="h-4 w-4 text-brand-primary" />
               </div>
               <div>
                 <p className="text-sm font-medium text-white">Change Password</p>
@@ -265,8 +265,8 @@ export default function AccountClient() {
           </div>
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                <Smartphone className="h-4 w-4 text-brand-orange" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                <Smartphone className="h-4 w-4 text-brand-primary" />
               </div>
               <div>
                 <p className="text-sm font-medium text-white">Two-Factor Authentication</p>
@@ -275,15 +275,15 @@ export default function AccountClient() {
                 </p>
               </div>
             </div>
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-brand-orange/30 px-3 py-1.5 text-xs font-medium text-brand-orange transition hover:bg-brand-orange/10">
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-brand-primary/30 px-3 py-1.5 text-xs font-medium text-brand-primary transition hover:bg-brand-primary/10">
               {account?.two_factor_enabled ? 'Manage' : 'Enable'}
               <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           <div className="flex items-center justify-between py-4 last:pb-0">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-                <Monitor className="h-4 w-4 text-brand-orange" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+                <Monitor className="h-4 w-4 text-brand-primary" />
               </div>
               <div>
                 <p className="text-sm font-medium text-white">Active Sessions</p>

@@ -43,7 +43,7 @@ export default function ComplianceHeader({
         <div className="flex min-w-0 items-center gap-6">
           <Link
             href={`/client-pool/${clientId}`}
-            className="inline-flex shrink-0 items-center gap-1.5 text-sm text-brand-orange transition hover:text-brand-amber"
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm text-brand-primary transition hover:text-brand-amber"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Client Record
@@ -96,7 +96,7 @@ export default function ComplianceHeader({
               type="button"
               onClick={onFinalize}
               disabled={finalized}
-              className="rounded-md bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {finalized ? 'Finalized' : 'Finalize Record'}
             </button>

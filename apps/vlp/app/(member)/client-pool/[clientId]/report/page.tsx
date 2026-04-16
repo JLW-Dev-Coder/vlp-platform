@@ -94,7 +94,7 @@ export default function ComplianceReportPage() {
       {/* Back link */}
       <Link
         href={`/client-pool/${clientId}`}
-        className="inline-flex items-center gap-1.5 text-sm text-brand-orange transition hover:text-brand-amber"
+        className="inline-flex items-center gap-1.5 text-sm text-brand-primary transition hover:text-brand-amber"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Client Record
@@ -165,7 +165,7 @@ export default function ComplianceReportPage() {
             {reportData.irs_status_categories.map((cat) => (
               <span
                 key={cat}
-                className="inline-flex items-center rounded-full border border-brand-orange/30 bg-brand-orange/10 px-2.5 py-0.5 text-xs font-medium text-brand-orange"
+                className="inline-flex items-center rounded-full border border-brand-primary/30 bg-brand-primary/10 px-2.5 py-0.5 text-xs font-medium text-brand-primary"
               >
                 {cat}
               </span>
@@ -237,7 +237,7 @@ export default function ComplianceReportPage() {
         <button
           type="button"
           onClick={handleMarkReady}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-orange/20 transition hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-primary/20 transition hover:opacity-90"
         >
           <CheckCircle2 className="h-4 w-4" />
           Mark Report Ready
@@ -261,7 +261,7 @@ function Section({
   return (
     <section className="border-b border-[--member-border] px-6 py-5 last:border-b-0">
       <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-brand-orange" />
+        <Icon className="h-4 w-4 text-brand-primary" />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-white/60">
           {title}
         </h2>
@@ -285,7 +285,7 @@ function Metric({
       <p className="text-[10px] font-medium uppercase tracking-wider text-white/40">{label}</p>
       <p
         className={`mt-1 ${
-          emphasis ? 'text-lg font-semibold text-brand-orange' : 'text-sm text-white/80'
+          emphasis ? 'text-lg font-semibold text-brand-primary' : 'text-sm text-white/80'
         }`}
       >
         {value}

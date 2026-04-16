@@ -299,13 +299,13 @@ export default function OnboardingPage() {
       <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-xs uppercase tracking-widest text-white/40">Setup Progress</h3>
-          <span className="text-sm font-semibold text-brand-orange">
+          <span className="text-sm font-semibold text-brand-primary">
             {completedCount} of {STEP_META.length} steps
           </span>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-orange to-brand-amber transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
             style={{ width: `${Math.round((completedCount / STEP_META.length) * 100)}%` }}
           />
         </div>
@@ -338,15 +338,15 @@ export default function OnboardingPage() {
                 disabled={locked}
               >
                 <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                  isComplete ? 'bg-emerald-500/10' : 'bg-brand-orange/10'
+                  isComplete ? 'bg-emerald-500/10' : 'bg-brand-primary/10'
                 }`}>
-                  <StepIcon className={`h-5 w-5 ${isComplete ? 'text-emerald-400' : 'text-brand-orange'}`} />
+                  <StepIcon className={`h-5 w-5 ${isComplete ? 'text-emerald-400' : 'text-brand-primary'}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-white">
                     Step {i + 1} — {meta.title}
                   </p>
-                  <p className="mt-0.5 font-mono text-[11px] text-brand-orange/60">
+                  <p className="mt-0.5 font-mono text-[11px] text-brand-primary/60">
                     {meta.description}
                   </p>
                 </div>
@@ -460,7 +460,7 @@ function SaveBar({ saving, message, onSave }: { saving: boolean; message?: { ok:
       <button
         onClick={onSave}
         disabled={saving}
-        className="inline-flex items-center gap-2 rounded-md bg-brand-orange px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-orange/90 disabled:opacity-60"
+        className="inline-flex items-center gap-2 rounded-md bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-primary/90 disabled:opacity-60"
       >
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
         Save
@@ -625,7 +625,7 @@ function ContactStep({ state, setState, save, saving, message }: StepFormProps) 
                 onClick={() => toggleDay(d.day)}
                 className={`w-24 rounded px-3 py-1.5 text-xs font-medium transition ${
                   d.enabled
-                    ? 'bg-brand-orange/20 text-brand-orange border border-brand-orange/40'
+                    ? 'bg-brand-primary/20 text-brand-primary border border-brand-primary/40'
                     : 'bg-white/5 text-white/40 border border-white/10'
                 }`}
               >
@@ -637,14 +637,14 @@ function ContactStep({ state, setState, save, saving, message }: StepFormProps) 
                     type="time"
                     value={d.start_time ?? '09:00'}
                     onChange={(e) => setDayTime(d.day, 'start_time', e.target.value)}
-                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-sm text-white [color-scheme:dark] focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20"
+                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-sm text-white [color-scheme:dark] focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
                   />
                   <span className="text-xs text-white/40">to</span>
                   <input
                     type="time"
                     value={d.end_time ?? '18:00'}
                     onChange={(e) => setDayTime(d.day, 'end_time', e.target.value)}
-                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-sm text-white [color-scheme:dark] focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20"
+                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-sm text-white [color-scheme:dark] focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
                   />
                 </>
               )}
@@ -652,7 +652,7 @@ function ContactStep({ state, setState, save, saving, message }: StepFormProps) 
           ))}
         </div>
         <p className="mt-2 text-xs text-white/40">
-          Derived display: <span className="text-brand-orange">{availabilityPreview || '—'}</span>
+          Derived display: <span className="text-brand-primary">{availabilityPreview || '—'}</span>
         </p>
       </div>
 
@@ -867,7 +867,7 @@ function PublishStep({ state, save, saving, message }: { state: OnboardingState;
         <button
           onClick={() => save({ profile: { status: 'standard' } })}
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-md bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-orange/90 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-md bg-brand-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-primary/90 disabled:opacity-60"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
           Publish Profile

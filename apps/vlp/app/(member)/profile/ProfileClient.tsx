@@ -159,11 +159,11 @@ export default function ProfileClient() {
       <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-xs uppercase tracking-widest text-white/40">Profile Completeness</h3>
-          <span className="text-sm font-semibold text-brand-orange">{completeness}%</span>
+          <span className="text-sm font-semibold text-brand-primary">{completeness}%</span>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-orange to-brand-amber transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
             style={{ width: `${completeness}%` }}
           />
         </div>
@@ -178,11 +178,11 @@ export default function ProfileClient() {
         <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
           <h3 className="text-xs uppercase tracking-widest text-white/40">Professional Details</h3>
           <div className="mt-5 space-y-4">
-            <Detail icon={<User className="h-4 w-4 text-brand-orange" />} label="Full Name" value={displayName} />
-            <Detail icon={<Award className="h-4 w-4 text-brand-orange" />} label="Credentials" value={credential} />
-            <Detail icon={<Clock className="h-4 w-4 text-brand-orange" />} label="Years of Experience" value={years} />
+            <Detail icon={<User className="h-4 w-4 text-brand-primary" />} label="Full Name" value={displayName} />
+            <Detail icon={<Award className="h-4 w-4 text-brand-primary" />} label="Credentials" value={credential} />
+            <Detail icon={<Clock className="h-4 w-4 text-brand-primary" />} label="Years of Experience" value={years} />
             <Detail
-              icon={<Briefcase className="h-4 w-4 text-brand-orange" />}
+              icon={<Briefcase className="h-4 w-4 text-brand-primary" />}
               label="Specialization"
               value={specialization}
             />
@@ -190,20 +190,20 @@ export default function ProfileClient() {
         </div>
 
         <HeroCard brandColor="#f97316">
-          <h3 className="text-xs uppercase tracking-widest text-brand-orange/70">Public Profile Preview</h3>
+          <h3 className="text-xs uppercase tracking-widest text-brand-primary/70">Public Profile Preview</h3>
           <div className="mt-5 flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-orange to-brand-amber text-xl font-bold text-white">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-amber text-xl font-bold text-white">
               {initials || 'VL'}
             </div>
             <div>
               <p className="text-lg font-semibold text-white">{displayName}</p>
-              <p className="text-sm text-brand-orange">{credential}</p>
+              <p className="text-sm text-brand-primary">{credential}</p>
             </div>
           </div>
           <p className="mt-4 text-sm leading-relaxed text-white/60">{bio}</p>
           <a
             href="/profile/preview"
-            className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-orange transition hover:text-brand-amber"
+            className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-primary transition hover:text-brand-amber"
           >
             View Public Profile
             <ExternalLink className="h-3.5 w-3.5" />
@@ -215,20 +215,20 @@ export default function ProfileClient() {
         <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
           <h3 className="text-xs uppercase tracking-widest text-white/40">Contact Information</h3>
           <div className="mt-5 space-y-4">
-            <Detail icon={<Mail className="h-4 w-4 text-brand-orange" />} label="Email" value={email} />
-            <Detail icon={<Phone className="h-4 w-4 text-brand-orange" />} label="Phone" value={phone} />
+            <Detail icon={<Mail className="h-4 w-4 text-brand-primary" />} label="Email" value={email} />
+            <Detail icon={<Phone className="h-4 w-4 text-brand-primary" />} label="Phone" value={phone} />
             <Detail
-              icon={<Globe className="h-4 w-4 text-brand-orange" />}
+              icon={<Globe className="h-4 w-4 text-brand-primary" />}
               label="Website"
               value={website}
-              valueClass="text-brand-orange"
+              valueClass="text-brand-primary"
             />
             {slug && (
               <Detail
-                icon={<Globe className="h-4 w-4 text-brand-orange" />}
+                icon={<Globe className="h-4 w-4 text-brand-primary" />}
                 label="Public URL"
                 value={`virtuallaunch.pro/pro/${slug}`}
-                valueClass="text-brand-orange"
+                valueClass="text-brand-primary"
               />
             )}
           </div>
@@ -237,10 +237,10 @@ export default function ProfileClient() {
         <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
           <h3 className="text-xs uppercase tracking-widest text-white/40">Business Information</h3>
           <div className="mt-5 space-y-4">
-            <Detail icon={<Building2 className="h-4 w-4 text-brand-orange" />} label="Business Name" value={firmName} />
-            <Detail icon={<MapPin className="h-4 w-4 text-brand-orange" />} label="Location" value={location} />
+            <Detail icon={<Building2 className="h-4 w-4 text-brand-primary" />} label="Business Name" value={firmName} />
+            <Detail icon={<MapPin className="h-4 w-4 text-brand-primary" />} label="Location" value={location} />
             <Detail
-              icon={<FileCheck className="h-4 w-4 text-brand-orange" />}
+              icon={<FileCheck className="h-4 w-4 text-brand-primary" />}
               label="License #"
               value={licenseNumber}
             />
@@ -255,8 +255,8 @@ export default function ProfileClient() {
             href="/profile/onboarding"
             className="flex items-center gap-3 rounded-xl border border-[--member-border] p-4 transition hover:bg-[--member-card-hover]"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-              <Pencil className="h-4 w-4 text-brand-orange" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+              <Pencil className="h-4 w-4 text-brand-primary" />
             </div>
             <span className="text-sm font-medium text-white">Edit Profile</span>
           </a>
@@ -264,8 +264,8 @@ export default function ProfileClient() {
             href="/profile/onboarding"
             className="flex items-center gap-3 rounded-xl border border-[--member-border] p-4 transition hover:bg-[--member-card-hover]"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-              <Camera className="h-4 w-4 text-brand-orange" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+              <Camera className="h-4 w-4 text-brand-primary" />
             </div>
             <span className="text-sm font-medium text-white">Add Photo</span>
           </a>
@@ -273,8 +273,8 @@ export default function ProfileClient() {
             href="/profile/onboarding"
             className="flex items-center gap-3 rounded-xl border border-[--member-border] p-4 transition hover:bg-[--member-card-hover]"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">
-              <BadgeCheck className="h-4 w-4 text-brand-orange" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+              <BadgeCheck className="h-4 w-4 text-brand-primary" />
             </div>
             <span className="text-sm font-medium text-white">Edit Credentials</span>
           </a>
@@ -297,7 +297,7 @@ function Detail({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orange/10">{icon}</div>
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">{icon}</div>
       <div>
         <p className="text-[11px] uppercase tracking-widest text-white/40">{label}</p>
         <p className={`text-sm font-medium ${valueClass ?? 'text-white'}`}>{value}</p>

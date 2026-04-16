@@ -36,8 +36,8 @@ function eventMeta(u: TokenUsageRow): { title: string; tag: string; tagColor: st
     return {
       title: `Transcript analysis`,
       tag: 'Report',
-      tagColor: 'bg-brand-orange/10 text-brand-orange border-brand-orange/20',
-      dot: 'bg-brand-orange',
+      tagColor: 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
+      dot: 'bg-brand-primary',
       debit: true,
     }
   }
@@ -145,14 +145,14 @@ export default function UsageClient() {
       </div>
 
       <HeroCard brandColor="#f97316">
-        <p className="text-xs uppercase tracking-widest text-brand-orange/70">Usage Summary</p>
+        <p className="text-xs uppercase tracking-widest text-brand-primary/70">Usage Summary</p>
         <div className="mt-5 grid gap-6 sm:grid-cols-3">
           {usageSummary.map((s) => {
             const Icon = s.icon
             return (
               <div key={s.label} className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-orange/10">
-                  <Icon className="h-5 w-5 text-brand-orange" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10">
+                  <Icon className="h-5 w-5 text-brand-primary" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-white">{s.value}</p>
@@ -178,7 +178,7 @@ export default function UsageClient() {
               </div>
               <div className="mt-2 h-3 overflow-hidden rounded-full bg-white/5">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-orange to-brand-amber transition-all"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
                   style={{ width: `${reportsPct}%` }}
                 />
               </div>

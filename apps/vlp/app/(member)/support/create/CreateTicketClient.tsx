@@ -7,9 +7,9 @@ import { createSupportTicket } from '@/lib/api/member'
 
 const labelCls = 'block text-[11px] uppercase tracking-widest text-white/40 mb-1.5'
 const inputCls =
-  'w-full rounded-lg border border-[--member-border] bg-[--member-card] px-4 py-2.5 text-sm text-white placeholder-white/30 transition focus:border-brand-orange/50 focus:outline-none focus:ring-1 focus:ring-brand-orange/30'
+  'w-full rounded-lg border border-[--member-border] bg-[--member-card] px-4 py-2.5 text-sm text-white placeholder-white/30 transition focus:border-brand-primary/50 focus:outline-none focus:ring-1 focus:ring-brand-primary/30'
 const selectCls =
-  'w-full appearance-none rounded-lg border border-[--member-border] bg-[--member-card] px-4 py-2.5 text-sm text-white transition focus:border-brand-orange/50 focus:outline-none focus:ring-1 focus:ring-brand-orange/30'
+  'w-full appearance-none rounded-lg border border-[--member-border] bg-[--member-card] px-4 py-2.5 text-sm text-white transition focus:border-brand-primary/50 focus:outline-none focus:ring-1 focus:ring-brand-primary/30'
 
 interface AccountCtx {
   accountId: string
@@ -108,7 +108,7 @@ export default function CreateTicketClient() {
         </div>
         <a
           href="/support"
-          className="inline-flex items-center gap-2 rounded-lg border border-brand-orange/30 px-5 py-2.5 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10"
+          className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-5 py-2.5 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
         >
           Return to Support
         </a>
@@ -240,7 +240,7 @@ export default function CreateTicketClient() {
           <button
             type="submit"
             disabled={submitting || !account}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             {submitting ? 'Submitting…' : 'Submit Ticket'}

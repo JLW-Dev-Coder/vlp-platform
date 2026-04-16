@@ -4,7 +4,7 @@ interface ActivityItemProps {
   dotColor?: string
 }
 
-export default function ActivityItem({ title, timestamp, dotColor = 'bg-brand-orange' }: ActivityItemProps) {
+export default function ActivityItem({ title, timestamp, dotColor = 'bg-brand-primary' }: ActivityItemProps) {
   return (
     <div className="flex items-start gap-3 py-3">
       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor}`} />

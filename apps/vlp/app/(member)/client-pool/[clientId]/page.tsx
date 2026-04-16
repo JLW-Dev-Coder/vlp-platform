@@ -393,7 +393,7 @@ export default function ClientRecordPage() {
       {/* Back link */}
       <Link
         href="/client-pool"
-        className="inline-flex items-center gap-1.5 text-sm text-brand-orange transition hover:text-brand-amber"
+        className="inline-flex items-center gap-1.5 text-sm text-brand-primary transition hover:text-brand-amber"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Client Pool
@@ -428,7 +428,7 @@ export default function ClientRecordPage() {
             <div key={phaseIdx}>
               {/* Phase header */}
               <div className="mb-4 flex items-center gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[--member-accent] text-xs font-bold text-brand-orange">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[--member-accent] text-xs font-bold text-brand-primary">
                   {phaseIdx}
                 </span>
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-white/50">

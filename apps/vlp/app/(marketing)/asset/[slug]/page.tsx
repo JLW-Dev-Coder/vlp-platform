@@ -135,7 +135,7 @@ export default async function AssetPage({
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
       {/* Hero */}
       <section className="pb-16 text-center">
-        <span className="inline-block rounded-full bg-brand-orange/20 px-3 py-1 text-sm text-brand-orange">
+        <span className="inline-block rounded-full bg-brand-primary/20 px-3 py-1 text-sm text-brand-primary">
           Practice analysis
         </span>
         <h1 className="mt-6 text-3xl font-bold leading-tight text-[var(--text-primary)] md:text-5xl">
@@ -181,7 +181,7 @@ export default async function AssetPage({
                 </span>
               )}
               <h3 className="text-xl font-bold text-[var(--text-primary)]">{tier.name}</h3>
-              <p className="mt-2 text-3xl font-bold text-brand-orange">
+              <p className="mt-2 text-3xl font-bold text-brand-primary">
                 {tier.price}
               </p>
               <p className="mt-3 leading-relaxed text-[var(--text-muted)]">
@@ -213,7 +213,7 @@ export default async function AssetPage({
           </p>
           <a
             href={ap.crosssell.url}
-            className="mt-6 inline-block rounded-lg border border-brand-orange px-6 py-3 font-semibold text-brand-orange hover:bg-brand-orange/10"
+            className="mt-6 inline-block rounded-lg border border-brand-primary px-6 py-3 font-semibold text-brand-primary hover:bg-brand-primary/10"
           >
             {ap.crosssell.button_text}
           </a>
@@ -241,7 +241,7 @@ export default async function AssetPage({
               key={stat.label}
               className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 text-center backdrop-blur"
             >
-              <p className="text-3xl font-bold text-brand-orange">{stat.value}</p>
+              <p className="text-3xl font-bold text-brand-primary">{stat.value}</p>
               <p className="mt-1 text-sm text-[var(--text-muted)]">{stat.label}</p>
             </div>
           ))}

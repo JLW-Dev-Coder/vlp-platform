@@ -56,7 +56,7 @@ function activityDotFor(type: string): string {
   if (type === 'report') return 'bg-emerald-400'
   if (type === 'booking') return 'bg-blue-400'
   if (type === 'support') return 'bg-white/30'
-  return 'bg-brand-orange'
+  return 'bg-brand-primary'
 }
 
 export default function DashboardClient() {
@@ -133,7 +133,7 @@ export default function DashboardClient() {
       <HeroCard brandColor="#f97316">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-widest text-brand-orange/70">Welcome back</p>
+            <p className="text-xs uppercase tracking-widest text-brand-primary/70">Welcome back</p>
             <h2 className="mt-1 text-xl font-semibold text-white">
               {account.name}
               {account.credential ? `, ${account.credential}` : ''}
@@ -141,7 +141,7 @@ export default function DashboardClient() {
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-white/60">
               <span>
                 <span className="text-white/40">Tier:</span>{' '}
-                <span className="font-medium text-brand-orange">{account.tier}</span>
+                <span className="font-medium text-brand-primary">{account.tier}</span>
               </span>
               <span>
                 <span className="text-white/40">Plan:</span>{' '}
@@ -158,7 +158,7 @@ export default function DashboardClient() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-brand-orange/60" />
+            <Shield className="h-8 w-8 text-brand-primary/60" />
             <div>
               <p className="text-[11px] uppercase tracking-widest text-white/40">Member since</p>
               <p className="text-sm font-medium text-white/80">{formatMemberSince(account.member_since) || '—'}</p>
@@ -189,11 +189,11 @@ export default function DashboardClient() {
                 <p className="text-sm text-white/50">{formatBookingTime(nextBooking.scheduled_at)}</p>
               </div>
               <div className="mt-5 flex gap-3">
-                <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
+                <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
                   <Video className="h-4 w-4" />
                   Join Now
                 </button>
-                <button className="inline-flex items-center gap-2 rounded-lg border border-brand-orange/30 px-4 py-2 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10">
+                <button className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10">
                   <RefreshCw className="h-4 w-4" />
                   Reschedule
                 </button>
@@ -208,13 +208,13 @@ export default function DashboardClient() {
 
         {/* Token Balance highlight */}
         <HeroCard brandColor="#f97316">
-          <h3 className="text-xs uppercase tracking-widest text-brand-orange/70">Token Balance</h3>
+          <h3 className="text-xs uppercase tracking-widest text-brand-primary/70">Token Balance</h3>
           <p className="mt-3 text-4xl font-bold text-white">{tokens.balance}</p>
           <p className="mt-1 text-sm text-white/50">Transcript tokens available</p>
           <div className="mt-2 text-xs text-white/40">
             Monthly allocation: {tokens.monthly_allocation} tokens
           </div>
-          <button className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
+          <button className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
             <Plus className="h-4 w-4" />
             Refill Tokens
           </button>
@@ -242,27 +242,27 @@ export default function DashboardClient() {
 
       {/* Quick Actions */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <button className="flex items-center gap-3 rounded-xl border border-brand-orange/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-orange/40">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-orange/10">
-            <CalendarCheck className="h-5 w-5 text-brand-orange" />
+        <button className="flex items-center gap-3 rounded-xl border border-brand-primary/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-primary/40">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10">
+            <CalendarCheck className="h-5 w-5 text-brand-primary" />
           </div>
           <div>
             <p className="text-sm font-medium text-white">New Booking</p>
             <p className="text-xs text-white/40">Schedule a consultation</p>
           </div>
         </button>
-        <button className="flex items-center gap-3 rounded-xl border border-brand-orange/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-orange/40">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-orange/10">
-            <FileText className="h-5 w-5 text-brand-orange" />
+        <button className="flex items-center gap-3 rounded-xl border border-brand-primary/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-primary/40">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10">
+            <FileText className="h-5 w-5 text-brand-primary" />
           </div>
           <div>
             <p className="text-sm font-medium text-white">Generate Report</p>
             <p className="text-xs text-white/40">Run an IRS transcript analysis</p>
           </div>
         </button>
-        <button className="flex items-center gap-3 rounded-xl border border-brand-orange/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-orange/40">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-orange/10">
-            <MessageSquare className="h-5 w-5 text-brand-orange" />
+        <button className="flex items-center gap-3 rounded-xl border border-brand-primary/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-primary/40">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10">
+            <MessageSquare className="h-5 w-5 text-brand-primary" />
           </div>
           <div>
             <p className="text-sm font-medium text-white">Contact Support</p>
@@ -311,7 +311,7 @@ function DashboardFallback({ message }: { message: string }) {
         </div>
       </div>
       <HeroCard brandColor="#f97316">
-        <p className="text-xs uppercase tracking-widest text-brand-orange/70">Welcome back</p>
+        <p className="text-xs uppercase tracking-widest text-brand-primary/70">Welcome back</p>
         <h2 className="mt-1 text-xl font-semibold text-white">Member</h2>
         <p className="mt-2 text-sm text-white/60">Your dashboard will populate once the API is reachable.</p>
       </HeroCard>

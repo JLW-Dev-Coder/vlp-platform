@@ -157,7 +157,7 @@ export default function TokensClient() {
       <HeroCard brandColor="#f97316">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-widest text-brand-orange/70">Token Balance</p>
+            <p className="text-xs uppercase tracking-widest text-brand-primary/70">Token Balance</p>
             <p className="mt-3 text-5xl font-bold text-white">{balance}</p>
             <p className="mt-2 text-sm text-white/50">
               Tokens replenish monthly with your subscription. Use them for
@@ -170,7 +170,7 @@ export default function TokensClient() {
             )}
           </div>
           <div className="shrink-0">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90">
+            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90">
               <Plus className="h-4 w-4" />
               Refill Tokens
             </button>
@@ -196,7 +196,7 @@ export default function TokensClient() {
         <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="text-[11px] uppercase tracking-widest text-white/40">Current Plan</p>
-            <p className="mt-1 text-lg font-semibold text-brand-orange">{account.plan_name}</p>
+            <p className="mt-1 text-lg font-semibold text-brand-primary">{account.plan_name}</p>
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-widest text-white/40">Next Renewal</p>
@@ -225,7 +225,7 @@ export default function TokensClient() {
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-brand-orange to-brand-amber transition-all"
+                className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
                 style={{ width: `${usagePercent}%` }}
               />
             </div>

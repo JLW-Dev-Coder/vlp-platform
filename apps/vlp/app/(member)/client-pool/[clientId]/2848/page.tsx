@@ -342,7 +342,7 @@ export default function Staff2848Page() {
               Phase 2 · Processing / Due Diligence → Authorization + CAF
             </p>
           </div>
-          <div className="hidden rounded-lg border border-brand-orange/30 bg-brand-orange/10 px-3 py-1.5 text-xs font-medium text-brand-orange sm:block">
+          <div className="hidden rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-3 py-1.5 text-xs font-medium text-brand-primary sm:block">
             Staff generation
           </div>
         </div>
@@ -367,7 +367,7 @@ export default function Staff2848Page() {
             <button
               type="button"
               onClick={handleDownload}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
             >
               <Download className="h-4 w-4" />
               Download PDF
@@ -404,7 +404,7 @@ export default function Staff2848Page() {
         {/* Section 1 — Client */}
         <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
           <header className="flex items-center gap-2">
-            <User className="h-5 w-5 text-brand-orange" />
+            <User className="h-5 w-5 text-brand-primary" />
             <h2 className="text-base font-semibold text-white">
               1. Client Information (Taxpayer)
             </h2>
@@ -469,7 +469,7 @@ export default function Staff2848Page() {
         {/* Section 2 — Representative */}
         <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
           <header className="flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-brand-orange" />
+            <UserCheck className="h-5 w-5 text-brand-primary" />
             <h2 className="text-base font-semibold text-white">
               2. Your Information (Representative)
             </h2>
@@ -541,7 +541,7 @@ export default function Staff2848Page() {
         <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
           <header className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-brand-orange" />
+              <FileText className="h-5 w-5 text-brand-primary" />
               <h2 className="text-base font-semibold text-white">3. Tax Matters (Line 3)</h2>
             </div>
             <span className="text-xs text-white/40">
@@ -605,7 +605,7 @@ export default function Staff2848Page() {
             <button
               type="button"
               onClick={addMatter}
-              className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-white/15 bg-transparent px-3 py-2 text-sm font-medium text-white/70 transition hover:border-brand-orange/40 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-white/15 bg-transparent px-3 py-2 text-sm font-medium text-white/70 transition hover:border-brand-primary/40 hover:text-white"
             >
               <Plus className="h-4 w-4" />
               Add another matter
@@ -616,7 +616,7 @@ export default function Staff2848Page() {
         {/* Section 4 — Line 5a acts */}
         <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
           <header className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-brand-orange" />
+            <Shield className="h-5 w-5 text-brand-primary" />
             <h2 className="text-base font-semibold text-white">
               4. Authorized Acts (Line 5a)
             </h2>
@@ -678,7 +678,7 @@ export default function Staff2848Page() {
         {/* Section 5 — Review & Generate */}
         <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
           <header className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-brand-orange" />
+            <FileText className="h-5 w-5 text-brand-primary" />
             <h2 className="text-base font-semibold text-white">5. Review &amp; Generate</h2>
           </header>
           <p className="text-xs text-white/50">
@@ -758,7 +758,7 @@ export default function Staff2848Page() {
               type="button"
               onClick={handleGenerate}
               disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FileText className="h-4 w-4" />
               {submitting ? 'Generating...' : 'Generate Form 2848 PDF'}

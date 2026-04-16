@@ -107,7 +107,7 @@ export default function SupportClient() {
 
   const rows = tickets.slice(0, 25).map((t) => ({
     subject: (
-      <span className="font-medium text-brand-orange hover:text-brand-amber transition">
+      <span className="font-medium text-brand-primary hover:text-brand-amber transition">
         {t.subject || '(no subject)'}
       </span>
     ),
@@ -129,14 +129,14 @@ export default function SupportClient() {
       <div className="flex flex-wrap gap-3">
         <a
           href="/support/create"
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
           Create New Ticket
         </a>
         <a
           href="/help"
-          className="inline-flex items-center gap-2 rounded-lg border border-brand-orange/30 px-5 py-2.5 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10"
+          className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-5 py-2.5 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
         >
           <BookOpen className="h-4 w-4" />
           View Help Docs
@@ -155,7 +155,7 @@ export default function SupportClient() {
             <p className="text-sm text-white/40">No support tickets yet.</p>
             <a
               href="/support/create"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-orange hover:text-brand-amber transition"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-primary hover:text-brand-amber transition"
             >
               <Plus className="h-4 w-4" />
               Create your first ticket
@@ -178,8 +178,8 @@ export default function SupportClient() {
       <HeroCard brandColor="#f97316">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-orange/20">
-              <Headphones className="h-6 w-6 text-brand-orange" />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-primary/20">
+              <Headphones className="h-6 w-6 text-brand-primary" />
             </div>
             <div>
               <p className="text-lg font-semibold text-white">Need Immediate Assistance?</p>

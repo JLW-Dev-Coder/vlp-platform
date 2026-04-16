@@ -48,7 +48,7 @@ function formatTime(iso: string): string {
 }
 
 function dotFor(idx: number): string {
-  return ['bg-brand-orange', 'bg-blue-400', 'bg-emerald-400', 'bg-white/30'][idx % 4]
+  return ['bg-brand-primary', 'bg-blue-400', 'bg-emerald-400', 'bg-white/30'][idx % 4]
 }
 
 function parseAvailability(profile: Record<string, unknown> | null): Array<{ day: string; hours: string }> {
@@ -185,8 +185,8 @@ export default function CalendarClient() {
       <HeroCard brandColor="#f97316">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-orange/10">
-              <CalendarCheck className="h-6 w-6 text-brand-orange" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-primary/10">
+              <CalendarCheck className="h-6 w-6 text-brand-primary" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function CalendarClient() {
               <div className="flex flex-col items-end gap-1.5">
                 <a
                   href={`${API_URL}/v1/cal/oauth/start`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-brand-orange/30 px-4 py-2 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10"
+                  className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
                 >
                   <Link2 className="h-4 w-4" />
                   Connect Cal.com
@@ -286,7 +286,7 @@ export default function CalendarClient() {
                       </span>
                     </div>
                   </div>
-                  <button className="shrink-0 rounded-lg border border-brand-orange/20 p-2 text-brand-orange/60 transition hover:bg-brand-orange/10 hover:text-brand-orange">
+                  <button className="shrink-0 rounded-lg border border-brand-primary/20 p-2 text-brand-primary/60 transition hover:bg-brand-primary/10 hover:text-brand-primary">
                     <Video className="h-4 w-4" />
                   </button>
                 </div>
@@ -323,7 +323,7 @@ export default function CalendarClient() {
           </div>
           <a
             href="/profile/onboarding"
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-orange/30 px-4 py-2.5 text-sm font-medium text-brand-orange transition hover:bg-brand-orange/10"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2.5 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
           >
             <Settings className="h-4 w-4" />
             Update Availability

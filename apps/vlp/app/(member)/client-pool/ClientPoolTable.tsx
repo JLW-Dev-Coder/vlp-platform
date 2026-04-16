@@ -303,13 +303,13 @@ export default function ClientPoolTable() {
               type="button"
               onClick={() => setActiveTab(t.key)}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
-                isActive ? 'bg-brand-orange/10 text-brand-orange' : 'text-white/60 hover:text-white/90'
+                isActive ? 'bg-brand-primary/10 text-brand-primary' : 'text-white/60 hover:text-white/90'
               }`}
             >
               {t.label}
               <span
                 className={`inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                  isActive ? 'bg-brand-orange/20 text-brand-orange' : 'bg-white/10 text-white/60'
+                  isActive ? 'bg-brand-primary/20 text-brand-primary' : 'bg-white/10 text-white/60'
                 }`}
               >
                 {t.count ?? '—'}
@@ -383,7 +383,7 @@ export default function ClientPoolTable() {
                   {activeTab === 'available' && (
                     <td className="px-5 py-3.5 text-white/70">{c.platformFee}</td>
                   )}
-                  <td className="px-5 py-3.5 font-medium text-brand-orange">{c.payout}</td>
+                  <td className="px-5 py-3.5 font-medium text-brand-primary">{c.payout}</td>
                   {activeTab !== 'available' && (
                     <td className="px-5 py-3.5 text-white/60">{formatDate(c.acceptedAt)}</td>
                   )}
@@ -395,7 +395,7 @@ export default function ClientPoolTable() {
                       <button
                         type="button"
                         onClick={() => setModalCase(c)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-brand-orange/30 px-3 py-1.5 text-xs font-medium text-brand-orange transition hover:bg-brand-orange/10"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-brand-primary/30 px-3 py-1.5 text-xs font-medium text-brand-primary transition hover:bg-brand-primary/10"
                       >
                         Service Client
                         <ArrowRight className="h-3 w-3" />
@@ -403,7 +403,7 @@ export default function ClientPoolTable() {
                     ) : (
                       <Link
                         href={`/client-pool/${c.id}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:border-brand-orange/40 hover:text-brand-orange"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:border-brand-primary/40 hover:text-brand-primary"
                       >
                         View Case
                         <ArrowRight className="h-3 w-3" />

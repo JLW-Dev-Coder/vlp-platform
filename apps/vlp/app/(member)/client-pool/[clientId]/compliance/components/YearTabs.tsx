@@ -23,7 +23,7 @@ export default function YearTabs({ selected, onSelect }: Props) {
             onClick={() => onSelect(year)}
             className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               active
-                ? 'bg-brand-orange text-white'
+                ? 'bg-brand-primary text-white'
                 : 'bg-transparent text-white/60 hover:bg-white/5 hover:text-white'
             }`}
           >

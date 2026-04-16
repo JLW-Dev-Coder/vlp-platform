@@ -143,7 +143,7 @@ export default function StepDetailPanel({ step, action }: StepDetailPanelProps) 
       <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-5">
         <div className="flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[--member-accent]">
-            <Icon className="h-6 w-6 text-brand-orange" />
+            <Icon className="h-6 w-6 text-brand-primary" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">

@@ -108,7 +108,7 @@ export default function AffiliateClient() {
       <HeroCard brandColor="#f97316">
         <div className="space-y-5">
           <div className="flex items-center gap-2">
-            <Link2 className="h-5 w-5 text-brand-orange" />
+            <Link2 className="h-5 w-5 text-brand-primary" />
             <h2 className="text-lg font-semibold text-white">Your Referral Link</h2>
           </div>
 
@@ -120,17 +120,17 @@ export default function AffiliateClient() {
             </div>
             <button
               onClick={handleCopy}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
 
-          <div className="rounded-lg border border-brand-orange/20 bg-brand-orange/5 px-4 py-3">
+          <div className="rounded-lg border border-brand-primary/20 bg-brand-primary/5 px-4 py-3">
             <p className="text-sm text-white/60">
               Share this link. Earn{' '}
-              <span className="font-medium text-brand-orange">20% commission</span> on every
+              <span className="font-medium text-brand-primary">20% commission</span> on every
               purchase your referrals make, for life.
             </p>
           </div>
@@ -143,12 +143,12 @@ export default function AffiliateClient() {
             <DollarSign className="h-4 w-4 text-white/30" />
             <h3 className="text-xs uppercase tracking-widest text-white/40">Available to Withdraw</h3>
           </div>
-          <p className="mt-4 text-4xl font-bold text-brand-orange">
+          <p className="mt-4 text-4xl font-bold text-brand-primary">
             {centsToDollars(affiliate.balance_pending ?? 0)}
           </p>
           <button
             disabled={affiliate.connect_status !== 'active' || (affiliate.balance_pending ?? 0) < 1000}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Request Payout
           </button>
@@ -171,8 +171,8 @@ export default function AffiliateClient() {
 
       <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-orange/10">
-            <Landmark className="h-7 w-7 text-brand-orange" />
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-primary/10">
+            <Landmark className="h-7 w-7 text-brand-primary" />
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-white">
@@ -189,7 +189,7 @@ export default function AffiliateClient() {
           {affiliate.connect_status !== 'active' && (
             <button
               onClick={handleConnect}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
             >
               Connect Bank Account
             </button>
@@ -225,7 +225,7 @@ export default function AffiliateClient() {
                   <p className="mt-0.5 text-xs text-white/40">{formatDate(evt.created_at)}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-brand-orange">
+                  <p className="text-sm font-medium text-brand-primary">
                     {centsToDollars(evt.commission_amount_cents ?? 0)}
                   </p>
                   <p className="mt-0.5 text-xs text-white/40 capitalize">{evt.status}</p>

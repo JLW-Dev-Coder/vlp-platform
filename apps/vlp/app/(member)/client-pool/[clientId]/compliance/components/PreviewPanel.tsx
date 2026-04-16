@@ -78,7 +78,7 @@ export default function PreviewPanel({ data, activeTab, onCopySummary }: Props) 
           <button
             type="button"
             onClick={onCopySummary}
-            className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-brand-orange to-brand-amber px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-brand-primary to-brand-amber px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
           >
             <Copy className="h-3.5 w-3.5" /> Copy Summary
           </button>
@@ -264,7 +264,7 @@ function PreviewSection({
       data-preview-section={sectionId}
       className={`rounded-lg border p-3 transition ${
         active
-          ? 'border-brand-orange/40 bg-brand-orange/5 ring-2 ring-brand-orange/20'
+          ? 'border-brand-primary/40 bg-brand-primary/5 ring-2 ring-brand-primary/20'
           : 'border-white/10 bg-white/[0.02]'
       }`}
     >

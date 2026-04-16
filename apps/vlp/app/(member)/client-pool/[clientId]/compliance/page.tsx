@@ -416,7 +416,7 @@ export default function ComplianceRecordPage() {
       </div>
 
       {toast ? (
-        <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-brand-orange/30 bg-brand-orange/10 px-4 py-3 text-sm font-medium text-white shadow-lg backdrop-blur">
+        <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-4 py-3 text-sm font-medium text-white shadow-lg backdrop-blur">
           {toast}
         </div>
       ) : null}
@@ -551,7 +551,7 @@ function OverviewTab({
                   onChange={(e) =>
                     toggleInArray('irs_status_categories', opt, e.target.checked)
                   }
-                  className="h-4 w-4 rounded border-white/20 bg-white/5 text-brand-orange accent-brand-orange focus:ring-brand-orange/20"
+                  className="h-4 w-4 rounded border-white/20 bg-white/5 text-brand-primary accent-brand-primary focus:ring-brand-primary/20"
                 />
                 <span className="text-sm text-white/80">{opt}</span>
               </label>
@@ -1065,7 +1065,7 @@ function RevenueTab({ data, update }: { data: ComplianceData; update: UpdateFn }
             placeholder="Email"
             value={data.ro_email}
             onChange={(e) => update('ro_email', e.target.value)}
-            className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20"
+            className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
           />
         </Field>
         <Field label="Fax">
@@ -1108,7 +1108,7 @@ function TranscriptsTab({
             type="checkbox"
             checked={data.transcript_request_made}
             onChange={(e) => update('transcript_request_made', e.target.checked)}
-            className="h-4 w-4 rounded border-white/20 bg-white/5 text-brand-orange accent-brand-orange focus:ring-brand-orange/20"
+            className="h-4 w-4 rounded border-white/20 bg-white/5 text-brand-primary accent-brand-primary focus:ring-brand-primary/20"
           />
           <span className="text-sm text-white/80">Transcript Request Made</span>
         </label>
@@ -1248,7 +1248,7 @@ function SummaryTab({
                   onChange={(e) =>
                     toggleInArray('compliance_included_sections', section, e.target.checked)
                   }
-                  className="h-4 w-4 rounded border-white/20 bg-white/5 text-brand-orange accent-brand-orange focus:ring-brand-orange/20"
+                  className="h-4 w-4 rounded border-white/20 bg-white/5 text-brand-primary accent-brand-primary focus:ring-brand-primary/20"
                 />
                 {section}
               </label>

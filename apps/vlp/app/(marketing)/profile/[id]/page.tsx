@@ -148,14 +148,14 @@ function getCredentialColor(label: string): string {
   if (l.includes('enrolled agent') || l === 'ea') return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
   if (l.includes('erpa')) return 'bg-teal-500/20 text-teal-300 border-teal-500/30'
   if (l.includes('actuary')) return 'bg-pink-500/20 text-pink-300 border-pink-500/30'
-  return 'bg-brand-orange/20 text-orange-300 border-brand-orange/30'
+  return 'bg-brand-primary/20 text-orange-300 border-brand-primary/30'
 }
 
 function getStyleKeyColor(key: string): string {
   if (key === 'attorney') return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
   if (key === 'cpa') return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
   if (key === 'ea') return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-  if (key === 'featured') return 'bg-brand-orange/20 text-orange-300 border-brand-orange/30'
+  if (key === 'featured') return 'bg-brand-primary/20 text-orange-300 border-brand-primary/30'
   return 'bg-white/10 text-white/60 border-white/20'
 }
 
@@ -195,7 +195,7 @@ function ErrorState({ message }: { message: string }) {
       <p className="mt-2 text-sm text-[--muted]">{message}</p>
       <a
         href="https://taxmonitor.pro/directory"
-        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber px-6 py-3 text-sm font-bold text-slate-950 transition hover:opacity-90"
+        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-primary to-brand-amber px-6 py-3 text-sm font-bold text-slate-950 transition hover:opacity-90"
       >
         Browse Directory
       </a>
@@ -304,7 +304,7 @@ export default function PublicProfilePage() {
           <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
             {/* Left: avatar + meta */}
             <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-orange to-brand-amber text-2xl font-bold text-slate-950">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-amber text-2xl font-bold text-slate-950">
                 {initials}
               </div>
 
@@ -362,7 +362,7 @@ export default function PublicProfilePage() {
               {contactButton.active && contactButton.url ? (
                 <a
                   href={contactButton.url}
-                  className="w-full rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber px-6 py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90 md:w-auto"
+                  className="w-full rounded-xl bg-gradient-to-r from-brand-primary to-brand-amber px-6 py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90 md:w-auto"
                 >
                   {contactButton.label}
                 </a>
@@ -404,7 +404,7 @@ export default function PublicProfilePage() {
               key={stat.label}
               className="rounded-xl border border-[--line] bg-[--card] p-5 text-center"
             >
-              <span className="block text-2xl font-bold text-brand-orange">{stat.value}</span>
+              <span className="block text-2xl font-bold text-brand-primary">{stat.value}</span>
               <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-[--muted]">{stat.label}</span>
             </div>
           ))}
@@ -418,7 +418,7 @@ export default function PublicProfilePage() {
           <div className="flex-1 space-y-6">
             {/* About */}
             <div className="rounded-2xl border border-[--line] bg-[--card] p-6">
-              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-orange">
+              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-primary">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" width="18" height="18">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
@@ -435,7 +435,7 @@ export default function PublicProfilePage() {
 
             {/* Services Offered */}
             <div className="rounded-2xl border border-[--line] bg-[--card] p-6">
-              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-orange">
+              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-primary">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" width="18" height="18">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
@@ -446,7 +446,7 @@ export default function PublicProfilePage() {
                   {services.map((svc, i) => (
                     <div key={svc} className="flex items-start gap-3 rounded-xl border border-[--line] bg-white/[0.02] p-4">
                       <svg
-                        className={`mt-0.5 h-5 w-5 shrink-0 ${i === 0 ? 'text-brand-orange' : 'text-emerald-400'}`}
+                        className={`mt-0.5 h-5 w-5 shrink-0 ${i === 0 ? 'text-brand-primary' : 'text-emerald-400'}`}
                         fill="none"
                         stroke="currentColor"
                         strokeWidth={2}
@@ -465,7 +465,7 @@ export default function PublicProfilePage() {
 
             {/* Specialties */}
             <div className="rounded-2xl border border-[--line] bg-[--card] p-6">
-              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-orange">
+              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-primary">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" width="18" height="18">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
@@ -500,7 +500,7 @@ export default function PublicProfilePage() {
 
             {/* Credentials & Experience */}
             <div className="rounded-2xl border border-[--line] bg-[--card] p-6">
-              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-orange">
+              <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-primary">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" width="18" height="18">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
@@ -545,7 +545,7 @@ export default function PublicProfilePage() {
             {/* Client Reviews */}
             <div className="rounded-2xl border border-[--line] bg-[--card] p-6">
               <div className="flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-orange">
+                <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-primary">
                   <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" width="18" height="18">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                   </svg>
@@ -579,7 +579,7 @@ export default function PublicProfilePage() {
           <div className="w-full lg:w-80 lg:shrink-0">
             <div className="lg:sticky lg:top-24">
               <div className="rounded-2xl border border-[--line] bg-[--card] p-6">
-                <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-brand-orange">Contact Information</h3>
+                <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-brand-primary">Contact Information</h3>
 
                 <div className="space-y-4">
                   {locationLabel && (
@@ -597,13 +597,13 @@ export default function PublicProfilePage() {
                   {phone && (
                     <div>
                       <span className="block text-xs font-semibold uppercase tracking-wider text-[--muted]">Phone</span>
-                      <a href={`tel:${phone}`} className="mt-0.5 block text-sm text-[--fg] hover:text-brand-orange transition">{phone}</a>
+                      <a href={`tel:${phone}`} className="mt-0.5 block text-sm text-[--fg] hover:text-brand-primary transition">{phone}</a>
                     </div>
                   )}
                   {contactEmail && (
                     <div>
                       <span className="block text-xs font-semibold uppercase tracking-wider text-[--muted]">Email</span>
-                      <a href={`mailto:${contactEmail}`} className="mt-0.5 block text-sm text-[--fg] hover:text-brand-orange transition">{contactEmail}</a>
+                      <a href={`mailto:${contactEmail}`} className="mt-0.5 block text-sm text-[--fg] hover:text-brand-primary transition">{contactEmail}</a>
                     </div>
                   )}
                   {availabilityDisplay && (
@@ -625,7 +625,7 @@ export default function PublicProfilePage() {
                   {contactButton.active && contactButton.url ? (
                     <a
                       href={contactButton.url}
-                      className="block w-full rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90"
+                      className="block w-full rounded-xl bg-gradient-to-r from-brand-primary to-brand-amber py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90"
                     >
                       {contactButton.label}
                     </a>
@@ -653,7 +653,7 @@ export default function PublicProfilePage() {
                       href={website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center text-sm text-[--muted] transition hover:text-brand-orange"
+                      className="block w-full text-center text-sm text-[--muted] transition hover:text-brand-primary"
                     >
                       Visit Website &rarr;
                     </a>
