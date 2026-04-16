@@ -16,7 +16,7 @@ import {
   checkSubscription,
   SubmitForm843Data,
 } from '@/lib/api';
-import { formatPhone, filterPhoneInput } from '@/lib/phone';
+import { formatPhone, filterPhoneInput, stripPhone } from '@/lib/phone';
 import styles from './page.module.css';
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
@@ -1106,7 +1106,7 @@ export default function ClaimClient({ pro, slug }: Props) {
                       {pro.firm_phone && (
                         <div className={styles.contactDetailRow}>
                           <PhoneIcon />
-                          <a href={`tel:${pro.firm_phone}`} className={styles.contactPhone}>{pro.firm_phone}</a>
+                          <a href={`tel:${stripPhone(pro.firm_phone)}`} className={styles.contactPhone}>{formatPhone(pro.firm_phone)}</a>
                         </div>
                       )}
                       {pro.firm_email && (
@@ -1186,7 +1186,7 @@ export default function ClaimClient({ pro, slug }: Props) {
 
               {/* Get in Touch button */}
               {pro.firm_phone ? (
-                <a href={`tel:${pro.firm_phone}`} className={styles.primaryBtn}>
+                <a href={`tel:${stripPhone(pro.firm_phone)}`} className={styles.primaryBtn}>
                   Get in Touch
                 </a>
               ) : pro.firm_email ? (
