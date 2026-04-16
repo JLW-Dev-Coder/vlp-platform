@@ -166,7 +166,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
             className="flex items-center gap-3 focus:outline-none focus:shadow-focus rounded-md"
           >
             <span
-              className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-brand-primary to-brand-light text-brand-text-on-primary text-sm font-semibold"
+              className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-brand-primary to-brand-gradient-to text-brand-text-on-primary text-sm font-semibold"
               aria-hidden="true"
             >
               {config.logoText}
@@ -329,7 +329,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                 className="flex items-center gap-2 focus:outline-none focus:shadow-focus rounded-md"
               >
                 <span
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-brand-primary to-brand-light text-brand-text-on-primary text-xs font-semibold"
+                  className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-brand-primary to-brand-gradient-to text-brand-text-on-primary text-xs font-semibold"
                   aria-hidden="true"
                 >
                   {config.logoText}

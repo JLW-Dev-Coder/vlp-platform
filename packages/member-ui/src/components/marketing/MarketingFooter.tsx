@@ -56,7 +56,7 @@ export function MarketingFooter({ config }: MarketingFooterProps) {
               className="flex items-center gap-3 focus:outline-none focus:shadow-focus rounded-md"
             >
               <span
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-brand-light font-bold text-brand-text-on-primary"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-brand-gradient-to font-bold text-brand-text-on-primary"
                 aria-hidden="true"
               >
                 {config.logoText}
