@@ -220,7 +220,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                 ref={resourcesMenuRef}
                 id={resourcesMenuId}
                 role="menu"
-                className="absolute left-1/2 mt-3 w-[min(1024px,calc(100vw-3rem))] -translate-x-1/2 rounded-xl border border-subtle bg-surface-elevated shadow-md z-dropdown motion-safe:animate-fade-in p-4"
+                className="absolute left-1/2 mt-3 w-[min(1024px,calc(100vw-3rem))] -translate-x-1/2 rounded-xl border border-subtle bg-surface-bg shadow-md z-dropdown motion-safe:animate-fade-in p-4"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_1.2fr] gap-4">
                   <MegaMenuColumn
