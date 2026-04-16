@@ -113,10 +113,10 @@ export default async function AssetPage({
   if (!data || !data.asset_page) {
     return (
       <section className="flex min-h-[60vh] flex-col items-center justify-center px-4 py-24 text-center">
-        <h1 className="text-3xl font-bold text-[var(--fg)] md:text-4xl">
+        <h1 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
           Page not found
         </h1>
-        <p className="mt-4 text-[var(--muted)]">
+        <p className="mt-4 text-[var(--text-muted)]">
           This practice analysis is no longer available.
         </p>
         <Link
@@ -138,13 +138,13 @@ export default async function AssetPage({
         <span className="inline-block rounded-full bg-brand-orange/20 px-3 py-1 text-sm text-brand-orange">
           Practice analysis
         </span>
-        <h1 className="mt-6 text-3xl font-bold leading-tight text-[var(--fg)] md:text-5xl">
+        <h1 className="mt-6 text-3xl font-bold leading-tight text-[var(--text-primary)] md:text-5xl">
           {ap.headline}
         </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--text-muted)]">
           {ap.subheadline}
         </p>
-        <p className="mt-4 text-base text-[var(--muted)]">
+        <p className="mt-4 text-base text-[var(--text-muted)]">
           {ap.credential_line}
         </p>
       </section>
@@ -158,10 +158,10 @@ export default async function AssetPage({
       {/* Section 3 — Tiers */}
       <section className="pb-16">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-[var(--fg)] md:text-3xl">
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">
             Choose how you want to grow
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-[var(--muted)]">
+          <p className="mx-auto mt-3 max-w-xl text-[var(--text-muted)]">
             All tiers include directory access, client intake workflow, and transcript tools.
           </p>
         </div>
@@ -172,7 +172,7 @@ export default async function AssetPage({
               className={`relative flex flex-col rounded-xl border p-6 backdrop-blur ${
                 tier.recommended
                   ? 'border-2 border-blue-500 bg-blue-500/5'
-                  : 'border-[var(--line)] bg-[var(--card)]'
+                  : 'border-[var(--border-default)] bg-[var(--surface-card)]'
               }`}
             >
               {tier.recommended && (
@@ -180,11 +180,11 @@ export default async function AssetPage({
                   Recommended
                 </span>
               )}
-              <h3 className="text-xl font-bold text-[var(--fg)]">{tier.name}</h3>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">{tier.name}</h3>
               <p className="mt-2 text-3xl font-bold text-brand-orange">
                 {tier.price}
               </p>
-              <p className="mt-3 leading-relaxed text-[var(--muted)]">
+              <p className="mt-3 leading-relaxed text-[var(--text-muted)]">
                 {tier.pitch}
               </p>
               <Link
@@ -192,7 +192,7 @@ export default async function AssetPage({
                 className={`mt-auto block rounded-lg py-3 text-center font-semibold ${
                   tier.recommended
                     ? 'mt-6 bg-gradient-brand text-white hover:opacity-90'
-                    : 'mt-6 border border-[var(--line)] text-[var(--fg)] hover:bg-[var(--card)]'
+                    : 'mt-6 border border-[var(--border-default)] text-[var(--text-primary)] hover:bg-[var(--surface-card)]'
                 }`}
               >
                 Get started
@@ -204,11 +204,11 @@ export default async function AssetPage({
 
       {/* Section 4 — TTMP cross-sell */}
       <section className="pb-16">
-        <div className="rounded-xl border border-[var(--line)] bg-[var(--card)] p-8 text-center backdrop-blur md:p-10">
-          <h2 className="text-xl font-bold text-[var(--fg)] md:text-2xl">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 text-center backdrop-blur md:p-10">
+          <h2 className="text-xl font-bold text-[var(--text-primary)] md:text-2xl">
             {ap.crosssell.heading}
           </h2>
-          <p className="mx-auto mt-3 max-w-lg leading-relaxed text-[var(--muted)]">
+          <p className="mx-auto mt-3 max-w-lg leading-relaxed text-[var(--text-muted)]">
             {ap.crosssell.body}
           </p>
           <a
@@ -223,26 +223,26 @@ export default async function AssetPage({
       {/* Section 5 — About VLP */}
       <section className="pb-16">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-[var(--fg)] md:text-3xl">
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">
             {ap.about.heading}
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-[var(--muted)]">
+          <p className="mx-auto mt-3 max-w-xl text-[var(--text-muted)]">
             {ap.about.subheading}
           </p>
         </div>
         <div className="mx-auto mt-8 max-w-3xl space-y-4">
           {ap.about.paragraphs.map((p, i) => (
-            <p key={i} className="leading-relaxed text-[var(--muted)]">{p}</p>
+            <p key={i} className="leading-relaxed text-[var(--text-muted)]">{p}</p>
           ))}
         </div>
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
           {ap.about.stats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-[var(--line)] bg-[var(--card)] p-6 text-center backdrop-blur"
+              className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 text-center backdrop-blur"
             >
               <p className="text-3xl font-bold text-brand-orange">{stat.value}</p>
-              <p className="mt-1 text-sm text-[var(--muted)]">{stat.label}</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -258,14 +258,14 @@ export default async function AssetPage({
         </Link>
         <a
           href={ap.ctas.secondary.url}
-          className="rounded-lg border border-[var(--line)] px-8 py-3 font-semibold text-[var(--fg)] hover:bg-[var(--card)]"
+          className="rounded-lg border border-[var(--border-default)] px-8 py-3 font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-card)]"
         >
           {ap.ctas.secondary.text}
         </a>
       </section>
 
       {/* Footer line */}
-      <p className="pb-8 text-center text-sm text-[var(--muted)]">
+      <p className="pb-8 text-center text-sm text-[var(--text-muted)]">
         {ap.footer}
       </p>
     </div>

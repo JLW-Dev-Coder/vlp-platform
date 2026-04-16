@@ -6,12 +6,6 @@
 
 @layer base {
   :root {
-    --bg: #070a10;
-    --fg: rgba(255, 255, 255, 0.92);
-    --muted: rgba(255, 255, 255, 0.66);
-    --card: rgba(255, 255, 255, 0.06);
-    --line: rgba(255, 255, 255, 0.12);
-
     /* VLP brand overrides for member-ui shared tokens */
     --member-accent: rgba(249, 115, 22, 0.1);
     --member-accent-strong: rgba(249, 115, 22, 0.2);
@@ -25,8 +19,8 @@
 
   body {
     font-family: var(--font-raleway), Inter, system-ui, sans-serif;
-    background-color: #070a10;
-    color: rgba(255, 255, 255, 0.92);
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
     overflow-x: hidden;
   }
 

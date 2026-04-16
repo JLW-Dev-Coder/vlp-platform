@@ -34,10 +34,10 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
   return (
     <section className="pb-16">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[var(--fg)] md:text-3xl">
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">
           Your practice capacity
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-[var(--muted)]">
+        <p className="mx-auto mt-3 max-w-xl text-[var(--text-muted)]">
           Slide to match your situation. The numbers update in real time.
         </p>
       </div>
@@ -45,7 +45,7 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
       <div className="mx-auto mt-10 max-w-2xl space-y-8">
         {/* New clients slider */}
         <div>
-          <label className="mb-2 flex items-center justify-between text-sm text-[var(--fg)]">
+          <label className="mb-2 flex items-center justify-between text-sm text-[var(--text-primary)]">
             <span>{clientsField.label}</span>
             <span className="font-semibold text-brand-orange">{clients}</span>
           </label>
@@ -58,7 +58,7 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
             onChange={e => setClients(Number(e.target.value))}
             className="w-full accent-[#f97316]"
           />
-          <div className="mt-1 flex justify-between text-xs text-[var(--muted)]">
+          <div className="mt-1 flex justify-between text-xs text-[var(--text-muted)]">
             <span>{clientsField.min}</span>
             <span>{clientsField.max}</span>
           </div>
@@ -66,7 +66,7 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
 
         {/* Engagement value slider */}
         <div>
-          <label className="mb-2 flex items-center justify-between text-sm text-[var(--fg)]">
+          <label className="mb-2 flex items-center justify-between text-sm text-[var(--text-primary)]">
             <span>{valueField.label}</span>
             <span className="font-semibold text-brand-orange">${engValue.toLocaleString()}</span>
           </label>
@@ -79,19 +79,19 @@ function Calculator({ fields, resultTemplate }: CalculatorProps) {
             onChange={e => setEngValue(Number(e.target.value))}
             className="w-full accent-[#f97316]"
           />
-          <div className="mt-1 flex justify-between text-xs text-[var(--muted)]">
+          <div className="mt-1 flex justify-between text-xs text-[var(--text-muted)]">
             <span>${valueField.min.toLocaleString()}</span>
             <span>${valueField.max.toLocaleString()}</span>
           </div>
         </div>
 
         {/* Result box */}
-        <div className="rounded-xl border border-[var(--line)] bg-[var(--card)] p-6 backdrop-blur"
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 backdrop-blur"
              style={{ borderLeft: '4px solid #f97316' }}>
           <p className="text-3xl font-bold text-brand-orange md:text-4xl">
             ${annual.toLocaleString()} per year
           </p>
-          <p className="mt-3 leading-relaxed text-[var(--muted)]">
+          <p className="mt-3 leading-relaxed text-[var(--text-muted)]">
             {resultText}
           </p>
         </div>
@@ -122,10 +122,10 @@ function QualifyingQuestions({ questions }: { questions: Question[] }) {
   return (
     <section className="pb-16">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[var(--fg)] md:text-3xl">
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">
           Which of these would help your practice?
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-[var(--muted)]">
+        <p className="mx-auto mt-3 max-w-xl text-[var(--text-muted)]">
           Select any that apply. These shape what your membership should include.
         </p>
       </div>
@@ -139,11 +139,11 @@ function QualifyingQuestions({ questions }: { questions: Question[] }) {
             className={`cursor-pointer rounded-xl border-2 p-6 text-left transition-colors backdrop-blur ${
               selected.has(i)
                 ? 'border-[#f97316] bg-[#f97316]/5'
-                : 'border-[var(--line)] bg-[var(--card)] hover:border-[var(--muted)]'
+                : 'border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--text-muted)]'
             }`}
           >
-            <h3 className="text-lg font-semibold text-[var(--fg)]">{q.text}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{q.detail}</p>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">{q.text}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">{q.detail}</p>
           </button>
         ))}
       </div>
