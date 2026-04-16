@@ -25,6 +25,10 @@
   --surface-elevated: var(--member-card-hover);
   --surface-input: var(--member-card);
 
+  /* Popover & overlay surfaces (solid backgrounds for floating UI) */
+  --surface-popover: #11172f;   /* Solid bg for dropdowns, popovers, tooltips, drawers */
+  --surface-overlay: rgba(0, 0, 0, 0.6);   /* Dark backdrop behind modals/drawers */
+
   /* Canonical border tokens (canonical-style.md §2.3) */
   --border-subtle: var(--member-border);
   --border-default: rgba(255, 255, 255, 0.12);

@@ -21,6 +21,8 @@ module.exports = {
           card: "var(--surface-card)",
           elevated: "var(--surface-elevated)",
           input: "var(--surface-input)",
+          popover: "var(--surface-popover)",
+          overlay: "var(--surface-overlay)",
         },
         text: {
           primary: "var(--text-primary)",
