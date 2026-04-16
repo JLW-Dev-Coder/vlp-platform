@@ -81,6 +81,8 @@ Four-level dark-mode surface hierarchy. Defined as CSS variables in `packages/me
 | `--surface-card` | `rgba(255, 255, 255, 0.04)` (currently `--member-card`) | Cards, panels, primary container |
 | `--surface-elevated` | `rgba(255, 255, 255, 0.06)` (currently `--member-card-hover`) | Modals, popovers, dropdowns |
 | `--surface-input` | `rgba(255, 255, 255, 0.04)` | Form fields, code blocks, inset surfaces |
+| `--surface-popover` | `#11172f` | Solid bg for dropdowns, popovers, tooltips, drawers — floating UI content that sits over arbitrary page content |
+| `--surface-overlay` | `rgba(0, 0, 0, 0.6)` | Dark backdrop behind modals and drawers |
 
 **Tailwind exposure** (in `packages/member-ui/tailwind.config.ts`):
 ```typescript
@@ -90,6 +92,8 @@ colors: {
     card: 'var(--surface-card)',
     elevated: 'var(--surface-elevated)',
     input: 'var(--surface-input)',
+    popover: 'var(--surface-popover)',
+    overlay: 'var(--surface-overlay)',
   },
 }
 ```
@@ -446,5 +450,6 @@ Documented here so cleanup is scheduled, not forgotten. Each item gets its own c
 | 2026-04-15 | §§9, 10, 11 preserved (dropdown, phone, self-check) with token updates | Working content, strongest in prior version |
 | 2026-04-15 | Cleanup list (§13) added instead of inline TODO notes | Scheduled drift, not forgotten drift |
 | 2026-04-16 | Document new `brand.gradient-to` token in §2.1 example | Mirrors blueprint §4.5 addition; keeps per-app tailwind config template in sync. |
+| 2026-04-16 | Added `surface-popover` and `surface-overlay` solid tokens | Popover-class elements (dropdowns, drawers, mega menus) previously used `bg-surface-elevated` which resolves to 6% alpha white — effectively transparent, letting page content bleed through. `bg-surface-bg` was a patch (9f97d59). Proper solid `surface-popover` token is the architectural fix. `surface-overlay` replaces hardcoded `bg-black/60` for modal/drawer backdrops. |
 
 Append-only. Do not rewrite prior entries.

@@ -306,8 +306,8 @@ Blocking overlay. Use sparingly — prefer inline expansion or separate pages fo
 ```
 
 **Tokens:**
-- Backdrop: `bg-black/60 backdrop-blur-sm` at `z-overlay` (z-index 30)
-- Container: `bg-surface-elevated` at `z-modal` (z-index 40)
+- Backdrop: `bg-surface-overlay backdrop-blur-sm` at `z-overlay` (z-index 30)
+- Container: `bg-surface-popover` at `z-modal` (z-index 40)
 - Radius: `rounded-xl` (16px per canonical-style.md §5)
 - Shadow: `shadow-lg`
 - Padding: `p-6 md:p-8`
@@ -334,7 +334,7 @@ Non-blocking, context-anchored overlay. Used for dropdowns, tooltips with conten
 ```
 
 **Tokens:**
-- Container: `bg-surface-elevated`
+- Container: `bg-surface-popover`
 - Border: `border border-border-default`
 - Radius: `rounded-md` (8px)
 - Shadow: `shadow-md`
@@ -360,7 +360,7 @@ Pure-text hover/focus hint. No interactive content. For interactive content use 
 ```
 
 **Tokens:**
-- Background: `bg-surface-elevated`
+- Background: `bg-surface-popover`
 - Text: `text-xs text-text-primary`
 - Padding: `px-2 py-1`
 - Radius: `rounded` (4px)
@@ -645,5 +645,6 @@ When this file conflicts with the blueprint, the blueprint wins. When this file 
 | 2026-04-15 | Target-state tokens, not current reality | Matches style canonical approach; avoids 4+ rewrites as cleanup items land |
 | 2026-04-15 | Components framed as React props, not HTML/CSS | Matches shipped reality (Next.js + React across all 8 apps) |
 | 2026-04-15 | Mandatory self-check in §11 for every component before shipping | Consistent with style canonical §11 pattern |
+| 2026-04-16 | Modal/Popover/Tooltip tokens updated to `surface-popover` + `surface-overlay` | Old spec referenced `bg-surface-elevated` for floating containers — a 6% alpha token that produces transparent panels over page content. New tokens added to canonical-style.md §2.2 solve the class of bug. |
 
 Append-only. Do not rewrite prior entries.
