@@ -11,6 +11,8 @@ export { FullCalendar } from './components/FullCalendar'
 // Marketing Components
 export { MarketingHeader } from './components/marketing/MarketingHeader'
 export type { MarketingHeaderProps } from './components/marketing/MarketingHeader'
+export { MarketingFooter } from './components/marketing/MarketingFooter'
+export type { MarketingFooterProps } from './components/marketing/MarketingFooter'
 
 // Review Components
 export { ReviewSubmitPage } from './components/reviews/ReviewSubmitPage'
@@ -24,6 +26,7 @@ export type {
   NavItem,
   MarketingConfig,
   MegaMenuItem,
+  FooterLink,
 } from './types/config'
 export type { ReviewConfig, ReviewCardData } from './types/review'
 export type { ReviewCardProps } from './components/reviews/ReviewCard'
