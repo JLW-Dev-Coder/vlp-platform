@@ -14791,7 +14791,7 @@ TTMP Support Team
         penalty_type, penalty_amount,
         state, transcript_used,
         ssn_ein, spouse_name, spouse_ssn, address, apt_suite, city, zip_code,
-        ein, phone, irc_section
+        ein, phone, irc_section, payment_dates
       } = body;
 
       if (!pro_id || !taxpayer_name || !tax_year || !state) {
@@ -14893,8 +14893,24 @@ TTMP Support Team
         );
 
         // --- PDF Generation via pdf-lib ---
-        const pdfBytes = Uint8Array.from(atob(FORM_843_BASE64), c => c.charCodeAt(0));
-        const pdfDoc = await PDFDocument.load(pdfBytes);
+        // Try to load pre-filled template from R2; fall back to embedded base64
+        let pdfDoc;
+        let usingTemplate = false;
+        try {
+          const templateObj = await env.R2_VIRTUAL_LAUNCH.get('tcvlp/templates/form-843-template.pdf');
+          if (templateObj) {
+            const templateBytes = new Uint8Array(await templateObj.arrayBuffer());
+            pdfDoc = await PDFDocument.load(templateBytes);
+            usingTemplate = true;
+          }
+        } catch (err) {
+          console.warn('Failed to load Form 843 template from R2, falling back to embedded:', err.message);
+        }
+        if (!pdfDoc) {
+          const pdfBytes = Uint8Array.from(atob(FORM_843_BASE64), c => c.charCodeAt(0));
+          pdfDoc = await PDFDocument.load(pdfBytes);
+        }
+
         const form = pdfDoc.getForm();
 
         // Helper to safely set text fields
@@ -14902,61 +14918,101 @@ TTMP Support Team
           if (!value) return;
           try { form.getTextField(name).setText(String(value)); } catch { /* field not found */ }
         };
-        const checkBox = (name) => {
-          try { form.getCheckBox(name).check(); } catch { /* field not found */ }
-        };
 
-        // Top checkbox: "Abatement or refund of a penalty or addition to tax due to reasonable cause"
-        checkBox('topmostSubform[0].Page1[0].c1_1[6]');
+        if (usingTemplate) {
+          // Template has pre-checked checkboxes (penalty, interest §6404(e)(1),
+          // Item 4e Income, Item 5i 1040, Item 7a IRS errors/delays) and
+          // hardcoded Item 1 dates (01/01/2020–12/31/2023).
+          // Only fill the text token fields — do NOT modify checkboxes.
 
-        // Taxpayer info
-        setField('topmostSubform[0].Page1[0].f1_1[0]', taxpayer_name);
-        setField('topmostSubform[0].Page1[0].f1_2[0]', ssn_ein);
-        setField('topmostSubform[0].Page1[0].f1_3[0]', spouse_name);
-        setField('topmostSubform[0].Page1[0].f1_4[0]', spouse_ssn);
-        setField('topmostSubform[0].Page1[0].f1_5[0]', address);
-        setField('topmostSubform[0].Page1[0].f1_6[0]', apt_suite);
-        setField('topmostSubform[0].Page1[0].f1_7[0]', city);
-        setField('topmostSubform[0].Page1[0].f1_8[0]', state.toUpperCase());
-        setField('topmostSubform[0].Page1[0].f1_9[0]', zip_code);
-        setField('topmostSubform[0].Page1[0].f1_10[0]', ein);
-        setField('topmostSubform[0].Page1[0].f1_15[0]', phone);
+          // FULL_NAME — appears in "Name of person requesting" and "Name shown on return"
+          setField('FULL_NAME', taxpayer_name);
 
-        // Line 1: Tax period
-        setField('topmostSubform[0].Page1[0].f1_16[0]', `01/01/${tax_year}`);
-        setField('topmostSubform[0].Page1[0].f1_17[0]', `12/31/${tax_year}`);
+          // TOTAL_REFUND — Item 2 amount, formatted with commas (e.g. "4,494.95")
+          if (resolvedTotal) {
+            const [whole, dec] = resolvedTotal.toFixed(2).split('.');
+            const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
+            setField('TOTAL_REFUND', formatted);
+          }
 
-        // Line 2: Amount (total of all penalty + interest)
-        if (resolvedTotal) {
-          setField('topmostSubform[0].Page1[0].f1_18[0]', String(resolvedTotal));
+          // DATE_01 through DATE_15 — Item 3 payment dates from transcript
+          const dates = payment_dates || [];
+          for (let i = 0; i < 15; i++) {
+            if (dates[i]) {
+              setField(`DATE_${String(i + 1).padStart(2, '0')}`, dates[i]);
+            }
+          }
+
+          // CLAIM_LANGUAGE_AMTS — Item 8 explanation with itemized amounts
+          const claimParts = [`Claim for refund of penalties assessed for tax year ${tax_year}.`];
+          if (ftf) claimParts.push(`Failure-to-File penalty: $${ftf.toFixed(2)};`);
+          if (ftp) claimParts.push(`Failure-to-Pay penalty: $${ftp.toFixed(2)};`);
+          if (ioa) claimParts.push(`Interest on penalties: $${ioa.toFixed(2)}.`);
+          claimParts.push(`Total refund requested: $${resolvedTotal.toFixed(2)}.`);
+          claimParts.push(
+            `Per Kwong v. United States, 179 Fed. Cl. 382 (2025), the U.S. Court `
+            + `of Federal Claims held that IRC §7508A(d) required mandatory `
+            + `postponement of federal tax deadlines during the COVID-19 disaster `
+            + `period (January 20, 2020 through July 10, 2023). Taxpayer requests `
+            + `abatement and refund of penalties and interest assessed during this `
+            + `period. This claim is timely filed before the July 10, 2026 deadline.`
+          );
+          setField('CLAIM_LANGUAGE_AMTS', claimParts.join(' '));
+        } else {
+          // Fallback: blank IRS form — use standard AcroForm field names + check boxes
+          const checkBox = (name) => {
+            try { form.getCheckBox(name).check(); } catch { /* field not found */ }
+          };
+
+          // Top checkbox: penalty/addition abatement
+          checkBox('topmostSubform[0].Page1[0].c1_1[6]');
+
+          // Taxpayer info
+          setField('topmostSubform[0].Page1[0].f1_1[0]', taxpayer_name);
+          setField('topmostSubform[0].Page1[0].f1_2[0]', ssn_ein);
+          setField('topmostSubform[0].Page1[0].f1_3[0]', spouse_name);
+          setField('topmostSubform[0].Page1[0].f1_4[0]', spouse_ssn);
+          setField('topmostSubform[0].Page1[0].f1_5[0]', address);
+          setField('topmostSubform[0].Page1[0].f1_6[0]', apt_suite);
+          setField('topmostSubform[0].Page1[0].f1_7[0]', city);
+          setField('topmostSubform[0].Page1[0].f1_8[0]', state.toUpperCase());
+          setField('topmostSubform[0].Page1[0].f1_9[0]', zip_code);
+          setField('topmostSubform[0].Page1[0].f1_10[0]', ein);
+          setField('topmostSubform[0].Page1[0].f1_15[0]', phone);
+
+          // Line 1: Tax period
+          setField('topmostSubform[0].Page1[0].f1_16[0]', `01/01/${tax_year}`);
+          setField('topmostSubform[0].Page1[0].f1_17[0]', `12/31/${tax_year}`);
+
+          // Line 2: Amount
+          if (resolvedTotal) {
+            setField('topmostSubform[0].Page1[0].f1_18[0]', String(resolvedTotal));
+          }
+
+          // Line 4e: Income tax checkbox
+          checkBox('topmostSubform[0].Page1[0].c1_5[0]');
+          // Line 5i: 1040 checkbox
+          checkBox('topmostSubform[0].Page2[0].c2_8[0]');
+          // Line 6: IRC section
+          const ircSectionValue = irc_section || '6651';
+          setField('topmostSubform[0].Page2[0].f2_2[0]', ircSectionValue);
+          // Line 7c: Reasonable cause
+          checkBox('topmostSubform[0].Page2[0].c2_15[2]');
+
+          // Line 8: Explanation
+          const amountLines = [];
+          if (ftf) amountLines.push(`Failure-to-File penalty: $${ftf.toFixed(2)}`);
+          if (ftp) amountLines.push(`Failure-to-Pay penalty: $${ftp.toFixed(2)}`);
+          if (ioa) amountLines.push(`Interest on penalties: $${ioa.toFixed(2)}`);
+          const amountDetail = amountLines.length > 0 ? amountLines.join('; ') + '. ' : '';
+          const explanation = `Claim for refund of penalties assessed for tax year ${tax_year}. `
+            + amountDetail
+            + `Total refund requested: $${resolvedTotal.toFixed(2)}. `
+            + `Per Kwong v. United States, 179 Fed. Cl. 382 (2025), the U.S. Court of Federal Claims held that IRC §7508A(d) required mandatory postponement of federal tax deadlines during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). `
+            + `Taxpayer requests abatement and refund of penalties and interest assessed during this period. `
+            + `This claim is timely filed before the July 10, 2026 deadline.`;
+          setField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]', explanation);
         }
-
-        // Line 4e: Income tax checkbox
-        checkBox('topmostSubform[0].Page1[0].c1_5[0]');
-
-        // Line 5i: 1040 checkbox
-        checkBox('topmostSubform[0].Page2[0].c2_8[0]');
-
-        // Line 6: IRC section
-        const ircSectionValue = irc_section || '6651';
-        setField('topmostSubform[0].Page2[0].f2_2[0]', ircSectionValue);
-
-        // Line 7c: Reasonable cause
-        checkBox('topmostSubform[0].Page2[0].c2_15[2]');
-
-        // Line 8: Explanation — itemize all three penalty types
-        const amountLines = [];
-        if (ftf) amountLines.push(`Failure-to-File penalty: $${ftf.toFixed(2)}`);
-        if (ftp) amountLines.push(`Failure-to-Pay penalty: $${ftp.toFixed(2)}`);
-        if (ioa) amountLines.push(`Interest on penalties: $${ioa.toFixed(2)}`);
-        const amountDetail = amountLines.length > 0 ? amountLines.join('; ') + '. ' : '';
-        const explanation = `Claim for refund of penalties assessed for tax year ${tax_year}. `
-          + amountDetail
-          + `Total refund requested: $${resolvedTotal.toFixed(2)}. `
-          + `Per Kwong v. United States, No. 22-1993T (Fed. Cl. 2023), the U.S. Court of Federal Claims held that the IRS exceeded its authority in assessing certain penalties between January 20, 2020 and July 10, 2023. `
-          + `Taxpayer requests abatement and refund of the above penalties assessed during this period. `
-          + `This claim is timely filed before the July 10, 2026 deadline established by the court.`;
-        setField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]', explanation);
 
         // Flatten form fields so they can't be edited
         form.flatten();
@@ -14987,8 +15043,8 @@ TTMP Support Team
             penalty_amount: resolvedTotal || 'To be determined',
             state: stateAbbrev,
             mailing_address,
-            kwong_citation: 'Kwong v. United States, No. 22-1993T (Fed. Cl. 2023)',
-            claim_basis: 'Claim for refund of penalties assessed between January 20, 2020 and July 10, 2023 under the Kwong decision. The U.S. Court of Federal Claims held that the IRS exceeded its authority in assessing certain penalties during this period.',
+            kwong_citation: 'Kwong v. United States, 179 Fed. Cl. 382 (2025)',
+            claim_basis: 'Claim for refund of penalties and interest assessed during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). Per Kwong, IRC §7508A(d) required mandatory postponement of federal tax deadlines during this period.',
             deadline_notice: 'IMPORTANT: Claims must be filed by July 10, 2026.',
             official_form_url: 'https://www.irs.gov/pub/irs-pdf/f843.pdf',
             watermark: 'PREPARATION GUIDE — NOT AN OFFICIAL IRS FORM'
