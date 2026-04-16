@@ -7,7 +7,7 @@
  */
 
 :root {
-  /* Structural — shared across all platforms */
+  /* Legacy names — keep until all apps migrated (B3) */
   --member-bg: #0a0e27;
   --member-card: rgba(255, 255, 255, 0.04);
   --member-card-hover: rgba(255, 255, 255, 0.06);
@@ -18,6 +18,23 @@
   --member-accent-strong: rgba(249, 115, 22, 0.2);
   --member-hero-bg: #451a03;
   --member-hero-bg-end: #1c0a00;
+
+  /* Canonical surface tokens (canonical-style.md §2.2) */
+  --surface-bg: var(--member-bg);
+  --surface-card: var(--member-card);
+  --surface-elevated: var(--member-card-hover);
+  --surface-input: var(--member-card);
+
+  /* Canonical border tokens (canonical-style.md §2.3) */
+  --border-subtle: var(--member-border);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.20);
+  --border-focus: currentColor;
+
+  /* Canonical text tokens (canonical-style.md §2.4) */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-muted: rgba(255, 255, 255, 0.66);
+  --text-disabled: rgba(255, 255, 255, 0.40);
 }
 
 /* Scrollbar utilities */

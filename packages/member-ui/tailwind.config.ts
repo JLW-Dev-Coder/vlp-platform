@@ -5,6 +5,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Legacy — keep until all components migrated
         member: {
           bg: "var(--member-bg)",
           card: "var(--member-card)",
@@ -15,6 +16,24 @@ const config: Config = {
           "hero-bg": "var(--member-hero-bg)",
           "hero-bg-end": "var(--member-hero-bg-end)",
         },
+        // Canonical (canonical-style.md §2)
+        surface: {
+          bg: "var(--surface-bg)",
+          card: "var(--surface-card)",
+          elevated: "var(--surface-elevated)",
+          input: "var(--surface-input)",
+        },
+        text: {
+          primary: "var(--text-primary)",
+          muted: "var(--text-muted)",
+          disabled: "var(--text-disabled)",
+        },
+      },
+      borderColor: {
+        subtle: "var(--border-subtle)",
+        DEFAULT: "var(--border-default)",
+        hover: "var(--border-hover)",
+        focus: "var(--border-focus)",
       },
     },
   },
