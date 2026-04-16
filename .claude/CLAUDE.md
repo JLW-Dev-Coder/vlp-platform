@@ -1,6 +1,6 @@
 # CLAUDE.md — vlp-platform (Monorepo)
 
-Last updated: 2026-04-13
+Last updated: 2026-04-15
 
 ---
 
@@ -87,7 +87,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 - Never duplicate a canonical into an app directory
 - When a canonical is updated, it applies to all apps immediately
 
-### Canonical files (16 total):
+### Canonical files (19 total):
 
 | File | Purpose | Use when... |
 |------|---------|-------------|
@@ -97,11 +97,14 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 | `canonical-contract.json` | Contract JSON schema (7 required sections) | Creating or modifying any data contract |
 | `canonical-contract-registry.json` | Registry entry schema (required fields) | Adding entries to platform registries |
 | `canonical-deploy.md` | Per-adapter deploy procedures + rollback | Deploying any platform or troubleshooting deploys |
+| `canonical-feature-benefits.md` | Human-readable benefit descriptions per feature across all 8 platforms ("what does this do for me") | Writing user-facing feature copy or positioning benefits |
+| `canonical-feature-matrix.md` | Feature → Worker route / storage / frontend page / build status mapping across all 8 platforms | Tracking what's live/partial/planned per platform |
 | `canonical-index.html` | Landing page structure (8 required sections) | Creating or editing landing pages |
 | `canonical-market.md` | Market positioning template (12 sections) | Writing marketing copy or positioning docs |
 | `canonical-readme.md` | README template (14 sections) | Creating or editing README files |
 | `canonical-roles.md` | Role definitions (Principal, Execution, Owner) | Understanding role boundaries and escalation |
 | `canonical-scale.md` | SCALE batch operations pipeline template | Working on SCALE outreach, enrichment, or email pipeline |
+| `canonical-site-nav.md` | Standard navigation structure (marketing + member) for all 8 platform frontends | Adding, removing, or reordering nav items on any platform |
 | `canonical-skill.md` | SKILL.md template (11 sections) | Defining reusable execution skills |
 | `canonical-stack.md` | Platform stack matrix + architecture decisions | Understanding platform tech choices, adapters, or domains |
 | `canonical-style.md` | Design tokens, typography, layout patterns | Styling components, pages, or creating new UI |
