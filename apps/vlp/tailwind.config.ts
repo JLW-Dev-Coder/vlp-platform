@@ -19,10 +19,6 @@ const config: Config = {
           light: 'rgba(249, 115, 22, 0.15)',
           glow: 'rgba(249, 115, 22, 0.40)',
           'text-on-primary': '#ffffff',
-          // Legacy aliases — retained for secondary-color usage (gradient endpoints, accent contrast).
-          // No canonical slot for these shades; keep until replaced platform-wide.
-          amber: '#f59e0b',
-          400: '#fb923c',
         },
         ink: {
           900: '#0f172a',

@@ -72,7 +72,7 @@ export default function ClientPoolPage() {
             <p className="mt-0.5 text-xs text-white/40">{plan.duration}</p>
             <p className="mt-3 flex-1 text-sm text-white/50">{plan.description}</p>
             <p className="mt-3 text-xs text-white/30">{plan.mfj}</p>
-            <button className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
+            <button className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
               Start monitoring
             </button>
           </div>

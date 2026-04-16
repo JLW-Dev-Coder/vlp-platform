@@ -393,7 +393,7 @@ export default function ClientRecordPage() {
       {/* Back link */}
       <Link
         href="/client-pool"
-        className="inline-flex items-center gap-1.5 text-sm text-brand-primary transition hover:text-brand-amber"
+        className="inline-flex items-center gap-1.5 text-sm text-brand-primary transition hover:text-brand-hover"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Client Pool

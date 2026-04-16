@@ -107,7 +107,7 @@ export default function SupportClient() {
 
   const rows = tickets.slice(0, 25).map((t) => ({
     subject: (
-      <span className="font-medium text-brand-primary hover:text-brand-amber transition">
+      <span className="font-medium text-brand-primary hover:text-brand-hover transition">
         {t.subject || '(no subject)'}
       </span>
     ),
@@ -129,7 +129,7 @@ export default function SupportClient() {
       <div className="flex flex-wrap gap-3">
         <a
           href="/support/create"
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
           Create New Ticket
@@ -155,7 +155,7 @@ export default function SupportClient() {
             <p className="text-sm text-white/40">No support tickets yet.</p>
             <a
               href="/support/create"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-primary hover:text-brand-amber transition"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-primary hover:text-brand-hover transition"
             >
               <Plus className="h-4 w-4" />
               Create your first ticket

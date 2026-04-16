@@ -178,7 +178,7 @@ export default function AnalyticsClient() {
                   className="w-full rounded-t-md overflow-hidden"
                   style={{ height: `${Math.max(4, (bar.value / bar.max) * 140)}px` }}
                 >
-                  <div className="h-full w-full bg-gradient-to-t from-brand-primary to-brand-amber opacity-80" />
+                  <div className="h-full w-full bg-gradient-to-t from-brand-primary to-brand-hover opacity-80" />
                 </div>
                 <span className="text-[11px] text-white/40">{bar.label}</span>
               </div>
@@ -211,7 +211,7 @@ export default function AnalyticsClient() {
               </div>
               <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-white/5">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-hover"
                   style={{
                     width: `${past.length > 0 ? Math.round(((past.length - noShows) / past.length) * 100) : 0}%`,
                   }}

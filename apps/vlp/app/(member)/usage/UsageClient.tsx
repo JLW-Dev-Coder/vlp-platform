@@ -178,7 +178,7 @@ export default function UsageClient() {
               </div>
               <div className="mt-2 h-3 overflow-hidden rounded-full bg-white/5">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-hover transition-all"
                   style={{ width: `${reportsPct}%` }}
                 />
               </div>

@@ -305,7 +305,7 @@ export default function OnboardingPage() {
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-hover transition-all"
             style={{ width: `${Math.round((completedCount / STEP_META.length) * 100)}%` }}
           />
         </div>

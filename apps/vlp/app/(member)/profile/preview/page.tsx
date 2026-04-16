@@ -51,7 +51,7 @@ export default function ProfilePreviewPage() {
       <HeroCard brandColor="#f97316">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
           {/* Avatar — profile.avatar (initials_only fallback) */}
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-amber text-2xl font-bold text-white">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-hover text-2xl font-bold text-white">
             JW
           </div>
 
@@ -127,7 +127,7 @@ export default function ProfilePreviewPage() {
         </p>
         <a
           href="/profile/pro-jamie-l-williams-ea-edl3nv"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
         >
           View Live Public Profile
           <ExternalLink className="h-4 w-4" />

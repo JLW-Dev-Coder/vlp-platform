@@ -78,7 +78,7 @@ export default function PreviewPanel({ data, activeTab, onCopySummary }: Props) 
           <button
             type="button"
             onClick={onCopySummary}
-            className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-brand-primary to-brand-amber px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-brand-primary to-brand-hover px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
           >
             <Copy className="h-3.5 w-3.5" /> Copy Summary
           </button>

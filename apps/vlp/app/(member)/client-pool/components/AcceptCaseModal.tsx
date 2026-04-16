@@ -123,7 +123,7 @@ export default function AcceptCaseModal({ open, caseData, onClose, onConfirm }: 
             type="button"
             onClick={handleConfirm}
             disabled={loading || blocked}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <>

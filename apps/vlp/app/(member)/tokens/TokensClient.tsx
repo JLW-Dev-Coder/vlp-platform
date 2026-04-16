@@ -170,7 +170,7 @@ export default function TokensClient() {
             )}
           </div>
           <div className="shrink-0">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90">
+            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90">
               <Plus className="h-4 w-4" />
               Refill Tokens
             </button>
@@ -225,7 +225,7 @@ export default function TokensClient() {
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
+                className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-hover transition-all"
                 style={{ width: `${usagePercent}%` }}
               />
             </div>

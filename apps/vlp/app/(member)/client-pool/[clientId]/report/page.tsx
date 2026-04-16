@@ -94,7 +94,7 @@ export default function ComplianceReportPage() {
       {/* Back link */}
       <Link
         href={`/client-pool/${clientId}`}
-        className="inline-flex items-center gap-1.5 text-sm text-brand-primary transition hover:text-brand-amber"
+        className="inline-flex items-center gap-1.5 text-sm text-brand-primary transition hover:text-brand-hover"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Client Record
@@ -237,7 +237,7 @@ export default function ComplianceReportPage() {
         <button
           type="button"
           onClick={handleMarkReady}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-primary/20 transition hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-primary/20 transition hover:opacity-90"
         >
           <CheckCircle2 className="h-4 w-4" />
           Mark Report Ready

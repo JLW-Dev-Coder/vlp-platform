@@ -19,7 +19,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-hover">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -31,7 +31,7 @@ const paymentRows = [
     amount: '$49.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-hover">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -43,7 +43,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-hover">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -55,7 +55,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-hover">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>
@@ -67,7 +67,7 @@ const paymentRows = [
     amount: '$199.00',
     status: <StatusBadge status="completed" />,
     receipt: (
-      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-amber">
+      <button className="inline-flex items-center gap-1 text-brand-primary transition hover:text-brand-hover">
         <Download className="h-3.5 w-3.5" />
         PDF
       </button>

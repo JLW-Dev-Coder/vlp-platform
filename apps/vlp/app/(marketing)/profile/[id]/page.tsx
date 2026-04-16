@@ -195,7 +195,7 @@ function ErrorState({ message }: { message: string }) {
       <p className="mt-2 text-sm text-[--muted]">{message}</p>
       <a
         href="https://taxmonitor.pro/directory"
-        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-primary to-brand-amber px-6 py-3 text-sm font-bold text-slate-950 transition hover:opacity-90"
+        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-primary to-brand-hover px-6 py-3 text-sm font-bold text-slate-950 transition hover:opacity-90"
       >
         Browse Directory
       </a>
@@ -304,7 +304,7 @@ export default function PublicProfilePage() {
           <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
             {/* Left: avatar + meta */}
             <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-amber text-2xl font-bold text-slate-950">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-hover text-2xl font-bold text-slate-950">
                 {initials}
               </div>
 
@@ -362,7 +362,7 @@ export default function PublicProfilePage() {
               {contactButton.active && contactButton.url ? (
                 <a
                   href={contactButton.url}
-                  className="w-full rounded-xl bg-gradient-to-r from-brand-primary to-brand-amber px-6 py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90 md:w-auto"
+                  className="w-full rounded-xl bg-gradient-to-r from-brand-primary to-brand-hover px-6 py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90 md:w-auto"
                 >
                   {contactButton.label}
                 </a>
@@ -562,7 +562,7 @@ export default function PublicProfilePage() {
                       <div key={i} className="rounded-xl border border-[--line] bg-white/[0.02] p-4">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-[--fg]">{review.name}</span>
-                          <span className="text-xs text-brand-amber">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                          <span className="text-xs text-brand-hover">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
                         </div>
                         <p className="mt-2 text-xs text-[--muted]">{review.text}</p>
                       </div>
@@ -625,7 +625,7 @@ export default function PublicProfilePage() {
                   {contactButton.active && contactButton.url ? (
                     <a
                       href={contactButton.url}
-                      className="block w-full rounded-xl bg-gradient-to-r from-brand-primary to-brand-amber py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90"
+                      className="block w-full rounded-xl bg-gradient-to-r from-brand-primary to-brand-hover py-3 text-center text-sm font-bold text-slate-950 transition hover:opacity-90"
                     >
                       {contactButton.label}
                     </a>

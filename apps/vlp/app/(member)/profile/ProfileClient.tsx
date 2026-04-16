@@ -163,7 +163,7 @@ export default function ProfileClient() {
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-amber transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-hover transition-all"
             style={{ width: `${completeness}%` }}
           />
         </div>
@@ -192,7 +192,7 @@ export default function ProfileClient() {
         <HeroCard brandColor="#f97316">
           <h3 className="text-xs uppercase tracking-widest text-brand-primary/70">Public Profile Preview</h3>
           <div className="mt-5 flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-amber text-xl font-bold text-white">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-hover text-xl font-bold text-white">
               {initials || 'VL'}
             </div>
             <div>
@@ -203,7 +203,7 @@ export default function ProfileClient() {
           <p className="mt-4 text-sm leading-relaxed text-white/60">{bio}</p>
           <a
             href="/profile/preview"
-            className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-primary transition hover:text-brand-amber"
+            className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-primary transition hover:text-brand-hover"
           >
             View Public Profile
             <ExternalLink className="h-3.5 w-3.5" />

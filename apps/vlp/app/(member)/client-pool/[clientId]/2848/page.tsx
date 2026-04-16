@@ -367,7 +367,7 @@ export default function Staff2848Page() {
             <button
               type="button"
               onClick={handleDownload}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
             >
               <Download className="h-4 w-4" />
               Download PDF
@@ -758,7 +758,7 @@ export default function Staff2848Page() {
               type="button"
               onClick={handleGenerate}
               disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FileText className="h-4 w-4" />
               {submitting ? 'Generating...' : 'Generate Form 2848 PDF'}

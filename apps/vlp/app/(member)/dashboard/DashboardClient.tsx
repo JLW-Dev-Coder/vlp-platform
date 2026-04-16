@@ -189,7 +189,7 @@ export default function DashboardClient() {
                 <p className="text-sm text-white/50">{formatBookingTime(nextBooking.scheduled_at)}</p>
               </div>
               <div className="mt-5 flex gap-3">
-                <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
+                <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
                   <Video className="h-4 w-4" />
                   Join Now
                 </button>
@@ -214,7 +214,7 @@ export default function DashboardClient() {
           <div className="mt-2 text-xs text-white/40">
             Monthly allocation: {tokens.monthly_allocation} tokens
           </div>
-          <button className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
+          <button className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
             <Plus className="h-4 w-4" />
             Refill Tokens
           </button>

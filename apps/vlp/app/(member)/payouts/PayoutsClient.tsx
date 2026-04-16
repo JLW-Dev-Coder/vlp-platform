@@ -123,7 +123,7 @@ export default function PayoutsClient() {
           </p>
           <button
             disabled={pendingTotal < minThresholdCents}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Request Payout
           </button>
@@ -169,7 +169,7 @@ export default function PayoutsClient() {
             </div>
             <a
               href="/affiliate"
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-amber px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
             >
               Connect Bank Account
             </a>
