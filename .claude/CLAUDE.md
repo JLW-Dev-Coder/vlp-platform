@@ -87,11 +87,12 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 - Never duplicate a canonical into an app directory
 - When a canonical is updated, it applies to all apps immediately
 
-### Canonical files (19 total):
+### Canonical files (20 total):
 
 | File | Purpose | Use when... |
 |------|---------|-------------|
 | `canonical-app-blueprint.md` | Master blueprint, entry point for all design decisions (see §1 hierarchy) | Starting any frontend work, refactor, or new app |
+| `canonical-app-components.md` | Component-level specs — layout primitives, cards, forms, modals, toasts, empty states, loading states. | Designing or shipping components inside the content area of any app |
 | `canonical-api.md` | Master API endpoint registry (~193 routes) | Documenting, adding, or referencing Worker API endpoints |
 | `canonical-claude.md` | CLAUDE.md template for app-level context | Creating or editing any app's `.claude/CLAUDE.md` |
 | `canonical-contract.json` | Contract JSON schema (7 required sections) | Creating or modifying any data contract |
