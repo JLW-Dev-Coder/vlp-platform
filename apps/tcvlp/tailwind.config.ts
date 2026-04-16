@@ -12,8 +12,8 @@ const config: Config = {
       colors: {
         brand: {
           DEFAULT: '#eab308',
-          light: '#fbbf24',
-          dark: '#ca8a04',
+          light: 'rgba(234, 179, 8, 0.15)',    // was #fbbf24 (shade swatch)
+          dark: '#c79807',     // was #ca8a04 (shade swatch)
           400: '#fbbf24',
           500: '#eab308',
           primary: '#eab308',
