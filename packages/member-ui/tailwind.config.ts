@@ -89,6 +89,12 @@ const config: Config = {
         modal: "40",
         toast: "50",
       },
+      spacing: {
+        "space-section": "6rem",
+        "space-block": "3rem",
+        "space-inline": "1.5rem",
+        "space-tight": "0.5rem",
+      },
     },
   },
   plugins: [],
