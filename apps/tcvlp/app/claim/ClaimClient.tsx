@@ -16,6 +16,7 @@ import {
   checkSubscription,
   SubmitForm843Data,
 } from '@/lib/api';
+import { formatPhone, filterPhoneInput } from '@/lib/phone';
 import styles from './page.module.css';
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
@@ -998,10 +999,12 @@ export default function ClaimClient({ pro, slug }: Props) {
                     <label htmlFor="pref-phone" className={styles.radioLabel}>Phone</label>
                     <input
                       type="tel"
+                      inputMode="numeric"
                       className={styles.radioFieldInput}
                       placeholder="(555) 123-4567"
                       value={notifyPhone}
-                      onChange={(e) => setNotifyPhone(e.target.value)}
+                      onChange={(e) => setNotifyPhone(filterPhoneInput(e.target.value))}
+                      onBlur={() => setNotifyPhone(formatPhone(notifyPhone))}
                     />
                   </div>
                   <div className={styles.radioRow}>
@@ -1016,10 +1019,12 @@ export default function ClaimClient({ pro, slug }: Props) {
                     <label htmlFor="pref-sms" className={styles.radioLabel}>Text/SMS</label>
                     <input
                       type="tel"
+                      inputMode="numeric"
                       className={styles.radioFieldInput}
                       placeholder="(555) 123-4567"
                       value={notifyPhone}
-                      onChange={(e) => setNotifyPhone(e.target.value)}
+                      onChange={(e) => setNotifyPhone(filterPhoneInput(e.target.value))}
+                      onBlur={() => setNotifyPhone(formatPhone(notifyPhone))}
                     />
                   </div>
                 </div>

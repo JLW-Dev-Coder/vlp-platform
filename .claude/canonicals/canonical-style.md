@@ -72,7 +72,75 @@ Template for STYLE.md files that define visual design standards for VLP ecosyste
 - `app/{route}/page.module.css` — page-specific styles (legacy, use Tailwind for new)
 - `components/{Component}.tsx` — reusable components
 
-### 9. Self-Check
+### 9. Dropdown / Select Styling (mandatory)
+
+All `<select>` elements must be styled to match the form's design system. Never use plain browser-default dropdowns.
+
+Required properties:
+- `appearance: none` — remove browser chrome
+- Background matching the form's input fields (e.g. `bg-white` or `bg-[var(--member-card)]`)
+- Border and border-radius matching adjacent text inputs
+- Custom dropdown arrow via CSS `background-image` (inline SVG chevron) or a positioned pseudo-element
+- Minimum padding: `py-3 px-4` (12px vertical, 16px horizontal)
+- Minimum `text-base` (16px) — never smaller than body text (prevents iOS zoom)
+- Focus state: brand-color border + subtle ring (`focus:ring-2 focus:ring-{brand}/30`)
+- Consistent height with adjacent text inputs (`h-[48px]` or matching)
+- Disabled state: `opacity-60 cursor-not-allowed`
+
+Tailwind example:
+```
+className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3
+           text-base focus:border-{brand} focus:ring-2 focus:ring-{brand}/30
+           bg-[url('data:image/svg+xml,...')] bg-no-repeat bg-[right_12px_center]"
+```
+
+### 10. Phone Number Input Normalization (mandatory)
+
+All phone number inputs across every platform must normalize on blur:
+
+**Behavior:**
+- Accept any common format during typing: `1234567890`, `123-456-7890`, `(123) 456-7890`, `+1 123 456 7890`
+- Allow only digits, spaces, hyphens, parentheses, and `+` during input
+- On blur: format as `(XXX) XXX-XXXX` for 10-digit US numbers
+- On blur: format as `+1 (XXX) XXX-XXXX` for 11-digit numbers starting with `1`
+- Store as digits only (with optional country code prefix)
+
+**HTML attributes:**
+- `type="tel"`
+- `inputMode="numeric"` (mobile numeric keyboard)
+- `placeholder="(555) 123-4567"`
+
+**Implementation pattern (React):**
+```tsx
+import { formatPhone, filterPhoneInput } from '@/lib/phone';
+
+<input
+  type="tel"
+  inputMode="numeric"
+  value={phone}
+  onChange={(e) => setPhone(filterPhoneInput(e.target.value))}
+  onBlur={() => setPhone(formatPhone(phone))}
+  placeholder="(555) 123-4567"
+/>
+```
+
+**Shared utility (`lib/phone.ts`):**
+```ts
+export function stripPhone(value: string): string {
+  return value.replace(/[^\d]/g, '');
+}
+export function formatPhone(value: string): string {
+  const digits = stripPhone(value);
+  if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if (digits.length === 11 && digits[0] === '1') return `+1 (${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
+  return value;
+}
+export function filterPhoneInput(value: string): string {
+  return value.replace(/[^\d\s\-()+ ]/g, '');
+}
+```
+
+### 11. Self-Check
 Before delivering any styled page, verify:
 - [ ] Brand color matches PlatformConfig
 - [ ] Mobile responsive at all breakpoints
@@ -80,3 +148,5 @@ Before delivering any styled page, verify:
 - [ ] Consistent spacing (multiples of 4px)
 - [ ] Accessible contrast ratios (WCAG AA minimum)
 - [ ] No external CSS framework dependencies
+- [ ] All `<select>` elements use custom styling (no browser defaults)
+- [ ] All phone inputs normalize on blur

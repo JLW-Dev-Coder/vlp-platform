@@ -6,6 +6,7 @@ import AuthGuard from '@/components/AuthGuard';
 import Header from '@/components/Header';
 import { Session, getProBySlug, createCheckout, tcvlpOnboarding, getSubscriptionStatus } from '@/lib/api';
 import { tierLabel } from '@/lib/tiers';
+import { formatPhone, filterPhoneInput } from '@/lib/phone';
 import styles from './page.module.css';
 
 // Slug generation
@@ -308,8 +309,10 @@ function OnboardingContent({ session }: { session: Session }) {
                       <label className={styles.label}>Business Phone</label>
                       <input
                         type="tel"
+                        inputMode="numeric"
                         value={firmPhone}
-                        onChange={(e) => setFirmPhone(e.target.value)}
+                        onChange={(e) => setFirmPhone(filterPhoneInput(e.target.value))}
+                        onBlur={() => setFirmPhone(formatPhone(firmPhone))}
                         placeholder="(555) 123-4567"
                         className={styles.input}
                       />

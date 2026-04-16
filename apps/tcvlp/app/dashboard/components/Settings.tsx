@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Session, TaxPro, ProfileData, getProfile, updateProfile } from '@/lib/api';
+import { formatPhone, filterPhoneInput } from '@/lib/phone';
 import styles from './shared.module.css';
 
 interface Props {
@@ -114,8 +115,10 @@ export default function Settings({ session, pro, onUpdated }: Props) {
           <label className={styles.label}>Firm Phone</label>
           <input
             type="tel"
+            inputMode="numeric"
             value={firmPhone}
-            onChange={(e) => setFirmPhone(e.target.value)}
+            onChange={(e) => setFirmPhone(filterPhoneInput(e.target.value))}
+            onBlur={() => setFirmPhone(formatPhone(firmPhone))}
             placeholder="(555) 123-4567"
             className={styles.input}
           />

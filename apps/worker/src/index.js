@@ -14892,162 +14892,229 @@ TTMP Support Team
           [submission_id, pro_id, taxpayer_name, taxpayer_email || null, String(tax_year), resolvedPenaltyType, String(resolvedTotal), stateAbbrev, mailing_address_raw, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
         );
 
-        // --- PDF Generation via pdf-lib ---
-        // Try to load pre-filled template from R2; fall back to embedded base64
-        let pdfDoc;
-        let usingTemplate = false;
-        try {
-          const templateObj = await env.R2_VIRTUAL_LAUNCH.get('tcvlp/templates/form-843-template.pdf');
-          if (templateObj) {
-            const templateBytes = new Uint8Array(await templateObj.arrayBuffer());
-            pdfDoc = await PDFDocument.load(templateBytes);
-            usingTemplate = true;
-          }
-        } catch (err) {
-          console.warn('Failed to load Form 843 template from R2, falling back to embedded:', err.message);
-        }
-        if (!pdfDoc) {
-          const pdfBytes = Uint8Array.from(atob(FORM_843_BASE64), c => c.charCodeAt(0));
-          pdfDoc = await PDFDocument.load(pdfBytes);
-        }
+        // --- HTML-to-PDF Preparation Guide ---
+        // Generate a Preparation Guide PDF via pdf-lib (pure HTML-style layout on blank pages)
+        const fmtMoney = (v) => {
+          const [whole, dec] = v.toFixed(2).split('.');
+          return '$' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
+        };
+        const paymentDatesStr = (payment_dates && payment_dates.length > 0) ? payment_dates.join(', ') : '';
+        const taxYearRange = tax_year || '2020-2023';
 
-        const form = pdfDoc.getForm();
+        // Build penalty breakdown lines
+        const penaltyLines = [];
+        if (ftf) penaltyLines.push(`Failure-to-File penalty: ${fmtMoney(ftf)}`);
+        if (ftp) penaltyLines.push(`Failure-to-Pay penalty: ${fmtMoney(ftp)}`);
+        if (ioa) penaltyLines.push(`Interest on penalties: ${fmtMoney(ioa)}`);
+        penaltyLines.push(`Total refund requested: ${fmtMoney(resolvedTotal)}`);
 
-        // Helper to safely set text fields
-        const setField = (name, value) => {
-          if (!value) return;
-          try { form.getTextField(name).setText(String(value)); } catch { /* field not found */ }
+        const kwongText = `Per Kwong v. United States, 179 Fed. Cl. 382 (2025), the U.S. Court `
+          + `of Federal Claims held that IRC \u00A77508A(d) required mandatory `
+          + `postponement of federal tax deadlines during the COVID-19 disaster `
+          + `period (January 20, 2020 through July 10, 2023). The IRS lacked `
+          + `authority to assess failure-to-file penalties, failure-to-pay penalties, `
+          + `and underpayment interest on obligations due during this period. `
+          + `Taxpayer requests abatement and refund of the above penalties and `
+          + `interest assessed during this period. This claim is timely filed `
+          + `before the July 10, 2026 deadline.`;
+
+        // Create a new PDF document (no template dependency)
+        const pdfDoc = await PDFDocument.create();
+        const helvetica = await pdfDoc.embedFont('Helvetica');
+        const helveticaBold = await pdfDoc.embedFont('Helvetica-Bold');
+        const fontSize = 10;
+        const smallFont = 8;
+        const titleFont = 14;
+        const headerFont = 11;
+        const pageW = 612; // letter 8.5"
+        const pageH = 792; // letter 11"
+        const margin = 54; // 0.75"
+        const contentW = pageW - margin * 2;
+        const lineH = 14;
+
+        // --- Page 1 ---
+        const page1 = pdfDoc.addPage([pageW, pageH]);
+        let y = pageH - margin;
+        const rgb = (r, g, b) => ({ type: 'RGB', red: r / 255, green: g / 255, blue: b / 255 });
+        const gray = rgb(100, 100, 100);
+        const black = rgb(0, 0, 0);
+        const darkBlue = rgb(0, 51, 102);
+        const drawText = (page, text, x, yPos, options = {}) => {
+          page.drawText(text, {
+            x, y: yPos,
+            size: options.size || fontSize,
+            font: options.font || helvetica,
+            color: options.color || black,
+          });
+        };
+        const drawLine = (page, x1, y1, x2, y2) => {
+          page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: 0.5, color: rgb(180, 180, 180) });
         };
 
-        if (usingTemplate) {
-          // Template has pre-checked checkboxes (penalty, interest §6404(e)(1),
-          // Item 4e Income, Item 5i 1040, Item 7a IRS errors/delays) and
-          // hardcoded Item 1 dates (01/01/2020–12/31/2023).
-          // Only fill the text token fields — do NOT modify checkboxes.
+        // Watermark / header notice
+        drawText(page1, 'FORM 843 PREPARATION GUIDE', margin, y, { size: titleFont, font: helveticaBold, color: darkBlue });
+        y -= lineH + 2;
+        drawText(page1, 'Based on Kwong v. United States, 179 Fed. Cl. 382 (2025)', margin, y, { size: smallFont, color: gray });
+        y -= lineH;
+        drawText(page1, 'NOT AN OFFICIAL IRS FORM \u2014 Use this guide to complete IRS Form 843 (Rev. December 2024)', margin, y, { size: smallFont, color: gray });
+        y -= lineH;
+        drawText(page1, 'Download the official form: www.irs.gov/pub/irs-pdf/f843.pdf', margin, y, { size: smallFont, color: gray });
+        y -= lineH + 6;
+        drawLine(page1, margin, y, pageW - margin, y);
+        y -= lineH + 4;
 
-          // Scan all text fields and build a map of token value → field objects.
-          // Tokens are placeholder text typed INTO standard IRS AcroForm fields
-          // (e.g. field named "topmostSubform[0].Page1[0].f1_1[0]" with value "FULL_NAME").
-          // FULL_NAME appears in two separate fields, so we collect arrays.
-          const tokenFields = {};
-          for (const field of form.getFields()) {
-            try {
-              const tf = form.getTextField(field.getName());
-              const text = tf.getText();
-              if (text && /^[A-Z_0-9]+$/.test(text.trim())) {
-                const token = text.trim();
-                if (!tokenFields[token]) tokenFields[token] = [];
-                tokenFields[token].push(tf);
-              }
-            } catch { /* not a text field */ }
-          }
+        // Reason for filing
+        drawText(page1, 'Reason for filing:', margin, y, { size: headerFont, font: helveticaBold });
+        y -= lineH + 2;
+        drawText(page1, '[X]  Penalty \u2014 Abatement or refund of a penalty or addition to tax due to', margin + 10, y);
+        y -= lineH;
+        drawText(page1, '      reasonable cause or other reason allowed under the law', margin + 10, y);
+        y -= lineH + 2;
+        drawText(page1, '[X]  Interest \u2014 Abatement or refund of interest due to IRS error', margin + 10, y);
+        y -= lineH;
+        drawText(page1, '      or delay under section 6404(e)(1)', margin + 10, y);
+        y -= lineH + 8;
 
-          // Fill all fields matching a token value, or try token as field name
-          const fillToken = (token, value) => {
-            if (!value) return;
-            const matched = tokenFields[token];
-            if (matched && matched.length > 0) {
-              for (const f of matched) f.setText(String(value));
-            } else {
-              setField(token, value);
-            }
-          };
-
-          // FULL_NAME — appears in "Name of person requesting" and "Name shown on return"
-          fillToken('FULL_NAME', taxpayer_name);
-
-          // TOTAL_REFUND — Item 2 amount, formatted with commas (e.g. "4,494.95")
-          if (resolvedTotal) {
-            const [whole, dec] = resolvedTotal.toFixed(2).split('.');
-            const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
-            fillToken('TOTAL_REFUND', formatted);
-          }
-
-          // DATE_01 through DATE_11 + DATE_15 — Item 3 payment dates (a–l)
-          // Template slots: a=DATE_01..f=DATE_06, g=DATE_07..k=DATE_11, l=DATE_15
-          const dates = payment_dates || [];
-          for (let i = 1; i <= 11; i++) {
-            if (dates[i - 1]) {
-              fillToken(`DATE_${String(i).padStart(2, '0')}`, dates[i - 1]);
-            }
-          }
-          if (dates[11]) fillToken('DATE_15', dates[11]);
-
-          // CLAIM_LANGUAGE_AMTS — Item 8 explanation with itemized amounts
-          const claimParts = [`Claim for refund of penalties assessed for tax year ${tax_year}.`];
-          if (ftf) claimParts.push(`Failure-to-File penalty: $${ftf.toFixed(2)};`);
-          if (ftp) claimParts.push(`Failure-to-Pay penalty: $${ftp.toFixed(2)};`);
-          if (ioa) claimParts.push(`Interest on penalties: $${ioa.toFixed(2)}.`);
-          claimParts.push(`Total refund requested: $${resolvedTotal.toFixed(2)}.`);
-          claimParts.push(
-            `Per Kwong v. United States, 179 Fed. Cl. 382 (2025), the U.S. Court `
-            + `of Federal Claims held that IRC §7508A(d) required mandatory `
-            + `postponement of federal tax deadlines during the COVID-19 disaster `
-            + `period (January 20, 2020 through July 10, 2023). Taxpayer requests `
-            + `abatement and refund of penalties and interest assessed during this `
-            + `period. This claim is timely filed before the July 10, 2026 deadline.`
-          );
-          fillToken('CLAIM_LANGUAGE_AMTS', claimParts.join(' '));
-
-          // IRC_SECTION — Item 6: IRC sections under which penalty/interest was assessed
-          fillToken('IRC_SECTION', '6651(a)(1), 6651(a)(2), 6601');
-        } else {
-          // Fallback: blank IRS form — use standard AcroForm field names + check boxes
-          const checkBox = (name) => {
-            try { form.getCheckBox(name).check(); } catch { /* field not found */ }
-          };
-
-          // Top checkbox: penalty/addition abatement
-          checkBox('topmostSubform[0].Page1[0].c1_1[6]');
-
-          // Taxpayer info
-          setField('topmostSubform[0].Page1[0].f1_1[0]', taxpayer_name);
-          setField('topmostSubform[0].Page1[0].f1_2[0]', ssn_ein);
-          setField('topmostSubform[0].Page1[0].f1_3[0]', spouse_name);
-          setField('topmostSubform[0].Page1[0].f1_4[0]', spouse_ssn);
-          setField('topmostSubform[0].Page1[0].f1_5[0]', address);
-          setField('topmostSubform[0].Page1[0].f1_6[0]', apt_suite);
-          setField('topmostSubform[0].Page1[0].f1_7[0]', city);
-          setField('topmostSubform[0].Page1[0].f1_8[0]', state.toUpperCase());
-          setField('topmostSubform[0].Page1[0].f1_9[0]', zip_code);
-          setField('topmostSubform[0].Page1[0].f1_10[0]', ein);
-          setField('topmostSubform[0].Page1[0].f1_15[0]', phone);
-
-          // Line 1: Tax period
-          setField('topmostSubform[0].Page1[0].f1_16[0]', `01/01/${tax_year}`);
-          setField('topmostSubform[0].Page1[0].f1_17[0]', `12/31/${tax_year}`);
-
-          // Line 2: Amount
-          if (resolvedTotal) {
-            setField('topmostSubform[0].Page1[0].f1_18[0]', String(resolvedTotal));
-          }
-
-          // Line 4e: Income tax checkbox
-          checkBox('topmostSubform[0].Page1[0].c1_5[0]');
-          // Line 5i: 1040 checkbox
-          checkBox('topmostSubform[0].Page2[0].c2_8[0]');
-          // Line 6: IRC section — static Kwong claim sections
-          setField('topmostSubform[0].Page2[0].f2_2[0]', '6651(a)(1), 6651(a)(2), 6601');
-          // Line 7c: Reasonable cause
-          checkBox('topmostSubform[0].Page2[0].c2_15[2]');
-
-          // Line 8: Explanation
-          const amountLines = [];
-          if (ftf) amountLines.push(`Failure-to-File penalty: $${ftf.toFixed(2)}`);
-          if (ftp) amountLines.push(`Failure-to-Pay penalty: $${ftp.toFixed(2)}`);
-          if (ioa) amountLines.push(`Interest on penalties: $${ioa.toFixed(2)}`);
-          const amountDetail = amountLines.length > 0 ? amountLines.join('; ') + '. ' : '';
-          const explanation = `Claim for refund of penalties assessed for tax year ${tax_year}. `
-            + amountDetail
-            + `Total refund requested: $${resolvedTotal.toFixed(2)}. `
-            + `Per Kwong v. United States, 179 Fed. Cl. 382 (2025), the U.S. Court of Federal Claims held that IRC §7508A(d) required mandatory postponement of federal tax deadlines during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). `
-            + `Taxpayer requests abatement and refund of penalties and interest assessed during this period. `
-            + `This claim is timely filed before the July 10, 2026 deadline.`;
-          setField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]', explanation);
+        // Taxpayer info
+        drawText(page1, 'Taxpayer Information:', margin, y, { size: headerFont, font: helveticaBold });
+        y -= lineH + 2;
+        drawText(page1, `Name:  ${taxpayer_name}`, margin + 10, y);
+        y -= lineH;
+        if (ssn_ein) { drawText(page1, `SSN/EIN:  ${ssn_ein}`, margin + 10, y); y -= lineH; }
+        if (spouse_name) { drawText(page1, `Spouse:  ${spouse_name}`, margin + 10, y); y -= lineH; }
+        if (address) {
+          let addrLine = address;
+          if (apt_suite) addrLine += `, ${apt_suite}`;
+          drawText(page1, `Address:  ${addrLine}`, margin + 10, y); y -= lineH;
         }
+        if (city || stateAbbrev || zip_code) {
+          drawText(page1, `          ${[city, stateAbbrev, zip_code].filter(Boolean).join(', ')}`, margin + 10, y); y -= lineH;
+        }
+        drawText(page1, `State:  ${stateAbbrev}`, margin + 10, y);
+        y -= lineH + 8;
 
-        // Flatten form fields so they can't be edited
-        form.flatten();
+        // Item 1
+        drawLine(page1, margin, y, pageW - margin, y);
+        y -= lineH + 2;
+        drawText(page1, 'Item 1.  Tax period:', margin, y, { font: helveticaBold });
+        y -= lineH;
+        drawText(page1, `Beginning date:  01/01/${tax_year}`, margin + 20, y);
+        y -= lineH;
+        drawText(page1, `Ending date:     12/31/${tax_year}`, margin + 20, y);
+        y -= lineH + 6;
+
+        // Item 2
+        drawText(page1, `Item 2.  Amount to be refunded or abated:  ${fmtMoney(resolvedTotal)}`, margin, y, { font: helveticaBold });
+        y -= lineH + 6;
+
+        // Item 3
+        drawText(page1, 'Item 3.  Date(s) of payment(s):', margin, y, { font: helveticaBold });
+        y -= lineH;
+        drawText(page1, paymentDatesStr || '(leave blank if no payments made)', margin + 20, y, { color: paymentDatesStr ? black : gray });
+        y -= lineH + 6;
+
+        // Item 4
+        drawText(page1, 'Item 4.  Type of tax:', margin, y, { font: helveticaBold });
+        y -= lineH;
+        drawText(page1, '[X]  Income', margin + 20, y);
+        y -= lineH + 6;
+
+        // Footer
+        drawLine(page1, margin, y, pageW - margin, y);
+        y -= lineH;
+        drawText(page1, 'Page 1 of 2', pageW - margin - 50, y, { size: smallFont, color: gray });
+
+        // --- Page 2 ---
+        const page2 = pdfDoc.addPage([pageW, pageH]);
+        y = pageH - margin;
+
+        drawText(page2, 'FORM 843 PREPARATION GUIDE (continued)', margin, y, { size: titleFont, font: helveticaBold, color: darkBlue });
+        y -= lineH + 2;
+        drawText(page2, 'NOT AN OFFICIAL IRS FORM', margin, y, { size: smallFont, color: gray });
+        y -= lineH + 6;
+        drawLine(page2, margin, y, pageW - margin, y);
+        y -= lineH + 4;
+
+        // Item 5
+        drawText(page2, 'Item 5.  Type of return:', margin, y, { font: helveticaBold });
+        y -= lineH;
+        drawText(page2, '[X]  1040', margin + 20, y);
+        y -= lineH + 6;
+
+        // Item 6
+        drawText(page2, 'Item 6.  Internal Revenue Code section:', margin, y, { font: helveticaBold });
+        y -= lineH;
+        drawText(page2, '6651(a)(1), 6651(a)(2), 6601', margin + 20, y);
+        y -= lineH + 6;
+
+        // Item 7
+        drawText(page2, 'Item 7.  Reason:', margin, y, { font: helveticaBold });
+        y -= lineH;
+        drawText(page2, '[X]  Interest was assessed as a result of IRS errors or delays', margin + 20, y);
+        y -= lineH + 6;
+
+        // Item 8 — Explanation
+        drawText(page2, 'Item 8.  Explanation:', margin, y, { font: helveticaBold });
+        y -= lineH + 4;
+
+        // Claim intro
+        drawText(page2, `Claim for refund of penalties and interest assessed for tax year(s) ${taxYearRange}.`, margin + 20, y);
+        y -= lineH + 4;
+
+        // Penalty breakdown
+        for (const pLine of penaltyLines) {
+          drawText(page2, pLine, margin + 20, y);
+          y -= lineH;
+        }
+        y -= 4;
+
+        // Kwong citation — word-wrap at ~85 chars per line
+        const wrapText = (text, maxChars) => {
+          const words = text.split(' ');
+          const lines = [];
+          let cur = '';
+          for (const w of words) {
+            if (cur.length + w.length + 1 > maxChars) {
+              lines.push(cur);
+              cur = w;
+            } else {
+              cur = cur ? cur + ' ' + w : w;
+            }
+          }
+          if (cur) lines.push(cur);
+          return lines;
+        };
+        const kwongLines = wrapText(kwongText, 85);
+        for (const kl of kwongLines) {
+          drawText(page2, kl, margin + 20, y);
+          y -= lineH;
+        }
+        y -= lineH;
+
+        // Signature line
+        drawLine(page2, margin, y, pageW - margin, y);
+        y -= lineH + 6;
+        drawText(page2, 'Signature: ____________________________          Date: _______________', margin, y);
+        y -= lineH + 20;
+
+        // Footer instructions box
+        drawLine(page2, margin, y, pageW - margin, y);
+        y -= lineH + 2;
+        drawText(page2, 'INSTRUCTIONS', margin, y, { font: helveticaBold, size: headerFont, color: darkBlue });
+        y -= lineH + 2;
+        drawText(page2, '1.  Download the official IRS Form 843 from www.irs.gov/pub/irs-pdf/f843.pdf', margin + 10, y, { size: smallFont });
+        y -= lineH;
+        drawText(page2, '2.  Fill in each item using the values shown in this preparation guide.', margin + 10, y, { size: smallFont });
+        y -= lineH;
+        drawText(page2, '3.  Sign and date the official form.', margin + 10, y, { size: smallFont });
+        y -= lineH;
+        drawText(page2, `4.  Mail to: ${mailing_address.full}`, margin + 10, y, { size: smallFont });
+        y -= lineH;
+        drawText(page2, '5.  Deadline: Must be postmarked by July 10, 2026.', margin + 10, y, { size: smallFont, font: helveticaBold });
+        y -= lineH + 4;
+        drawLine(page2, margin, y, pageW - margin, y);
+        y -= lineH;
+        drawText(page2, 'Page 2 of 2', pageW - margin - 50, y, { size: smallFont, color: gray });
 
         const filledPdf = await pdfDoc.save();
 
