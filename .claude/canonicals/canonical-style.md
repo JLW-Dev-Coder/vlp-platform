@@ -18,7 +18,7 @@ Tokens live in a two-layer system. Both layers are authoritative within their sc
 
 **Location:**
 - TypeScript tokens: `packages/member-ui/tailwind.config.ts`
-- CSS variables: `packages/member-ui/src/styles/globals.css`
+- CSS variables: `packages/member-ui/src/styles/tokens.css`
 - Import from apps via: `@import '@vlp/member-ui/styles';`
 
 **Contains:** Structural tokens that are identical across all 8 apps — surface hierarchy, border states, typography scale, spacing semantics, radius scale, shadow elevation, animations, z-index. These values do NOT vary by platform.
@@ -72,7 +72,7 @@ theme: {
 
 ### 2.2 Surface tokens (shared layer, blueprint §4.15)
 
-Four-level dark-mode surface hierarchy. Defined as CSS variables in `packages/member-ui/src/styles/globals.css`:
+Four-level dark-mode surface hierarchy. Defined as CSS variables in `packages/member-ui/src/styles/tokens.css`:
 
 | Token | Current value | Usage |
 |-------|--------------|-------|
@@ -431,7 +431,7 @@ Documented here so cleanup is scheduled, not forgotten. Each item gets its own c
 6. **Missing blueprint tokens** — Apps don't yet define `brand.hover`, `brand.dark`, `brand.light`, `brand.glow`, `brand.text-on-primary` (only `brand.primary` exists). Add the missing five to every app's tailwind config.
 7. **Shadow / animation / z-index tokens** — None exist in shared layer yet. Add per §6, §7, §8.
 8. **Semantic spacing tokens** — `space-section`, `space-block`, `space-inline`, `space-tight` not yet in shared layer. Add per §4.2.
-9. **Shared token file rename** — Consider renaming `packages/member-ui/src/styles/globals.css` to `tokens.css` to match the pattern (globals.css in apps, tokens in the shared layer). Low-priority cosmetic.
+9. ~~**Shared token file rename** — Consider renaming `packages/member-ui/src/styles/globals.css` to `tokens.css` to match the pattern (globals.css in apps, tokens in the shared layer).~~ Resolved 2026-04-16.
 
 ---
 
