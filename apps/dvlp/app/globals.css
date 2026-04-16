@@ -11,6 +11,9 @@
     --member-accent-strong: rgba(59, 130, 246, 0.2);
     --member-hero-bg: #1e3a5f;
     --member-hero-bg-end: #0c1929;
+
+    /* Brand glow — used by shared --border-focus + shadow-focus */
+    --brand-glow: rgba(59, 130, 246, 0.40);
   }
 }
 

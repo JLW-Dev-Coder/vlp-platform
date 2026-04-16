@@ -12,6 +12,9 @@
     --member-hero-bg: #2e1065;
     --member-hero-bg-end: #1a0533;
 
+    /* Brand glow — used by shared --border-focus + shadow-focus */
+    --brand-glow: rgba(168, 85, 247, 0.40);
+
     /* WLVLP legacy brand tokens (used by CSS module marketing pages) */
     --void: #07070A;
     --charcoal: #12121A;

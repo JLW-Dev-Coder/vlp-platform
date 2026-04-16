@@ -12,6 +12,9 @@
     --member-hero-bg: #422006;
     --member-hero-bg-end: #1a0e03;
 
+    /* Brand glow — used by shared --border-focus + shadow-focus */
+    --brand-glow: rgba(234, 179, 8, 0.40);
+
     /* TCVLP brand tokens (used by CSS module marketing pages) */
     --color-bg:          #0f1117;
     --color-surface:     #161824;

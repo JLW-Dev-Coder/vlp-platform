@@ -12,6 +12,9 @@
     --member-hero-bg: #052e16;
     --member-hero-bg-end: #022c22;
 
+    /* Brand glow — used by shared --border-focus + shadow-focus */
+    --brand-glow: rgba(34, 197, 94, 0.40);
+
     /* GVLP legacy brand tokens (used by CSS module marketing pages) */
     --brand-red: #c41e3a;
     --brand-pink: #e8446d;

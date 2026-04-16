@@ -38,8 +38,8 @@ module.exports = {
         sm: "0 1px 2px 0 rgba(0, 0, 0, 0.25)",
         md: "0 4px 12px 0 rgba(0, 0, 0, 0.35)",
         lg: "0 10px 30px 0 rgba(0, 0, 0, 0.50)",
-        focus: "0 0 0 3px var(--brand-glow, rgba(255, 255, 255, 0.40))",
-        brand: "0 8px 24px 0 var(--brand-glow, rgba(255, 255, 255, 0.40))",
+        focus: "0 0 0 3px var(--brand-glow, currentColor)",
+        brand: "0 8px 24px 0 var(--brand-glow, currentColor)",
       },
       keyframes: {
         "fade-in": {

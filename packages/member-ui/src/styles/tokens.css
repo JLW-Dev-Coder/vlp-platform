@@ -29,7 +29,7 @@
   --border-subtle: var(--member-border);
   --border-default: rgba(255, 255, 255, 0.12);
   --border-hover: rgba(255, 255, 255, 0.20);
-  --border-focus: currentColor;
+  --border-focus: var(--brand-glow, currentColor);
 
   /* Canonical text tokens (canonical-style.md §2.4) */
   --text-primary: rgba(255, 255, 255, 0.92);
