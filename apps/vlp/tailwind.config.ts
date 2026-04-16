@@ -16,6 +16,12 @@ const config: Config = {
           amber: '#f59e0b',
           400: '#fb923c',
           500: '#f97316',
+          primary: '#f97316',
+          hover: '#f97e29',
+          dark: '#d46213',
+          light: 'rgba(249, 115, 22, 0.15)',
+          glow: 'rgba(249, 115, 22, 0.40)',
+          'text-on-primary': '#ffffff',
         },
         ink: {
           900: '#0f172a',

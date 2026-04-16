@@ -15,6 +15,12 @@ const config: Config = {
           indigo: '#6366f1',
           400: '#60a5fa',
           500: '#3b82f6',
+          primary: '#3b82f6',
+          hover: '#4b8cf7',
+          dark: '#326fd1',
+          light: 'rgba(59, 130, 246, 0.15)',
+          glow: 'rgba(59, 130, 246, 0.40)',
+          'text-on-primary': '#ffffff',
         },
         ink: {
           900: '#020617',

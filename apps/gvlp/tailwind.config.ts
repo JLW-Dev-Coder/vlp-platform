@@ -15,6 +15,12 @@ const config: Config = {
           emerald: '#10b981',
           400: '#4ade80',
           500: '#22c55e',
+          primary: '#22c55e',
+          hover: '#34ca6b',
+          dark: '#1da750',
+          light: 'rgba(34, 197, 94, 0.15)',
+          glow: 'rgba(34, 197, 94, 0.40)',
+          'text-on-primary': '#ffffff',
         },
         ink: {
           900: '#1a0a10',

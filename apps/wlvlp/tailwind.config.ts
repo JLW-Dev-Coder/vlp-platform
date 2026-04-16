@@ -15,6 +15,12 @@ const config: Config = {
           violet: '#8b5cf6',
           400: '#c084fc',
           500: '#a855f7',
+          primary: '#a855f7',
+          hover: '#af63f8',
+          dark: '#8f48d2',
+          light: 'rgba(168, 85, 247, 0.15)',
+          glow: 'rgba(168, 85, 247, 0.40)',
+          'text-on-primary': '#ffffff',
         },
         ink: {
           900: '#07070A',

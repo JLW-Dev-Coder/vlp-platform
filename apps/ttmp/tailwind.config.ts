@@ -16,6 +16,12 @@ const config: Config = {
           'teal-darker': '#0f766e',
           400: '#2dd4bf',
           500: '#14b8a6',
+          primary: '#14b8a6',
+          hover: '#27bead',
+          dark: '#119c8d',
+          light: 'rgba(20, 184, 166, 0.15)',
+          glow: 'rgba(20, 184, 166, 0.40)',
+          'text-on-primary': '#ffffff',
         },
       },
       fontFamily: {
