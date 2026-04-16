@@ -1,5 +1,7 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import { LegalPageLayout, LegalSection } from '@vlp/member-ui'
+import { vlpConfig } from '@/lib/platform-config'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Virtual Launch Pro',
@@ -19,42 +21,34 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
-      <div className="mb-10">
-        <p className="mb-4 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">Legal</p>
-        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">Privacy Policy</h1>
-        <p className="mt-2 text-base text-white/60">Install, Template, and Service Data Handling</p>
-        <p className="mt-1 text-sm text-white/40">Last updated: March 17, 2026</p>
-      </div>
-      <div className="mb-8 flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-4">
-        <img src="https://taxmonitor.pro/assets/logo.svg" alt="Virtual Launch Pro" className="h-8 w-auto" loading="lazy" />
-        <div className="text-sm text-white/60">
-          <div className="font-semibold text-white">Virtual Launch Pro</div>
-          <div>1175 Avocado Avenue Suite 101 PMB 1010 · El Cajon, CA 92020</div>
-        </div>
-      </div>
-      <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-8">
-        <p className="text-sm leading-relaxed text-slate-300">This Privacy Policy explains how Virtual Launch Pro and its operator ("Provider") may access, use, and handle Client information in connection with installs, setup work, templates, automation configuration, support, and related digital services.</p>
-      </div>
-      <div className="space-y-4">
-        {sections.map((s) => (
-          <section key={s.id} className="rounded-2xl border border-white/10 bg-white/5 p-8">
-            <h2 className="mb-3 text-lg font-semibold text-white">{s.title}</h2>
-            <p className="text-sm leading-relaxed text-slate-300">{s.body}</p>
-          </section>
-        ))}
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-8">
-          <h2 className="mb-3 text-lg font-semibold text-white">Contact</h2>
-          <p className="text-sm leading-relaxed text-slate-300">For questions regarding this Privacy Policy, contact Virtual Launch Pro through the <Link href="/contact" className="text-amber-400 underline underline-offset-2 hover:text-amber-300">support page</Link> or by mail at 1175 Avocado Avenue Suite 101 PMB 1010, El Cajon, CA 92020.</p>
-        </section>
-      </div>
-      <div className="mt-10 flex flex-wrap gap-4 text-sm text-white/50">
-        <Link href="/legal/privacy" className="text-amber-400 hover:text-amber-300 transition-colors">Privacy Policy</Link>
-        <span>·</span>
-        <Link href="/legal/refund" className="hover:text-white transition-colors">Refund Policy</Link>
-        <span>·</span>
-        <Link href="/legal/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-      </div>
-    </div>
+    <LegalPageLayout
+      config={vlpConfig}
+      title="Privacy Policy"
+      subtitle="Install, Template, and Service Data Handling"
+      lastUpdated="March 17, 2026"
+      currentPage="privacy"
+    >
+      <LegalSection>
+        <p>
+          This Privacy Policy explains how Virtual Launch Pro and its operator (&ldquo;Provider&rdquo;) may access, use, and handle Client information in connection with installs, setup work, templates, automation configuration, support, and related digital services.
+        </p>
+      </LegalSection>
+
+      {sections.map((s) => (
+        <LegalSection key={s.id} title={s.title}>
+          <p>{s.body}</p>
+        </LegalSection>
+      ))}
+
+      <LegalSection title="Contact">
+        <p>
+          For questions regarding this Privacy Policy, contact Virtual Launch Pro through the{' '}
+          <Link href="/contact" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">
+            support page
+          </Link>{' '}
+          or by mail at 1175 Avocado Avenue Suite 101 PMB 1010, El Cajon, CA 92020.
+        </p>
+      </LegalSection>
+    </LegalPageLayout>
   )
 }
