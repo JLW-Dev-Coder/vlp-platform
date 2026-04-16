@@ -14925,23 +14925,53 @@ TTMP Support Team
           // hardcoded Item 1 dates (01/01/2020–12/31/2023).
           // Only fill the text token fields — do NOT modify checkboxes.
 
+          // Scan all text fields and build a map of token value → field objects.
+          // Tokens are placeholder text typed INTO standard IRS AcroForm fields
+          // (e.g. field named "topmostSubform[0].Page1[0].f1_1[0]" with value "FULL_NAME").
+          // FULL_NAME appears in two separate fields, so we collect arrays.
+          const tokenFields = {};
+          for (const field of form.getFields()) {
+            try {
+              const tf = form.getTextField(field.getName());
+              const text = tf.getText();
+              if (text && /^[A-Z_0-9]+$/.test(text.trim())) {
+                const token = text.trim();
+                if (!tokenFields[token]) tokenFields[token] = [];
+                tokenFields[token].push(tf);
+              }
+            } catch { /* not a text field */ }
+          }
+
+          // Fill all fields matching a token value, or try token as field name
+          const fillToken = (token, value) => {
+            if (!value) return;
+            const matched = tokenFields[token];
+            if (matched && matched.length > 0) {
+              for (const f of matched) f.setText(String(value));
+            } else {
+              setField(token, value);
+            }
+          };
+
           // FULL_NAME — appears in "Name of person requesting" and "Name shown on return"
-          setField('FULL_NAME', taxpayer_name);
+          fillToken('FULL_NAME', taxpayer_name);
 
           // TOTAL_REFUND — Item 2 amount, formatted with commas (e.g. "4,494.95")
           if (resolvedTotal) {
             const [whole, dec] = resolvedTotal.toFixed(2).split('.');
             const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
-            setField('TOTAL_REFUND', formatted);
+            fillToken('TOTAL_REFUND', formatted);
           }
 
-          // DATE_01 through DATE_15 — Item 3 payment dates from transcript
+          // DATE_01 through DATE_11 + DATE_15 — Item 3 payment dates (a–l)
+          // Template slots: a=DATE_01..f=DATE_06, g=DATE_07..k=DATE_11, l=DATE_15
           const dates = payment_dates || [];
-          for (let i = 0; i < 15; i++) {
-            if (dates[i]) {
-              setField(`DATE_${String(i + 1).padStart(2, '0')}`, dates[i]);
+          for (let i = 1; i <= 11; i++) {
+            if (dates[i - 1]) {
+              fillToken(`DATE_${String(i).padStart(2, '0')}`, dates[i - 1]);
             }
           }
+          if (dates[11]) fillToken('DATE_15', dates[11]);
 
           // CLAIM_LANGUAGE_AMTS — Item 8 explanation with itemized amounts
           const claimParts = [`Claim for refund of penalties assessed for tax year ${tax_year}.`];
@@ -14957,7 +14987,7 @@ TTMP Support Team
             + `abatement and refund of penalties and interest assessed during this `
             + `period. This claim is timely filed before the July 10, 2026 deadline.`
           );
-          setField('CLAIM_LANGUAGE_AMTS', claimParts.join(' '));
+          fillToken('CLAIM_LANGUAGE_AMTS', claimParts.join(' '));
         } else {
           // Fallback: blank IRS form — use standard AcroForm field names + check boxes
           const checkBox = (name) => {
