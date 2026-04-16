@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import CtaBanner from '@/components/CtaBanner';
-import Footer from '@/components/Footer';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -13,17 +11,6 @@ export const metadata: Metadata = {
 export default function WhatIsForm843Page() {
   return (
     <div className={styles.root}>
-      <nav className={styles.nav}>
-        <div className={styles.navInner}>
-          <Link href="/" className={styles.brand}>
-            Tax Claim <span className={styles.brandAccent}>VLP</span>
-          </Link>
-          <Link href="/" className={styles.backLink}>
-            &larr; Back to home
-          </Link>
-        </div>
-      </nav>
-
       <main className={styles.main}>
         <article className={styles.article}>
           <h1 className={styles.h1}>
@@ -202,7 +189,6 @@ export default function WhatIsForm843Page() {
       </main>
 
       <CtaBanner />
-      <Footer />
     </div>
   );
 }

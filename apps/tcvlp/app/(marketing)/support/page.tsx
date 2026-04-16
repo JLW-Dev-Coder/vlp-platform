@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import Link from 'next/link';
-import Header from '@/components/Header';
-import DeadlineBanner from '@/components/DeadlineBanner';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -61,9 +59,6 @@ Cal.ns["tax-claim-virtual-launch-pro-support"]("ui", {"cssVarsPerTheme":{"light"
 `,
         }}
       />
-
-      <DeadlineBanner />
-      <Header showNav />
 
       <div className={styles.hero}>
         <div className={styles.heroInner}>

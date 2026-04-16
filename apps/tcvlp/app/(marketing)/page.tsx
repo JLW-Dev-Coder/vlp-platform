@@ -1,8 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Header from '@/components/Header';
-import DeadlineBanner from '@/components/DeadlineBanner';
-import Footer from '@/components/Footer';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -179,9 +176,6 @@ function CheckIcon() {
 export default function HomePage() {
   return (
     <div className={styles.root}>
-      <DeadlineBanner />
-      <Header showNav />
-
       {/* 1. Hero */}
       <section className={styles.hero} id="hero">
         <div className={styles.heroBg} />
@@ -460,8 +454,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. Footer */}
-      <Footer />
     </div>
   );
 }

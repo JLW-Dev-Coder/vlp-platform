@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Header from '@/components/Header';
-import DeadlineBanner from '@/components/DeadlineBanner';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -114,9 +112,6 @@ const STEPS = [
 export default function DemoPage() {
   return (
     <div className={styles.root}>
-      <DeadlineBanner />
-      <Header showNav />
-
       <div className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.deadlineBadge}>

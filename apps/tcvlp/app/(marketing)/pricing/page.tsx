@@ -2,9 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/Header';
-import DeadlineBanner from '@/components/DeadlineBanner';
-import Footer from '@/components/Footer';
 import { createTcvlpCheckout } from '@/lib/api';
 import styles from './pricing.module.css';
 
@@ -134,9 +131,6 @@ export default function PricingPage() {
 
   return (
     <div className={styles.root}>
-      <DeadlineBanner />
-      <Header showNav />
-
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.badge}>Kwong Window: ~10 Weeks Remaining</div>
@@ -235,8 +229,6 @@ export default function PricingPage() {
           </button>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }
