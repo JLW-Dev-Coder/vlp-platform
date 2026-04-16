@@ -41,6 +41,21 @@ export interface MarketingConfig {
   footerCopyright?: string;           // override default "© {year} {brandName}"
 }
 
+export interface BusinessAddress {
+  line1: string                    // "1175 Avocado Avenue"
+  line2?: string                   // "Suite 101 PMB 1010"
+  city: string                     // "El Cajon"
+  state: string                    // "CA"
+  zip: string                      // "92020"
+}
+
+export interface BusinessInfo {
+  legalEntity: string              // "Lenore, Inc."
+  address: BusinessAddress
+  phone?: string                   // "619-800-5457"
+  supportEmail: string             // "outreach@virtuallaunch.pro"
+}
+
 export interface PlatformConfig {
   brandName: string;           // e.g., "Transcript Tax Monitor"
   brandAbbrev: string;         // e.g., "TTMP"
@@ -59,5 +74,6 @@ export interface PlatformConfig {
   };
   apiBaseUrl: string;          // e.g., "https://api.taxmonitor.pro"
   calcomReferralLink?: string;
+  businessInfo?: BusinessInfo;
   marketing?: MarketingConfig;
 }

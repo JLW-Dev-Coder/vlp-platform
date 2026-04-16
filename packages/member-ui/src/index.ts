@@ -27,6 +27,8 @@ export type {
   MarketingConfig,
   MegaMenuItem,
   FooterLink,
+  BusinessInfo,
+  BusinessAddress,
 } from './types/config'
 export type { ReviewConfig, ReviewCardData } from './types/review'
 export type { ReviewCardProps } from './components/reviews/ReviewCard'
