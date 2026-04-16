@@ -14988,6 +14988,9 @@ TTMP Support Team
             + `period. This claim is timely filed before the July 10, 2026 deadline.`
           );
           fillToken('CLAIM_LANGUAGE_AMTS', claimParts.join(' '));
+
+          // IRC_SECTION — Item 6: IRC sections under which penalty/interest was assessed
+          fillToken('IRC_SECTION', '6651(a)(1), 6651(a)(2), 6601');
         } else {
           // Fallback: blank IRS form — use standard AcroForm field names + check boxes
           const checkBox = (name) => {
@@ -15023,9 +15026,8 @@ TTMP Support Team
           checkBox('topmostSubform[0].Page1[0].c1_5[0]');
           // Line 5i: 1040 checkbox
           checkBox('topmostSubform[0].Page2[0].c2_8[0]');
-          // Line 6: IRC section
-          const ircSectionValue = irc_section || '6651';
-          setField('topmostSubform[0].Page2[0].f2_2[0]', ircSectionValue);
+          // Line 6: IRC section — static Kwong claim sections
+          setField('topmostSubform[0].Page2[0].f2_2[0]', '6651(a)(1), 6651(a)(2), 6601');
           // Line 7c: Reasonable cause
           checkBox('topmostSubform[0].Page2[0].c2_15[2]');
 
