@@ -14892,8 +14892,7 @@ TTMP Support Team
           [submission_id, pro_id, taxpayer_name, taxpayer_email || null, String(tax_year), resolvedPenaltyType, String(resolvedTotal), stateAbbrev, mailing_address_raw, transcript_used ? 1 : 0, 'draft', timestamp, timestamp]
         );
 
-        // --- HTML-to-PDF Preparation Guide ---
-        // Generate a Preparation Guide PDF via pdf-lib (pure HTML-style layout on blank pages)
+        // --- Official IRS Form 843 Fill + Preparation Guide Fallback ---
         const fmtMoney = (v) => {
           const [whole, dec] = v.toFixed(2).split('.');
           return '$' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
@@ -14918,7 +14917,95 @@ TTMP Support Team
           + `interest assessed during this period. This claim is timely filed `
           + `before the July 10, 2026 deadline.`;
 
-        // Create a new PDF document (no template dependency)
+        // --- Try official IRS Form 843 AcroForm fill ---
+        let filledPdf;
+        let pdfMethod = 'official_form';
+        try {
+          const binaryStr = atob(FORM_843_BASE64);
+          const templateBytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) templateBytes[i] = binaryStr.charCodeAt(i);
+          const officialDoc = await PDFDocument.load(templateBytes);
+          const form = officialDoc.getForm();
+
+          const setField = (name, value) => {
+            try { form.getTextField(name).setText(value || ''); } catch (e) { /* field not found */ }
+          };
+          const checkBox = (name) => {
+            try { form.getCheckBox(name).check(); } catch (e) { /* field not found */ }
+          };
+
+          // Reason for filing — Penalty + Interest
+          checkBox('topmostSubform[0].Page1[0].c1_1[6]');   // Penalty abatement (reasonable cause)
+          checkBox('topmostSubform[0].Page1[0].c1_1[11]');  // Interest abatement (IRS error/delay §6404(e)(1))
+
+          // Taxpayer information
+          setField('topmostSubform[0].Page1[0].f1_2[0]', taxpayer_name);
+          if (ssn_ein) setField('topmostSubform[0].Page1[0].f1_3[0]', ssn_ein);
+          if (spouse_name) setField('topmostSubform[0].Page1[0].f1_4[0]', spouse_name);
+          if (spouse_ssn) setField('topmostSubform[0].Page1[0].f1_5[0]', spouse_ssn);
+          if (address) setField('topmostSubform[0].Page1[0].f1_6[0]', address);
+          if (apt_suite) setField('topmostSubform[0].Page1[0].f1_7[0]', apt_suite);
+          if (city) setField('topmostSubform[0].Page1[0].f1_8[0]', city);
+          setField('topmostSubform[0].Page1[0].f1_9[0]', stateAbbrev);
+          if (zip_code) setField('topmostSubform[0].Page1[0].f1_10[0]', zip_code);
+          if (ein) setField('topmostSubform[0].Page1[0].f1_11[0]', ein);
+          if (phone) {
+            const cleanPhone = String(phone).replace(/\D/g, '');
+            const fmtPhone = cleanPhone.length === 10
+              ? `(${cleanPhone.slice(0,3)}) ${cleanPhone.slice(3,6)}-${cleanPhone.slice(6)}`
+              : String(phone);
+            setField('topmostSubform[0].Page1[0].f1_16[0]', fmtPhone);
+          }
+
+          // Item 1: Tax period
+          setField('topmostSubform[0].Page1[0].f1_17[0]', `01/01/${tax_year}`);
+          setField('topmostSubform[0].Page1[0].f1_18[0]', `12/31/${tax_year}`);
+
+          // Item 2: Amount to be refunded or abated (no $ sign — form label includes it)
+          const [whole, dec] = resolvedTotal.toFixed(2).split('.');
+          const amountStr = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
+          setField('topmostSubform[0].Page1[0].f1_19[0]', amountStr);
+
+          // Item 3: Payment dates a–l
+          const pdFields = ['f1_20','f1_21','f1_22','f1_23','f1_24','f1_25',
+                            'f1_26','f1_27','f1_28','f1_29','f1_30','f1_31'];
+          if (payment_dates && payment_dates.length > 0) {
+            payment_dates.slice(0, 12).forEach((d, i) => {
+              setField(`topmostSubform[0].Page1[0].${pdFields[i]}[0]`, d);
+            });
+          }
+
+          // Item 4e: Income
+          checkBox('topmostSubform[0].Page1[0].c1_6[0]');
+
+          // --- Page 2 ---
+
+          // Item 5i: 1040
+          checkBox('topmostSubform[0].Page2[0].c2_9[0]');
+
+          // Item 6: IRC section
+          setField('topmostSubform[0].Page2[0].f2_2[0]', '6651(a)(1), 6651(a)(2), 6601');
+
+          // Item 7a: Interest assessed as result of IRS errors or delays
+          checkBox('topmostSubform[0].Page2[0].c2_15[0]');
+          // Item 7c: Reasonable cause (for penalty portion)
+          checkBox('topmostSubform[0].Page2[0].c2_15[2]');
+
+          // Item 8: Explanation
+          const explanationText = `Claim for refund of penalties and interest assessed for tax year(s) ${taxYearRange}.\n\n`
+            + penaltyLines.join('\n') + '\n\n'
+            + kwongText;
+          setField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]', explanationText);
+
+          // Leave form editable — user completes SSN, address, signature before printing
+          filledPdf = await officialDoc.save();
+        } catch (officialFormError) {
+          console.error('Official Form 843 fill failed, falling back to Preparation Guide:', officialFormError);
+          pdfMethod = 'preparation_guide';
+        }
+
+        // --- Fallback: Preparation Guide (if official form fill failed) ---
+        if (!filledPdf) {
         const pdfDoc = await PDFDocument.create();
         const helvetica = await pdfDoc.embedFont('Helvetica');
         const helveticaBold = await pdfDoc.embedFont('Helvetica-Bold');
@@ -15116,7 +15203,8 @@ TTMP Support Team
         y -= lineH;
         drawText(page2, 'Page 2 of 2', pageW - margin - 50, y, { size: smallFont, color: gray });
 
-        const filledPdf = await pdfDoc.save();
+        filledPdf = await pdfDoc.save();
+        } // end Preparation Guide fallback
 
         // Store filled PDF in R2 for download
         await env.R2_VIRTUAL_LAUNCH.put(
@@ -15131,6 +15219,8 @@ TTMP Support Team
           mailing_address,
           pdf_url: `/v1/tcvlp/forms/843/${submission_id}/download`,
           pdf_generated: true,
+          pdf_method: pdfMethod,
+          filename: `Form_843_Kwong_${taxpayer_name.replace(/[^a-zA-Z0-9]/g, '_')}_${tax_year}.pdf`,
           preparation_guide: {
             taxpayer_name,
             tax_year,
@@ -15146,7 +15236,7 @@ TTMP Support Team
             claim_basis: 'Claim for refund of penalties and interest assessed during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). Per Kwong, IRC §7508A(d) required mandatory postponement of federal tax deadlines during this period.',
             deadline_notice: 'IMPORTANT: Claims must be filed by July 10, 2026.',
             official_form_url: 'https://www.irs.gov/pub/irs-pdf/f843.pdf',
-            watermark: 'PREPARATION GUIDE — NOT AN OFFICIAL IRS FORM'
+            watermark: pdfMethod === 'official_form' ? 'OFFICIAL IRS FORM 843 — PREFILLED' : 'PREPARATION GUIDE — NOT AN OFFICIAL IRS FORM'
           }
         });
       } catch (e) {
