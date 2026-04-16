@@ -5,6 +5,9 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "out/**", ".open-next/**", ".vercel/**", "dist/**"]
     },
+    "@vlp/member-ui#build": {
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
