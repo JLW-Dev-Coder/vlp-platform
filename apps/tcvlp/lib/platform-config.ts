@@ -40,6 +40,18 @@ export const tcvlpConfig: PlatformConfig = {
     profile: '/dashboard',
     support: '/support',
   },
+  businessInfo: {
+    legalEntity: 'Lenore, Inc.',
+    address: {
+      line1: '1175 Avocado Avenue',
+      line2: 'Suite 101 PMB 1010',
+      city: 'El Cajon',
+      state: 'CA',
+      zip: '92020',
+    },
+    phone: '619-800-5457',
+    supportEmail: 'outreach@virtuallaunch.pro',
+  },
   marketing: {
     tagline: 'Form 843 automation for tax pros',
     summary: 'TaxClaim Pro generates IRS Form 843 preparation guides from your client data in 5 minutes. Built for the Kwong v. US refund window.',
