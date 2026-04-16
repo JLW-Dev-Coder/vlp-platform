@@ -1,3 +1,11 @@
+<!--
+Status: Authoritative
+Last updated: 2026-04-15
+Owner: JLW (Principal Engineer review required for changes)
+Scope: All 8 apps in the vlp-platform monorepo
+Parent: canonical-app-blueprint.md
+-->
+
 # canonical-scale.md
 
 Template for SCALE batch operations documentation. SCALE is the automated outreach and lead enrichment pipeline.

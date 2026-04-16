@@ -1,3 +1,11 @@
+<!--
+Status: Authoritative
+Last updated: 2026-04-15
+Owner: JLW (Principal Engineer review required for changes)
+Scope: All 8 apps in the vlp-platform monorepo
+Parent: canonical-app-blueprint.md
+-->
+
 # canonical-stack.md
 
 Platform stack matrix for the VLP ecosystem monorepo.
@@ -14,7 +22,7 @@ Last updated: 2026-04-13
 | Tax Monitor Pro | TMP | taxmonitor.pro | `apps/tmp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#3b82f6` (blue) |
 | Transcript Tax Monitor | TTMP | transcript.taxmonitor.pro | `apps/ttmp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@opennextjs/cloudflare` | CF Workers | `npm run cf:build` | `.open-next/` | `#14b8a6` (teal) |
 | Tax Tools Arcade | TTTMP | taxtools.taxmonitor.pro | `apps/tttmp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@cloudflare/next-on-pages` | CF Pages | `npx @cloudflare/next-on-pages` | `.vercel/output/static` | `#8b5cf6` (violet) |
-| Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@cloudflare/next-on-pages` | CF Pages | `npm run pages:build` | `.vercel/output/static` | `#06b6d4` (cyan) |
+| Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@cloudflare/next-on-pages` | CF Pages | `npm run pages:build` | `.vercel/output/static` | `#3b82f6` (blue) |
 | Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#ef4444` (red) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#eab308` (yellow) |
 | Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#ec4899` (pink) |

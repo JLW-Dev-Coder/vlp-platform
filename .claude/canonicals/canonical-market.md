@@ -1,3 +1,11 @@
+<!--
+Status: Authoritative
+Last updated: 2026-04-15
+Owner: JLW (Principal Engineer review required for changes)
+Scope: All 8 apps in the vlp-platform monorepo
+Parent: canonical-app-blueprint.md
+-->
+
 # canonical-market.md
 
 Template for MARKET.md files that define platform positioning and go-to-market strategy.

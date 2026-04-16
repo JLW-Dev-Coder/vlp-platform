@@ -1,3 +1,11 @@
+<!--
+Status: Authoritative
+Last updated: 2026-04-15
+Owner: JLW (Principal Engineer review required for changes)
+Scope: All 8 apps in the vlp-platform monorepo
+Parent: canonical-app-blueprint.md
+-->
+
 # canonical-claude.md
 
 Template for app-level `.claude/CLAUDE.md` files in the VLP monorepo.
