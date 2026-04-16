@@ -10,6 +10,37 @@ export interface NavSection {
   items: NavItem[];
 }
 
+export interface MegaMenuItem {
+  label: string;
+  href: string;
+  description?: string; // only used by discover column
+}
+
+export interface FooterLink {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+export interface MarketingConfig {
+  tagline: string;                    // e.g., "Launch systems for tax professionals"
+  summary: string;                    // one-line platform description for footer brand column
+  ctaLabel: string;                   // e.g., "Start Here →"
+  ctaPath: string;                    // e.g., "/contact"
+  megaMenu: {
+    discover: MegaMenuItem[];         // 2-4 items, descriptions required
+    explore: MegaMenuItem[];          // 2-5 items, descriptions optional
+    toolsExtras: MegaMenuItem[];      // 2-4 items, descriptions optional
+    ctaText: string;                  // hook text for CTA column
+    ctaMagnetLabel: string;           // e.g., "Free Guide"
+    ctaMagnetPath: string;            // e.g., "/resources/guide"
+  };
+  footerResources: FooterLink[];      // footer col 3 — not used by header
+  footerLegal: FooterLink[];          // footer col 4 — not used by header
+  footerTagline?: string;             // e.g., "Calm launch systems"
+  footerCopyright?: string;           // override default "© {year} {brandName}"
+}
+
 export interface PlatformConfig {
   brandName: string;           // e.g., "Transcript Tax Monitor"
   brandAbbrev: string;         // e.g., "TTMP"
@@ -28,4 +59,5 @@ export interface PlatformConfig {
   };
   apiBaseUrl: string;          // e.g., "https://api.taxmonitor.pro"
   calcomReferralLink?: string;
+  marketing?: MarketingConfig;
 }
