@@ -14,6 +14,12 @@ export type { MarketingHeaderProps } from './components/marketing/MarketingHeade
 export { MarketingFooter } from './components/marketing/MarketingFooter'
 export type { MarketingFooterProps } from './components/marketing/MarketingFooter'
 
+// Legal Components
+export { LegalPageLayout } from './components/legal/LegalPageLayout'
+export type { LegalPageLayoutProps } from './components/legal/LegalPageLayout'
+export { LegalSection } from './components/legal/LegalSection'
+export type { LegalSectionProps } from './components/legal/LegalSection'
+
 // Review Components
 export { ReviewSubmitPage } from './components/reviews/ReviewSubmitPage'
 export { ReviewDisplayPage } from './components/reviews/ReviewDisplayPage'
