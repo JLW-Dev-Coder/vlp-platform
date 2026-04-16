@@ -220,7 +220,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                 ref={resourcesMenuRef}
                 id={resourcesMenuId}
                 role="menu"
-                className="absolute left-1/2 mt-3 w-[min(1024px,calc(100vw-3rem))] -translate-x-1/2 rounded-xl border border-subtle bg-surface-bg shadow-md z-dropdown motion-safe:animate-fade-in p-4"
+                className="absolute left-1/2 mt-3 w-[min(1024px,calc(100vw-3rem))] -translate-x-1/2 rounded-xl border border-subtle bg-surface-popover shadow-md z-dropdown motion-safe:animate-fade-in p-4"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_1.2fr] gap-4">
                   <MegaMenuColumn
@@ -310,7 +310,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
       {mobileOpen && (
         <>
           <div
-            className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-overlay motion-safe:animate-fade-in"
+            className="md:hidden fixed inset-0 bg-surface-overlay backdrop-blur-sm z-overlay motion-safe:animate-fade-in"
             onClick={closeMobile}
             aria-hidden="true"
           />
@@ -320,7 +320,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Site navigation"
-            className="md:hidden fixed top-0 left-0 bottom-0 w-[85vw] max-w-sm bg-surface-bg border-r border-subtle z-modal overflow-y-auto motion-safe:transition-transform motion-safe:duration-base translate-x-0"
+            className="md:hidden fixed top-0 left-0 bottom-0 w-[85vw] max-w-sm bg-surface-popover border-r border-subtle z-modal overflow-y-auto motion-safe:transition-transform motion-safe:duration-base translate-x-0"
           >
             <div className="flex items-center justify-between h-16 px-6 border-b border-subtle">
               <Link
