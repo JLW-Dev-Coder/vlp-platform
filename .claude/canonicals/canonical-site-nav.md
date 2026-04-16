@@ -1,6 +1,12 @@
 # canonical-site-nav.md — VLP Ecosystem Site Navigation
 
-Last updated: 2026-04-14
+**Status:** Authoritative
+**Last updated:** 2026-04-15
+**Owner:** JLW (Principal Engineer review required for changes)
+**Scope:** All 8 apps in the vlp-platform monorepo
+**Parent:** `canonical-app-blueprint.md` (see §1 hierarchy)
+
+This canonical defines navigation patterns. All decisions in the parent blueprint apply here. When this file and the blueprint disagree, the blueprint wins and this file gets corrected.
 
 ---
 
@@ -218,12 +224,62 @@ Components read this config and render. No hardcoded platform values in shared c
 
 ## 4. Implementation Notes
 
-- Shared components live in `packages/member-ui/src/components/`
-- Each app imports and wraps with its own config
-- The mega menu should be accessible (keyboard navigable, closes on Escape)
-- Mobile: header collapses to hamburger menu, sidebar becomes a drawer
-- Active nav item highlighted with platform's theme color
-- Footer is identical structure across all platforms, only content differs via config
+### 4.1 Component location
+Shared components live in `packages/member-ui/src/components/`. Each app imports and wraps with its own `SiteNavConfig`. No hardcoded platform values in shared code.
+
+### 4.2 Active state
+Active nav item is highlighted using `brand.primary` (per blueprint §4.5). Other brand tokens (`brand.hover`, `brand.dark`) apply for hover and pressed states. Do not use raw hex values — always reference the brand token.
+
+### 4.3 Mobile navigation
+At `< md` breakpoint (768px):
+
+**Header collapses to hamburger menu:**
+- Primary nav items (About, Features, Pricing, How It Works, Contact, Reviews, Resources) move into a slide-in drawer
+- Hamburger button appears left of the logo
+- CTA button remains visible in the header; Log In moves into the drawer
+- Drawer slides in from the left, overlays content, covers ~85% of viewport width
+- Backdrop darkens the uncovered portion; tap-outside closes the drawer
+- Close via: X button top-right of drawer, tap backdrop, Escape key, or swipe-left
+- Transition: `slide-up` keyframe (per blueprint §4.18), `duration-base` (250ms)
+
+**Sidebar becomes a drawer:**
+- Authenticated app sidebar hides at `< md`
+- Hamburger on topbar (left of platform logo) toggles the drawer
+- Same slide-in behavior as marketing drawer
+- State does NOT persist across page loads on mobile (always closed on navigation)
+
+### 4.4 Sidebar collapse behavior (desktop)
+At `≥ md`:
+- Collapse triggered by icon button at the top of the sidebar (chevron or similar)
+- Collapsed state: `w-16` (64px), icons only, labels hidden
+- Expanded state: `w-64` (256px), icons + labels
+- Tooltips appear on hover when collapsed, showing the full label
+- State persists across navigation within the session (localStorage key: `<platform>-sidebar-collapsed`)
+- Default state on first load: expanded
+
+### 4.5 Accessibility
+- Mega menu is keyboard navigable (Tab/Shift-Tab), closes on Escape
+- All nav items have visible focus rings using `shadow-focus` (per blueprint §4.17)
+- Hamburger button and drawer have proper ARIA attributes (`aria-expanded`, `aria-controls`, `aria-label`)
+- Skip link: "Skip to main content" appears as the first focusable element on every page, visually hidden until focused, routes to `#main`
+- Drawer traps focus while open; returns focus to hamburger button on close
+- All animations respect `prefers-reduced-motion` per blueprint §4.18 (motion-safe variants only)
+
+### 4.6 Topbar behavior
+- **Platform logo + name:** Links to `/dashboard`. Clicking anywhere in the logo+name group navigates.
+- **Help icon:** Opens `/support` in the same tab. Tooltip on hover: "Help".
+- **Notifications bell:**
+  - Unread count badge shown when count > 0; max displayed value is `9+`
+  - Click opens dropdown panel (not a full-page route) listing recent notifications
+  - Dropdown uses `z-dropdown` (= 10, per blueprint §4.19) and `shadow-md`
+  - Mark-as-read on click; "View all" link at bottom routes to `/dashboard/notifications`
+- **Avatar dropdown:**
+  - Three items: Account (→ `/dashboard/account`), Profile (→ `/dashboard/profile`), Sign Out (triggers sign-out action, then redirects to `/`)
+  - Uses `z-dropdown` and `shadow-md`
+  - Closes on: item click, Escape, click outside
+
+### 4.7 Footer consistency
+Footer structure is identical across all 8 platforms. Only content differs via config. Column 3 ("Resources") contains `footerResources` from `SiteNavConfig` — typically 3 cross-platform links plus the affiliate link. Per-app config is the source of truth for which platforms each app links to.
 
 ---
 
@@ -233,28 +289,41 @@ All marketing site pages and app pages must use the same container and spacing s
 
 ### Page container
 
-```
-Max width:     1280px (Tailwind: max-w-7xl)
-Side padding:  24px mobile (px-6), 32px tablet+ (md:px-8)
-Center:        mx-auto
-```
+Three container widths per blueprint §4.14. Pick the one that matches the surface.
 
-Every top-level page section (hero, features, pricing, footer, etc.) wraps its content in:
+| Surface | Token | Width | Tailwind class |
+|---------|-------|-------|----------------|
+| Marketing pages, landing, pricing | `max-w-marketing` | 1280px | `max-w-[1280px]` or `max-w-7xl` |
+| Authenticated app views | `max-w-app` | 1200px | `max-w-[1200px]` |
+| Article content, forms, single-column | `max-w-narrow` | 960px | `max-w-[960px]` |
+
+Side padding:  24px mobile (`px-6`), 32px tablet+ (`md:px-8`)
+Center:        `mx-auto`
+
+Every top-level page section wraps its content in a container matching the surface. Marketing example:
 
 ```html
-<div class="max-w-7xl mx-auto px-6 md:px-8">
+<div class="max-w-[1280px] mx-auto px-6 md:px-8">
   <!-- section content -->
 </div>
 ```
 
-The outer wrapper (full-width background color/gradient) can be 100vw. The inner content container is always `max-w-7xl mx-auto px-6 md:px-8`.
+App dashboard example:
+
+```html
+<div class="max-w-[1200px] mx-auto px-6 md:px-8">
+  <!-- dashboard content -->
+</div>
+```
+
+The outer wrapper (full-width background color/gradient) can be 100vw. The inner content container always uses one of the three max-widths above.
 
 ### Header layout
 
 ```
 Container:     max-w-7xl mx-auto px-6 md:px-8
 Height:        64px (h-16)
-Position:      sticky top-0 z-50, backdrop-blur
+Position:      `sticky top-0 z-sticky` (z-sticky = 20, per blueprint §4.19), `backdrop-blur`
 Structure:     [Logo + Platform Name]  [Nav Items]  |  [Log In]  [CTA Button]
 ```
 
@@ -275,11 +344,11 @@ Footer columns use: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8`
 
 ### App layout (authenticated pages)
 
-```
 Sidebar:       w-64 (256px) fixed left, collapsible to w-16 (64px)
 Topbar:        h-16 (64px) fixed top, full width minus sidebar
-Content area:  max-w-7xl mx-auto px-6 md:px-8 (within the remaining space)
-```
+Content area:  `max-w-[1200px] mx-auto px-6 md:px-8` (blueprint §4.14 `max-w-app`)
+
+Authenticated pages use the 1200px app container, not the 1280px marketing container. If a dashboard page is content-heavy and would benefit from the narrower 960px reading width (e.g. a long-form settings page), use `max-w-[960px]`.
 
 ### Breakpoints (Tailwind defaults)
 
@@ -301,3 +370,30 @@ Content area:  max-w-7xl mx-auto px-6 md:px-8 (within the remaining space)
 ### Implementation
 
 These values are enforced through the shared layout components in `packages/member-ui`. Each app's root layout wraps pages with the shared container. Individual apps must NOT override the container width or padding unless they have an explicit reason documented in their `.claude/CLAUDE.md`.
+
+---
+
+## 6. Relationship to other canonicals
+
+| Canonical | What lives there |
+|-----------|-----------------|
+| `canonical-app-blueprint.md` | Parent. Decisions on tokens, color mode, typography, breakpoints, z-index, animations, max-widths. All apply here. |
+| `canonical-style.md` | Token rem/hex values, component patterns, utility classes for text/color/spacing. Referenced by this file, not duplicated. |
+| `canonical-app-components.md` | *(planned — not yet created)* Component-level specs for dashboard widgets, forms, modals, toasts, empty states. Nav is structural; components are what nav wraps. |
+| `canonical-feature-matrix.md` | Per-app feature inventory. Drives which sidebar items a given platform shows. |
+
+When a rule in this file conflicts with the blueprint, the blueprint wins. When this file conflicts with a sub-canonical like `canonical-style.md`, this file wins for nav-scoped concerns (e.g. topbar height) and the sub-canonical wins for its own scope (e.g. button padding).
+
+---
+
+## 7. Decision log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-04-14 | Initial authoring with §5 layout standards | Enforce container consistency across 8 platforms |
+| 2026-04-15 | Added Status/Owner/Parent header | Align with canonical authority convention |
+| 2026-04-15 | Replaced single `max-w-7xl` rule with three-tier container system | Blueprint §4.14 requires three max-widths (marketing/app/narrow) |
+| 2026-04-15 | Replaced `z-50` with `z-sticky` token | Blueprint §4.19 forbids raw z-index values |
+| 2026-04-15 | Expanded §4 from 6 bullets to 7 sub-sections covering mobile, a11y, topbar behavior, sidebar collapse | Existing content was too thin to implement against |
+
+Append-only. Do not rewrite prior entries.
