@@ -40,4 +40,45 @@ export const tcvlpConfig: PlatformConfig = {
     profile: '/dashboard',
     support: '/support',
   },
+  marketing: {
+    tagline: 'Form 843 automation for tax pros',
+    summary: 'TaxClaim Pro generates IRS Form 843 preparation guides from your client data in 5 minutes. Built for the Kwong v. US refund window.',
+    ctaLabel: 'Get Started',
+    ctaPath: '/sign-in?redirect=/onboarding',
+    megaMenu: {
+      discover: [
+        { label: 'About', href: '/about', description: 'Why TaxClaim Pro exists' },
+        { label: 'Contact', href: '/contact', description: 'Talk to our team or start intake' },
+        { label: 'What is Form 843', href: '/what-is-form-843', description: 'Learn what Form 843 is and who qualifies' },
+      ],
+      explore: [
+        { label: 'Demo', href: '/demo', description: 'See how your clients claim their refund' },
+        { label: 'Features', href: '/features' },
+        { label: 'Pricing', href: '/pricing' },
+        { label: 'Help Center', href: '/support', description: 'Answers, FAQs, and booking' },
+      ],
+      toolsExtras: [
+        { label: 'Onboarding', href: '/onboarding' },
+        { label: 'Affiliate Program', href: '/affiliate' },
+        { label: 'Book a Call', href: '/support#book-a-call' },
+      ],
+      ctaText: "The Kwong window closes July 10, 2026. Don't let your clients miss their refund.",
+      ctaMagnetLabel: 'See the Demo →',
+      ctaMagnetPath: '/demo',
+    },
+    footerTagline: 'Kwong v. US refund window',
+    footerResources: [
+      { label: 'What is Form 843', href: '/what-is-form-843' },
+      { label: 'Official IRS Form 843', href: 'https://www.irs.gov/pub/irs-pdf/f843.pdf', external: true },
+      { label: 'Get IRS Transcript', href: 'https://www.irs.gov/individuals/get-transcript', external: true },
+      { label: 'Virtual Launch Pro', href: 'https://virtuallaunch.pro', external: true },
+      { label: 'Tax Monitor Pro', href: 'https://taxmonitor.pro', external: true },
+      { label: 'Transcript Tax Monitor', href: 'https://transcript.taxmonitor.pro', external: true },
+      { label: 'Affiliate Program', href: '/affiliate' },
+    ],
+    footerLegal: [
+      { label: 'Privacy', href: '/legal/privacy' },
+      { label: 'Terms', href: '/legal/terms' },
+    ],
+  },
 }
