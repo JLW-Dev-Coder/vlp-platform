@@ -67,12 +67,12 @@ type Tab = 'planner' | 'upload' | 'posts' | 'outreach' | 'social' | 'workflow'
 
 const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
   planner: 'Daily workflow planner — what to do today across email, social, content, and bookings',
-  upload: 'Upload Clay CSV prospects and monitor the pipeline',
-  posts: '10-day campaign post generator with LinkedIn and Facebook copy',
+  upload: 'Clay CSV upload and email pipeline monitor',
+  posts: '10-day campaign generator — Claude-authored LinkedIn + Facebook copy, auto-created in ClickUp',
   outreach: 'LinkedIn cold connections from the prospect list with canned messages',
   social: (
     <>
-      Reddit opportunity monitor &amp; social post tracker
+      Scheduled posts synced from ClickUp + Reddit opportunity monitor
     </>
   ),
   workflow: (
@@ -104,7 +104,7 @@ export default function WorkflowPage() {
             className={`${styles.tabButton} ${tab === t ? styles.tabButtonActive : ''}`}
             onClick={() => setTab(t)}
           >
-            {t === 'planner' ? 'Planner' : t === 'upload' ? 'Upload' : t === 'posts' ? 'Posts' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Social' : 'Workflow'}
+            {t === 'planner' ? 'Planner' : t === 'upload' ? 'Email' : t === 'posts' ? 'Campaign' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Posts' : 'Workflow'}
           </button>
         ))}
       </div>
