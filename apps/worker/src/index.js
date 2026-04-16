@@ -14246,7 +14246,7 @@ TTMP Support Team
         return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
       }
 
-      const { firm_name, display_name, logo_url, welcome_message, slug } = body;
+      const { firm_name, display_name, logo_url, welcome_message, slug, firm_phone, firm_email, firm_linkedin, firm_telegram } = body;
 
       if (!firm_name) {
         return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['firm_name'] }, 400, request);
@@ -14326,6 +14326,10 @@ TTMP Support Team
           logo_url,
           welcome_message,
           slug: finalSlug,
+          firm_phone,
+          firm_email,
+          firm_linkedin,
+          firm_telegram,
           plan,
           timestamp
         };
@@ -14344,8 +14348,11 @@ TTMP Support Team
           stripe_customer_id: null,
           stripe_subscription_id: null,
           plan,
-          firm_phone: null,
+          firm_phone: firm_phone || null,
+          firm_email: firm_email || null,
           firm_website: null,
+          firm_linkedin: firm_linkedin || null,
+          firm_telegram: firm_telegram || null,
           status: 'active',
           created_at: createdAt,
           updated_at: timestamp
@@ -14353,8 +14360,8 @@ TTMP Support Team
         await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, canonicalData);
 
         await d1Run(env.DB,
-          `INSERT INTO tcvlp_pros (pro_id, account_id, slug, firm_name, display_name, logo_url, welcome_message, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at, plan, firm_phone, firm_website)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `INSERT INTO tcvlp_pros (pro_id, account_id, slug, firm_name, display_name, logo_url, welcome_message, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at, plan, firm_phone, firm_website, firm_email, firm_linkedin, firm_telegram)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(account_id) DO UPDATE SET
              slug = excluded.slug,
              firm_name = excluded.firm_name,
@@ -14362,8 +14369,12 @@ TTMP Support Team
              logo_url = excluded.logo_url,
              welcome_message = excluded.welcome_message,
              plan = excluded.plan,
+             firm_phone = excluded.firm_phone,
+             firm_email = excluded.firm_email,
+             firm_linkedin = excluded.firm_linkedin,
+             firm_telegram = excluded.firm_telegram,
              updated_at = excluded.updated_at`,
-          [finalProId, session.account_id, finalSlug, firm_name, display_name || null, logo_url || null, welcome_message || null, null, null, 'active', createdAt, timestamp, plan, null, null]
+          [finalProId, session.account_id, finalSlug, firm_name, display_name || null, logo_url || null, welcome_message || null, null, null, 'active', createdAt, timestamp, plan, firm_phone || null, null, firm_email || null, firm_linkedin || null, firm_telegram || null]
         );
 
         return json({
@@ -14416,7 +14427,7 @@ TTMP Support Team
 
       try {
         const pro = await env.DB.prepare(
-          "SELECT firm_name, display_name, welcome_message, logo_url, slug, pro_id FROM tcvlp_pros WHERE slug = ?"
+          "SELECT firm_name, display_name, welcome_message, logo_url, slug, pro_id, firm_phone, firm_email, firm_website, firm_linkedin, firm_telegram FROM tcvlp_pros WHERE slug = ?"
         ).bind(slug).first();
 
         if (!pro) {
@@ -14432,6 +14443,11 @@ TTMP Support Team
             logo_url: pro.logo_url,
             slug: pro.slug,
             pro_id: pro.pro_id,
+            firm_phone: pro.firm_phone,
+            firm_email: pro.firm_email,
+            firm_website: pro.firm_website,
+            firm_linkedin: pro.firm_linkedin,
+            firm_telegram: pro.firm_telegram,
           },
         }, 200, request);
       } catch (e) {
@@ -14450,7 +14466,7 @@ TTMP Support Team
 
       try {
         const pro = await env.DB.prepare(
-          "SELECT pro_id, firm_name, display_name, logo_url, welcome_message, slug, firm_phone, firm_website, notifications_enabled FROM tcvlp_pros WHERE account_id = ?"
+          "SELECT pro_id, firm_name, display_name, logo_url, welcome_message, slug, firm_phone, firm_email, firm_website, firm_linkedin, firm_telegram, notifications_enabled FROM tcvlp_pros WHERE account_id = ?"
         ).bind(session.account_id).first();
 
         if (!pro) {
@@ -14468,7 +14484,10 @@ TTMP Support Team
           logo_url: pro.logo_url,
           slug: pro.slug,
           firm_phone: pro.firm_phone,
+          firm_email: pro.firm_email,
           firm_website: pro.firm_website,
+          firm_linkedin: pro.firm_linkedin,
+          firm_telegram: pro.firm_telegram,
           notifications_enabled: pro.notifications_enabled === 1 || pro.notifications_enabled === null,
         });
       } catch (e) {
@@ -14492,7 +14511,7 @@ TTMP Support Team
 
       try {
         const existing = await env.DB.prepare(
-          "SELECT pro_id, slug, firm_name, display_name, logo_url, welcome_message, firm_phone, firm_website, notifications_enabled FROM tcvlp_pros WHERE account_id = ?"
+          "SELECT pro_id, slug, firm_name, display_name, logo_url, welcome_message, firm_phone, firm_email, firm_website, firm_linkedin, firm_telegram, notifications_enabled FROM tcvlp_pros WHERE account_id = ?"
         ).bind(session.account_id).first();
 
         if (!existing) {
@@ -14509,14 +14528,17 @@ TTMP Support Team
           welcome_message: body.welcome_message ?? existing.welcome_message,
           logo_url: body.logo_url ?? body.firm_logo_url ?? existing.logo_url,
           firm_phone: body.firm_phone ?? existing.firm_phone,
+          firm_email: body.firm_email ?? existing.firm_email,
           firm_website: body.firm_website ?? existing.firm_website,
+          firm_linkedin: body.firm_linkedin ?? existing.firm_linkedin,
+          firm_telegram: body.firm_telegram ?? existing.firm_telegram,
           notifications_enabled: notificationsEnabled,
         };
 
         // Update D1
         await d1Run(env.DB,
-          `UPDATE tcvlp_pros SET firm_name = ?, display_name = ?, welcome_message = ?, logo_url = ?, firm_phone = ?, firm_website = ?, notifications_enabled = ?, updated_at = ? WHERE account_id = ?`,
-          [updated.firm_name, updated.display_name, updated.welcome_message, updated.logo_url, updated.firm_phone, updated.firm_website, updated.notifications_enabled, timestamp, session.account_id]
+          `UPDATE tcvlp_pros SET firm_name = ?, display_name = ?, welcome_message = ?, logo_url = ?, firm_phone = ?, firm_email = ?, firm_website = ?, firm_linkedin = ?, firm_telegram = ?, notifications_enabled = ?, updated_at = ? WHERE account_id = ?`,
+          [updated.firm_name, updated.display_name, updated.welcome_message, updated.logo_url, updated.firm_phone, updated.firm_email, updated.firm_website, updated.firm_linkedin, updated.firm_telegram, updated.notifications_enabled, timestamp, session.account_id]
         );
 
         // Update R2 canonical
@@ -14543,7 +14565,10 @@ TTMP Support Team
           logo_url: updated.logo_url,
           slug: existing.slug,
           firm_phone: updated.firm_phone,
+          firm_email: updated.firm_email,
           firm_website: updated.firm_website,
+          firm_linkedin: updated.firm_linkedin,
+          firm_telegram: updated.firm_telegram,
           notifications_enabled: updated.notifications_enabled === 1,
         });
       } catch (e) {

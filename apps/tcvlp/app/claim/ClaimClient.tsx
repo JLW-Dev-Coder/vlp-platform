@@ -141,6 +141,34 @@ function GlobeIcon() {
   );
 }
 
+function EmailIcon16() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22 6 12 13 2 6" />
+    </svg>
+  );
+}
+
+function LinkedInIcon16() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  );
+}
+
+function TelegramIcon16() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
 function DownloadIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1063,17 +1091,39 @@ export default function ClaimClient({ pro, slug }: Props) {
               </p>
 
               {/* Contact card */}
-              {(pro.display_name || pro.firm_name) && (
+              {(pro.display_name || pro.firm_name) ? (
                 <div className={styles.contactCard}>
                   {pro.display_name && <div className={styles.contactName}>{pro.display_name}</div>}
                   <div className={styles.contactFirm}>{pro.firm_name}</div>
 
-                  {(pro.firm_phone || pro.firm_website) && (
+                  {(pro.firm_phone || pro.firm_email || pro.firm_website || pro.firm_linkedin || pro.firm_telegram) ? (
                     <div className={styles.contactDetails}>
                       {pro.firm_phone && (
                         <div className={styles.contactDetailRow}>
                           <PhoneIcon />
                           <a href={`tel:${pro.firm_phone}`} className={styles.contactPhone}>{pro.firm_phone}</a>
+                        </div>
+                      )}
+                      {pro.firm_email && (
+                        <div className={styles.contactDetailRow}>
+                          <EmailIcon16 />
+                          <a href={`mailto:${pro.firm_email}`}>{pro.firm_email}</a>
+                        </div>
+                      )}
+                      {pro.firm_linkedin && (
+                        <div className={styles.contactDetailRow}>
+                          <LinkedInIcon16 />
+                          <a href={pro.firm_linkedin.startsWith('http') ? pro.firm_linkedin : `https://${pro.firm_linkedin}`} target="_blank" rel="noopener noreferrer">
+                            LinkedIn
+                          </a>
+                        </div>
+                      )}
+                      {pro.firm_telegram && (
+                        <div className={styles.contactDetailRow}>
+                          <TelegramIcon16 />
+                          <a href={pro.firm_telegram.startsWith('http') ? pro.firm_telegram : `https://t.me/${pro.firm_telegram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
+                            {pro.firm_telegram}
+                          </a>
                         </div>
                       )}
                       {pro.firm_website && (
@@ -1085,7 +1135,15 @@ export default function ClaimClient({ pro, slug }: Props) {
                         </div>
                       )}
                     </div>
+                  ) : (
+                    <p className={styles.stepDesc} style={{ marginBottom: 0, marginTop: '0.5rem' }}>
+                      Contact your tax professional directly for personalized assistance.
+                    </p>
                   )}
+                </div>
+              ) : (
+                <div className={styles.infoBoxBlue}>
+                  Contact your tax professional directly for personalized assistance with your Form 843 claim.
                 </div>
               )}
 
@@ -1126,6 +1184,10 @@ export default function ClaimClient({ pro, slug }: Props) {
                 <a href={`tel:${pro.firm_phone}`} className={styles.primaryBtn}>
                   Get in Touch
                 </a>
+              ) : pro.firm_email ? (
+                <a href={`mailto:${pro.firm_email}`} className={styles.primaryBtn}>
+                  Get in Touch
+                </a>
               ) : pro.firm_website ? (
                 <a
                   href={pro.firm_website.startsWith('http') ? pro.firm_website : `https://${pro.firm_website}`}
@@ -1135,11 +1197,7 @@ export default function ClaimClient({ pro, slug }: Props) {
                 >
                   Get in Touch
                 </a>
-              ) : (
-                <div className={styles.infoBoxBlue}>
-                  Contact your tax professional directly for personalized assistance with your Form 843 claim.
-                </div>
-              )}
+              ) : null}
 
               <button className={styles.goBackBtn} onClick={() => setStep(4)}>
                 Go Back

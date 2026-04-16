@@ -1,116 +1,145 @@
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+
 .root {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f1117 0%, #1a1d2e 100%);
+  background: var(--color-bg);
 }
 
 .inner {
-  max-width: 34rem;
+  max-width: 60rem;
   margin: 0 auto;
-  padding: 2.5rem 1rem;
-}
-
-/* Progress */
-
-.progress {
+  padding: 2rem 1rem;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 2.5rem;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.progressStep {
-  display: flex;
-  align-items: center;
+/* ── Page Title ──────────────────────────────────────────────────────────── */
+
+.pageTitleWrap {
+  text-align: center;
 }
 
-.dot {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  background: var(--color-surface-2);
-  color: var(--color-text-3);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background var(--transition), color var(--transition);
-}
-
-.dotActive {
-  background: var(--color-red);
-  color: #fff;
-}
-
-.dotDone {
-  background: var(--color-green);
-  color: #fff;
-}
-
-.dotLabel {
-  display: none;
-}
-
-@media (min-width: 480px) {
-  .dotLabel {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--color-text-3);
-    margin-left: 0.375rem;
-    white-space: nowrap;
-  }
-
-  .dotLabelActive {
-    color: var(--color-text-1);
-  }
-}
-
-.connector {
-  width: 3rem;
-  height: 2px;
-  background: var(--color-border);
-  margin: 0 0.375rem;
-  transition: background var(--transition);
-}
-
-.connectorActive {
-  background: var(--color-green);
-}
-
-/* Card */
-
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  padding: 2rem;
-}
-
-.backBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  color: var(--color-text-3);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 1.25rem;
-  transition: color var(--transition);
-}
-
-.backBtn:hover { color: var(--color-text-1); }
-
-.title {
+.pageTitle {
   font-family: var(--font-display);
-  font-size: 1.75rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
   font-weight: 700;
   color: var(--color-text-1);
-  margin-bottom: 1.5rem;
+  line-height: 1.2;
 }
+
+.pageSubtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-2);
+  margin-top: 0.5rem;
+}
+
+/* ── Progress Bar ────────────────────────────────────────────────────────── */
+
+.progressWrap {
+  margin-bottom: 0.25rem;
+}
+
+.progressTrack {
+  background: #2a2d3e;
+  border-radius: 2px;
+  height: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #eab308;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.6);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.progressStepLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-3);
+  margin-top: 0.5rem;
+}
+
+/* ── Step Card ───────────────────────────────────────────────────────────── */
+
+.stepCard {
+  border: 1px solid #2a2d3e;
+  background: #161824;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+.stepCard:hover {
+  border-color: #3a3d4e;
+}
+
+/* ── Step Header ─────────────────────────────────────────────────────────── */
+
+.stepHeader {
+  background: linear-gradient(135deg, #1a1d2a, #161824);
+  border-bottom: 1px solid #2a2d3e;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.stepHeaderIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Step Badge ──────────────────────────────────────────────────────────── */
+
+.stepBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  width: fit-content;
+}
+
+/* ── Step Title ──────────────────────────────────────────────────────────── */
+
+.stepTitle {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-text-1);
+}
+
+/* ── Step Body ───────────────────────────────────────────────────────────── */
+
+.stepBody {
+  padding: 28px;
+}
+
+.stepDesc {
+  font-size: 0.9375rem;
+  color: var(--color-text-2);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Form ────────────────────────────────────────────────────────────────── */
 
 .form {
   display: flex;
@@ -131,13 +160,117 @@
 }
 
 .required {
-  color: var(--color-red-light);
+  color: #eab308;
 }
 
 .hint {
   font-size: 0.75rem;
   color: var(--color-text-3);
 }
+
+.input,
+.stepBody input,
+.stepBody select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #0f1117;
+  border: 1px solid #2a2d3e;
+  border-radius: 8px;
+  color: var(--color-text-1);
+  font-size: 0.9375rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus,
+.stepBody input:focus,
+.stepBody select:focus {
+  outline: none;
+  border-color: #eab308;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+}
+
+.input::placeholder,
+.stepBody input::placeholder {
+  color: #4b5563;
+}
+
+.textarea,
+.stepBody textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #0f1117;
+  border: 1px solid #2a2d3e;
+  border-radius: 8px;
+  color: var(--color-text-1);
+  font-size: 0.9375rem;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.textarea:focus,
+.stepBody textarea:focus {
+  outline: none;
+  border-color: #eab308;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+}
+
+.textarea::placeholder,
+.stepBody textarea::placeholder {
+  color: #4b5563;
+}
+
+/* ── Contact Section ─────────────────────────────────────────────────────── */
+
+.contactSection {
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contactSectionTitle {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-1);
+}
+
+.contactSectionHint {
+  font-size: 0.75rem;
+  color: var(--color-text-3);
+  margin-top: -0.5rem;
+}
+
+.contactField {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.contactFieldIcon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  background: rgba(234, 179, 8, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.contactFieldInput {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* ── Slug Preview ────────────────────────────────────────────────────────── */
 
 .slugPreview {
   display: flex;
@@ -154,36 +287,21 @@
 }
 
 .slugChecking { font-size: 0.75rem; color: var(--color-text-3); }
-.slugAvailable { font-size: 0.75rem; color: var(--color-green); font-weight: 600; }
-.slugTaken { font-size: 0.75rem; color: var(--color-red-light); font-weight: 600; }
+.slugAvailable { font-size: 0.75rem; color: #22c55e; font-weight: 600; }
+.slugTaken { font-size: 0.75rem; color: #ef4444; font-weight: 600; }
 
-.nextBtn {
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: var(--color-red);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  transition: transform var(--transition);
-  animation: pulseGlow 2.5s ease infinite;
-}
-
-.nextBtn:hover { transform: scale(1.01); }
-.nextBtn:disabled { opacity: 0.5; cursor: not-allowed; animation: none; transform: none; }
-
-/* Summary */
+/* ── Summary Box ─────────────────────────────────────────────────────────── */
 
 .summaryBox {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
+  background: #1a1d2a;
+  border: 1px solid #2a2d3e;
+  border-radius: 10px;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
 }
 
 .summaryTitle {
+  font-family: var(--font-display);
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text-1);
@@ -195,7 +313,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid #2a2d3e;
   font-size: 0.875rem;
 }
 
@@ -214,9 +332,11 @@
   word-break: break-all;
 }
 
+/* ── Error ───────────────────────────────────────────────────────────────── */
+
 .errorMsg {
   padding: 0.75rem;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   background: rgba(220, 38, 38, 0.1);
   border: 1px solid rgba(220, 38, 38, 0.3);
   color: #fca5a5;
@@ -224,31 +344,77 @@
   margin-bottom: 1rem;
 }
 
-.payBtn {
-  width: 100%;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: var(--color-red);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.125rem;
-  border: none;
-  cursor: pointer;
-  transition: transform var(--transition);
-  animation: pulseGlow 2.5s ease infinite;
-  margin-bottom: 0.75rem;
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.btnRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.payBtn:hover { transform: scale(1.01); }
-.payBtn:disabled { opacity: 0.5; cursor: not-allowed; animation: none; transform: none; }
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  background: #eab308;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.3);
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primaryBtn:hover {
+  background: #ca8a04;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(234, 179, 8, 0.4);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid #2a2d3e;
+  color: var(--color-text-2);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.secondaryBtn:hover {
+  border-color: #3a3d4e;
+  color: var(--color-text-1);
+}
 
 .payNote {
   text-align: center;
   font-size: 0.75rem;
-  color: var(--color-text-4);
+  color: var(--color-text-3);
+  margin-top: 0.25rem;
 }
 
-/* Subscription active state */
+/* ── Subscription Active ─────────────────────────────────────────────────── */
 
 .subChecking {
   text-align: center;
@@ -263,7 +429,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem;
-  border-radius: 0.75rem;
+  border-radius: 10px;
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
   color: #4ade80;
@@ -272,18 +438,45 @@
   margin-bottom: 1rem;
 }
 
-.continueBtn {
-  width: 100%;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: var(--color-green, #22c55e);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.125rem;
-  border: none;
-  cursor: pointer;
-  transition: transform var(--transition);
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.continueBtn:hover { transform: scale(1.01); }
-.continueBtn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(234, 179, 8, 0.6); }
+  50% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.9); }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .inner {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .stepHeader {
+    padding: 16px;
+  }
+
+  .stepBody {
+    padding: 16px;
+  }
+
+  .contactFieldIcon {
+    display: none;
+  }
+
+  .summaryRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .summaryRow strong {
+    max-width: 100%;
+    text-align: left;
+  }
+}

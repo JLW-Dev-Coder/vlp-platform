@@ -49,7 +49,10 @@ export interface TaxPro {
   welcome_message?: string;
   logo_url?: string;
   firm_phone?: string;
+  firm_email?: string;
   firm_website?: string;
+  firm_linkedin?: string;
+  firm_telegram?: string;
   subscription_status?: string;
   submission_count?: number;
 }
@@ -309,6 +312,11 @@ export interface OnboardingData {
   display_name?: string;
   welcome_message?: string;
   slug?: string;
+  firm_phone?: string;
+  firm_email?: string;
+  firm_linkedin?: string;
+  firm_telegram?: string;
+  logo_url?: string;
 }
 
 export async function tcvlpOnboarding(data: OnboardingData): Promise<TaxPro> {
