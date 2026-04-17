@@ -2,14 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { TaxPro } from '@/lib/api';
+import { useTaxPro } from '@/lib/account-context';
 import styles from './shared.module.css';
 
-interface Props {
-  pro: TaxPro | null;
-}
-
-export default function EmbedLink({ pro }: Props) {
+export default function EmbedLink() {
+  const { data: pro } = useTaxPro();
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const landingUrl = pro?.slug ? `https://taxclaim.virtuallaunch.pro/claim?slug=${pro.slug}` : null;

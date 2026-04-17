@@ -2,17 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Session, TaxPro, SubscriptionStatus } from '@/lib/api';
 import { tierLabel, tierPrice } from '@/lib/tiers';
+import { useTaxPro, useSubscriptionStatus } from '@/lib/account-context';
 import styles from './shared.module.css';
 
-interface Props {
-  session: Session;
-  pro: TaxPro | null;
-  sub: SubscriptionStatus | null;
-}
-
-export default function Overview({ session, pro, sub }: Props) {
+export default function Overview() {
+  const { data: pro } = useTaxPro();
+  const { data: sub } = useSubscriptionStatus();
   const [copied, setCopied] = useState(false);
   const landingUrl = pro?.slug ? `https://taxclaim.virtuallaunch.pro/claim?slug=${pro.slug}` : null;
 
@@ -29,13 +25,6 @@ export default function Overview({ session, pro, sub }: Props) {
   return (
     <div>
       <h1 className={styles.pageTitle}>Overview</h1>
-
-      {!pro && (
-        <div className={styles.warningBox}>
-          <strong>No branded page set up yet.</strong> Complete onboarding to get your landing page.
-          <a href="/onboarding" className={styles.inlineLink}>Start onboarding →</a>
-        </div>
-      )}
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
@@ -65,7 +54,7 @@ export default function Overview({ session, pro, sub }: Props) {
             You are on the Starter plan. Upgrade to Professional ($29/mo) for unlimited claim pages,
             priority generation, bulk export, and transcript integration.
           </p>
-          <Link href="/pricing" style={{ color: 'var(--color-brand)', textDecoration: 'underline', fontSize: '0.875rem' }}>
+          <Link href="/dashboard/upgrade" style={{ color: 'var(--color-brand)', textDecoration: 'underline', fontSize: '0.875rem' }}>
             View Plans →
           </Link>
         </div>

@@ -1,15 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Session, TaxPro, createTcvlpCheckout, SubscriptionStatus } from '@/lib/api';
+import { createTcvlpCheckout } from '@/lib/api';
 import { TcvlpTier, tierLabel, tierPrice, STRIPE_PRICES } from '@/lib/tiers';
+import { useSubscriptionStatus } from '@/lib/account-context';
 import styles from './shared.module.css';
-
-interface Props {
-  pro: TaxPro | null;
-  session: Session;
-  sub: SubscriptionStatus | null;
-}
 
 const TIER_FEATURES: Record<TcvlpTier, string[]> = {
   tcvlp_starter: [
@@ -38,7 +33,8 @@ const TIER_FEATURES: Record<TcvlpTier, string[]> = {
 
 const TIERS: TcvlpTier[] = ['tcvlp_starter', 'tcvlp_professional', 'tcvlp_firm'];
 
-export default function Upgrade({ pro, session, sub }: Props) {
+export default function Upgrade() {
+  const { data: sub } = useSubscriptionStatus();
   const [loading, setLoading] = useState<TcvlpTier | null>(null);
   const [error, setError] = useState('');
 

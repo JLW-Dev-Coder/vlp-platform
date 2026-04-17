@@ -288,6 +288,25 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   }
 }
 
+// ── Account-scoped fetchers (createAccountContext factory) ───────────────────
+
+export async function getTaxProByAccount(
+  _account_id: string
+): Promise<TaxPro | null> {
+  // Two-hop: subscription returns pro_id, then full TaxPro fetch.
+  // Mirrors apps/tcvlp/app/dashboard/page.tsx resolution flow.
+  // _account_id retained for createAccountContext factory contract.
+  const sub = await getSubscriptionStatus();
+  if (!sub?.pro_id) return null;
+  return getPro(sub.pro_id);
+}
+
+export async function getSubscriptionStatusByAccount(
+  _account_id: string
+): Promise<SubscriptionStatus> {
+  return getSubscriptionStatus();
+}
+
 // ── Checkout ──────────────────────────────────────────────────────────────────
 
 export interface CheckoutSession {

@@ -12,9 +12,9 @@ export const tcvlpConfig: PlatformConfig = {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
-        { label: 'Claims', href: '/claim', icon: 'FileText' },
+        { label: 'Embed Link', href: '/dashboard/embed', icon: 'Link2' },
+        { label: 'Submissions', href: '/dashboard/submissions', icon: 'ScrollText' },
         { label: 'Form 843', href: '/what-is-form-843', icon: 'FileCheck' },
-        { label: 'Submissions', href: '/dashboard', icon: 'ScrollText' },
       ],
     },
     {
@@ -26,7 +26,8 @@ export const tcvlpConfig: PlatformConfig = {
     {
       title: 'SETTINGS',
       items: [
-        { label: 'Account', href: '/dashboard', icon: 'Settings' },
+        { label: 'Plan & Billing', href: '/dashboard/upgrade', icon: 'CreditCard' },
+        { label: 'Account', href: '/dashboard/settings', icon: 'Settings' },
         { label: 'Support', href: '/support', icon: 'HelpCircle' },
       ],
     },

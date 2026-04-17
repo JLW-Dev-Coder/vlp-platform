@@ -44,7 +44,7 @@ TCVLP passes `tcvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 - **Submission Notifications** — when a client submits Form 843, tax pro receives email via Resend with taxpayer name, claim amount, contact preference. Pro can toggle notifications on/off in dashboard Settings. — live
 - **Branded Claim Page** (`app/claim/`) — firm-branded landing page for client intake — live (GET /v1/tcvlp/profile, GET/PATCH profile routes)
 - **Penalty Calculations** (`app/claim/`) — automated penalty/interest calculations from transcript data — live
-- **Taxpayer Dashboard** (`app/dashboard/`) — client claim status, submissions, document downloads, notification toggle in Settings — live
+- **Taxpayer Dashboard** (`app/dashboard/`) — route-per-view; layout wraps children in shared `AuthGate` + `AppShell(tcvlpConfig)` + `TaxProProvider` + `SubscriptionStatusProvider` + `OnboardingGate` (redirects to `/onboarding` if no pro record). Views: `/dashboard` (Overview), `/dashboard/embed` (EmbedLink), `/dashboard/submissions`, `/dashboard/settings`, `/dashboard/upgrade`. View components source `pro` via `useTaxPro()`, `sub` via `useSubscriptionStatus()`, session via `useAppShell()`. — live
 - **Kwong v. US Deadline Tools** (`components/DeadlineBanner.tsx`, `KwongCard.tsx`) — eligibility checker for Jan 2020–July 2023 penalties — live
 
 ### Professional + Firm Only
@@ -73,7 +73,7 @@ TCVLP passes `tcvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/`, `/demo`, `/what-is-form-843`, `/pricing`, `/onboarding`, `/support`, `/success`, `/sign-in`
 
 ### Member (authenticated)
-`/dashboard` (Overview, Embed Link, Submissions, Settings, Upgrade tabs)
+`/dashboard`, `/dashboard/embed`, `/dashboard/submissions`, `/dashboard/settings`, `/dashboard/upgrade`
 `/calendar`, `/affiliate`
 
 ### Client-facing (parameterized by slug)

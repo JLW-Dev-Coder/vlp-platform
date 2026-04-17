@@ -1,17 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Session, TaxPro, ProfileData, getProfile, updateProfile } from '@/lib/api';
+import { useAppShell } from '@vlp/member-ui';
+import { ProfileData, getProfile, updateProfile } from '@/lib/api';
 import { formatPhone, filterPhoneInput } from '@/lib/phone';
+import { useTaxPro } from '@/lib/account-context';
 import styles from './shared.module.css';
 
-interface Props {
-  session: Session;
-  pro: TaxPro | null;
-  onUpdated: (pro: TaxPro) => void;
-}
+export default function Settings() {
+  const { session } = useAppShell();
+  const { data: pro, setData: setPro } = useTaxPro();
 
-export default function Settings({ session, pro, onUpdated }: Props) {
   const [firmName, setFirmName] = useState(pro?.firm_name ?? '');
   const [displayName, setDisplayName] = useState(pro?.display_name ?? '');
   const [welcomeMessage, setWelcomeMessage] = useState(pro?.welcome_message ?? '');
@@ -52,14 +51,18 @@ export default function Settings({ session, pro, onUpdated }: Props) {
         firm_website: firmWebsite,
         notifications_enabled: notificationsEnabled,
       });
-      onUpdated({
+      setPro({
         pro_id: result.pro_id || pro?.pro_id || '',
-        account_id: result.account_id || session.account_id,
+        account_id: result.account_id || session.account_id || '',
         slug: result.slug || pro?.slug || '',
         firm_name: result.firm_name || firmName,
         display_name: result.display_name,
         welcome_message: result.welcome_message,
         logo_url: result.logo_url,
+        firm_phone: result.firm_phone,
+        firm_website: result.firm_website,
+        subscription_status: pro?.subscription_status,
+        submission_count: pro?.submission_count,
       });
 
       setSaved(true);
@@ -81,9 +84,9 @@ export default function Settings({ session, pro, onUpdated }: Props) {
       <div className={styles.urlCard}>
         <div className={styles.urlCardLabel}>Account</div>
         <div className={styles.urlRow}>
-          <div className={styles.urlCode}>{session.email}</div>
+          <div className={styles.urlCode}>{session.email ?? '—'}</div>
         </div>
-        <div className={styles.urlNote}>Account ID: {session.account_id}</div>
+        <div className={styles.urlNote}>Account ID: {session.account_id ?? '—'}</div>
       </div>
 
       <form onSubmit={handleSave} className={styles.form}>
