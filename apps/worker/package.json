@@ -2,6 +2,7 @@
   "name": "vlp-worker",
   "private": true,
   "dependencies": {
-    "pdf-lib": "^1.17.1"
+    "pdf-lib": "^1.17.1",
+    "unpdf": "^1.6.0"
   }
 }

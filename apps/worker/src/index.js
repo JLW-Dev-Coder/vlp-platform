@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { extractText, getDocumentProxy } from 'unpdf';
 import { FORM_843_BASE64 } from './form843-template.js';
 
 /**
@@ -657,202 +658,20 @@ async function getCurrentTokenBalance(env, accountId) {
   };
 }
 
-// ---------------------------------------------------------------------------
-// PDF text extraction — lightweight, Worker-compatible
-// Handles digitally generated PDFs (IRS transcripts). Does NOT handle scanned
-// image PDFs. Decompresses FlateDecode streams via DecompressionStream API,
-// then extracts BT...ET text blocks.
-// ---------------------------------------------------------------------------
-async function decompressFlate(bytes) {
-  for (const fmt of ['deflate', 'deflate-raw']) {
-    try {
-      const ds = new DecompressionStream(fmt);
-      const writer = ds.writable.getWriter();
-      writer.write(bytes);
-      writer.close();
-      const reader = ds.readable.getReader();
-      const chunks = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-      }
-      let len = 0;
-      for (const c of chunks) len += c.length;
-      const result = new Uint8Array(len);
-      let off = 0;
-      for (const c of chunks) { result.set(c, off); off += c.length; }
-      return new TextDecoder('latin1').decode(result);
-    } catch {
-      continue;
-    }
-  }
-  return null;
-}
-
+// extractTextFromPdf — extract text from a PDF using unpdf (serverless PDF.js).
+// Handles all PDF filter chains (FlateDecode, ASCII85Decode, LZW, etc.) and font
+// encodings via Mozilla's PDF.js engine. Returns extracted text as a string, or
+// an empty string if extraction fails (caller is responsible for treating empty
+// string as a failure mode).
 async function extractTextFromPdf(pdfBytes) {
-  const raw = new TextDecoder('latin1').decode(pdfBytes);
-  const textChunks = [];
-
-  // Strategy 1: Find stream blocks, decompress FlateDecode, extract text ops
-  const streamMarker = /stream\r?\n/g;
-  let sm;
-  while ((sm = streamMarker.exec(raw)) !== null) {
-    const streamStart = sm.index + sm[0].length;
-    const endIdx = raw.indexOf('endstream', streamStart);
-    if (endIdx === -1) continue;
-
-    const lookback = raw.substring(Math.max(0, sm.index - 500), sm.index);
-    const isFlate = lookback.includes('/FlateDecode');
-
-    if (isFlate) {
-      try {
-        const compressed = pdfBytes.slice(streamStart, endIdx);
-        const decompressed = await decompressFlate(compressed);
-        if (decompressed) {
-          const text = extractTextOperators(decompressed);
-          if (text && text.trim().length > 5) textChunks.push(text);
-        }
-      } catch { /* skip failed stream */ }
-    } else {
-      const content = raw.substring(streamStart, endIdx);
-      const text = extractTextOperators(content);
-      if (text && text.trim().length > 5) textChunks.push(text);
-    }
+  try {
+    const pdf = await getDocumentProxy(pdfBytes);
+    const { text } = await extractText(pdf, { mergePages: true });
+    return (text || '').trim();
+  } catch (e) {
+    console.error('extractTextFromPdf: unpdf failed', e);
+    return '';
   }
-
-  // Strategy 2: Direct pattern scan as fallback (uncompressed text in raw PDF)
-  if (textChunks.join('').trim().length < 20) {
-    const directText = extractDirectText(raw);
-    if (directText) textChunks.push(directText);
-  }
-
-  return textChunks.join('\n').trim();
-}
-
-function extractTextOperators(content) {
-  const outputLines = [];
-  // Match text between BT (begin text) and ET (end text) blocks
-  const btEtRegex = /BT\s([\s\S]*?)ET/g;
-  let btMatch;
-  while ((btMatch = btEtRegex.exec(content)) !== null) {
-    const block = btMatch[1];
-    // Collect all text ops with their position in the block for ordering
-    const ops = [];
-
-    // Detect line-break operators: Td with Y-offset, TD, T*
-    // These indicate the text moved to a new line within the same BT/ET block
-    const tdRegex = /[-\d.]+\s+([-\d.]+)\s+Td/g;
-    let tdMatch;
-    while ((tdMatch = tdRegex.exec(block)) !== null) {
-      const yOffset = parseFloat(tdMatch[1]);
-      if (yOffset !== 0) ops.push({ pos: tdMatch.index, text: '\n' });
-    }
-    const tStarRegex = /\bT\*/g;
-    let tStarMatch;
-    while ((tStarMatch = tStarRegex.exec(block)) !== null) {
-      ops.push({ pos: tStarMatch.index, text: '\n' });
-    }
-
-    // Tj operator: (text) Tj
-    const tjRegex = /\(([^)]*)\)\s*Tj/g;
-    let tjMatch;
-    while ((tjMatch = tjRegex.exec(block)) !== null) {
-      const text = decodePdfString(tjMatch[1]).trim();
-      if (text) ops.push({ pos: tjMatch.index, text });
-    }
-    // TJ operator (array): [(text) kern (text)] TJ
-    // Kerning values < -100 indicate word boundaries (space between fragments)
-    const tjArrayRegex = /\[([^\]]*)\]\s*TJ/gi;
-    let arrMatch;
-    while ((arrMatch = tjArrayRegex.exec(block)) !== null) {
-      const arrayContent = arrMatch[1];
-      // Parse alternating text strings and kerning numbers
-      const tokenRegex = /\(([^)]*)\)|([-]?\d+(?:\.\d+)?)/g;
-      let token;
-      let result = '';
-      let lastWasKernSpace = false;
-      while ((token = tokenRegex.exec(arrayContent)) !== null) {
-        if (token[1] !== undefined) {
-          // Text string
-          result += decodePdfString(token[1]);
-          lastWasKernSpace = false;
-        } else if (token[2] !== undefined) {
-          // Kerning value — large negative means word boundary
-          const kern = parseFloat(token[2]);
-          if (kern < -100 && !lastWasKernSpace) {
-            result += ' ';
-            lastWasKernSpace = true;
-          }
-        }
-      }
-      const text = result.trim();
-      if (text) ops.push({ pos: arrMatch.index, text });
-    }
-    // ' and " operators (move to next line and show text)
-    const quoteRegex = /\(([^)]*)\)\s*['"]/g;
-    let quoteMatch;
-    while ((quoteMatch = quoteRegex.exec(block)) !== null) {
-      const text = decodePdfString(quoteMatch[1]).trim();
-      if (text) ops.push({ pos: quoteMatch.index, text });
-    }
-
-    // Sort by position in the block; use newline markers as line separators
-    ops.sort((a, b) => a.pos - b.pos);
-    if (ops.length > 0) {
-      let line = '';
-      for (const o of ops) {
-        if (o.text === '\n') {
-          if (line.trim()) outputLines.push(line.trim());
-          line = '';
-        } else {
-          line += (line ? ' ' : '') + o.text;
-        }
-      }
-      if (line.trim()) outputLines.push(line.trim());
-    }
-  }
-  return outputLines.join('\n');
-}
-
-function extractDirectText(raw) {
-  // Look for readable IRS transcript patterns directly in the raw PDF
-  const lines = [];
-  // IRS transcripts contain recognizable patterns even in raw PDF data
-  // Look for transaction code patterns: 3-digit code + date + amount
-  const txLineRegex = /(\d{3})\s+[A-Za-z][\w\s]+?\s+(\d{2}[-/]\d{2}[-/]\d{4})\s+[-]?\$?([\d,]+\.?\d{0,2})/g;
-  let match;
-  while ((match = txLineRegex.exec(raw)) !== null) {
-    lines.push(match[0]);
-  }
-
-  // Look for transcript type indicators
-  const typePatterns = [
-    /Account\s+Transcript/gi,
-    /Return\s+Transcript/gi,
-    /Record\s+of\s+Account/gi,
-    /Wage\s+and\s+Income/gi,
-    /Tax\s+Return\s+Filed/gi,
-    /ACCOUNT\s+BALANCE/gi,
-    /ACCOUNT\s+INFORMATION/gi,
-  ];
-  for (const pat of typePatterns) {
-    const m = raw.match(pat);
-    if (m) lines.unshift(m[0]);
-  }
-
-  return lines.join('\n');
-}
-
-function decodePdfString(str) {
-  // Decode PDF escape sequences
-  return str
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '\r')
-    .replace(/\\t/g, '\t')
-    .replace(/\\\(/g, '(')
-    .replace(/\\\)/g, ')')
-    .replace(/\\\\/g, '\\');
 }
 
 async function getSessionFromRequest(request, env) {
