@@ -39,7 +39,7 @@ TCVLP passes `tcvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 ## TCVLP Features
 
 ### All Tiers (Starter, Professional, Firm)
-- **Form 843 Generation** (`app/claim/`) — 5-step wizard: (1) Pull Transcript, (2) Verify Eligibility (Kwong window Jan 20 2020 – Jul 10 2023), (3) Generate Form 843 (form fields + generateForm843 API), (4) Print & Mail (filing deadline Jul 10 2026, mailing address by state, Notify Me opt-in + contact preferences), (5) Need Help? (pro contact card). Yellow theme, SVG icons, dark cards. — live
+- **Form 843 Generation** (`app/claim/`) — 5-step wizard: (1) Pull Transcript, (2) Verify Eligibility (Kwong window Jan 20 2020 – Jul 10 2023), (3) Generate Form 843 (form fields + generateForm843 API; sends per-row `transactions[]` and `per_year[]` from parsed transcript so Worker can append a taxpayer letter as additional pages of the PDF; Item 8 rendered at 10pt to align with template line pitch), (4) Print & Mail (filing deadline Jul 10 2026, mailing address by state, Notify Me opt-in + contact preferences), (5) About Our Professional Services (first-person pro contact card). Yellow theme, SVG icons, dark cards. — live
 - **Notify Me Opt-in** (`app/claim/` Step 4) — blue card with checkbox + contact preference fields (email/phone/SMS). Opt-in consent stored on submission. Contact email always required. Data sent with POST /v1/tcvlp/forms/843/submit. — live
 - **Submission Notifications** — when a client submits Form 843, tax pro receives email via Resend with taxpayer name, claim amount, contact preference. Pro can toggle notifications on/off in dashboard Settings. — live
 - **Branded Claim Page** (`app/claim/`) — firm-branded landing page for client intake — live (GET /v1/tcvlp/profile, GET/PATCH profile routes)
@@ -51,7 +51,7 @@ TCVLP passes `tcvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 - **Unlimited Claim Pages** — separate branded pages per office/partner — not started
 - **Priority Generation** — Form 843 PDFs generated ahead of queue — not started
 - **Bulk Export** — ZIP download of all generated Form 843 PDFs — not started
-- **Transcript Integration** — direct TTMP transcript parsing into Form 843 — live (parseTranscriptText in Worker, auto-populates Kwong penalties on upload)
+- **Transcript Integration** — direct TTMP transcript parsing into Form 843 — live (parseTranscriptText in Worker, auto-populates Kwong penalties on upload; PDF text extraction via `unpdf` (serverless PDF.js) handles all standard filter chains including `/ASCII85Decode`+`/FlateDecode`)
 
 ### Firm Only
 - **White-Label Branding** (`app/claim/`) — remove all TaxClaim Pro branding — frontend partial, Worker pending
