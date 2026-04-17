@@ -25,14 +25,14 @@ export interface FooterLink {
 export interface MarketingConfig {
   tagline: string;                    // e.g., "Launch systems for tax professionals"
   summary: string;                    // one-line platform description for footer brand column
-  ctaLabel: string;                   // e.g., "Start Here →"
+  ctaLabel: string;                   // e.g., "Start Here" — no trailing arrow; MarketingHeader renders the ArrowRight icon
   ctaPath: string;                    // e.g., "/contact"
   megaMenu: {
     discover: MegaMenuItem[];         // 2-4 items, descriptions required
     explore: MegaMenuItem[];          // 2-5 items, descriptions optional
     toolsExtras: MegaMenuItem[];      // 2-4 items, descriptions optional
     ctaText: string;                  // hook text for CTA column
-    ctaMagnetLabel: string;           // e.g., "Free Guide"
+    ctaMagnetLabel: string;           // e.g., "See the Demo" — no trailing arrow; MarketingHeader renders the ArrowRight icon
     ctaMagnetPath: string;            // e.g., "/resources/guide"
   };
   footerResources: FooterLink[];      // footer col 3 — not used by header

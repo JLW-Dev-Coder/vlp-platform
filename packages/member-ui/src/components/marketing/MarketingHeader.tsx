@@ -289,9 +289,10 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
           </Link>
           <Link
             href={marketing.ctaPath}
-            className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-6 py-3 h-12 text-base font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-6 py-3 h-12 text-base font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
           >
             {marketing.ctaLabel}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
 
@@ -299,9 +300,10 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
         <div className="md:hidden">
           <Link
             href={marketing.ctaPath}
-            className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
           >
             {marketing.ctaLabel}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
       </div>
