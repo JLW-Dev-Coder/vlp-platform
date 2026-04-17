@@ -75,5 +75,6 @@ export interface PlatformConfig {
   apiBaseUrl: string;          // e.g., "https://api.taxmonitor.pro"
   calcomReferralLink?: string;
   businessInfo?: BusinessInfo;
+  cookiePrefsStorageKey?: string;      // e.g., "vlp_cookie_prefs_v1" — defaults to `${brandAbbrev.toLowerCase()}_cookie_prefs_v1`
   marketing?: MarketingConfig;
 }
