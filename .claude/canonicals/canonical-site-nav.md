@@ -148,6 +148,46 @@ Fixed at top of authenticated pages. Contains:
 
 Collapsible left sidebar. Three sections with headers.
 
+### Path conventions
+
+The paths in the tables below represent the **canonical pattern for new per-app
+authenticated work**: all authenticated sidebar destinations live under
+`/dashboard/*`.
+
+**Grandfathered exceptions (do not migrate):**
+
+| App | Pattern | Example |
+|-----|---------|---------|
+| VLP | `(member)/*` route group | `app/(member)/support/page.tsx` |
+| TTMP | `/app/*` | `app/app/support/page.tsx` |
+
+All other apps (TMP, TTTMP, DVLP, GVLP, TCVLP, WLVLP) use and will continue
+to use `/dashboard/*` for new authenticated pages.
+
+**Authenticated-only rule:**
+
+Support and Affiliate pages are authenticated across all 8 platforms. Public
+or marketing-style versions of `/support` and `/affiliate` are not permitted.
+Any existing top-level `/support` or `/affiliate` route that currently renders
+marketing/FAQ/landing content must be replaced with a client-side redirect
+to the authenticated dashboard path, wrapped in `AuthGuard` so unauthenticated
+visitors route through `/sign-in?redirect=<dashboard-path>` before landing
+on the dashboard page.
+
+Both pages must:
+- Sit behind `AuthGuard` (client-side session check for static-export apps)
+- Be wrapped by `AppShell` from `@vlp/member-ui` with the app's `platformConfig`
+- Call authenticated Worker endpoints (`/v1/support/tickets`,
+  `/v1/affiliates/:account_id`, `/v1/affiliates/:account_id/events`) with
+  `credentials: 'include'`
+- Contain functional UI only: ticket list + create for Support; referral link
+  + commissions + Stripe Connect onboard for Affiliate
+- Contain zero FAQ content, marketing copy, or "contact us" landing cards
+
+Reference implementations: `apps/vlp/app/(member)/support/page.tsx` and
+`apps/vlp/app/(member)/affiliate/page.tsx` (with their co-located `*Client.tsx`
+components).
+
 **WORKSPACE** (platform-specific items shown per platform):
 
 | Item | Platforms | Path |
@@ -194,31 +234,49 @@ Collapsible left sidebar. Three sections with headers.
 Each app provides a config object that drives the shared nav components:
 
 ```typescript
-interface SiteNavConfig {
+interface PlatformConfig {
   platform: string;                    // "ttmp", "vlp", etc.
   platformName: string;                // "Transcript Tax Monitor Pro"
   tagline: string;                     // "Transcript Automation"
   summary: string;                     // One-line platform description
   themeColor: string;                  // "#14b8a6"
+  apiBaseUrl: string;                  // "https://api.virtuallaunch.pro"
   ctaLabel: string;                    // "Free Code Lookup"
   ctaPath: string;                     // "/tools/code-lookup"
+
   megaMenu: {
     discover: Array<{ label: string; description: string; path: string }>;
     explore: Array<{ label: string; path: string }>;
     toolsExtras: Array<{ label: string; path: string }>;
-    ctaText: string;                   // Hook text for the CTA column
-    ctaMagnetLabel: string;            // "Free Guide"
-    ctaMagnetPath: string;             // "/resources/guide"
+    ctaText: string;
+    ctaMagnetLabel: string;
+    ctaMagnetPath: string;
   };
+
   footerResources: Array<{ label: string; href: string }>;
-  sidebarItems: {
-    workspace: Array<{ label: string; path: string; icon: string }>;
-    earnings: Array<{ label: string; path: string; icon: string }>;
-  };
+
+  navSections: NavSection[];
+}
+
+interface NavSection {
+  title: string;                       // "WORKSPACE" | "EARNINGS" | "SETTINGS"
+  items: NavItem[];
+}
+
+interface NavItem {
+  label: string;
+  path: string;
+  icon: string;                        // lucide-react icon name
 }
 ```
 
-Components read this config and render. No hardcoded platform values in shared code.
+Components read this config and render. No hardcoded platform values in
+shared code. The `navSections` array is ordered — sections render in the
+order declared. The conventional section titles are `"WORKSPACE"`,
+`"EARNINGS"`, and `"SETTINGS"`, matching the three tables in §2; apps
+may include a subset of these sections depending on which features they
+expose. The exported type is `PlatformConfig` (not `SiteNavConfig`) to
+match the shipped `@vlp/member-ui` export.
 
 ---
 
