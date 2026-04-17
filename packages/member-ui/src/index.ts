@@ -1,6 +1,11 @@
 // UI Components
 export { AppShell, useAppShell } from './components/AppShell'
 export { AuthGate } from './components/AuthGate'
+export { createAccountContext } from './lib/createAccountContext'
+export type {
+  AccountProviderProps,
+  AccountContextValue,
+} from './lib/createAccountContext'
 export { MemberSidebar } from './components/MemberSidebar'
 export { MemberTopbar } from './components/MemberTopbar'
 export { KPICard } from './components/KPICard'
