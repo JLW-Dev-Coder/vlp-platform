@@ -1619,6 +1619,229 @@ const IRS_843_MAILING_ADDRESSES = {
   'VI': 'Internal Revenue Service, Austin, TX 73301-0030',
 };
 
+// ---- TCVLP Form 843 letter helpers ----
+
+function formatDateMDY(isoDate) {
+  if (!isoDate || typeof isoDate !== 'string') return '';
+  const m = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return isoDate;
+  return `${m[2]}/${m[3]}/${m[1]}`;
+}
+
+function formatCurrency(n) {
+  const num = typeof n === 'number' ? n : parseFloat(n);
+  if (isNaN(num)) return '$0.00';
+  return '$' + Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatLetterDate(d = new Date()) {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+async function renderLetterPages(pdfDoc, letterData, fonts) {
+  const PAGE_WIDTH = 612;
+  const PAGE_HEIGHT = 792;
+  const MARGIN_LEFT = 72;
+  const MARGIN_RIGHT = 72;
+  const MARGIN_TOP = 72;
+  const MARGIN_BOTTOM = 72;
+  const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
+
+  const FONT_BODY = 11;
+  const FONT_HEADER = 12;
+  const LINE_HEIGHT_BODY = 14;
+  const LINE_HEIGHT_HEADER = 16;
+
+  let page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  let y = PAGE_HEIGHT - MARGIN_TOP;
+
+  function ensureRoom(needed) {
+    if (y - needed < MARGIN_BOTTOM) {
+      page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+      y = PAGE_HEIGHT - MARGIN_TOP;
+    }
+  }
+
+  function drawLine(text, opts = {}) {
+    const font = opts.bold ? fonts.bold : fonts.regular;
+    const size = opts.size || FONT_BODY;
+    const lineHeight = opts.lineHeight || LINE_HEIGHT_BODY;
+    const xOffset = opts.x || MARGIN_LEFT;
+    const align = opts.align || 'left';
+    ensureRoom(lineHeight);
+    y -= lineHeight;
+    let x = xOffset;
+    if (align === 'right') {
+      const w = font.widthOfTextAtSize(text, size);
+      x = PAGE_WIDTH - MARGIN_RIGHT - w;
+    }
+    page.drawText(text, { x, y, size, font, color: rgb(0, 0, 0) });
+  }
+
+  function drawParagraph(text, opts = {}) {
+    const font = opts.bold ? fonts.bold : fonts.regular;
+    const size = opts.size || FONT_BODY;
+    const lineHeight = opts.lineHeight || LINE_HEIGHT_BODY;
+    const words = text.split(/\s+/);
+    let line = '';
+    for (const word of words) {
+      const trial = line ? line + ' ' + word : word;
+      const width = font.widthOfTextAtSize(trial, size);
+      if (width > CONTENT_WIDTH && line) {
+        drawLine(line, { size, lineHeight, bold: opts.bold });
+        line = word;
+      } else {
+        line = trial;
+      }
+    }
+    if (line) drawLine(line, { size, lineHeight, bold: opts.bold });
+  }
+
+  function blankLines(n = 1) {
+    for (let i = 0; i < n; i++) {
+      ensureRoom(LINE_HEIGHT_BODY);
+      y -= LINE_HEIGHT_BODY;
+    }
+  }
+
+  drawLine(formatLetterDate(), { align: 'right' });
+  blankLines(2);
+
+  for (const line of letterData.mailingAddressLines) {
+    drawLine(line);
+  }
+  blankLines(2);
+
+  drawLine('Re: Form 843 Claim for Refund and Request for Abatement', { bold: true });
+  drawLine(`     Taxpayer: ${letterData.taxpayerName}`);
+  drawLine(`     Tax Year(s): ${letterData.taxYearsStr}`);
+  drawLine(`     Total Claimed: ${formatCurrency(letterData.totalClaimed)}`);
+  blankLines(2);
+
+  drawLine('To Whom It May Concern:');
+  blankLines(1);
+
+  drawParagraph(
+    `I am writing to request abatement and refund of penalties and interest assessed against my federal tax account for tax year(s) ${letterData.taxYearsStr}. ` +
+    `This claim is filed under the authority of Kwong v. United States, 179 Fed. Cl. 382 (2025), in which the U.S. Court of Federal Claims held that IRC §7508A(d) required mandatory postponement of federal tax deadlines during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). ` +
+    `The IRS lacked authority to assess failure-to-file penalties, failure-to-pay penalties, and underpayment interest on obligations due during this period.`
+  );
+  blankLines(1);
+
+  drawParagraph('The penalties and interest for which I request abatement are itemized below, drawn directly from my IRS Account Transcript.');
+  blankLines(1);
+
+  drawLine('Itemized Transactions:', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+  blankLines(1);
+
+  const COL_CODE_X = MARGIN_LEFT;
+  const COL_DESC_X = MARGIN_LEFT + 50;
+  const COL_DATE_X = MARGIN_LEFT + 320;
+  const COL_AMT_RIGHT = PAGE_WIDTH - MARGIN_RIGHT;
+
+  ensureRoom(LINE_HEIGHT_BODY);
+  y -= LINE_HEIGHT_BODY;
+  page.drawText('Code', { x: COL_CODE_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+  page.drawText('Description', { x: COL_DESC_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+  page.drawText('Date', { x: COL_DATE_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+  const amtHeader = 'Amount';
+  const amtHeaderWidth = fonts.bold.widthOfTextAtSize(amtHeader, FONT_BODY);
+  page.drawText(amtHeader, { x: COL_AMT_RIGHT - amtHeaderWidth, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+
+  for (const tx of letterData.transactions) {
+    ensureRoom(LINE_HEIGHT_BODY);
+    y -= LINE_HEIGHT_BODY;
+    page.drawText(tx.code, { x: COL_CODE_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    let desc = tx.description || '';
+    const maxDescWidth = COL_DATE_X - COL_DESC_X - 10;
+    while (fonts.regular.widthOfTextAtSize(desc, FONT_BODY) > maxDescWidth && desc.length > 4) {
+      desc = desc.slice(0, -2);
+    }
+    if (desc !== (tx.description || '')) desc = desc.slice(0, -1) + '…';
+    page.drawText(desc, { x: COL_DESC_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    page.drawText(formatDateMDY(tx.date), { x: COL_DATE_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    const amtStr = formatCurrency(tx.amount);
+    const amtWidth = fonts.regular.widthOfTextAtSize(amtStr, FONT_BODY);
+    page.drawText(amtStr, { x: COL_AMT_RIGHT - amtWidth, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+  }
+  blankLines(2);
+
+  drawLine('Year-by-Year Breakdown:', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+  blankLines(1);
+
+  const PY_COL_YEAR_X = MARGIN_LEFT;
+  const PY_COL_FTF_X = MARGIN_LEFT + 80;
+  const PY_COL_FTP_X = MARGIN_LEFT + 200;
+  const PY_COL_INT_X = MARGIN_LEFT + 320;
+  const PY_COL_TOTAL_RIGHT = PAGE_WIDTH - MARGIN_RIGHT;
+
+  ensureRoom(LINE_HEIGHT_BODY);
+  y -= LINE_HEIGHT_BODY;
+  page.drawText('Tax Year', { x: PY_COL_YEAR_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+  page.drawText('Failure-to-File', { x: PY_COL_FTF_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+  page.drawText('Failure-to-Pay', { x: PY_COL_FTP_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+  page.drawText('Interest', { x: PY_COL_INT_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+  const totHeader = 'Year Total';
+  const totHeaderWidth = fonts.bold.widthOfTextAtSize(totHeader, FONT_BODY);
+  page.drawText(totHeader, { x: PY_COL_TOTAL_RIGHT - totHeaderWidth, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+
+  for (const py of letterData.perYear) {
+    ensureRoom(LINE_HEIGHT_BODY);
+    y -= LINE_HEIGHT_BODY;
+    const yearTotal = (py.failure_to_file || 0) + (py.failure_to_pay || 0) + (py.interest || 0);
+    page.drawText(py.tax_year, { x: PY_COL_YEAR_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    page.drawText(formatCurrency(py.failure_to_file), { x: PY_COL_FTF_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    page.drawText(formatCurrency(py.failure_to_pay), { x: PY_COL_FTP_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    page.drawText(formatCurrency(py.interest), { x: PY_COL_INT_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    const totStr = formatCurrency(yearTotal);
+    const totWidth = fonts.regular.widthOfTextAtSize(totStr, FONT_BODY);
+    page.drawText(totStr, { x: PY_COL_TOTAL_RIGHT - totWidth, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+  }
+  blankLines(2);
+
+  drawLine('Summary Totals (All Years):', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+  blankLines(1);
+  drawLine(`Failure-to-File Penalty: ${formatCurrency(letterData.summary.failureToFile)}`);
+  drawLine(`Failure-to-Pay Penalty: ${formatCurrency(letterData.summary.failureToPay)}`);
+  drawLine(`Interest on Penalties: ${formatCurrency(letterData.summary.interest)}`);
+  drawLine(`Total Refund Requested: ${formatCurrency(letterData.summary.total)}`, { bold: true });
+  blankLines(2);
+
+  drawParagraph(`This claim is timely filed before the July 10, 2026 deadline for Kwong-eligible relief. Form 843 (Rev. December 2024) is enclosed with this statement, signed and completed.`);
+  blankLines(1);
+
+  drawLine(`Enclosed: IRS Account Transcript for tax year(s) ${letterData.taxYearsStr}.`);
+  blankLines(2);
+
+  drawLine('Sincerely,');
+  blankLines(3);
+
+  const SIG_LINE_WIDTH = 216;
+  ensureRoom(LINE_HEIGHT_BODY * 2);
+  y -= LINE_HEIGHT_BODY;
+  page.drawLine({
+    start: { x: MARGIN_LEFT, y },
+    end: { x: MARGIN_LEFT + SIG_LINE_WIDTH, y },
+    thickness: 0.5,
+    color: rgb(0, 0, 0),
+  });
+  y -= LINE_HEIGHT_BODY;
+  page.drawText(letterData.taxpayerName, { x: MARGIN_LEFT, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+
+  blankLines(2);
+  ensureRoom(LINE_HEIGHT_BODY * 2);
+  y -= LINE_HEIGHT_BODY;
+  page.drawLine({
+    start: { x: MARGIN_LEFT, y },
+    end: { x: MARGIN_LEFT + SIG_LINE_WIDTH, y },
+    thickness: 0.5,
+    color: rgb(0, 0, 0),
+  });
+  y -= LINE_HEIGHT_BODY;
+  page.drawText('Date', { x: MARGIN_LEFT, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+}
+
 // Cloudflare GraphQL Analytics — zone + domain mapping
 // Public zone IDs (not secrets). Token lives in env.CF_API_TOKEN.
 const CF_ACCOUNT_ID = 'b14e124b2f5dd7e86dfb1546f9ed6e91';
@@ -14610,7 +14833,9 @@ TTMP Support Team
         penalty_type, penalty_amount,
         state, transcript_used,
         ssn_ein, spouse_name, spouse_ssn, address, apt_suite, city, zip_code,
-        ein, phone, irc_section, payment_dates
+        ein, phone, irc_section, payment_dates,
+        // Optional transcript-derived data for taxpayer letter append
+        transactions, per_year
       } = body;
 
       if (!pro_id || !taxpayer_name || !tax_year || !state) {
@@ -14811,10 +15036,62 @@ TTMP Support Team
           checkBox('topmostSubform[0].Page2[0].c2_15[2]');
 
           // Item 8: Explanation
-          const explanationText = `Claim for refund of penalties and interest assessed for tax year(s) ${taxYearRange}.\n\n`
+          const willAppendLetter = Array.isArray(transactions) && transactions.length > 0
+                                && Array.isArray(per_year) && per_year.length > 0;
+
+          let explanationText = `Claim for refund of penalties and interest assessed for tax year(s) ${taxYearRange}.\n\n`
             + penaltyLines.join('\n') + '\n\n'
             + kwongText;
-          setField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]', explanationText);
+          if (willAppendLetter) {
+            explanationText += '\n\nSee attached statement for itemized transaction-level computation.';
+          }
+
+          const item8Field = form.getTextField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]');
+          item8Field.setText(explanationText);
+          item8Field.setFontSize(10);
+
+          // Append taxpayer letter pages if per-row + per-year data was sent
+          if (willAppendLetter) {
+            const stateUpper = (state || '').trim().toUpperCase();
+            const addrEntry = IRS_843_MAILING_ADDRESSES[stateAbbrev] || IRS_843_MAILING_ADDRESSES[stateUpper];
+            let mailingAddressLines;
+            if (addrEntry) {
+              mailingAddressLines = ['Internal Revenue Service'];
+              const rest = addrEntry.replace(/^Internal Revenue Service,?\s*/, '');
+              mailingAddressLines.push(rest);
+            } else {
+              mailingAddressLines = [
+                'Internal Revenue Service',
+                '[Recipient address — verify with current IRS Form 843 instructions]',
+              ];
+            }
+
+            const summary = per_year.reduce((acc, py) => ({
+              failureToFile: acc.failureToFile + (py.failure_to_file || 0),
+              failureToPay: acc.failureToPay + (py.failure_to_pay || 0),
+              interest: acc.interest + (py.interest || 0),
+            }), { failureToFile: 0, failureToPay: 0, interest: 0 });
+            summary.total = summary.failureToFile + summary.failureToPay + summary.interest;
+
+            const taxYearsArr = [...new Set(per_year.map(py => py.tax_year))].sort();
+            const taxYearsStr = taxYearsArr.join(', ');
+
+            const letterHelvetica = await officialDoc.embedFont(StandardFonts.Helvetica);
+            const letterHelveticaBold = await officialDoc.embedFont(StandardFonts.HelveticaBold);
+
+            await renderLetterPages(officialDoc, {
+              taxpayerName: taxpayer_name,
+              taxYearsStr,
+              totalClaimed: summary.total,
+              mailingAddressLines,
+              transactions,
+              perYear: per_year,
+              summary,
+            }, { regular: letterHelvetica, bold: letterHelveticaBold });
+          }
+
+          // Regenerate field appearances so Item 8 font-size change takes effect
+          form.updateFieldAppearances();
 
           // Leave form editable — user completes SSN, address, signature before printing
           filledPdf = await officialDoc.save();

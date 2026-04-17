@@ -124,6 +124,36 @@
       "irc_section": {
         "type": "string",
         "maxLength": 20
+      },
+      "transactions": {
+        "type": "array",
+        "description": "Per-row Kwong-eligible transactions from the parsed transcript. When provided alongside per_year, the generator appends a taxpayer letter to the form.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": { "type": "string", "pattern": "^\\d{3}$" },
+            "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "amount": { "type": "number" },
+            "description": { "type": "string" }
+          },
+          "required": ["code", "date", "amount", "description"]
+        }
+      },
+      "per_year": {
+        "type": "array",
+        "description": "Per-year aggregates from the parsed transcript. When provided alongside transactions, the generator appends a taxpayer letter to the form.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tax_year": { "type": "string", "pattern": "^\\d{4}$" },
+            "failure_to_file": { "type": "number" },
+            "failure_to_pay": { "type": "number" },
+            "interest": { "type": "number" }
+          },
+          "required": ["tax_year", "failure_to_file", "failure_to_pay", "interest"]
+        }
       }
     },
     "required": [
