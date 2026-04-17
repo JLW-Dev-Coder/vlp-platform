@@ -143,17 +143,21 @@ export function googleAuthUrl(redirect?: string): string {
 
 export interface Affiliate {
   referral_code: string;
-  connect_status: string;
+  connect_status: 'pending' | 'active' | 'inactive' | string;
   balance_pending: number;
   balance_paid: number;
   referral_url: string;
+  referred_count?: number;
 }
 
 export interface AffiliateEvent {
-  platform: string;
-  gross_amount: number;
-  commission_amount: number;
-  status: 'pending' | 'paid';
+  event_id: string;
+  referrer_account_id: string;
+  referred_account_id?: string;
+  platform?: string;
+  gross_amount_cents?: number;
+  commission_amount_cents?: number;
+  status: 'pending' | 'paid' | string;
   created_at: string;
 }
 
@@ -164,11 +168,17 @@ export interface PayoutResponse {
 }
 
 export async function getAffiliate(account_id: string): Promise<Affiliate> {
-  return apiFetch<Affiliate>(`/v1/affiliates/${encodeURIComponent(account_id)}`);
+  const data = await apiFetch<{ ok: boolean; affiliate: Affiliate }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}`
+  );
+  return data.affiliate;
 }
 
 export async function getAffiliateEvents(account_id: string): Promise<AffiliateEvent[]> {
-  return apiFetch<AffiliateEvent[]>(`/v1/affiliates/${encodeURIComponent(account_id)}/events`);
+  const data = await apiFetch<{ ok: boolean; events: AffiliateEvent[] }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}/events`
+  );
+  return data.events ?? [];
 }
 
 export async function startAffiliateOnboarding(): Promise<{ onboard_url: string }> {
@@ -180,4 +190,27 @@ export async function requestPayout(amount: number): Promise<PayoutResponse> {
     method: 'POST',
     body: JSON.stringify({ amount }),
   });
+}
+
+// ── Support ──
+
+export interface SupportTicketRow {
+  ticket_id: string;
+  account_id: string;
+  subject: string;
+  message?: string;
+  priority?: string | null;
+  status: string;
+  category?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export async function getSupportTicketsByAccount(
+  accountId: string
+): Promise<SupportTicketRow[]> {
+  const data = await apiFetch<{ ok: boolean; tickets: SupportTicketRow[] }>(
+    `/v1/support/tickets/by-account/${encodeURIComponent(accountId)}`
+  );
+  return data.tickets ?? [];
 }
