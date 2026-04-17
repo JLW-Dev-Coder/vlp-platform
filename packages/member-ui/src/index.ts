@@ -14,6 +14,11 @@ export type { MarketingHeaderProps } from './components/marketing/MarketingHeade
 export { MarketingFooter } from './components/marketing/MarketingFooter'
 export type { MarketingFooterProps } from './components/marketing/MarketingFooter'
 
+// Cookie Components
+export { CookieConsent, applyAnalyticsConsent } from './components/cookies/CookieConsent'
+export type { CookieConsentProps } from './components/cookies/CookieConsent'
+export { ManageCookiesLink } from './components/cookies/ManageCookiesLink'
+
 // Legal Components
 export { LegalPageLayout } from './components/legal/LegalPageLayout'
 export type { LegalPageLayoutProps } from './components/legal/LegalPageLayout'
