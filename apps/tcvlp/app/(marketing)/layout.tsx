@@ -1,4 +1,4 @@
-import { MarketingHeader, MarketingFooter } from '@vlp/member-ui'
+import { MarketingHeader, MarketingFooter, CookieConsent } from '@vlp/member-ui'
 import DeadlineBanner from '@/components/DeadlineBanner'
 import { tcvlpConfig } from '@/lib/platform-config'
 
@@ -13,6 +13,7 @@ export default function MarketingLayout({
       <MarketingHeader config={tcvlpConfig} />
       <main className="flex-1">{children}</main>
       <MarketingFooter config={tcvlpConfig} />
+      <CookieConsent config={tcvlpConfig} />
     </div>
   )
 }
