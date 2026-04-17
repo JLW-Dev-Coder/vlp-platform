@@ -27,8 +27,8 @@ TMP passes `tmpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 
 ## TMP-Specific Features (not shared)
 
-- **Dashboard SPA** (`app/dashboard/`) — SPA-style view switching with inner sidebar (9 views: DashboardHome, ComplianceReport, TranscriptChanges, ESign2848, ActiveAlerts, Tokens, Receipts, ProProfile, HelpCenter)
-- **AuthGuard** (`components/AuthGuard.tsx`) — TMP-specific session check with redirect, returns `SessionUser` with `account_id`, `email`, `plan`
+- **Dashboard routes** (`app/dashboard/`) — route-per-view; layout wraps children in shared `AuthGate` + `AppShell(tmpConfig)`. Views: `/dashboard` (DashboardHome), `/dashboard/compliance-report`, `/dashboard/transcript-changes`, `/dashboard/esign-2848`, `/dashboard/active-alerts`, `/dashboard/tokens`, `/dashboard/receipts`, `/dashboard/profile`, `/dashboard/help-center`, plus `/dashboard/support` and `/dashboard/affiliate`. View components source `session.account_id` via `useAppShell()`.
+- **AuthGuard** (`components/AuthGuard.tsx`) — TMP-specific session check with redirect, returns `SessionUser` with `account_id`, `email`, `plan`. Used by non-dashboard pages (`/messages`, `/calendar`, `/status`, `/notifications`). Dashboard now uses shared `AuthGate` from `@vlp/member-ui` at the layout level.
 - **Intake flow** — `/inquiry` → `/intake` → `/offer` → `/agreement` → `/payment` → `/payment-success`
 - **Compliance report** (`app/report/`) — staff/pro tabbed compliance dashboard
 - **Directory** (`app/directory/`) — public tax professional listing with profile pages
@@ -43,7 +43,7 @@ TMP passes `tmpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/`, `/about`, `/affiliate`, `/contact`, `/calendar`, `/directory`, `/directory/profile`, `/features`, `/pricing`, `/resources/transcript-central`, `/tools/irs-payment-calculator`, `/forms/2848`, `/legal/privacy`, `/legal/terms`, `/legal/refund`, `/sign-in`
 
 ### Member (protected — vlp_session cookie)
-`/dashboard`, `/dashboard/profile`, `/affiliate`, `/calendar`, `/messages`, `/office`, `/report`, `/report/view`, `/status`, `/support`
+`/dashboard`, `/dashboard/compliance-report`, `/dashboard/transcript-changes`, `/dashboard/esign-2848`, `/dashboard/active-alerts`, `/dashboard/tokens`, `/dashboard/receipts`, `/dashboard/profile`, `/dashboard/help-center`, `/dashboard/support`, `/dashboard/affiliate`, `/calendar`, `/messages`, `/office`, `/report`, `/report/view`, `/status`. Top-level `/affiliate` and `/support` are redirect stubs to `/dashboard/affiliate` and `/dashboard/support`.
 
 ### Intake flow (public → authenticated)
 `/inquiry`, `/intake`, `/offer`, `/agreement`, `/payment`, `/payment-success`

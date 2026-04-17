@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '@/lib/api'
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from './components.module.css'
 
 interface Notification {
@@ -22,8 +21,7 @@ function formatDate(raw?: string): string {
   } catch { return raw }
 }
 
-export default function ActiveAlerts({ account }: { account: SessionUser }) {
-  void account
+export default function ActiveAlerts() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
 

@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useAppShell } from '@vlp/member-ui'
 import { api } from '@/lib/api'
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from '@/app/office/page.module.css'
 
 /* ── Types ── */
@@ -37,7 +37,8 @@ function formatDate(raw: string): string {
   }
 }
 
-export default function OfficeContent({ account }: { account: SessionUser }) {
+export default function OfficeContent() {
+  const { session } = useAppShell()
   const [receipts, setReceipts] = useState<Receipt[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -46,10 +47,12 @@ export default function OfficeContent({ account }: { account: SessionUser }) {
   const [selected, setSelected] = useState<Receipt | null>(null)
 
   const fetchReceipts = useCallback(async () => {
+    if (!session.account_id) return
+    const accountId = session.account_id
     setLoading(true)
     setError(null)
     try {
-      const res = await api.getReceipts(account.account_id) as { receipts?: Receipt[] } | Receipt[]
+      const res = await api.getReceipts(accountId) as { receipts?: Receipt[] } | Receipt[]
       const list = Array.isArray(res) ? res : (res as { receipts?: Receipt[] }).receipts ?? []
       setReceipts(list)
     } catch (err) {
@@ -57,7 +60,7 @@ export default function OfficeContent({ account }: { account: SessionUser }) {
     } finally {
       setLoading(false)
     }
-  }, [account.account_id])
+  }, [session.account_id])
 
   useEffect(() => {
     fetchReceipts()

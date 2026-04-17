@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useAppShell } from '@vlp/member-ui'
 import { api } from '@/lib/api'
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from '@/app/report/page.module.css'
 
 const TABS = [
@@ -38,7 +38,8 @@ function val(v: unknown, fallback = 'N/A'): string {
 
 /* ─── main content ─── */
 
-export default function ReportContent({ account }: { account: SessionUser }) {
+export default function ReportContent() {
+  const { session } = useAppShell()
   const [activeTab, setActiveTab] = useState<TabName>('Overview')
   const [taxYear, setTaxYear] = useState(currentYear)
   const [mfjView, setMfjView] = useState<MfjView>('primary')
@@ -48,26 +49,29 @@ export default function ReportContent({ account }: { account: SessionUser }) {
   const [pdfStatus, setPdfStatus] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
+    if (!session.account_id) return
+    const accountId = session.account_id
     setLoading(true)
     setError(null)
     try {
-      const res = await api.getComplianceStatus(account.account_id) as ComplianceData
+      const res = await api.getComplianceStatus(accountId) as ComplianceData
       setData(res)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load compliance data')
     } finally {
       setLoading(false)
     }
-  }, [account.account_id])
+  }, [session.account_id])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
 
   const handleGeneratePdf = async () => {
+    if (!session.account_id) return
     setPdfStatus('Report generation pending...')
     try {
-      await api.generateReport(account.account_id, taxYear)
+      await api.generateReport(session.account_id, taxYear)
       setPdfStatus('Report generated successfully.')
     } catch {
       setPdfStatus('Report generation failed. Please try again.')

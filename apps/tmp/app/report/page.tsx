@@ -8,9 +8,9 @@ import ReportContent from '@/app/dashboard/components/ReportContent'
 export default function ReportPage() {
   return (
     <AuthGuard>
-      {({ account }) => (
+      {() => (
         <AppShell config={tmpConfig}>
-          <ReportContent account={account} />
+          <ReportContent />
         </AppShell>
       )}
     </AuthGuard>

@@ -8,9 +8,9 @@ import OfficeContent from '@/app/dashboard/components/OfficeContent'
 export default function OfficePage() {
   return (
     <AuthGuard>
-      {({ account }) => (
+      {() => (
         <AppShell config={tmpConfig}>
-          <OfficeContent account={account} />
+          <OfficeContent />
         </AppShell>
       )}
     </AuthGuard>

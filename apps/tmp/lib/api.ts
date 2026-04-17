@@ -180,6 +180,46 @@ export interface ComplianceReportResponse {
   }
 }
 
+/* ── Affiliate types ── */
+export interface Affiliate {
+  referral_code: string
+  connect_status: 'pending' | 'active' | 'inactive' | string
+  balance_pending: number
+  balance_paid: number
+  referral_url: string
+  referred_count?: number
+}
+
+export interface AffiliateEvent {
+  event_id: string
+  referrer_account_id: string
+  referred_account_id?: string
+  platform?: string
+  gross_amount_cents?: number
+  commission_amount_cents?: number
+  status: 'pending' | 'paid' | string
+  created_at: string
+}
+
+export interface PayoutResponse {
+  payout_id: string
+  amount: number
+  status: string
+}
+
+/* ── Support types ── */
+export interface SupportTicketRow {
+  ticket_id: string
+  account_id: string
+  subject: string
+  message?: string
+  priority?: string | null
+  status: string
+  category?: string | null
+  created_at: string
+  updated_at?: string | null
+}
+
 async function apiFetch<T>(
   path: string,
   options: ApiOptions = {}
@@ -530,47 +570,10 @@ export const api = {
       }
     ),
 
-  // Affiliates
-  getAffiliate: (account_id: string) =>
-    apiFetch<{
-      ok: boolean
-      referral_code: string
-      connect_status: string
-      balance_pending: number
-      balance_paid: number
-      referral_url: string
-    }>(`/v1/affiliates/${account_id}`),
-
-  getAffiliateEvents: (account_id: string) =>
-    apiFetch<{
-      ok: boolean
-      events: Array<{
-        platform: string
-        gross_amount: number
-        commission_amount: number
-        status: string
-        created_at: string
-      }>
-    }>(`/v1/affiliates/${account_id}/events`),
-
-  startAffiliateOnboarding: () =>
-    apiFetch<{ ok: boolean; onboard_url: string }>(
-      '/v1/affiliates/connect/onboard',
-      { method: 'POST' }
-    ),
-
-  requestPayout: (amount: number) =>
-    apiFetch<{ ok: boolean; payout_id: string; amount: number; status: string }>(
-      '/v1/affiliates/payout/request',
-      {
-        method: 'POST',
-        body: JSON.stringify({ amount }),
-      }
-    ),
-
+  // Affiliates (top-level functions exported below — only getPayoutStatus stays here)
   getPayoutStatus: (payout_id: string) =>
     apiFetch<{ ok: boolean; payout_id: string; amount: number; status: string }>(
-      `/v1/affiliates/payout/${payout_id}`
+      `/v1/affiliates/payout/${encodeURIComponent(payout_id)}`
     ),
 
   // TMP Membership & Monitoring
@@ -659,4 +662,48 @@ export const api = {
       step_status?: string
       notes?: string
     }>('/v1/tmp/monitoring/status'),
+}
+
+/* ── Affiliate (top-level) ── */
+export async function getAffiliate(account_id: string): Promise<Affiliate> {
+  const data = await apiFetch<{ ok: boolean; affiliate: Affiliate }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}`
+  )
+  return data.affiliate
+}
+
+export async function getAffiliateEvents(account_id: string): Promise<AffiliateEvent[]> {
+  const data = await apiFetch<{ ok: boolean; events: AffiliateEvent[] }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}/events`
+  )
+  return data.events ?? []
+}
+
+export async function startAffiliateOnboarding(): Promise<{ onboard_url: string }> {
+  const data = await apiFetch<{ ok: boolean; onboard_url: string }>(
+    '/v1/affiliates/connect/onboard',
+    { method: 'POST' }
+  )
+  return { onboard_url: data.onboard_url }
+}
+
+export async function requestPayout(amount: number): Promise<PayoutResponse> {
+  const data = await apiFetch<{ ok: boolean } & PayoutResponse>(
+    '/v1/affiliates/payout/request',
+    {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    }
+  )
+  return { payout_id: data.payout_id, amount: data.amount, status: data.status }
+}
+
+/* ── Support (top-level) ── */
+export async function getSupportTicketsByAccount(
+  accountId: string
+): Promise<SupportTicketRow[]> {
+  const data = await apiFetch<{ ok: boolean; tickets: SupportTicketRow[] }>(
+    `/v1/support/tickets/by-account/${encodeURIComponent(accountId)}`
+  )
+  return data.tickets ?? []
 }

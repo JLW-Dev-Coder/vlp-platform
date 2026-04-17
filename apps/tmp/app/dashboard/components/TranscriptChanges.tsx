@@ -1,10 +1,8 @@
 'use client'
 
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from './components.module.css'
 
-export default function TranscriptChanges({ account }: { account: SessionUser }) {
-  void account
+export default function TranscriptChanges() {
   return (
     <div className={styles.page}>
       <h1 className={styles.pageTitle}>Transcript Changes</h1>

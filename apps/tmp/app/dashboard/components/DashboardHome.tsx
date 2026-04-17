@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useAppShell } from '@vlp/member-ui'
 import { api } from '@/lib/api'
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from './components.module.css'
 
 interface Notification {
@@ -63,7 +63,8 @@ function formatDate(raw?: string): string {
   }
 }
 
-export default function DashboardHome({ account }: { account: SessionUser }) {
+export default function DashboardHome() {
+  const { session } = useAppShell()
   const [tmpDashboard, setTmpDashboard] = useState<TmpDashboard | null>(null)
   const [monitoring, setMonitoring] = useState<MonitoringStatus | null>(null)
 
@@ -74,61 +75,66 @@ export default function DashboardHome({ account }: { account: SessionUser }) {
   const [tokenBalance, setTokenBalance] = useState<number | null>(null)
   const [loadingTokens, setLoadingTokens] = useState(true)
 
-  const fetchData = useCallback(async () => {
-    // TMP dashboard gate
-    try {
-      const res = await api.getTmpDashboard()
-      setTmpDashboard(res)
-
-      if (res.plan_tier === 'II') {
-        try {
-          const mon = await api.getTmpMonitoringStatus()
-          setMonitoring(mon)
-        } catch {
-          // monitoring status unavailable — non-fatal
-        }
-      }
-    } catch {
-      // TMP dashboard info unavailable — non-fatal, dashboard still loads
-    }
-
-    // Notifications
-    try {
-      const res = await api.getNotifications() as { notifications?: Notification[] } | Notification[]
-      const list = Array.isArray(res) ? res : (res as { notifications?: Notification[] }).notifications ?? []
-      setNotifications(list)
-    } catch {
-      setNotifications([])
-    } finally {
-      setLoadingNotif(false)
-    }
-
-    // Receipts
-    try {
-      const res = await api.getReceipts(account.account_id) as { receipts?: Receipt[] } | Receipt[]
-      const list = Array.isArray(res) ? res : (res as { receipts?: Receipt[] }).receipts ?? []
-      setReceipts(list)
-    } catch {
-      setReceipts([])
-    } finally {
-      setLoadingReceipts(false)
-    }
-
-    // Token balance — read from session (worker exposes transcript_tokens there)
-    try {
-      const res = await api.getSession()
-      const tokens = res?.session?.transcript_tokens
-      setTokenBalance(typeof tokens === 'number' ? tokens : 0)
-    } catch {
-      setTokenBalance(null)
-    } finally {
-      setLoadingTokens(false)
-    }
-  }, [account.account_id])
-
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    if (!session.account_id) return
+    const accountId = session.account_id
+    let cancelled = false
+    ;(async () => {
+      // TMP dashboard gate
+      try {
+        const res = await api.getTmpDashboard()
+        if (cancelled) return
+        setTmpDashboard(res)
+
+        if (res.plan_tier === 'II') {
+          try {
+            const mon = await api.getTmpMonitoringStatus()
+            if (!cancelled) setMonitoring(mon)
+          } catch {
+            // monitoring status unavailable — non-fatal
+          }
+        }
+      } catch {
+        // TMP dashboard info unavailable — non-fatal, dashboard still loads
+      }
+
+      // Notifications
+      try {
+        const res = await api.getNotifications() as { notifications?: Notification[] } | Notification[]
+        const list = Array.isArray(res) ? res : (res as { notifications?: Notification[] }).notifications ?? []
+        if (!cancelled) setNotifications(list)
+      } catch {
+        if (!cancelled) setNotifications([])
+      } finally {
+        if (!cancelled) setLoadingNotif(false)
+      }
+
+      // Receipts
+      try {
+        const res = await api.getReceipts(accountId) as { receipts?: Receipt[] } | Receipt[]
+        const list = Array.isArray(res) ? res : (res as { receipts?: Receipt[] }).receipts ?? []
+        if (!cancelled) setReceipts(list)
+      } catch {
+        if (!cancelled) setReceipts([])
+      } finally {
+        if (!cancelled) setLoadingReceipts(false)
+      }
+
+      // Token balance — read from session (worker exposes transcript_tokens there)
+      try {
+        const res = await api.getSession()
+        const tokens = res?.session?.transcript_tokens
+        if (!cancelled) setTokenBalance(typeof tokens === 'number' ? tokens : 0)
+      } catch {
+        if (!cancelled) setTokenBalance(null)
+      } finally {
+        if (!cancelled) setLoadingTokens(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [session.account_id])
 
   const pendingAlerts = notifications.filter((n) => !n.read).length
   const recentReceipts = receipts.slice(0, 5)

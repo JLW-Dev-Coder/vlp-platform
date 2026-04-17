@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from './components.module.css'
 
 const FAQ_ITEMS = [
@@ -28,8 +27,7 @@ const FAQ_ITEMS = [
   },
 ]
 
-export default function HelpCenter({ account }: { account: SessionUser }) {
-  void account
+export default function HelpCenter() {
   const [open, setOpen] = useState<number | null>(null)
 
   return (

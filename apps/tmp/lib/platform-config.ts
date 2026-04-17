@@ -12,30 +12,30 @@ export const tmpConfig: PlatformConfig = {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
-        { label: 'Compliance Report', href: '/report', icon: 'FileCheck' },
-        { label: 'Transcript Changes', href: '/dashboard', icon: 'ScrollText' },
-        { label: 'ESign 2848', href: '/forms/2848', icon: 'PenTool' },
+        { label: 'Compliance Report', href: '/dashboard/compliance-report', icon: 'FileCheck' },
+        { label: 'Transcript Changes', href: '/dashboard/transcript-changes', icon: 'ScrollText' },
+        { label: 'ESign 2848', href: '/dashboard/esign-2848', icon: 'PenTool' },
       ],
     },
     {
       title: 'MONITORING',
       items: [
-        { label: 'Active Alerts', href: '/dashboard', icon: 'Bell' },
-        { label: 'Tokens', href: '/dashboard', icon: 'Coins' },
+        { label: 'Active Alerts', href: '/dashboard/active-alerts', icon: 'Bell' },
+        { label: 'Tokens', href: '/dashboard/tokens', icon: 'Coins' },
       ],
     },
     {
       title: 'EARNINGS',
       items: [
-        { label: 'Receipts', href: '/dashboard', icon: 'Receipt' },
-        { label: 'Affiliate', href: '/affiliate', icon: 'Link2' },
+        { label: 'Receipts', href: '/dashboard/receipts', icon: 'Receipt' },
+        { label: 'Affiliate', href: '/dashboard/affiliate', icon: 'Link2' },
       ],
     },
     {
       title: 'SETTINGS',
       items: [
         { label: 'Profile', href: '/dashboard/profile', icon: 'UserCircle' },
-        { label: 'Support', href: '/support', icon: 'HelpCircle' },
+        { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
       ],
     },
   ],
@@ -46,6 +46,6 @@ export const tmpConfig: PlatformConfig = {
     dashboard: '/dashboard',
     account: '/dashboard',
     profile: '/dashboard/profile',
-    support: '/support',
+    support: '/dashboard/support',
   },
 }

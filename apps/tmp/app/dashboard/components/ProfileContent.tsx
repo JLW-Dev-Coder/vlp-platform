@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useAppShell } from '@vlp/member-ui'
 import { api } from '@/lib/api'
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from '@/app/dashboard/profile/page.module.css'
 
 /* ── Types ── */
@@ -412,7 +412,8 @@ function PasswordModal({
 }
 
 /* ── Main Content ── */
-export default function ProfileContent({ account }: { account: SessionUser }) {
+export default function ProfileContent() {
+  const { session } = useAppShell()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -461,13 +462,15 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
 
   /* ── Load data ── */
   const loadData = useCallback(async () => {
+    if (!session.account_id) return
+    const accountId = session.account_id
     setLoading(true)
     setError('')
     try {
       const [profileRes, prefsRes, tfaRes] = await Promise.allSettled([
-        api.getAccount(account.account_id) as Promise<Record<string, unknown>>,
-        api.getPreferences(account.account_id) as Promise<Record<string, unknown>>,
-        api.get2faStatus(account.account_id) as Promise<Record<string, unknown>>,
+        api.getAccount(accountId) as Promise<Record<string, unknown>>,
+        api.getPreferences(accountId) as Promise<Record<string, unknown>>,
+        api.get2faStatus(accountId) as Promise<Record<string, unknown>>,
       ])
 
       // Account is required; everything else is optional
@@ -480,12 +483,12 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
       // Worker returns { ok, account: {...} }
       const accountWrap = profileRes.value as unknown as { account?: ProfileData } & Partial<ProfileData>
       const p = (accountWrap.account ?? accountWrap) as ProfileData
-      setFirstName(p.first_name || account.first_name || '')
-      setLastName(p.last_name || account.last_name || '')
-      setEmail(p.email || account.email || '')
+      setFirstName(p.first_name || '')
+      setLastName(p.last_name || '')
+      setEmail(p.email || session.email || '')
       setPhone(p.phone || '')
       setOrganization(p.organization || '')
-      setAvatarUrl(p.avatar_url || account.avatar_url || '')
+      setAvatarUrl(p.avatar_url || session.avatar || '')
       setVerified(p.verified ?? true)
 
       // Worker returns { ok, preferences: { appearance, in_app_enabled, sms_enabled, ... } }
@@ -514,7 +517,7 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
     } finally {
       setLoading(false)
     }
-  }, [account])
+  }, [session.account_id, session.email, session.avatar])
 
   useEffect(() => {
     loadData()
@@ -522,9 +525,10 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
 
   /* ── Save profile ── */
   async function handleSaveProfile() {
+    if (!session.account_id) return
     setSaving(true)
     try {
-      await api.updateAccount(account.account_id, {
+      await api.updateAccount(session.account_id, {
         first_name: firstName,
         last_name: lastName,
         email,
@@ -543,17 +547,18 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
   /* ── Photo upload ── */
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !session.account_id) return
+    const accountId = session.account_id
 
     try {
       showToast('Uploading photo...', 'info')
-      const initRes = await api.photoUploadInit(account.account_id, file.type)
+      const initRes = await api.photoUploadInit(accountId, file.type)
       await fetch(initRes.upload_url, {
         method: 'PUT',
         body: file,
         headers: { 'Content-Type': file.type },
       })
-      await api.photoUploadComplete(account.account_id, initRes.key)
+      await api.photoUploadComplete(accountId, initRes.key)
       setAvatarUrl(URL.createObjectURL(file))
       showToast('Photo updated successfully', 'success')
     } catch (err) {
@@ -567,13 +572,14 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
   /* ── Preferences auto-save ── */
   const savePref = useCallback(
     async (data: Record<string, unknown>) => {
+      if (!session.account_id) return
       try {
-        await api.updatePreferences(account.account_id, data)
+        await api.updatePreferences(session.account_id, data)
       } catch {
         showToast('Failed to save preference', 'error')
       }
     },
-    [account.account_id, showToast]
+    [session.account_id, showToast]
   )
 
   function toggleEmailNotif() {
@@ -626,9 +632,11 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
 
   /* ── Delete account ── */
   async function handleDeleteConfirm(reason: string) {
+    void reason
+    if (!session.account_id) return
     setDeleteSaving(true)
     try {
-      await api.deleteAccount(account.account_id)
+      await api.deleteAccount(session.account_id)
       showToast('Delete request submitted', 'success')
       setShowDeleteModal(false)
       // Redirect after short delay
@@ -645,9 +653,10 @@ export default function ProfileContent({ account }: { account: SessionUser }) {
 
   /* ── Password change ── */
   async function handlePasswordSubmit(current: string, next: string) {
+    if (!session.account_id) return
     setPasswordSaving(true)
     try {
-      await api.updateAccount(account.account_id, {
+      await api.updateAccount(session.account_id, {
         current_password: current,
         new_password: next,
       })

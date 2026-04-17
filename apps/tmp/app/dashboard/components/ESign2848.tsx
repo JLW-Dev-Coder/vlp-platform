@@ -1,10 +1,8 @@
 'use client'
 
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from './components.module.css'
 
-export default function ESign2848({ account }: { account: SessionUser }) {
-  void account
+export default function ESign2848() {
   return (
     <div className={styles.page}>
       <h1 className={styles.pageTitle}>ESign 2848</h1>

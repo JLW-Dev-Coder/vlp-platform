@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useAppShell } from '@vlp/member-ui'
 import { api } from '@/lib/api'
-import type { SessionUser } from '@/components/AuthGuard'
 import styles from './components.module.css'
 
 interface TokenBalance {
@@ -11,24 +11,29 @@ interface TokenBalance {
   tax_game_tokens: number
 }
 
-export default function Tokens({ account }: { account: SessionUser }) {
+export default function Tokens() {
+  const { session } = useAppShell()
   const [balance, setBalance] = useState<TokenBalance | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchBalance = useCallback(async () => {
-    try {
-      const res = await api.getTokenBalance(account.account_id)
-      setBalance(res)
-    } catch {
-      setBalance(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [account.account_id])
-
   useEffect(() => {
-    fetchBalance()
-  }, [fetchBalance])
+    if (!session.account_id) return
+    const accountId = session.account_id
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await api.getTokenBalance(accountId)
+        if (!cancelled) setBalance(res)
+      } catch {
+        if (!cancelled) setBalance(null)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [session.account_id])
 
   return (
     <div className={styles.page}>
