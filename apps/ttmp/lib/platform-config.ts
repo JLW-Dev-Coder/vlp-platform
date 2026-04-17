@@ -7,6 +7,12 @@ export const ttmpConfig: PlatformConfig = {
   brandSubtitle: 'Pro Dashboard',
   logoText: 'TT',
   apiBaseUrl: 'https://api.taxmonitor.pro',
+  calBookingNamespace: 'ttmp-support',
+  calBookingSlug: 'tax-monitor-pro/ttmp-support',
+  calIntroNamespace: 'ttmp-intro',
+  calIntroSlug: 'tax-monitor-pro/ttmp-intro',
+  calDiscoveryNamespace: 'ttmp-discovery',
+  calDiscoverySlug: 'tax-monitor-pro/ttmp-discovery',
   navSections: [
     {
       title: 'WORKSPACE',

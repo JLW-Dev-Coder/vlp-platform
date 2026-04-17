@@ -14,6 +14,8 @@ export { ContentCard } from './components/ContentCard'
 export { DataTable } from './components/DataTable'
 export { FullCalendar } from './components/FullCalendar'
 export { StatusBadge } from './components/StatusBadge'
+export { default as HelpCenter } from './components/HelpCenter'
+export type { HelpCenterProps, HelpTopic } from './components/HelpCenter'
 
 // Marketing Components
 export { MarketingHeader } from './components/marketing/MarketingHeader'

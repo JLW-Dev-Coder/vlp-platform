@@ -7,6 +7,10 @@ export const gvlpConfig: PlatformConfig = {
   brandSubtitle: 'Game Dashboard',
   logoText: 'GVLP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
+  calBookingNamespace: 'gvlp-support',
+  calBookingSlug: 'tax-monitor-pro/gvlp-support',
+  calIntroNamespace: 'gvlp-intro',
+  calIntroSlug: 'tax-monitor-pro/gvlp-intro',
   navSections: [
     {
       title: 'WORKSPACE',

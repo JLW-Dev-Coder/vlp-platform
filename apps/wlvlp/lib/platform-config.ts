@@ -7,6 +7,10 @@ export const wlvlpConfig: PlatformConfig = {
   brandSubtitle: 'Template Marketplace',
   logoText: 'WL',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
+  calBookingNamespace: 'wlvlp-support',
+  calBookingSlug: 'tax-monitor-pro/wlvlp-support',
+  calIntroNamespace: 'wlvlp-intro',
+  calIntroSlug: 'tax-monitor-pro/wlvlp-intro',
   navSections: [
     {
       title: 'WORKSPACE',

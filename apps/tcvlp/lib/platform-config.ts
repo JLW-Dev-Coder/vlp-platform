@@ -7,6 +7,10 @@ export const tcvlpConfig: PlatformConfig = {
   brandSubtitle: 'Penalty Abatement',
   logoText: 'TCP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
+  calBookingNamespace: 'tcvlp-support',
+  calBookingSlug: 'tax-monitor-pro/tcvlp-support',
+  calIntroNamespace: 'tcvlp-intro',
+  calIntroSlug: 'tax-monitor-pro/tcvlp-intro',
   navSections: [
     {
       title: 'WORKSPACE',

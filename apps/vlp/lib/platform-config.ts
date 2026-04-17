@@ -8,6 +8,10 @@ export const vlpConfig: PlatformConfig = {
   logoText: 'VLP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
   calcomReferralLink: 'https://refer.cal.com/tax-monitor-pro-wltn',
+  calBookingNamespace: 'vlp-support',
+  calBookingSlug: 'tax-monitor-pro/vlp-support',
+  calIntroNamespace: 'vlp-intro',
+  calIntroSlug: 'tax-monitor-pro/vlp-intro',
   navSections: [
     {
       title: 'WORKSPACE',

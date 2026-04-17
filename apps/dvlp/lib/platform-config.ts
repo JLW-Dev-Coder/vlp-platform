@@ -7,6 +7,12 @@ export const dvlpConfig: PlatformConfig = {
   brandSubtitle: 'Developer Marketplace',
   logoText: 'DVLP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
+  calBookingNamespace: 'dvlp-support',
+  calBookingSlug: 'tax-monitor-pro/dvlp-support',
+  calIntroNamespace: 'dvlp-intro',
+  calIntroSlug: 'tax-monitor-pro/dvlp-intro',
+  calOnboardingNamespace: 'dvlp-onboarding',
+  calOnboardingSlug: 'tax-monitor-pro/dvlp-onboarding',
   navSections: [
     {
       title: 'WORKSPACE',

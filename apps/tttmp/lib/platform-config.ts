@@ -7,6 +7,10 @@ export const tttmpConfig: PlatformConfig = {
   brandSubtitle: 'Tax Education Hub',
   logoText: 'TTA',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
+  calBookingNamespace: 'tttmp-support',
+  calBookingSlug: 'tax-monitor-pro/tttmp-support',
+  calIntroNamespace: 'tttmp-intro',
+  calIntroSlug: 'tax-monitor-pro/tttmp-intro',
   navSections: [
     {
       title: 'WORKSPACE',

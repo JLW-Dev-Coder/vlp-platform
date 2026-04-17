@@ -7,12 +7,6 @@ interface Props {
   slug: string
 }
 
-declare global {
-  interface Window {
-    Cal?: any
-  }
-}
-
 const CODE_LABELS: Record<string, string> = {
   '971': 'Notice issued',
   '846': 'Refund issued',
