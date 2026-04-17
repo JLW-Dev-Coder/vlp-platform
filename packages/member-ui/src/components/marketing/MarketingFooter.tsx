@@ -14,6 +14,7 @@
 
 import Link from 'next/link'
 import type { FooterLink, PlatformConfig } from '../../types/config'
+import { ManageCookiesLink } from '../cookies/ManageCookiesLink'
 
 export interface MarketingFooterProps {
   config: PlatformConfig
@@ -126,13 +127,12 @@ export function MarketingFooter({ config }: MarketingFooterProps) {
           {/* Column 4 — Legal */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold text-text-primary">Legal</h3>
-            {marketing.footerLegal.length > 0 && (
-              <nav className="grid gap-2" aria-label="Footer legal">
-                {marketing.footerLegal.map((item) => (
-                  <FooterLinkItem key={item.href} item={item} />
-                ))}
-              </nav>
-            )}
+            <nav className="grid gap-2" aria-label="Footer legal">
+              {marketing.footerLegal.map((item) => (
+                <FooterLinkItem key={item.href} item={item} />
+              ))}
+              <ManageCookiesLink />
+            </nav>
             <p className="mt-6 text-xs text-text-muted">{copyright}</p>
           </div>
         </div>
