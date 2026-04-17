@@ -20,7 +20,7 @@ const config: Config = {
           primary: '#eab308',
           hover: '#ecb91c',
           glow: 'rgba(234, 179, 8, 0.40)',
-          'text-on-primary': '#ffffff',
+          'text-on-primary': '#0f1117',
           'gradient-to': '#ca8a04',
         },
         ink: {

@@ -15,6 +15,9 @@
     /* Brand glow — used by shared --border-focus + shadow-focus */
     --brand-glow: rgba(234, 179, 8, 0.40);
 
+    /* Text color on yellow brand.primary — near-black for WCAG AA contrast */
+    --brand-text-on-primary: #0f1117;
+
     /* TCVLP brand tokens (used by CSS module marketing pages) */
     --color-bg:          #0f1117;
     --color-surface:     #161824;
