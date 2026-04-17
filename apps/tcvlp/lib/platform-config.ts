@@ -75,7 +75,7 @@ export const tcvlpConfig: PlatformConfig = {
         { label: 'Book a Call', href: '/support#book-a-call' },
       ],
       ctaText: "The Kwong window closes July 10, 2026. Don't let your clients miss their refund.",
-      ctaMagnetLabel: 'See the Demo →',
+      ctaMagnetLabel: 'See the Demo',
       ctaMagnetPath: '/demo',
     },
     footerTagline: 'Kwong v. US refund window',

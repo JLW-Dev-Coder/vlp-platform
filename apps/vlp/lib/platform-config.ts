@@ -76,7 +76,7 @@ export const vlpConfig: PlatformConfig = {
   marketing: {
     tagline: 'Launch systems for tax professionals',
     summary: 'Membership platform for tax professionals who want calmer launches, cleaner operations, and a repeatable client acquisition system.',
-    ctaLabel: 'Start Here →',
+    ctaLabel: 'Start Here',
     ctaPath: '/contact',
     megaMenu: {
       discover: [
@@ -96,7 +96,7 @@ export const vlpConfig: PlatformConfig = {
         { label: 'Partner Program', href: '/affiliate' },
       ],
       ctaText: 'Need a cleaner launch system than duct tape, calendar links, and prayer?',
-      ctaMagnetLabel: 'Contact Sales →',
+      ctaMagnetLabel: 'Contact Sales',
       ctaMagnetPath: '/contact',
     },
     footerTagline: 'Calm launch systems',
