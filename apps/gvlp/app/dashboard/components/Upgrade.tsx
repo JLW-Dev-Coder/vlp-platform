@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Operator, createCheckout } from '@/lib/api';
+import { createCheckout } from '@/lib/api';
+import { useOperator } from '@/lib/operator-context';
 import styles from './Upgrade.module.css';
 
 const GVLP_TIERS = {
@@ -15,13 +16,12 @@ type TierKey = keyof typeof GVLP_TIERS;
 
 const TIER_ORDER: TierKey[] = ['starter', 'apprentice', 'strategist', 'navigator'];
 
-interface Props {
-  operator: Operator;
-}
-
-export default function Upgrade({ operator }: Props) {
+export default function Upgrade() {
+  const { data: operator } = useOperator();
   const [loadingTier, setLoadingTier] = useState<TierKey | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  if (!operator) return null;
 
   const currentIdx = TIER_ORDER.indexOf(operator.tier as TierKey);
 

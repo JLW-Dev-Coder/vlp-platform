@@ -3,18 +3,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Operator, updateOperator } from '@/lib/api';
+import { useOperator } from '@/lib/operator-context';
 import styles from './Settings.module.css';
 
-interface Props {
-  operator: Operator;
-  onUpdate: (o: Operator) => void;
-}
-
-export default function Settings({ operator, onUpdate }: Props) {
+export default function Settings() {
+  const { data: operator, setData: setOperator } = useOperator();
   const [confirming, setConfirming] = useState(false);
   const [rotating, setRotating] = useState(false);
   const [rotateError, setRotateError] = useState<string | null>(null);
   const [rotateSuccess, setRotateSuccess] = useState(false);
+
+  if (!operator) return null;
 
   const tierLabel = operator.tier.charAt(0).toUpperCase() + operator.tier.slice(1);
 
@@ -29,7 +28,7 @@ export default function Settings({ operator, onUpdate }: Props) {
     setRotateError(null);
     try {
       const updated = await updateOperator(operator.account_id, { rotate_client_id: true } as unknown as Partial<Operator>);
-      onUpdate(updated);
+      setOperator(updated);
       setRotateSuccess(true);
       setConfirming(false);
     } catch (e) {

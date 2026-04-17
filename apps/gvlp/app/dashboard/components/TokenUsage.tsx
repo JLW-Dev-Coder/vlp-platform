@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Operator, Play, getPlays } from '@/lib/api';
+import { Play, getPlays } from '@/lib/api';
+import { useOperator } from '@/lib/operator-context';
 import styles from './TokenUsage.module.css';
 
 const GVLP_TIERS: Record<string, { tokens: number }> = {
@@ -23,21 +24,21 @@ const GAME_META: Record<string, { name: string; emoji: string }> = {
   'audit-escape-room':   { name: 'Audit Escape Room',   emoji: '🔐' },
 };
 
-interface Props {
-  operator: Operator;
-}
-
-export default function TokenUsage({ operator }: Props) {
+export default function TokenUsage() {
+  const { data: operator } = useOperator();
   const [plays, setPlays] = useState<Play[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!operator) return;
     getPlays(operator.account_id, { days: '30' })
       .then((r) => setPlays(r.plays))
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [operator.account_id]);
+  }, [operator?.account_id]);
+
+  if (!operator) return null;
 
   const tierInfo = GVLP_TIERS[operator.tier] ?? { tokens: operator.tokens_balance };
   const total = tierInfo.tokens;

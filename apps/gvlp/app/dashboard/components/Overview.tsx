@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Operator, getPlays } from '@/lib/api';
+import { getPlays } from '@/lib/api';
+import { useOperator } from '@/lib/operator-context';
 import styles from './Overview.module.css';
 
 const GAME_META: Record<string, { name: string; emoji: string }> = {
@@ -23,20 +24,20 @@ const TIER_COLORS: Record<string, string> = {
   navigator:  '#c41e3a',
 };
 
-interface Props {
-  operator: Operator;
-}
-
-export default function Overview({ operator }: Props) {
+export default function Overview() {
+  const { data: operator } = useOperator();
   const [playCount, setPlayCount] = useState<number | null>(null);
   const [loadingPlays, setLoadingPlays] = useState(true);
 
   useEffect(() => {
+    if (!operator) return;
     getPlays(operator.account_id, { days: '30' })
       .then((r) => setPlayCount(r.total))
       .catch(() => setPlayCount(null))
       .finally(() => setLoadingPlays(false));
-  }, [operator.account_id]);
+  }, [operator?.account_id]);
+
+  if (!operator) return null;
 
   const tierLabel = operator.tier.charAt(0).toUpperCase() + operator.tier.slice(1);
   const tierColor = TIER_COLORS[operator.tier] ?? '#9a7a85';

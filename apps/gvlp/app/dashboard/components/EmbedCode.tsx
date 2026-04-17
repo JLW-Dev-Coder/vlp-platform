@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Operator } from '@/lib/api';
+import { useOperator } from '@/lib/operator-context';
 import styles from './EmbedCode.module.css';
 
 const GAME_META: Record<string, { name: string; emoji: string }> = {
@@ -20,12 +20,11 @@ function buildIframe(clientId: string, slug: string): string {
   return `<iframe src="https://games.virtuallaunch.pro/embed?client_id=${clientId}&game=${slug}" width="100%" height="600" frameborder="0"></iframe>`;
 }
 
-interface Props {
-  operator: Operator;
-}
-
-export default function EmbedCode({ operator }: Props) {
+export default function EmbedCode() {
+  const { data: operator } = useOperator();
   const [copied, setCopied] = useState<string | null>(null);
+
+  if (!operator) return null;
 
   const handleCopy = (slug: string, code: string) => {
     navigator.clipboard.writeText(code).then(() => {

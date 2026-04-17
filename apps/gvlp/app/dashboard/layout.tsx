@@ -1,7 +1,17 @@
 'use client';
 
-import { AppShell, AuthGate } from '@vlp/member-ui';
+import { AppShell, AuthGate, useAppShell } from '@vlp/member-ui';
 import { gvlpConfig } from '@/lib/platform-config';
+import { OperatorProvider } from '@/lib/operator-context';
+
+function DashboardInner({ children }: { children: React.ReactNode }) {
+  const { session } = useAppShell();
+  return (
+    <OperatorProvider accountId={session.account_id}>
+      {children}
+    </OperatorProvider>
+  );
+}
 
 export default function DashboardLayout({
   children,
@@ -10,7 +20,9 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGate apiBaseUrl={gvlpConfig.apiBaseUrl}>
-      <AppShell config={gvlpConfig}>{children}</AppShell>
+      <AppShell config={gvlpConfig}>
+        <DashboardInner>{children}</DashboardInner>
+      </AppShell>
     </AuthGate>
   );
 }

@@ -13,8 +13,8 @@ export const gvlpConfig: PlatformConfig = {
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Games', href: '/games', icon: 'Gamepad2' },
-        { label: 'Embed Codes', href: '/dashboard', icon: 'Code2' },
-        { label: 'Tokens', href: '/dashboard', icon: 'Coins' },
+        { label: 'Embed Codes', href: '/dashboard/embed', icon: 'Code2' },
+        { label: 'Tokens', href: '/dashboard/tokens', icon: 'Coins' },
       ],
     },
     {
@@ -26,7 +26,7 @@ export const gvlpConfig: PlatformConfig = {
     {
       title: 'SETTINGS',
       items: [
-        { label: 'Account', href: '/dashboard', icon: 'Settings' },
+        { label: 'Account', href: '/dashboard/settings', icon: 'Settings' },
         { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
       ],
     },
