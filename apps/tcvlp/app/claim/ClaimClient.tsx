@@ -1186,10 +1186,10 @@ export default function ClaimClient({ pro, slug }: Props) {
 
               {/* Professional fee note */}
               <div className={styles.infoBoxBlue}>
-                <div className={styles.infoBoxTitle}>Professional Services</div>
+                <div className={styles.infoBoxTitle}>About Our Professional Services</div>
                 <p>
-                  Your tax professional may charge a fee for personalized assistance with your Form 843 claim.
-                  Contact them directly for fee information and engagement terms.
+                  We may charge a fee for personalized assistance with your Form 843 claim.
+                  Contact us directly for fee information and engagement terms.
                 </p>
               </div>
 
