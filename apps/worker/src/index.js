@@ -9640,7 +9640,7 @@ const ROUTES = [
       // IRS transcripts are digitally generated PDFs with embedded text streams.
       // We extract text from PDF stream objects without a full PDF library.
       const pdfBytes = new Uint8Array(fileBuffer);
-      const pdfText = extractTextFromPdf(pdfBytes);
+      const pdfText = await extractTextFromPdf(pdfBytes);
 
       if (!pdfText || pdfText.trim().length < 20) {
         return json({
