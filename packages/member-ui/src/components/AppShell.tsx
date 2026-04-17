@@ -12,6 +12,7 @@ import { MemberTopbar } from './MemberTopbar'
 interface SessionData {
   email: string | null
   avatar: string | null
+  account_id: string | null
 }
 
 interface AppShellContextValue {
@@ -38,7 +39,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ config, children }: AppShellProps) {
-  const [session, setSession] = useState<SessionData>({ email: null, avatar: null })
+  const [session, setSession] = useState<SessionData>({ email: null, avatar: null, account_id: null })
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/v1/auth/session`, { credentials: 'include' })
@@ -47,7 +48,8 @@ export function AppShell({ config, children }: AppShellProps) {
         if (!d) return
         const email = d.session?.email ?? d.email ?? null
         const avatar = d.session?.avatar ?? d.avatar ?? null
-        setSession({ email, avatar })
+        const account_id = d.session?.account_id ?? d.account_id ?? null
+        setSession({ email, avatar, account_id })
       })
       .catch(() => {})
   }, [config.apiBaseUrl])

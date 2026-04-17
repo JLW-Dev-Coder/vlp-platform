@@ -1,5 +1,6 @@
 // UI Components
 export { AppShell, useAppShell } from './components/AppShell'
+export { AuthGate } from './components/AuthGate'
 export { MemberSidebar } from './components/MemberSidebar'
 export { MemberTopbar } from './components/MemberTopbar'
 export { KPICard } from './components/KPICard'
@@ -7,6 +8,7 @@ export { HeroCard } from './components/HeroCard'
 export { ContentCard } from './components/ContentCard'
 export { DataTable } from './components/DataTable'
 export { FullCalendar } from './components/FullCalendar'
+export { StatusBadge } from './components/StatusBadge'
 
 // Marketing Components
 export { MarketingHeader } from './components/marketing/MarketingHeader'
