@@ -53,7 +53,7 @@ export function MarketingFooter({ config }: MarketingFooterProps) {
           <div className="flex flex-col gap-4">
             <Link
               href={config.routes.home}
-              className="flex items-center gap-3 focus:outline-none focus:shadow-focus rounded-md"
+              className="flex items-center gap-3 focus-visible:outline-none focus-visible:shadow-focus rounded-md"
             >
               <span
                 className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-brand-gradient-to font-bold text-brand-text-on-primary"
@@ -80,13 +80,13 @@ export function MarketingFooter({ config }: MarketingFooterProps) {
             <div className="flex flex-col gap-2">
               <Link
                 href={marketing.ctaPath}
-                className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
               >
                 {marketing.ctaLabel}
               </Link>
               <Link
                 href="/pricing"
-                className="inline-flex items-center justify-center rounded-md border border-[var(--border-default)] bg-transparent hover:bg-surface-elevated text-text-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                className="inline-flex items-center justify-center rounded-md border border-[var(--border-default)] bg-transparent hover:bg-surface-elevated text-text-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
               >
                 View pricing
               </Link>

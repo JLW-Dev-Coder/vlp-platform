@@ -153,7 +153,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
             ref={hamburgerRef}
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-md text-text-primary hover:bg-surface-elevated focus:outline-none focus:shadow-focus transition-colors duration-fast"
+            className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-md text-text-primary hover:bg-surface-elevated focus-visible:outline-none focus-visible:shadow-focus transition-colors duration-fast"
             aria-label="Open navigation menu"
             aria-expanded={mobileOpen}
             aria-controls={mobileDrawerId}
@@ -163,7 +163,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
 
           <Link
             href={config.routes.home}
-            className="flex items-center gap-3 focus:outline-none focus:shadow-focus rounded-md"
+            className="flex items-center gap-3 focus-visible:outline-none focus-visible:shadow-focus rounded-md"
           >
             <span
               className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-brand-primary to-brand-gradient-to text-brand-text-on-primary text-sm font-semibold"
@@ -191,7 +191,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus:outline-none focus:shadow-focus rounded-sm"
+              className="text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm"
             >
               {item.label}
             </Link>
@@ -203,7 +203,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
               type="button"
               onClick={() => setResourcesOpen((v) => !v)}
               onKeyDown={handleResourcesKeyDown}
-              className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus:outline-none focus:shadow-focus rounded-sm"
+              className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm"
               aria-expanded={resourcesOpen}
               aria-haspopup="true"
               aria-controls={resourcesMenuId}
@@ -254,7 +254,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                         href={marketing.megaMenu.ctaMagnetPath}
                         role="menuitem"
                         onClick={closeResources}
-                        className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                        className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
                       >
                         {marketing.megaMenu.ctaMagnetLabel}
                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -263,7 +263,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                         href={config.routes.signIn}
                         role="menuitem"
                         onClick={closeResources}
-                        className="inline-flex items-center justify-center rounded-md border border-subtle hover:border-hover text-text-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                        className="inline-flex items-center justify-center rounded-md border border-subtle hover:border-hover text-text-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
                       >
                         Log In
                       </Link>
@@ -283,13 +283,13 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
           />
           <Link
             href={config.routes.signIn}
-            className="text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus:outline-none focus:shadow-focus rounded-sm mr-4"
+            className="text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm mr-4"
           >
             Log In
           </Link>
           <Link
             href={marketing.ctaPath}
-            className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-6 py-3 h-12 text-base font-semibold transition-colors duration-fast focus:outline-none focus:shadow-focus"
+            className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-6 py-3 h-12 text-base font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
           >
             {marketing.ctaLabel}
           </Link>
@@ -299,7 +299,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
         <div className="md:hidden">
           <Link
             href={marketing.ctaPath}
-            className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus:outline-none focus:shadow-focus"
+            className="inline-flex items-center justify-center rounded-md bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary px-4 py-2 text-sm font-semibold transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
           >
             {marketing.ctaLabel}
           </Link>
@@ -326,7 +326,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
               <Link
                 href={config.routes.home}
                 onClick={closeMobile}
-                className="flex items-center gap-2 focus:outline-none focus:shadow-focus rounded-md"
+                className="flex items-center gap-2 focus-visible:outline-none focus-visible:shadow-focus rounded-md"
               >
                 <span
                   className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-brand-primary to-brand-gradient-to text-brand-text-on-primary text-xs font-semibold"
@@ -342,7 +342,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                 ref={drawerCloseRef}
                 type="button"
                 onClick={closeMobile}
-                className="inline-flex items-center justify-center h-10 w-10 rounded-md text-text-primary hover:bg-surface-elevated focus:outline-none focus:shadow-focus transition-colors duration-fast"
+                className="inline-flex items-center justify-center h-10 w-10 rounded-md text-text-primary hover:bg-surface-elevated focus-visible:outline-none focus-visible:shadow-focus transition-colors duration-fast"
                 aria-label="Close navigation menu"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
@@ -358,7 +358,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                   key={item.href}
                   href={item.href}
                   onClick={closeMobile}
-                  className="px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                  className="px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
                 >
                   {item.label}
                 </Link>
@@ -368,7 +368,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                 <button
                   type="button"
                   onClick={() => setMobileResourcesOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                  className="w-full flex items-center justify-between px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
                   aria-expanded={mobileResourcesOpen}
                 >
                   <span>Resources</span>
@@ -399,7 +399,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
                     <Link
                       href={marketing.megaMenu.ctaMagnetPath}
                       onClick={closeMobile}
-                      className="px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                      className="px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
                     >
                       {marketing.megaMenu.ctaMagnetLabel}
                     </Link>
@@ -410,7 +410,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
               <Link
                 href={config.routes.signIn}
                 onClick={closeMobile}
-                className="mt-2 px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus:outline-none focus:shadow-focus"
+                className="mt-2 px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
               >
                 Log In
               </Link>
@@ -447,7 +447,7 @@ function MegaMenuColumn({
               href={item.href}
               role="menuitem"
               onClick={onItemClick}
-              className="group flex items-start justify-between gap-3 rounded-md p-2 hover:bg-surface-elevated transition-colors duration-fast focus:outline-none focus:shadow-focus"
+              className="group flex items-start justify-between gap-3 rounded-md p-2 hover:bg-surface-elevated transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
             >
               <span className="flex flex-col">
                 <span className="text-sm font-semibold text-text-primary">
@@ -500,7 +500,7 @@ function MobileMegaColumn({
             <Link
               href={item.href}
               onClick={onItemClick}
-              className="flex flex-col px-3 py-2 rounded-md hover:bg-surface-elevated transition-colors duration-fast focus:outline-none focus:shadow-focus"
+              className="flex flex-col px-3 py-2 rounded-md hover:bg-surface-elevated transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus"
             >
               <span className="text-sm font-semibold text-text-primary">
                 {item.label}
