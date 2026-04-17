@@ -20,7 +20,7 @@ export const tcvlpConfig: PlatformConfig = {
     {
       title: 'EARNINGS',
       items: [
-        { label: 'Affiliate', href: '/affiliate', icon: 'Link2' },
+        { label: 'Affiliate', href: '/dashboard/affiliate', icon: 'Link2' },
       ],
     },
     {
@@ -28,7 +28,7 @@ export const tcvlpConfig: PlatformConfig = {
       items: [
         { label: 'Plan & Billing', href: '/dashboard/upgrade', icon: 'CreditCard' },
         { label: 'Account', href: '/dashboard/settings', icon: 'Settings' },
-        { label: 'Support', href: '/support', icon: 'HelpCircle' },
+        { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
       ],
     },
   ],

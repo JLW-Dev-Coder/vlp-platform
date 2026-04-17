@@ -1,0 +1,229 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import {
+  Plus,
+  BookOpen,
+  CircleDot,
+  Clock,
+  CheckCircle2,
+  Headphones,
+  Phone,
+  AlertCircle,
+} from 'lucide-react';
+import { KPICard, DataTable, HeroCard, StatusBadge, useAppShell } from '@vlp/member-ui';
+import { getTicketsByAccount, type SupportTicket } from '@/lib/api';
+
+type LoadState =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; tickets: SupportTicket[] };
+
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function statusLabel(s: string): string {
+  const v = (s || '').toLowerCase();
+  if (v === 'open' || v === 'reopened') return 'active';
+  if (v === 'in_progress' || v === 'awaiting') return 'pending';
+  if (v === 'resolved' || v === 'closed') return 'resolved';
+  return s || 'active';
+}
+
+export default function SupportClient() {
+  const { session } = useAppShell();
+  const [state, setState] = useState<LoadState>({ status: 'loading' });
+
+  useEffect(() => {
+    if (!session.account_id) return;
+    let cancelled = false;
+    const accountId = session.account_id;
+    (async () => {
+      try {
+        const tickets = await getTicketsByAccount(accountId).catch(
+          () => [] as SupportTicket[]
+        );
+        if (!cancelled) setState({ status: 'ready', tickets });
+      } catch (err) {
+        if (!cancelled) {
+          setState({
+            status: 'error',
+            message: err instanceof Error ? err.message : 'Could not load tickets',
+          });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [session.account_id]);
+
+  if (state.status === 'loading') return <SupportSkeleton />;
+  if (state.status === 'error') return <SupportFallback message={state.message} />;
+
+  const { tickets } = state;
+
+  const openCount = tickets.filter((t) => {
+    const s = (t.status ?? '').toLowerCase();
+    return s === 'open' || s === 'reopened';
+  }).length;
+  const pendingCount = tickets.filter((t) => {
+    const s = (t.status ?? '').toLowerCase();
+    return s === 'in_progress' || s === 'awaiting';
+  }).length;
+  const resolvedCount = tickets.filter((t) => {
+    const s = (t.status ?? '').toLowerCase();
+    return s === 'resolved' || s === 'closed';
+  }).length;
+
+  const kpis = [
+    {
+      label: 'Open',
+      value: String(openCount),
+      icon: CircleDot,
+      subtitle: openCount === 0 ? 'None open' : 'Needs attention',
+      trend: 'neutral' as const,
+    },
+    {
+      label: 'Pending',
+      value: String(pendingCount),
+      icon: Clock,
+      subtitle: 'Awaiting response',
+      trend: 'neutral' as const,
+    },
+    {
+      label: 'Resolved',
+      value: String(resolvedCount),
+      icon: CheckCircle2,
+      subtitle: 'All time',
+      trend: 'neutral' as const,
+    },
+  ];
+
+  const rows = tickets.slice(0, 25).map((t) => ({
+    subject: (
+      <span className="font-medium text-brand-primary hover:text-brand-hover transition">
+        {t.subject || '(no subject)'}
+      </span>
+    ),
+    status: <StatusBadge status={statusLabel(t.status)} />,
+    created: formatDate(t.created_at),
+  }));
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold text-white">Support</h1>
+        <p className="mt-1 text-sm text-white/50">
+          Manage support tickets and get help.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <a
+          href="/dashboard/support/create"
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
+          Create New Ticket
+        </a>
+        <a
+          href="/help"
+          className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-5 py-2.5 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
+        >
+          <BookOpen className="h-4 w-4" />
+          View Help Docs
+        </a>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        {kpis.map((t) => (
+          <KPICard key={t.label} {...t} />
+        ))}
+      </div>
+
+      <div>
+        {rows.length === 0 ? (
+          <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-10 text-center">
+            <p className="text-sm text-white/40">No support tickets yet.</p>
+            <a
+              href="/dashboard/support/create"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-primary hover:text-brand-hover transition"
+            >
+              <Plus className="h-4 w-4" />
+              Create your first ticket
+            </a>
+          </div>
+        ) : (
+          <DataTable
+            columns={[
+              { key: 'subject', label: 'Subject' },
+              { key: 'status', label: 'Status' },
+              { key: 'created', label: 'Created' },
+            ]}
+            data={rows}
+          />
+        )}
+      </div>
+
+      <HeroCard brandColor="#eab308">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-primary/20">
+              <Headphones className="h-6 w-6 text-brand-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-white">Need Immediate Assistance?</p>
+              <p className="mt-1 text-sm text-white/50">
+                Our support team typically responds within 2–4 hours during business hours (Mon–Fri, 9am–5pm PT).
+              </p>
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-white/40">
+                <Phone className="h-3 w-3" />
+                Phone support available for Firm members
+              </div>
+            </div>
+          </div>
+        </div>
+      </HeroCard>
+    </div>
+  );
+}
+
+function SupportSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold text-white">Support</h1>
+        <p className="mt-1 text-sm text-white/50">Loading tickets…</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-28 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
+        ))}
+      </div>
+      <div className="h-64 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
+    </div>
+  );
+}
+
+function SupportFallback({ message }: { message: string }) {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold text-white">Support</h1>
+        <p className="mt-1 text-sm text-white/50">Manage support tickets and get help.</p>
+      </div>
+      <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <div>
+          <p className="font-medium">Could not load live data</p>
+          <p className="mt-1 text-amber-200/70">{message}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
