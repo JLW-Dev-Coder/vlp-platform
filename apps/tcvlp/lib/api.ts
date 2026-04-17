@@ -139,6 +139,18 @@ export interface Form843Data {
   interest_amount: number;
   total_amount: number;
   mailing_address: MailingAddress;
+  transactions?: Array<{
+    code: string;
+    date: string;
+    amount: number;
+    description: string;
+  }>;
+  per_year?: Array<{
+    tax_year: string;
+    failure_to_file: number;
+    failure_to_pay: number;
+    interest: number;
+  }>;
 }
 
 export interface Form843Result {

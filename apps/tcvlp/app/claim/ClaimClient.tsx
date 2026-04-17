@@ -390,6 +390,15 @@ export default function ClaimClient({ pro, slug }: Props) {
         interest_amount: iop,
         total_amount: ftf + ftp + iop,
         mailing_address: mailingAddress,
+        transactions: parsedTranscripts.flatMap(t => t.transactions),
+        per_year: parsedTranscripts
+          .filter(t => t.taxYear !== null)
+          .map(t => ({
+            tax_year: String(t.taxYear),
+            failure_to_file: t.failureToFile,
+            failure_to_pay: t.failureToPay,
+            interest: t.interest,
+          })),
       });
       setForm843Result(result);
       setStep(4);
