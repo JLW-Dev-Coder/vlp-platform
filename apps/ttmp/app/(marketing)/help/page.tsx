@@ -1,8 +1,8 @@
 import HelpClient from './HelpClient';
 
 export const metadata = {
-  title: 'Help Center | Virtual Launch Pro',
-  description: 'Get help and support for Virtual Launch Pro.',
+  title: 'Help Center | Transcript Tax Monitor Pro',
+  description: 'Get help and support for Transcript Tax Monitor Pro.',
 };
 
 export default function HelpPage() {

@@ -1,8 +1,8 @@
 import HelpClient from './HelpClient';
 
 export const metadata = {
-  title: 'Help Center | Virtual Launch Pro',
-  description: 'Get help and support for Virtual Launch Pro.',
+  title: 'Help Center | TaxClaim Pro',
+  description: 'Get help and support for TaxClaim Pro.',
 };
 
 export default function HelpPage() {

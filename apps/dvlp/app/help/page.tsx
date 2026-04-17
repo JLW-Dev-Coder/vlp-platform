@@ -1,8 +1,8 @@
 import HelpClient from './HelpClient';
 
 export const metadata = {
-  title: 'Help Center | Virtual Launch Pro',
-  description: 'Get help and support for Virtual Launch Pro.',
+  title: 'Help Center | Developers VLP',
+  description: 'Get help and support for Developers VLP.',
 };
 
 export default function HelpPage() {
