@@ -72,7 +72,7 @@ export const tcvlpConfig: PlatformConfig = {
       ],
       toolsExtras: [
         { label: 'Onboarding', href: '/onboarding' },
-        { label: 'Affiliate Program', href: '/affiliate' },
+        { label: 'Affiliate Program', href: '/dashboard/affiliate' },
         { label: 'Book a Call', href: '/support#book-a-call' },
       ],
       ctaText: "The Kwong window closes July 10, 2026. Don't let your clients miss their refund.",
@@ -87,7 +87,7 @@ export const tcvlpConfig: PlatformConfig = {
       { label: 'Virtual Launch Pro', href: 'https://virtuallaunch.pro', external: true },
       { label: 'Tax Monitor Pro', href: 'https://taxmonitor.pro', external: true },
       { label: 'Transcript Tax Monitor', href: 'https://transcript.taxmonitor.pro', external: true },
-      { label: 'Affiliate Program', href: '/affiliate' },
+      { label: 'Affiliate Program', href: '/dashboard/affiliate' },
     ],
     footerLegal: [
       { label: 'Privacy', href: '/legal/privacy' },

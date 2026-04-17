@@ -359,42 +359,52 @@ export async function tcvlpOnboarding(data: OnboardingData): Promise<TaxPro> {
 
 // ── Affiliates ────────────────────────────────────────────────────────────────
 
-export interface AffiliateData {
+export interface Affiliate {
   referral_code: string;
-  connect_status: string;
+  connect_status: 'pending' | 'active' | 'inactive' | string;
   balance_pending: number;
   balance_paid: number;
   referral_url: string;
+  referred_count?: number;
 }
 
 export interface AffiliateEvent {
-  platform: string;
-  gross_amount: number;
-  commission_amount: number;
-  status: string;
+  event_id: string;
+  referrer_account_id: string;
+  referred_account_id?: string;
+  platform?: string;
+  gross_amount_cents?: number;
+  commission_amount_cents?: number;
+  status: 'pending' | 'paid' | string;
   created_at: string;
 }
 
-export interface PayoutResult {
+export interface PayoutResponse {
   payout_id: string;
   amount: number;
   status: string;
 }
 
-export async function getAffiliate(account_id: string): Promise<AffiliateData> {
-  return apiFetch<AffiliateData>(`/v1/affiliates/${encodeURIComponent(account_id)}`);
+export async function getAffiliate(account_id: string): Promise<Affiliate> {
+  const data = await apiFetch<{ ok: boolean; affiliate: Affiliate }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}`
+  );
+  return data.affiliate;
 }
 
 export async function getAffiliateEvents(account_id: string): Promise<AffiliateEvent[]> {
-  return apiFetch<AffiliateEvent[]>(`/v1/affiliates/${encodeURIComponent(account_id)}/events`);
+  const data = await apiFetch<{ ok: boolean; events: AffiliateEvent[] }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}/events`
+  );
+  return data.events ?? [];
 }
 
 export async function startAffiliateOnboarding(): Promise<{ onboard_url: string }> {
   return apiFetch<{ onboard_url: string }>('/v1/affiliates/connect/onboard', { method: 'POST' });
 }
 
-export async function requestPayout(amount: number): Promise<PayoutResult> {
-  return apiFetch<PayoutResult>('/v1/affiliates/payout/request', {
+export async function requestPayout(amount: number): Promise<PayoutResponse> {
+  return apiFetch<PayoutResponse>('/v1/affiliates/payout/request', {
     method: 'POST',
     body: JSON.stringify({ amount }),
   });
@@ -402,13 +412,23 @@ export async function requestPayout(amount: number): Promise<PayoutResult> {
 
 // ── Support ───────────────────────────────────────────────────────────────────
 
-export interface SupportTicket {
+export interface SupportTicketRow {
   ticket_id: string;
+  account_id: string;
   subject: string;
+  message?: string;
+  priority?: string | null;
   status: string;
+  category?: string | null;
   created_at: string;
+  updated_at?: string | null;
 }
 
-export async function getTicketsByAccount(account_id: string): Promise<SupportTicket[]> {
-  return apiFetch<SupportTicket[]>(`/v1/support/tickets/by-account/${encodeURIComponent(account_id)}`);
+export async function getSupportTicketsByAccount(
+  accountId: string
+): Promise<SupportTicketRow[]> {
+  const data = await apiFetch<{ ok: boolean; tickets: SupportTicketRow[] }>(
+    `/v1/support/tickets/by-account/${encodeURIComponent(accountId)}`
+  );
+  return data.tickets ?? [];
 }

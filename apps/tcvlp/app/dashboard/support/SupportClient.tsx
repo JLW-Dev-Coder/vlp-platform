@@ -12,12 +12,12 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { KPICard, DataTable, HeroCard, StatusBadge, useAppShell } from '@vlp/member-ui';
-import { getTicketsByAccount, type SupportTicket } from '@/lib/api';
+import { getSupportTicketsByAccount, type SupportTicketRow } from '@/lib/api';
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; tickets: SupportTicket[] };
+  | { status: 'ready'; tickets: SupportTicketRow[] };
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—';
@@ -44,8 +44,8 @@ export default function SupportClient() {
     const accountId = session.account_id;
     (async () => {
       try {
-        const tickets = await getTicketsByAccount(accountId).catch(
-          () => [] as SupportTicket[]
+        const tickets = await getSupportTicketsByAccount(accountId).catch(
+          () => [] as SupportTicketRow[]
         );
         if (!cancelled) setState({ status: 'ready', tickets });
       } catch (err) {

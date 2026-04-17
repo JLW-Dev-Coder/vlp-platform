@@ -18,14 +18,15 @@ import {
   getAffiliateEvents,
   startAffiliateOnboarding,
   requestPayout,
-  type AffiliateData,
+  type Affiliate,
   type AffiliateEvent,
+  type PayoutResponse,
 } from '@/lib/api';
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; affiliate: AffiliateData; events: AffiliateEvent[] };
+  | { status: 'ready'; affiliate: Affiliate; events: AffiliateEvent[] };
 
 function centsToDollars(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -42,7 +43,7 @@ export default function AffiliateClient() {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
   const [copied, setCopied] = useState(false);
   const [payoutLoading, setPayoutLoading] = useState(false);
-  const [payoutResult, setPayoutResult] = useState<{ payout_id: string; amount: number } | null>(null);
+  const [payoutReceipt, setPayoutReceipt] = useState<Pick<PayoutResponse, 'payout_id' | 'amount'> | null>(null);
   const [connectLoading, setConnectLoading] = useState(false);
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function AffiliateClient() {
     setPayoutLoading(true);
     try {
       const result = await requestPayout(affiliate.balance_pending);
-      setPayoutResult({ payout_id: result.payout_id, amount: result.amount });
+      setPayoutReceipt({ payout_id: result.payout_id, amount: result.amount });
       setState({
         status: 'ready',
         affiliate: { ...affiliate, balance_pending: 0 },
@@ -182,9 +183,9 @@ export default function AffiliateClient() {
           {!canPayout && payoutDisabledReason && (
             <p className="mt-2 text-xs text-white/40">{payoutDisabledReason}</p>
           )}
-          {payoutResult && (
+          {payoutReceipt && (
             <p className="mt-3 text-xs text-emerald-400">
-              Payout of {centsToDollars(payoutResult.amount)} requested — ID: {payoutResult.payout_id}
+              Payout of {centsToDollars(payoutReceipt.amount)} requested — ID: {payoutReceipt.payout_id}
             </p>
           )}
         </div>
@@ -248,8 +249,8 @@ export default function AffiliateClient() {
           </div>
         ) : (
           <div className="mt-4 divide-y divide-[var(--member-border)]">
-            {events.map((evt, i) => (
-              <div key={i} className="flex items-center justify-between py-3">
+            {events.map((evt) => (
+              <div key={evt.event_id} className="flex items-center justify-between py-3">
                 <div>
                   <p className="text-sm font-medium text-white">
                     {(evt.platform ?? 'TCVLP').toUpperCase()} commission
@@ -258,7 +259,7 @@ export default function AffiliateClient() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-brand-primary">
-                    {centsToDollars(evt.commission_amount ?? 0)}
+                    {centsToDollars(evt.commission_amount_cents ?? 0)}
                   </p>
                   <p className="mt-0.5 text-xs text-white/40 capitalize">{evt.status}</p>
                 </div>
