@@ -1,31 +1,31 @@
 'use client';
 import { useState } from 'react';
-import { BuyerDashboard, updateConfig } from '@/lib/api';
+import { updateConfig } from '@/lib/api';
+import { useBuyer } from '@/lib/account-context';
 import styles from './components.module.css';
 
-interface Props {
-  dashboard: BuyerDashboard;
-  onUpdate: (d: BuyerDashboard) => void;
-}
-
-export default function EditContent({ dashboard, onUpdate }: Props) {
-  const { template, site_config } = dashboard;
-  const [form, setForm] = useState({
-    brand_name: site_config.brand_name ?? '',
-    tagline: site_config.tagline ?? '',
-    hero_title: site_config.hero_title ?? '',
-    hero_subtitle: site_config.hero_subtitle ?? '',
-    cta_text: site_config.cta_text ?? '',
-  });
+export default function EditContent() {
+  const { data: dashboard, setData: setDashboard } = useBuyer();
+  const [form, setForm] = useState(() => ({
+    brand_name: dashboard?.site_config.brand_name ?? '',
+    tagline: dashboard?.site_config.tagline ?? '',
+    hero_title: dashboard?.site_config.hero_title ?? '',
+    hero_subtitle: dashboard?.site_config.hero_subtitle ?? '',
+    cta_text: dashboard?.site_config.cta_text ?? '',
+  }));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  if (!dashboard) return null;
+  const { template, site_config } = dashboard;
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!dashboard) return;
     setSaving(true);
     try {
       await updateConfig(template.slug, form);
-      onUpdate({ ...dashboard, site_config: { ...site_config, ...form } });
+      setDashboard({ ...dashboard, site_config: { ...site_config, ...form } });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {

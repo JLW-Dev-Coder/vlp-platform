@@ -1,29 +1,29 @@
 'use client';
 import { useState } from 'react';
-import { BuyerDashboard, updateConfig } from '@/lib/api';
+import { updateConfig } from '@/lib/api';
+import { useBuyer } from '@/lib/account-context';
 import styles from './components.module.css';
 
-interface Props {
-  dashboard: BuyerDashboard;
-  onUpdate: (d: BuyerDashboard) => void;
-}
-
-export default function EditContact({ dashboard, onUpdate }: Props) {
-  const { template, site_config } = dashboard;
-  const [form, setForm] = useState({
-    phone: site_config.phone ?? '',
-    email: site_config.email ?? '',
-    address: site_config.address ?? '',
-  });
+export default function EditContact() {
+  const { data: dashboard, setData: setDashboard } = useBuyer();
+  const [form, setForm] = useState(() => ({
+    phone: dashboard?.site_config.phone ?? '',
+    email: dashboard?.site_config.email ?? '',
+    address: dashboard?.site_config.address ?? '',
+  }));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  if (!dashboard) return null;
+  const { template, site_config } = dashboard;
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!dashboard) return;
     setSaving(true);
     try {
       await updateConfig(template.slug, form);
-      onUpdate({ ...dashboard, site_config: { ...site_config, ...form } });
+      setDashboard({ ...dashboard, site_config: { ...site_config, ...form } });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {

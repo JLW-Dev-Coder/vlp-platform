@@ -24,14 +24,13 @@ export const wlvlpConfig: PlatformConfig = {
     {
       title: 'EARNINGS',
       items: [
-        { label: 'Affiliate', href: '/affiliate', icon: 'Link2' },
+        { label: 'Affiliate', href: '/dashboard/affiliate', icon: 'Link2' },
       ],
     },
     {
       title: 'SETTINGS',
       items: [
-        { label: 'Account', href: '/dashboard', icon: 'Settings' },
-        { label: 'Support', href: '/support', icon: 'HelpCircle' },
+        { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
       ],
     },
   ],

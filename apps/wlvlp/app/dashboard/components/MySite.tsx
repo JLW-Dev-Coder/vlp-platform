@@ -1,7 +1,10 @@
-import { BuyerDashboard } from '@/lib/api';
+'use client';
+import { useBuyer } from '@/lib/account-context';
 import styles from './components.module.css';
 
-export default function MySite({ dashboard }: { dashboard: BuyerDashboard }) {
+export default function MySite() {
+  const { data: dashboard } = useBuyer();
+  if (!dashboard) return null;
   const { template } = dashboard;
   const siteUrl = `https://${template.slug}.websitelotto.virtuallaunch.pro`;
   return (

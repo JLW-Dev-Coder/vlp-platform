@@ -238,37 +238,85 @@ export function logout(): Promise<{ ok: boolean }> {
 
 export interface Affiliate {
   referral_code: string;
-  connect_status: string;
+  connect_status: 'pending' | 'active' | 'inactive' | string;
   balance_pending: number;
   balance_paid: number;
   referral_url: string;
+  referred_count?: number;
 }
 
 export interface AffiliateEvent {
-  platform: string;
-  gross_amount: number;
-  commission_amount: number;
-  status: 'pending' | 'paid';
+  event_id: string;
+  referrer_account_id: string;
+  referred_account_id?: string;
+  platform?: string;
+  gross_amount_cents?: number;
+  commission_amount_cents?: number;
+  status: 'pending' | 'paid' | string;
   created_at: string;
 }
 
-export function getAffiliate(account_id: string): Promise<Affiliate> {
-  return apiFetch(`/v1/affiliates/${account_id}`);
+export interface PayoutResponse {
+  payout_id: string;
+  amount: number;
+  status: string;
 }
 
-export function getAffiliateEvents(account_id: string): Promise<AffiliateEvent[]> {
-  return apiFetch(`/v1/affiliates/${account_id}/events`);
+export async function getAffiliate(account_id: string): Promise<Affiliate> {
+  const data = await apiFetch<{ ok: boolean; affiliate: Affiliate }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}`
+  );
+  return data.affiliate;
 }
 
-export function startAffiliateOnboarding(): Promise<{ onboard_url: string }> {
-  return apiFetch('/v1/affiliates/connect/onboard', { method: 'POST' });
+export async function getAffiliateEvents(account_id: string): Promise<AffiliateEvent[]> {
+  const data = await apiFetch<{ ok: boolean; events: AffiliateEvent[] }>(
+    `/v1/affiliates/${encodeURIComponent(account_id)}/events`
+  );
+  return data.events ?? [];
 }
 
-export function requestPayout(amount: number): Promise<{ payout_id: string; amount: number; status: string }> {
-  return apiFetch('/v1/affiliates/payout/request', {
-    method: 'POST',
-    body: JSON.stringify({ amount }),
-  });
+export async function startAffiliateOnboarding(): Promise<{ onboard_url: string }> {
+  const data = await apiFetch<{ ok: boolean; onboard_url: string }>(
+    '/v1/affiliates/connect/onboard',
+    { method: 'POST' }
+  );
+  return { onboard_url: data.onboard_url };
+}
+
+export async function requestPayout(amount: number): Promise<PayoutResponse> {
+  const data = await apiFetch<{ ok: boolean; payout: PayoutResponse } | PayoutResponse>(
+    '/v1/affiliates/payout/request',
+    {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    }
+  );
+  if (data && typeof data === 'object' && 'payout' in data && data.payout) {
+    return data.payout as PayoutResponse;
+  }
+  return data as PayoutResponse;
+}
+
+export interface SupportTicketRow {
+  ticket_id: string;
+  account_id: string;
+  subject: string;
+  message?: string;
+  priority?: string | null;
+  status: string;
+  category?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export async function getSupportTicketsByAccount(
+  accountId: string
+): Promise<SupportTicketRow[]> {
+  const data = await apiFetch<{ ok: boolean; tickets: SupportTicketRow[] }>(
+    `/v1/support/tickets/by-account/${encodeURIComponent(accountId)}`
+  );
+  return data.tickets ?? [];
 }
 
 export interface ConversionLeakReport {

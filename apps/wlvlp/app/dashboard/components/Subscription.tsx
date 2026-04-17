@@ -1,14 +1,14 @@
 'use client';
-import { BuyerDashboard, logout } from '@/lib/api';
+import { logout } from '@/lib/api';
+import { useBuyer } from '@/lib/account-context';
 import { useRouter } from 'next/navigation';
 import styles from './components.module.css';
 
-interface Props {
-  dashboard: BuyerDashboard;
-}
-
-export default function Subscription({ dashboard }: Props) {
+export default function Subscription() {
+  const { data: dashboard } = useBuyer();
   const router = useRouter();
+
+  if (!dashboard) return null;
   const { subscription_status, stripe_portal_url } = dashboard;
 
   async function handleLogout() {

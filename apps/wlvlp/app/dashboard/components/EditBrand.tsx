@@ -1,25 +1,24 @@
 'use client';
 import { useState, useRef } from 'react';
-import { BuyerDashboard, updateConfig, uploadLogo } from '@/lib/api';
+import { updateConfig, uploadLogo } from '@/lib/api';
+import { useBuyer } from '@/lib/account-context';
 import styles from './components.module.css';
 
-interface Props {
-  dashboard: BuyerDashboard;
-  onUpdate: (d: BuyerDashboard) => void;
-}
-
-export default function EditBrand({ dashboard, onUpdate }: Props) {
-  const { template, site_config } = dashboard;
+export default function EditBrand() {
+  const { data: dashboard, setData: setDashboard } = useBuyer();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [colors, setColors] = useState({
-    background_color: site_config.background_color ?? '#ffffff',
-    primary_action_color: site_config.primary_action_color ?? '#000000',
-    text_color: site_config.text_color ?? '#000000',
-  });
-  const [logoUrl, setLogoUrl] = useState(site_config.logo_url ?? '');
+  const [colors, setColors] = useState(() => ({
+    background_color: dashboard?.site_config.background_color ?? '#ffffff',
+    primary_action_color: dashboard?.site_config.primary_action_color ?? '#000000',
+    text_color: dashboard?.site_config.text_color ?? '#000000',
+  }));
+  const [logoUrl, setLogoUrl] = useState(dashboard?.site_config.logo_url ?? '');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  if (!dashboard) return null;
+  const { template, site_config } = dashboard;
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -35,11 +34,12 @@ export default function EditBrand({ dashboard, onUpdate }: Props) {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!dashboard) return;
     setSaving(true);
     try {
       const config = { ...colors, logo_url: logoUrl };
       await updateConfig(template.slug, config);
-      onUpdate({ ...dashboard, site_config: { ...site_config, ...config } });
+      setDashboard({ ...dashboard, site_config: { ...site_config, ...config } });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {

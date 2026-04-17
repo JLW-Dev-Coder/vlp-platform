@@ -1,24 +1,19 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import AuthGuard from '@/components/AuthGuard';
+import { useAppShell } from '@vlp/member-ui';
 import { getMySites, createHostingRenewalCheckout, PurchasedSite } from '@/lib/api';
 import styles from './page.module.css';
 
 export default function MySitesPage() {
-  return (
-    <AuthGuard>
-      {(session) => <MySitesContent accountId={session.account_id} />}
-    </AuthGuard>
-  );
-}
-
-function MySitesContent({ accountId }: { accountId: string }) {
+  const { session } = useAppShell();
+  const accountId = session.account_id;
   const [sites, setSites] = useState<PurchasedSite[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!accountId) return;
     getMySites(accountId)
       .then(setSites)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Failed to load sites'))
@@ -26,50 +21,37 @@ function MySitesContent({ accountId }: { accountId: string }) {
   }, [accountId]);
 
   return (
-    <div className={styles.page}>
-      <nav className={styles.nav}>
-        <div className={styles.navInner}>
-          <Link href="/" className={styles.navLogo}>Website Lotto</Link>
-          <div className={styles.navLinks}>
-            <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
-            <Link href="/dashboard/sites" className={styles.navLinkActive}>My Sites</Link>
-            <Link href="/affiliate" className={styles.navLink}>Affiliate</Link>
-          </div>
+    <main className={styles.main}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>My Sites</h1>
+        <p className={styles.subtitle}>Templates you&apos;ve claimed and are hosting with Website Lotto.</p>
+      </header>
+
+      {loading && <div className={styles.state}><span className="spinner" /></div>}
+
+      {!loading && error && (
+        <div className={styles.errorBox}>
+          <p className={styles.errorTitle}>Couldn&apos;t load your sites</p>
+          <p className={styles.errorMsg}>{error}</p>
         </div>
-      </nav>
+      )}
 
-      <main className={styles.main}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>My Sites</h1>
-          <p className={styles.subtitle}>Templates you&apos;ve claimed and are hosting with Website Lotto.</p>
-        </header>
+      {!loading && !error && sites && sites.length === 0 && (
+        <div className={styles.emptyBox}>
+          <h2 className={styles.emptyTitle}>No sites yet</h2>
+          <p className={styles.emptyMsg}>Browse the marketplace to claim your first template.</p>
+          <Link href="/" className={styles.browseBtn}>Browse Templates</Link>
+        </div>
+      )}
 
-        {loading && <div className={styles.state}><span className="spinner" /></div>}
-
-        {!loading && error && (
-          <div className={styles.errorBox}>
-            <p className={styles.errorTitle}>Couldn&apos;t load your sites</p>
-            <p className={styles.errorMsg}>{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && sites && sites.length === 0 && (
-          <div className={styles.emptyBox}>
-            <h2 className={styles.emptyTitle}>No sites yet</h2>
-            <p className={styles.emptyMsg}>Browse the marketplace to claim your first template.</p>
-            <Link href="/" className={styles.browseBtn}>Browse Templates</Link>
-          </div>
-        )}
-
-        {!loading && !error && sites && sites.length > 0 && (
-          <div className={styles.grid}>
-            {sites.map((s) => (
-              <SiteCard key={s.slug} site={s} />
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
+      {!loading && !error && sites && sites.length > 0 && (
+        <div className={styles.grid}>
+          {sites.map((s) => (
+            <SiteCard key={s.slug} site={s} />
+          ))}
+        </div>
+      )}
+    </main>
   );
 }
 
