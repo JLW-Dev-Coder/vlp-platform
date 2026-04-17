@@ -2512,6 +2512,13 @@ const ROUTES = [
         }
       } catch {/* ignore affiliate lookup errors */}
 
+      // Fetch role from accounts (source of truth for role-based gating)
+      let role = 'member';
+      try {
+        const accountRow = await env.DB.prepare('SELECT role FROM accounts WHERE account_id = ?').bind(session.account_id).first();
+        if (accountRow?.role) role = accountRow.role;
+      } catch {/* fall back to default 'member' */}
+
       // Fetch token balance from R2
       let transcriptTokens = 0;
       try {
@@ -2528,6 +2535,7 @@ const ROUTES = [
         session: {
           account_id: session.account_id,
           email: session.email,
+          role,
           membership,
           platform: session.platform,
           expires_at: session.expires_at,
