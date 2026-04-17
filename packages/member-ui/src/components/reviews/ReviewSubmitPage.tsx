@@ -117,12 +117,12 @@ function FormField({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-gray-300">
+      <label className="block text-sm font-medium text-text-muted">
         {label}
         {required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       {children}
-      {hint && <p className="text-xs text-gray-500">{hint}</p>}
+      {hint && <p className="text-xs text-text-muted opacity-70">{hint}</p>}
     </div>
   )
 }
@@ -130,16 +130,16 @@ function FormField({
 function UploadPlaceholder({ label }: { label: string }) {
   return (
     <div
-      className="rounded-xl border-2 border-dashed border-white/10 p-8 text-center cursor-default"
+      className="rounded-xl border-2 border-dashed border-subtle p-8 text-center cursor-default"
       onDrop={(e) => {
         e.preventDefault()
         console.log('[ReviewSubmit] File drop — upload not yet implemented (Phase 2)')
       }}
       onDragOver={(e) => e.preventDefault()}
     >
-      <Upload className="mx-auto mb-3 text-gray-500" size={32} />
-      <p className="text-gray-400 text-sm font-medium">{label}</p>
-      <p className="text-gray-600 text-xs mt-1">Drag & drop or click to browse (coming soon)</p>
+      <Upload className="mx-auto mb-3 text-text-muted opacity-70" size={32} />
+      <p className="text-text-muted text-sm font-medium">{label}</p>
+      <p className="text-text-muted opacity-50 text-xs mt-1">Drag & drop or click to browse (coming soon)</p>
     </div>
   )
 }
@@ -149,11 +149,11 @@ function UploadPlaceholder({ label }: { label: string }) {
 /* ------------------------------------------------------------------ */
 
 const INPUT_CLS =
-  'w-full rounded-lg bg-gray-800/80 border border-white/10 px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-white/30 focus:ring-1 focus:ring-white/20'
+  'w-full rounded-lg bg-surface-card border border-subtle px-4 py-2.5 text-sm text-text-primary placeholder-text-muted outline-none transition focus:border-brand-primary/50 focus:ring-1 focus:ring-brand-primary/20'
 const TEXTAREA_CLS = INPUT_CLS + ' resize-none'
 const SELECT_CLS = INPUT_CLS + ' appearance-none'
 const CHECKBOX_LABEL =
-  'flex items-start gap-3 cursor-pointer text-sm text-gray-300 select-none'
+  'flex items-start gap-3 cursor-pointer text-sm text-text-muted select-none'
 
 /* ------------------------------------------------------------------ */
 /*  Main export                                                        */
@@ -299,7 +299,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
   /* ================================================================ */
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white relative">
+    <div className="min-h-screen bg-surface-bg text-text-primary relative">
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 
@@ -328,7 +328,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                   </>
                 )}
               </h1>
-              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              <p className="text-text-muted text-lg max-w-2xl mx-auto">
                 {config.heroSubheadline ||
                   'Your feedback helps us improve and helps other professionals make informed decisions.'}
               </p>
@@ -350,9 +350,8 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                     key={type}
                     type="button"
                     onClick={() => setView(type)}
-                    className="group text-left rounded-xl p-6 transition-all duration-300 hover:-translate-y-1"
+                    className="group text-left rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 bg-surface-card"
                     style={{
-                      background: 'rgba(17, 24, 39, 0.5)',
                       border: `1px solid ${hexToRgba(config.themeColor, 0.1)}`,
                     }}
                     onMouseEnter={(e) => {
@@ -370,8 +369,8 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                     >
                       <Icon size={24} style={{ color: config.themeColor }} />
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">{meta.title}</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed mb-4">{meta.desc}</p>
+                    <h3 className="text-lg font-semibold text-text-primary mb-2">{meta.title}</h3>
+                    <p className="text-text-muted text-sm leading-relaxed mb-4">{meta.desc}</p>
                     <span
                       className="text-sm font-medium inline-flex items-center gap-1"
                       style={{ color: config.themeColor }}
@@ -411,9 +410,8 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                 return (
                   <div
                     key={item.title}
-                    className="rounded-xl p-6 text-center"
+                    className="rounded-xl p-6 text-center bg-surface-card"
                     style={{
-                      background: 'rgba(17, 24, 39, 0.5)',
                       border: `1px solid ${hexToRgba(config.themeColor, 0.08)}`,
                     }}
                   >
@@ -423,8 +421,8 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                     >
                       <Icon size={22} style={{ color: config.themeColor }} />
                     </div>
-                    <h3 className="text-white font-semibold mb-2">{item.title}</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">{item.desc}</p>
+                    <h3 className="text-text-primary font-semibold mb-2">{item.title}</h3>
+                    <p className="text-text-muted text-sm leading-relaxed">{item.desc}</p>
                   </div>
                 )
               })}
@@ -435,9 +433,8 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
           <section className="max-w-3xl mx-auto px-4 pb-16">
             <h2 className="text-2xl font-bold text-center mb-6">What We Accept</h2>
             <div
-              className="rounded-xl p-6 space-y-3"
+              className="rounded-xl p-6 space-y-3 bg-surface-card"
               style={{
-                background: 'rgba(17, 24, 39, 0.5)',
                 border: `1px solid ${hexToRgba(config.themeColor, 0.08)}`,
               }}
             >
@@ -449,7 +446,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
               ].map((item) => (
                 <div key={item} className="flex items-start gap-3">
                   <CheckCircle size={18} className="mt-0.5 flex-shrink-0" style={{ color: config.themeColor }} />
-                  <p className="text-gray-300 text-sm">{item}</p>
+                  <p className="text-text-muted text-sm">{item}</p>
                 </div>
               ))}
             </div>
@@ -457,9 +454,9 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
 
           {/* Trust & Privacy */}
           <section className="max-w-3xl mx-auto px-4 pb-16 text-center">
-            <Shield className="mx-auto mb-3 text-gray-500" size={32} />
+            <Shield className="mx-auto mb-3 text-text-muted opacity-70" size={32} />
             <h3 className="text-lg font-semibold mb-2">Your Privacy Matters</h3>
-            <p className="text-gray-400 text-sm max-w-xl mx-auto leading-relaxed">
+            <p className="text-text-muted text-sm max-w-xl mx-auto leading-relaxed">
               All submissions are reviewed before publishing. You can choose to post anonymously.
               No personal data is shared without your explicit consent.
             </p>
@@ -471,14 +468,17 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
             style={{ background: hexToRgba(config.themeColor, 0.05) }}
           >
             <h2 className="text-2xl md:text-3xl font-bold mb-3">Ready to Share?</h2>
-            <p className="text-gray-400 mb-6">Pick a format above and get started in under 5 minutes.</p>
+            <p className="text-text-muted mb-6">Pick a format above and get started in under 5 minutes.</p>
             <button
               type="button"
               onClick={() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' })
               }}
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: config.themeColor }}
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:shadow-focus"
+              style={{
+                background: config.themeColor,
+                color: 'var(--brand-text-on-primary, #ffffff)',
+              }}
             >
               Choose a Format &uarr;
             </button>
@@ -494,7 +494,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
             <button
               type="button"
               onClick={() => { setView('landing'); resetAll() }}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-8"
+              className="flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors text-sm mb-8 focus-visible:outline-none focus-visible:shadow-focus"
             >
               <ArrowLeft size={16} /> Back to options
             </button>
@@ -512,15 +512,14 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
               })()}
               <h1 className="text-2xl md:text-3xl font-bold">{FORM_META[view].title}</h1>
             </div>
-            <p className="text-gray-400 text-sm">{FORM_META[view].desc}</p>
+            <p className="text-text-muted text-sm">{FORM_META[view].desc}</p>
           </section>
 
           {/* Form body */}
           <section className="max-w-2xl mx-auto px-4 pb-32">
             <div
-              className="rounded-xl p-6 md:p-8 space-y-6"
+              className="rounded-xl p-6 md:p-8 space-y-6 bg-surface-card"
               style={{
-                background: 'rgba(17, 24, 39, 0.5)',
                 border: `1px solid ${hexToRgba(config.themeColor, 0.1)}`,
               }}
             >
@@ -583,7 +582,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                   <label className={CHECKBOX_LABEL}>
                     <input
                       type="checkbox"
-                      className="mt-0.5 accent-current"
+                      className="mt-0.5 w-4 h-4 flex-shrink-0 rounded cursor-pointer"
                       style={{ accentColor: config.themeColor }}
                       checked={anonymous}
                       onChange={(e) => setAnonymous(e.target.checked)}
@@ -597,7 +596,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
               {view === 'case_study' && (
                 <>
                   <div>
-                    <h3 className="text-white font-semibold mb-4">Situation</h3>
+                    <h3 className="text-text-primary font-semibold mb-4">Situation</h3>
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField label="Industry">
@@ -632,7 +631,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                   </div>
 
                   <div>
-                    <h3 className="text-white font-semibold mb-4">Issue</h3>
+                    <h3 className="text-text-primary font-semibold mb-4">Issue</h3>
                     <FormField label="What was revealed?" required>
                       <textarea
                         className={TEXTAREA_CLS}
@@ -645,7 +644,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                   </div>
 
                   <div>
-                    <h3 className="text-white font-semibold mb-4">Findings</h3>
+                    <h3 className="text-text-primary font-semibold mb-4">Findings</h3>
                     <FormField label="What was uncovered?">
                       <textarea
                         className={TEXTAREA_CLS}
@@ -658,7 +657,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                   </div>
 
                   <div>
-                    <h3 className="text-white font-semibold mb-4">Result</h3>
+                    <h3 className="text-text-primary font-semibold mb-4">Result</h3>
                     <div className="space-y-4">
                       <FormField label="Outcome" required>
                         <textarea
@@ -718,7 +717,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                   <label className={CHECKBOX_LABEL}>
                     <input
                       type="checkbox"
-                      className="mt-0.5"
+                      className="mt-0.5 w-4 h-4 flex-shrink-0 rounded cursor-pointer"
                       style={{ accentColor: config.themeColor }}
                       checked={anonymous}
                       onChange={(e) => setAnonymous(e.target.checked)}
@@ -788,7 +787,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                   <label className={CHECKBOX_LABEL}>
                     <input
                       type="checkbox"
-                      className="mt-0.5"
+                      className="mt-0.5 w-4 h-4 flex-shrink-0 rounded cursor-pointer"
                       style={{ accentColor: config.themeColor }}
                       checked={anonymous}
                       onChange={(e) => setAnonymous(e.target.checked)}
@@ -799,11 +798,11 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
               )}
 
               {/* ---- Consent checkboxes (shared across all forms) ---- */}
-              <div className="border-t border-white/10 pt-6 space-y-3">
+              <div className="border-t border-subtle pt-6 space-y-3">
                 <label className={CHECKBOX_LABEL}>
                   <input
                     type="checkbox"
-                    className="mt-0.5"
+                    className="mt-0.5 w-4 h-4 flex-shrink-0 rounded cursor-pointer"
                     style={{ accentColor: config.themeColor }}
                     checked={consentPublish}
                     onChange={(e) => setConsentPublish(e.target.checked)}
@@ -816,7 +815,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                 <label className={CHECKBOX_LABEL}>
                   <input
                     type="checkbox"
-                    className="mt-0.5"
+                    className="mt-0.5 w-4 h-4 flex-shrink-0 rounded cursor-pointer"
                     style={{ accentColor: config.themeColor }}
                     checked={consentMarketing}
                     onChange={(e) => setConsentMarketing(e.target.checked)}
@@ -829,17 +828,13 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
 
           {/* Sticky action bar */}
           <div
-            className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10"
-            style={{
-              background: 'rgba(3, 7, 18, 0.95)',
-              backdropFilter: 'blur(12px)',
-            }}
+            className="fixed bottom-0 left-0 right-0 z-40 border-t border-subtle bg-surface-popover/95 backdrop-blur-md"
           >
             <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
               <button
                 type="button"
                 disabled
-                className="px-5 py-2.5 rounded-lg text-sm font-medium text-gray-500 bg-gray-800/50 border border-white/5 cursor-not-allowed"
+                className="px-5 py-2.5 rounded-lg text-sm font-medium text-text-muted bg-surface-card border border-subtle cursor-not-allowed opacity-50"
               >
                 Save Draft
               </button>
@@ -847,8 +842,11 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
                 type="button"
                 disabled={!isCurrentFormValid() || submitting}
                 onClick={handleSubmit}
-                className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
-                style={{ background: isCurrentFormValid() && !submitting ? config.themeColor : undefined }}
+                className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 focus-visible:outline-none focus-visible:shadow-focus"
+                style={{
+                  background: isCurrentFormValid() && !submitting ? config.themeColor : undefined,
+                  color: isCurrentFormValid() && !submitting ? 'var(--brand-text-on-primary, #ffffff)' : undefined,
+                }}
               >
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
