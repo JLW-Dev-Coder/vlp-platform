@@ -283,7 +283,7 @@ match the shipped `@vlp/member-ui` export.
 ## 4. Implementation Notes
 
 ### 4.1 Component location
-Shared components live in `packages/member-ui/src/components/`. Each app imports and wraps with its own `SiteNavConfig`. No hardcoded platform values in shared code.
+Shared components live in `packages/member-ui/src/components/`. Each app imports and wraps with its own `PlatformConfig`. No hardcoded platform values in shared code.
 
 ### 4.2 Active state
 Active nav item is highlighted using `brand.primary` (per blueprint §4.5). Other brand tokens (`brand.hover`, `brand.dark`) apply for hover and pressed states. Do not use raw hex values — always reference the brand token.
@@ -337,7 +337,7 @@ At `≥ md`:
   - Closes on: item click, Escape, click outside
 
 ### 4.7 Footer consistency
-Footer structure is identical across all 8 platforms. Only content differs via config. Column 3 ("Resources") contains `footerResources` from `SiteNavConfig` — typically 3 cross-platform links plus the affiliate link. Per-app config is the source of truth for which platforms each app links to.
+Footer structure is identical across all 8 platforms. Only content differs via config. Column 3 ("Resources") contains `footerResources` from `PlatformConfig` — typically 3 cross-platform links plus the affiliate link. Per-app config is the source of truth for which platforms each app links to.
 
 ---
 
