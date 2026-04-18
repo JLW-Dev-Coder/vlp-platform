@@ -18,6 +18,12 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 export interface Session {
   account_id: string;
   email: string;
+  role: string;
+  membership: string;
+  platform: string;
+  expires_at: string;
+  referral_code?: string;
+  transcript_tokens?: number;
 }
 
 export interface Template {
@@ -55,8 +61,18 @@ export interface BuyerDashboard {
   scratch_ticket?: ScratchTicket;
 }
 
-export function getSession(): Promise<Session> {
-  return apiFetch('/v1/auth/session');
+export async function getSession(): Promise<Session | null> {
+  try {
+    const res = await fetch(`${API_BASE}/v1/auth/session`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { ok?: boolean; session?: Session };
+    return data?.session ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function getTemplates(params?: Record<string, string>): Promise<Template[]> {
