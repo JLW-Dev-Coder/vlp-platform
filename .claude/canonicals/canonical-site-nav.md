@@ -160,8 +160,9 @@ authenticated work**: all authenticated sidebar destinations live under
 |-----|---------|---------|
 | VLP | `(member)/*` route group | `app/(member)/support/page.tsx` |
 | TTMP | `/app/*` | `app/app/support/page.tsx` |
+| DVLP | `/operator/*` | `app/operator/page.tsx` |
 
-All other apps (TMP, TTTMP, DVLP, GVLP, TCVLP, WLVLP) use and will continue
+All other apps (TMP, TTTMP, GVLP, TCVLP, WLVLP) use and will continue
 to use `/dashboard/*` for new authenticated pages.
 
 **Authenticated-only rule:**

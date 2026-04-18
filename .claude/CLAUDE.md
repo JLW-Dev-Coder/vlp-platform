@@ -50,7 +50,7 @@ Every platform that previously lived in its own repo is migrated here.
 | TMP | `taxmonitor-pro-site` | `npm run build` | `out` | static export |
 | TTMP | `transcript-taxmonitor-pro` (Worker) | `npm run cf:build` | `.open-next/` | `@opennextjs/cloudflare` (Workers, not Pages) |
 | TTTMP | `taxtools-taxmonitor-pro-site` | `npx @cloudflare/next-on-pages` | `.vercel/output/static` | `@cloudflare/next-on-pages` |
-| DVLP | `developers-virtuallaunch-pro-site` | `npm run pages:build` | `.vercel/output/static` | `@cloudflare/next-on-pages` |
+| DVLP | `developers-virtuallaunch-pro-site` | `npm run build` | `out` | static export |
 | GVLP | `games-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | TCVLP | `taxclaim-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | WLVLP | `websitelotto-virtuallaunch-pro` | `npm run build` | `out` | static export |

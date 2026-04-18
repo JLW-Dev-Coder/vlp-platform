@@ -37,15 +37,18 @@ async function request<T>(
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
 export interface Session {
-  id: string;
+  account_id: string;
   email: string;
-  role: 'user' | 'admin';
-  createdAt: string;
+  role: 'admin' | 'member' | string;
+  membership?: string;
+  platform?: string;
+  expires_at?: string;
 }
 
 export async function getSession(): Promise<Session | null> {
   try {
-    return await request<Session>('/v1/auth/session');
+    const data = await request<{ ok: boolean; session: Session }>('/v1/auth/session');
+    return data.session ?? null;
   } catch {
     return null;
   }

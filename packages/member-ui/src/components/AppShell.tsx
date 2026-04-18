@@ -13,6 +13,7 @@ interface SessionData {
   email: string | null
   avatar: string | null
   account_id: string | null
+  role: string | null
 }
 
 interface AppShellContextValue {
@@ -39,7 +40,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ config, children }: AppShellProps) {
-  const [session, setSession] = useState<SessionData>({ email: null, avatar: null, account_id: null })
+  const [session, setSession] = useState<SessionData>({ email: null, avatar: null, account_id: null, role: null })
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/v1/auth/session`, { credentials: 'include' })
@@ -49,7 +50,8 @@ export function AppShell({ config, children }: AppShellProps) {
         const email = d.session?.email ?? d.email ?? null
         const avatar = d.session?.avatar ?? d.avatar ?? null
         const account_id = d.session?.account_id ?? d.account_id ?? null
-        setSession({ email, avatar, account_id })
+        const role = d.session?.role ?? d.role ?? null
+        setSession({ email, avatar, account_id, role })
       })
       .catch(() => {})
   }, [config.apiBaseUrl])

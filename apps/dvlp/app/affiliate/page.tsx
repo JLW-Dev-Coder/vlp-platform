@@ -39,8 +39,8 @@ function AffiliateDashboard({ session }: { session: Session }) {
   const load = useCallback(async () => {
     try {
       const [aff, evts] = await Promise.all([
-        getAffiliate(session.id),
-        getAffiliateEvents(session.id).finally(() => setEventsLoading(false)),
+        getAffiliate(session.account_id),
+        getAffiliateEvents(session.account_id).finally(() => setEventsLoading(false)),
       ]);
       setAffiliate(aff);
       setEvents(Array.isArray(evts) ? evts : []);
@@ -50,7 +50,7 @@ function AffiliateDashboard({ session }: { session: Session }) {
       setLoading(false);
       setEventsLoading(false);
     }
-  }, [session.id]);
+  }, [session.account_id]);
 
   useEffect(() => { load(); }, [load]);
 

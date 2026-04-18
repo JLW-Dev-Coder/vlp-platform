@@ -1,6 +1,7 @@
 // UI Components
 export { AppShell, useAppShell } from './components/AppShell'
 export { AuthGate } from './components/AuthGate'
+export { default as AdminGate } from './components/AdminGate'
 export { createAccountContext } from './lib/createAccountContext'
 export type {
   AccountProviderProps,
