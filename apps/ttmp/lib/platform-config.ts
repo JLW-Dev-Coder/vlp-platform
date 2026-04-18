@@ -27,6 +27,8 @@ export const ttmpConfig: PlatformConfig = {
       title: 'EARNINGS',
       items: [
         { label: 'Affiliate', href: '/app/affiliate/', icon: 'Link2' },
+        { label: 'Bidding', href: '/app/bidding/', icon: 'Gavel' },
+        { label: 'Winning', href: '/app/winning/', icon: 'Trophy' },
       ],
     },
     {
