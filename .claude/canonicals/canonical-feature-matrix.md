@@ -168,7 +168,7 @@ This file lives at `.claude/canonicals/canonical-feature-matrix.md` in the vlp-p
 
 ## Per-App Page Conformance
 
-Last audit: 2026-04-19
+Last audit: 2026-04-19 (extended same day — Workspace expanded, Resources row added)
 
 Status per app × canonical page. Existence-only check (not a quality audit) against `canonical-site-nav.md` §1 (marketing) and §2 (app), plus `canonical-app-pages.md` contracts. Updated at the end of each sweep.
 
@@ -190,6 +190,9 @@ Legend: ✅ exists · 🟡 partial · ❌ missing · ⚪ n/a
 | /legal/privacy | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | /legal/terms | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | /legal/refund | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| /tools/code-lookup | ⚪ | ⚪ | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+
+Resources mega menu (`canonical-site-nav.md` §1 Column 3) lists up to 4 platform-specific "Tools & Extras" items per app. Only rows where the canonical specifies a concrete path are included — most Column 3 items are named without a canonical path (e.g. "Template Gallery", "Case Examples") and are omitted until the canonical pins them.
 
 ### App Pages — Settings (canonical-app-pages.md contracts)
 
@@ -203,29 +206,32 @@ Paths shown as `/dashboard/*` canonical. Grandfathered exceptions per `canonical
 | /dashboard/support | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
 | /dashboard/usage | ✅ | ❌ | 🟡 | ❌ | ❌ | ✅ | ✅ | ❌ |
 
-### App Pages — Workspace (platform-specific per canonical-site-nav §2)
+### App Pages — Workspace (canonical-site-nav.md §2)
 
-"Applies to" column copied from canonical-site-nav §2 table. Status only evaluated for apps where the page applies; all others are ⚪.
+⚪ cells are hard-coded per `canonical-site-nav.md` §2 WORKSPACE table (page does not apply to that platform). ✅/❌/🟡 are existence checks against the canonical path (or the app's grandfathered equivalent: VLP `(member)/*`, TTMP `/app/*`, DVLP `/operator/*`).
 
-| Page | Applies to | Status |
-|------|-----------|--------|
-| /dashboard (home) | ALL | VLP ✅ · TMP ✅ · TTMP ✅ · TTTMP ❌ · DVLP ✅ · GVLP ✅ · TCVLP ✅ · WLVLP ✅ |
-| /dashboard/bookings (Booking Analytics) | VLP | ❌ |
-| /dashboard/calendar | VLP | ✅ |
-| /dashboard/clients (Client Pool) | VLP | ✅ |
-| /dashboard/discounts (Entitlements) | TMP | ❌ |
-| /dashboard/profile/directory | VLP, DVLP | VLP ✅ · DVLP ❌ |
-| /dashboard/hosting (Premium Domain) | WLVLP | ❌ |
-| /dashboard/games (Game Access JS) | GVLP | ✅ |
-| /dashboard/game-analytics | TTTMP | ❌ |
-| /dashboard/jobs (Job Matching) | DVLP | ❌ |
-| /dashboard/intake (Taxpayer Intake) | TMP | ❌ |
-| /dashboard/messages | TMP, VLP | TMP ❌ · VLP ❌ |
-| /dashboard/parser | TTMP | ❌ |
-| /dashboard/reports | ALL | VLP ✅ · TMP ❌ · TTMP ✅ · TTTMP ❌ · DVLP ❌ · GVLP ✅ · TCVLP 🟡 · WLVLP ❌ |
-| /dashboard/monitoring (Tax Monitoring) | TMP | ❌ |
-| /dashboard/voting (Voting Analytics) | WLVLP | ❌ |
-| /dashboard/sites (White-Labeled Site) | TCVLP, WLVLP | TCVLP ❌ · WLVLP ✅ |
+| Page | VLP | TMP | TTMP | TTTMP | DVLP | GVLP | TCVLP | WLVLP |
+|------|-----|-----|------|-------|------|------|-------|-------|
+| /dashboard (home) | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| /dashboard/notifications | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| /dashboard/reports | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | 🟡 | ❌ |
+| /dashboard/bookings | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/calendar | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/clients | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/discounts | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/profile/directory | ✅ | ⚪ | ⚪ | ⚪ | ❌ | ⚪ | ⚪ | ⚪ |
+| /dashboard/hosting | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ❌ |
+| /dashboard/games | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ✅ | ⚪ | ⚪ |
+| /dashboard/game-analytics | ⚪ | ⚪ | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/jobs | ⚪ | ⚪ | ⚪ | ⚪ | ❌ | ⚪ | ⚪ | ⚪ |
+| /dashboard/intake | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/messages | ❌ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/parser | ⚪ | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/monitoring | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /dashboard/voting | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ❌ |
+| /dashboard/sites | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ❌ | ✅ |
+
+`/dashboard/notifications` is treated as ALL per `canonical-site-nav.md` §4.6 — the topbar bell's "View all" link targets that path on every authenticated app.
 
 ### App Pages — Earnings
 
@@ -244,6 +250,7 @@ Paths shown as `/dashboard/*` canonical. Grandfathered exceptions per `canonical
 - TTMP `/dashboard/usage` marked 🟡 because `/app/token-usage` exists at the grandfathered path but differs from the canonical `usage` name.
 - TCVLP `/dashboard/reports` marked 🟡 because `/dashboard/submissions` fills a reports-like role without matching the canonical path.
 - VLP grandfathered (member) paths are counted as conformant when a same-named destination exists (e.g. `(member)/account` satisfies `/dashboard/account`).
+- 2026-04-19 follow-up commit: expanded Workspace section from compressed "Applies to" list to full app × page matrix; added `/tools/code-lookup` Resources mega menu row to Marketing table. First commit (eb18bdc) shipped with Workspace rendered as a narrow "Applies to" summary and no Resources coverage.
 
 ### How to use this matrix
 
