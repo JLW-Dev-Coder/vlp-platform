@@ -13,12 +13,22 @@ import {
   Check,
   KeyRound,
   AlertCircle,
+  Bell,
 } from 'lucide-react';
 import { HeroCard, StatusBadge } from '@vlp/member-ui';
 import { API_BASE, updateOperator } from '@/lib/api';
 import type { Operator } from '@/lib/api';
 import { openBillingPortal, BillingPortalError } from '@/lib/billing';
 import { useOperator } from '@/lib/operator-context';
+
+type Preferences = {
+  appearance: string | null;
+  timezone: string | null;
+  default_dashboard: string | null;
+  accent_color: string | null;
+  in_app_enabled: 0 | 1;
+  sms_enabled: 0 | 1;
+};
 
 const TIER_FEATURES: Record<
   string,
@@ -86,6 +96,59 @@ export default function AccountClient() {
   const [rotateSuccess, setRotateSuccess] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
+
+  const [prefs, setPrefs] = useState<Preferences | null>(null);
+  const [prefsLoading, setPrefsLoading] = useState(true);
+  const [prefsError, setPrefsError] = useState<string | null>(null);
+  const [prefsRetryToken, setPrefsRetryToken] = useState(0);
+  const [togglePending, setTogglePending] = useState<
+    null | 'in_app_enabled' | 'sms_enabled'
+  >(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
+
+  const accountId = operator?.account_id;
+
+  useEffect(() => {
+    if (!accountId) return;
+    let cancelled = false;
+    setPrefsLoading(true);
+    setPrefsError(null);
+    (async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/v1/accounts/preferences/${accountId}`,
+          { credentials: 'include', cache: 'no-store' }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const body = (await res.json()) as {
+          ok?: boolean;
+          preferences?: Partial<Preferences>;
+        };
+        if (cancelled) return;
+        const p = body.preferences ?? {};
+        setPrefs({
+          appearance: (p.appearance as string | null) ?? 'system',
+          timezone: (p.timezone as string | null) ?? null,
+          default_dashboard: (p.default_dashboard as string | null) ?? null,
+          accent_color: (p.accent_color as string | null) ?? null,
+          in_app_enabled: Number(p.in_app_enabled) ? 1 : 0,
+          sms_enabled: Number(p.sms_enabled) ? 1 : 0,
+        });
+        setPrefsLoading(false);
+      } catch (err) {
+        if (cancelled) return;
+        setPrefsError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to load notification preferences'
+        );
+        setPrefsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accountId, prefsRetryToken]);
 
   useEffect(() => {
     let cancelled = false;
@@ -172,6 +235,37 @@ export default function AccountClient() {
   const handleRotateCancel = () => {
     setConfirming(false);
     setRotateError(null);
+  };
+
+  const handleToggle = async (key: 'in_app_enabled' | 'sms_enabled') => {
+    if (!prefs || !accountId) return;
+    if (togglePending) return;
+
+    const previous = prefs[key];
+    const next: 0 | 1 = previous ? 0 : 1;
+    const nextPrefs: Preferences = { ...prefs, [key]: next };
+
+    setPrefs(nextPrefs);
+    setTogglePending(key);
+    setToggleError(null);
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/v1/accounts/preferences/${accountId}`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nextPrefs),
+        }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch {
+      setPrefs({ ...prefs, [key]: previous });
+      setToggleError("Couldn't save preference. Try again.");
+    } finally {
+      setTogglePending(null);
+    }
   };
 
   return (
@@ -350,6 +444,100 @@ export default function AccountClient() {
           </div>
         )}
       </div>
+
+      <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+            <Bell className="h-4 w-4 text-brand-primary" />
+          </div>
+          <h3 className="text-xs uppercase tracking-widest text-white/40">Notifications</h3>
+        </div>
+
+        {prefsLoading && (
+          <div className="mt-4 space-y-3">
+            <div className="h-12 animate-pulse rounded-md bg-white/[0.04]" />
+            <div className="h-12 animate-pulse rounded-md bg-white/[0.04]" />
+          </div>
+        )}
+
+        {prefsError && !prefsLoading && (
+          <div className="mt-4 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-200">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex-1">
+              <p>Could not load notification preferences.</p>
+              <button
+                type="button"
+                onClick={() => setPrefsRetryToken((t) => t + 1)}
+                className="mt-2 rounded-lg border border-amber-500/30 px-3 py-1.5 text-xs font-medium text-amber-200 transition-colors hover:bg-amber-500/10"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        {prefs && !prefsLoading && !prefsError && (
+          <div className="mt-3">
+            <ToggleRow
+              label="In-app notifications"
+              description="Show alerts in the topbar bell."
+              checked={prefs.in_app_enabled === 1}
+              disabled={togglePending === 'in_app_enabled'}
+              onChange={() => handleToggle('in_app_enabled')}
+            />
+            <ToggleRow
+              label="SMS notifications"
+              description="Text me for urgent account alerts."
+              checked={prefs.sms_enabled === 1}
+              disabled={togglePending === 'sms_enabled'}
+              onChange={() => handleToggle('sms_enabled')}
+            />
+            {toggleError && (
+              <div className="mt-3 text-sm text-amber-400">⚠️ {toggleError}</div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ToggleRow({
+  label,
+  description,
+  checked,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-[var(--member-border)] py-3 last:border-0">
+      <div className="flex-1">
+        <p className="text-sm font-medium text-white">{label}</p>
+        <p className="text-xs text-white/50">{description}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        disabled={disabled}
+        onClick={onChange}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+          checked ? 'bg-brand-500' : 'bg-white/10'
+        } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+            checked ? 'translate-x-[22px]' : 'translate-x-0.5'
+          }`}
+        />
+      </button>
     </div>
   );
 }
