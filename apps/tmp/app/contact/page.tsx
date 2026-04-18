@@ -3,7 +3,14 @@
 import Link from 'next/link'
 import Script from 'next/script'
 import Header from '@/components/Header'
+import { tmpConfig } from '@/lib/platform-config'
 import styles from './page.module.css'
+
+const INTRO_LINK = tmpConfig.calIntroSlug
+const INTRO_NS = tmpConfig.calIntroNamespace
+const SUPPORT_LINK = tmpConfig.calBookingSlug
+const SUPPORT_NS = tmpConfig.calBookingNamespace
+const CAL_CONFIG = '{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
 
 const contactOptions = [
   {
@@ -101,15 +108,15 @@ export default function ContactPage() {
             <div className={styles.heroCtas}>
               <button
                 className={styles.btnPrimary}
-                data-cal-link="tax-monitor-pro/tax-monitor-service-intro"
-                data-cal-namespace="tax-monitor-service-intro"
-                data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+                data-cal-link={INTRO_LINK}
+                data-cal-namespace={INTRO_NS}
+                data-cal-config={CAL_CONFIG}
               >Find Your Path</button>
               <button
                 className={styles.btnSecondary}
-                data-cal-link="tax-monitor-pro/tax-monitor-service-intro"
-                data-cal-namespace="tax-monitor-service-intro"
-                data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+                data-cal-link={INTRO_LINK}
+                data-cal-namespace={INTRO_NS}
+                data-cal-config={CAL_CONFIG}
               >Book a Demo</button>
             </div>
 
@@ -172,9 +179,9 @@ export default function ContactPage() {
                 </p>
                 <button
                   className={styles.btnPrimary}
-                  data-cal-link="tax-monitor-pro/tax-monitor-service-intro"
-                  data-cal-namespace="tax-monitor-service-intro"
-                  data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+                  data-cal-link={INTRO_LINK}
+                  data-cal-namespace={INTRO_NS}
+                  data-cal-config={CAL_CONFIG}
                 >Book a demo</button>
               </div>
 
@@ -190,9 +197,9 @@ export default function ContactPage() {
                 </p>
                 <button
                   className={styles.btnSecondaryFull}
-                  data-cal-link="tax-monitor-pro/tax-monitor-service-support"
-                  data-cal-namespace="tax-monitor-service-support"
-                  data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+                  data-cal-link={SUPPORT_LINK}
+                  data-cal-namespace={SUPPORT_NS}
+                  data-cal-config={CAL_CONFIG}
                 >Contact support</button>
               </div>
             </div>
@@ -269,9 +276,9 @@ export default function ContactPage() {
             </p>
             <button
               className={styles.ctaButton}
-              data-cal-link="tax-monitor-pro/tax-monitor-service-intro"
-              data-cal-namespace="tax-monitor-service-intro"
-              data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+              data-cal-link={INTRO_LINK}
+              data-cal-namespace={INTRO_NS}
+              data-cal-config={CAL_CONFIG}
             >Find Your Path &rarr;</button>
             <p className={styles.ctaDisclaimer}>
               Your inquiry stays private. Reaching out helps us guide you, but it does not create IRS representation or obligation.
@@ -283,11 +290,11 @@ export default function ContactPage() {
       <Script id="cal-embed" strategy="afterInteractive">{`
   (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
 
-  Cal("init", "tax-monitor-service-intro", {origin:"https://app.cal.com"});
-  Cal.ns["tax-monitor-service-intro"]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#f59e0b"},"dark":{"cal-brand":"#f59e0b"}},"hideEventTypeDetails":false,"layout":"month_view"});
+  Cal("init", ${JSON.stringify(INTRO_NS)}, {origin:"https://app.cal.com"});
+  Cal.ns[${JSON.stringify(INTRO_NS)}]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":${JSON.stringify(tmpConfig.brandColor)}}},"hideEventTypeDetails":false,"layout":"month_view"});
 
-  Cal("init", "tax-monitor-service-support", {origin:"https://app.cal.com"});
-  Cal.ns["tax-monitor-service-support"]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#f59e0b"},"dark":{"cal-brand":"#f59e0b"}},"hideEventTypeDetails":false,"layout":"month_view"});
+  Cal("init", ${JSON.stringify(SUPPORT_NS)}, {origin:"https://app.cal.com"});
+  Cal.ns[${JSON.stringify(SUPPORT_NS)}]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":${JSON.stringify(tmpConfig.brandColor)}}},"hideEventTypeDetails":false,"layout":"month_view"});
 `}</Script>
     </>
   )
