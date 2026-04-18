@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTaxPro, useSubscriptionStatus } from '@/lib/account-context';
 import { tierLabel, tierPrice } from '@/lib/tiers';
+import { getProfile, updateProfile } from '@/lib/api';
 import styles from '../components/shared.module.css';
 
 export default function AccountPage() {
@@ -36,15 +37,78 @@ export default function AccountPage() {
           Loading…
         </div>
       ) : (
-        <FirmSetupCard
-          pro={pro}
-          subActive={sub?.active ?? false}
-          subPlan={sub?.plan}
-          landingUrl={landingUrl}
-          copied={copied}
-          onCopy={handleCopy}
-        />
+        <>
+          <FirmSetupCard
+            pro={pro}
+            subActive={sub?.active ?? false}
+            subPlan={sub?.plan}
+            landingUrl={landingUrl}
+            copied={copied}
+            onCopy={handleCopy}
+          />
+          <NotificationsCard />
+        </>
       )}
+    </div>
+  );
+}
+
+function NotificationsCard() {
+  const [enabled, setEnabled] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getProfile().then((p) => {
+      if (cancelled || !p) return;
+      if (p.notifications_enabled !== undefined) {
+        setEnabled(p.notifications_enabled !== false);
+      }
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleToggle = async (checked: boolean) => {
+    const prev = enabled;
+    setEnabled(checked);
+    setSaving(true);
+    setError('');
+    try {
+      await updateProfile({ notifications_enabled: checked });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setEnabled(prev);
+      setError(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className={styles.urlCard} style={{ marginTop: '1rem' }}>
+      <div className={styles.urlCardLabel}>Notifications</div>
+      <div className={styles.field} style={{ marginTop: '0.75rem' }}>
+        <label className={styles.label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={enabled}
+            disabled={!loaded || saving}
+            onChange={(e) => handleToggle(e.target.checked)}
+            style={{ width: '1.125rem', height: '1.125rem', accentColor: '#eab308', cursor: 'pointer' }}
+          />
+          Receive email when a client submits a Form 843
+        </label>
+        <span className={styles.hint}>
+          When enabled, you will receive an email notification with submission details each time a client confirms filing through your branded page.
+        </span>
+      </div>
+      {error && <div className={styles.errorMsg}>{error}</div>}
+      {saved && <div className={styles.successMsg}>✓ Saved</div>}
     </div>
   );
 }
