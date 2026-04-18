@@ -101,6 +101,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 | `canonical-feature-benefits.md` | Human-readable benefit descriptions per feature across all 8 platforms ("what does this do for me") | Writing user-facing feature copy or positioning benefits |
 | `canonical-feature-matrix.md` | Feature → Worker route / storage / frontend page / build status mapping across all 8 platforms | Tracking what's live/partial/planned per platform |
 | `canonical-index.html` | Landing page structure (8 required sections) | Creating or editing landing pages |
+| `canonical-legal.md` | Legal page copy (privacy, refund, terms) + shared LegalPageLayout usage + businessInfo config requirement | Adding, editing, or migrating `/legal/*` pages on any app |
 | `canonical-market.md` | Market positioning template (12 sections) | Writing marketing copy or positioning docs |
 | `canonical-readme.md` | README template (14 sections) | Creating or editing README files |
 | `canonical-roles.md` | Role definitions (Principal, Execution, Owner) | Understanding role boundaries and escalation |
