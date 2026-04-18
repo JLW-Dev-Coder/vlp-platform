@@ -16,22 +16,25 @@ export const gvlpConfig: PlatformConfig = {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
-        { label: 'Games', href: '/games', icon: 'Gamepad2' },
-        { label: 'Embed Codes', href: '/dashboard/embed', icon: 'Code2' },
-        { label: 'Tokens', href: '/dashboard/tokens', icon: 'Coins' },
+        { label: 'Game Access JS', href: '/dashboard/games', icon: 'Gamepad2' },
+        { label: 'Reports', href: '/dashboard/reports', icon: 'FileText' },
       ],
     },
     {
       title: 'EARNINGS',
       items: [
         { label: 'Affiliate', href: '/dashboard/affiliate', icon: 'Link2' },
+        { label: 'Bidding', href: '/dashboard/bidding', icon: 'Gavel' },
+        { label: 'Winning', href: '/dashboard/winning', icon: 'Trophy' },
       ],
     },
     {
       title: 'SETTINGS',
       items: [
-        { label: 'Account', href: '/dashboard/settings', icon: 'Settings' },
+        { label: 'Account', href: '/dashboard/account', icon: 'Settings' },
+        { label: 'Profile', href: '/dashboard/profile', icon: 'UserCircle' },
         { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
+        { label: 'Usage', href: '/dashboard/usage', icon: 'Activity' },
       ],
     },
   ],
