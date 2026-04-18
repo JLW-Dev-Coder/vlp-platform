@@ -264,6 +264,34 @@ export default function HomePage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════
+          VALUE PROPOSITION (benefit trio)
+      ══════════════════════════════════════════════════════ */}
+      <section className="bg-[#1a0a10] px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <h3 className="text-lg font-semibold text-white">Embed real games</h3>
+              <p className="mt-2 text-sm text-white/70">
+                Mini-games drop into your tax-practice site as a single iframe or script tag. No build steps.
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <h3 className="text-lg font-semibold text-white">Engage clients between appointments</h3>
+              <p className="mt-2 text-sm text-white/70">
+                Share game links during onboarding or via email. Clients learn tax concepts in a format they will actually finish.
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <h3 className="text-lg font-semibold text-white">Differentiate your practice</h3>
+              <p className="mt-2 text-sm text-white/70">
+                Stand out from the firms still emailing static PDFs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
           HOW IT WORKS
       ══════════════════════════════════════════════════════ */}
       <section id="how-it-works" className={styles.howItWorks}>
@@ -272,7 +300,7 @@ export default function HomePage() {
             <span className={`${styles.sectionBadge} ${styles.sectionBadgeRed}`}>⚙️ Implementation</span>
             <h2 className={styles.sectionTitle}>How It Works</h2>
             <p className={styles.sectionSub}>
-              Four simple steps to integrate games into your platform and start earning revenue.
+              Three simple steps to integrate games into your platform and start earning revenue.
             </p>
           </div>
 
@@ -319,31 +347,13 @@ export default function HomePage() {
                 <div className={styles.stepCornerGold} />
                 <div className={styles.stepContent}>
                   <div className={`${styles.stepNumber} ${styles.stepNumberGold}`}>3</div>
-                  <h3 className={styles.stepTitle}>Share with Clients</h3>
+                  <h3 className={styles.stepTitle}>Embed &amp; Earn</h3>
                   <p className={styles.stepDesc}>
-                    Add your affiliate payout details so you earn when clients play your games. Configure
-                    how and where you want to receive revenue.
+                    Drop the games onto your site with a single embed, set up Stripe payout details,
+                    and track engagement while clients play and learn.
                   </p>
                   <div className={styles.stepMeta}>
-                    <span>Secure Stripe setup</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Step 4 */}
-            <div className={styles.stepOffset}>
-              <div className={`${styles.stepCard} ${styles.stepCardGreen}`}>
-                <div className={styles.stepCornerGreen} />
-                <div className={styles.stepContent}>
-                  <div className={`${styles.stepNumber} ${styles.stepNumberGreen}`}>4</div>
-                  <h3 className={styles.stepTitle}>Track &amp; Earn</h3>
-                  <p className={styles.stepDesc}>
-                    Embed the games on your site, track player progress, and watch engagement grow while
-                    educating clients on tax topics.
-                  </p>
-                  <div className={styles.stepMeta}>
-                    <span>Go live instantly</span>
+                    <span>Live instantly, Stripe-ready</span>
                   </div>
                 </div>
               </div>
@@ -492,6 +502,58 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          FAQ
+      ══════════════════════════════════════════════════════ */}
+      <section className="bg-[#0f0610] px-6 py-20">
+        <div className="mx-auto max-w-3xl">
+          <div className="text-center">
+            <span className="inline-block rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-widest text-white/60">
+              FAQ
+            </span>
+            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">Frequently Asked Questions</h2>
+          </div>
+          <div className="mt-10 space-y-4">
+            <details className="group rounded-xl border border-white/10 bg-white/5 p-5">
+              <summary className="cursor-pointer text-lg font-semibold text-white">
+                Can clients play games without an account?
+              </summary>
+              <p className="mt-3 text-sm text-white/70">
+                Yes. Embedded games run directly in your site for any visitor — no client account
+                required. Tokens are tied to your subscription, not individual players.
+              </p>
+            </details>
+            <details className="group rounded-xl border border-white/10 bg-white/5 p-5">
+              <summary className="cursor-pointer text-lg font-semibold text-white">
+                How do I embed a game on my website?
+              </summary>
+              <p className="mt-3 text-sm text-white/70">
+                Copy one iframe or script tag from your dashboard into any page on your site.
+                Works with WordPress, Squarespace, Webflow, or plain HTML. No build tools needed.
+              </p>
+            </details>
+            <details className="group rounded-xl border border-white/10 bg-white/5 p-5">
+              <summary className="cursor-pointer text-lg font-semibold text-white">
+                Do tokens expire?
+              </summary>
+              <p className="mt-3 text-sm text-white/70">
+                Tokens refresh monthly with your subscription. Unused tokens from one month don&apos;t
+                roll over — upgrade a tier if your audience grows beyond your allocation.
+              </p>
+            </details>
+            <details className="group rounded-xl border border-white/10 bg-white/5 p-5">
+              <summary className="cursor-pointer text-lg font-semibold text-white">
+                Can I customize the games for my brand?
+              </summary>
+              <p className="mt-3 text-sm text-white/70">
+                Yes. You can set brand colors and the frame styling so the embedded game looks like
+                part of your practice site, not a generic widget.
+              </p>
+            </details>
           </div>
         </div>
       </section>
