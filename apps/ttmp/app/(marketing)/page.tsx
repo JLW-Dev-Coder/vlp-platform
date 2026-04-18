@@ -81,6 +81,40 @@ const SOLVES_CARDS = [
   },
 ]
 
+const SOCIAL_PROOF_STATS = [
+  {
+    title: '750,000+',
+    body: 'U.S. tax professionals eligible to use Transcript Tax Monitor Pro.',
+  },
+  {
+    title: '10–15 minutes',
+    body: 'Saved per transcript review — every code explained automatically.',
+  },
+  {
+    title: 'CPAs · EAs · Tax Attorneys',
+    body: 'Built for licensed practitioners who deliver client-ready transcript analysis.',
+  },
+]
+
+const FAQ_ITEMS = [
+  {
+    q: 'Do I need a subscription?',
+    a: 'No. Transcript Tax Monitor Pro uses a credit-based, pay-as-you-go model — purchase tokens once and use them whenever you need to parse a transcript. There are no monthly fees or auto-renewals.',
+  },
+  {
+    q: 'How long does a transcript analysis take?',
+    a: 'Most transcripts parse and render a full client-ready report in under 30 seconds. Larger PDFs with multiple years can take up to a minute.',
+  },
+  {
+    q: 'Are tokens refundable?',
+    a: 'Unused tokens are refundable per our refund policy. See the full terms on /legal/refund.',
+  },
+  {
+    q: 'Can I download reports for client files?',
+    a: 'Yes. Every report can be exported as a branded PDF that you can email, print, or attach to your case management system.',
+  },
+]
+
 const USE_CASES = [
   { label: '846 — Refund timing questions',       url: '/resources/irs-code-846-meaning/' },
   { label: '420 — Audit code explanation',         url: '/resources/irs-code-420-meaning/' },
@@ -234,6 +268,22 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 5b. SOCIAL PROOF */}
+      <section className={styles.section} id="social-proof">
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionBadge}>Trusted Across the Profession</div>
+          <h2 className={styles.sectionTitle}>Trusted by tax professionals across the US</h2>
+          <div className={styles.cardGrid}>
+            {SOCIAL_PROOF_STATS.map((card) => (
+              <div key={card.title} className={styles.card}>
+                <h3 className={styles.cardTitle}>{card.title}</h3>
+                <p className={styles.cardBody}>{card.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 6. PRICING */}
       <PricingSection />
 
@@ -255,6 +305,26 @@ export default function HomePage() {
                 <span className={styles.useCaseLabel}>{uc.label}</span>
                 <span className={styles.useCaseArrow}>→</span>
               </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7b. FAQ */}
+      <section className={styles.sectionAlt} id="faq">
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionBadge}>FAQ</div>
+          <h2 className={styles.sectionTitle}>Common questions, answered</h2>
+          <div className={styles.cardGrid}>
+            {FAQ_ITEMS.map((item) => (
+              <details key={item.q} className={styles.card}>
+                <summary className={styles.cardTitle} style={{ cursor: 'pointer', listStyle: 'none' }}>
+                  {item.q}
+                </summary>
+                <p className={styles.cardBody} style={{ marginTop: '0.75rem' }}>
+                  {item.a}
+                </p>
+              </details>
             ))}
           </div>
         </div>
