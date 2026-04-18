@@ -71,6 +71,59 @@ The canonical copy below is the source of truth. The lifted copy comes from VLP'
 
 ---
 
+## §2.5 Optional sections — jurisdiction & data-profile
+
+Apps with specific data-handling profiles (taxpayer PII, IRS data, California users at scale, EU users, processor disclosure requirements) MAY include these additional Privacy Policy sections. Apps that do NOT trigger the relevant requirement MUST NOT include the section (extra disclosures imply data-handling that doesn't exist and create liability).
+
+Sections are opt-in and content is locked here. Apps that opt in copy the section verbatim into their `LegalPageLayout` children, after the base A–H sections and before the `Contact` section. Each optional section is rendered as a `LegalSection` with the titles shown below.
+
+### Section: California Privacy Rights (CCPA/CPRA)
+
+**Required for:** any app that handles personal information of California residents in a way substantial enough to warrant disclosure. Most VLP apps technically qualify if they have any California users; opt in only when the data-handling profile justifies the disclosure (currently TCVLP only).
+
+**Section title (verbatim):** `I. California Privacy Rights (CCPA/CPRA)`
+
+> Residents of California have specific rights under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA): the right to know what personal information is collected, the right to delete personal information, the right to correct inaccurate personal information, the right to opt out of the sale or sharing of personal information, and the right to non-discrimination for exercising these rights. {Platform Name} does not sell personal information. To exercise any of these rights, contact us through the support page or by email. We will respond to verified requests within 45 days.
+
+### Section: Third-Party Processors
+
+**Required for:** apps that share user data with named third-party service providers in a way users would reasonably want disclosed (payment processors, email senders, calendar integrations, authentication providers). Currently TCVLP only.
+
+**Section title (verbatim):** `E. Third-Party Processors`
+
+> {Platform Name} uses the following third-party processors to deliver services: Stripe (subscription billing), Cloudflare (hosting, session management, DNS), Resend (transactional email), Cal.com (appointment booking), and Google (authentication via OAuth and magic-link delivery). Each processor has its own privacy policy. Provider does not control and is not responsible for those processors' privacy practices, but selects them based on their published commitments to industry-standard security.
+
+**Note:** when an app opts into `Third-Party Processors`, it replaces the base `E. Credential Handling` section slot. The processors list is more load-bearing than generic credential-handling language for apps that actually disclose named processors.
+
+### Section: IRS Transcript Handling
+
+**Required for:** apps that ingest, store, or process IRS taxpayer transcript data (currently TCVLP only — TTMP processes transcripts client-side and does not store them long-term, so this section does not apply).
+
+**Section title (verbatim):** `F. IRS Transcript Data`
+
+> When Client uploads an IRS transcript, the transcript text is parsed by Provider to extract penalty data for Form 843 generation. Transcripts are processed in memory and stored as part of the claim submission record in Provider's secure R2 object storage. Transcripts are not transmitted to any third-party processor beyond what is required for the original upload, parsing, and storage operations.
+
+**Note:** when an app opts into `IRS Transcript Handling`, it replaces the base `F. Third-Party Platforms` section slot. The transcript-handling disclosure is more specific and load-bearing for apps that actually ingest IRS transcript data.
+
+---
+
+### Adoption matrix (opt-ins per app)
+
+| App | CCPA/CPRA | Third-Party Processors | IRS Transcript Handling |
+|-----|-----------|------------------------|-------------------------|
+| VLP | — | — | — |
+| TMP | — | — | — |
+| TTMP | — | — | — |
+| TTTMP | — | — | — |
+| DVLP | — | — | — |
+| GVLP | — | — | — |
+| TCVLP | ✓ | ✓ | ✓ |
+| WLVLP | — | — | — |
+
+Apps add a row check by amending this table during their migration.
+
+---
+
 ## §3. Refund Policy
 
 **Route:** `/legal/refund`
