@@ -52,4 +52,16 @@ export const dvlpConfig: PlatformConfig = {
     profile: '/operator',
     support: '/operator/support',
   },
+  businessInfo: {
+    legalEntity: 'Lenore, Inc.',
+    address: {
+      line1: '1175 Avocado Avenue',
+      line2: 'Suite 101 PMB 1010',
+      city: 'El Cajon',
+      state: 'CA',
+      zip: '92020',
+    },
+    phone: '619-800-5457',
+    supportEmail: 'outreach@virtuallaunch.pro',
+  },
 }
