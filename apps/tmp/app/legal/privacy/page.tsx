@@ -1,158 +1,56 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import Header from '@/components/Header'
-import styles from '../layout.module.css'
+import { LegalPageLayout, LegalSection } from '@vlp/member-ui'
+import { tmpConfig } from '@/lib/platform-config'
 
-export const metadata = {
-  title: 'Tax Monitor Pro — Privacy Policy',
-  description:
-    'Privacy Policy for Tax Monitor Pro — directory, profile, and inquiry data handling.',
+export const dynamic = 'force-static'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | Tax Monitor Pro',
+  description: 'Privacy Policy for Tax Monitor Pro installs, templates, onboarding systems, and related digital services.',
 }
 
-export default function PrivacyPolicyPage() {
+const sections = [
+  { id: 'a', title: 'A. Information Provider May Receive', body: "Provider may receive or have access to Client-provided information such as account credentials, workspace configuration, business contact information, forms, workflows, portal content, files, templates, onboarding assets, task data, automation settings, and related administrative information. Depending on the service, Provider may also incidentally view information uploaded by Client or Client's end users." },
+  { id: 'b', title: 'B. Purpose of Access', body: 'Provider will access and use information only as reasonably necessary to complete the purchased service, perform setup or configuration, troubleshoot issues, verify deliverables, provide support, maintain records, and transfer administrative control back to Client where applicable.' },
+  { id: 'c', title: 'C. Data Minimization', body: 'Provider will make reasonable efforts to minimize access to information not required for service delivery, testing, troubleshooting, fraud prevention, documentation, or recordkeeping. Client is encouraged not to expose sensitive information during setup unless required for the requested work.' },
+  { id: 'd', title: 'D. Confidentiality & Security', body: 'Provider will maintain commercially reasonable administrative, technical, and organizational safeguards to protect information accessed during service delivery. Client remains responsible for secure passwords, platform-level security settings, user permissions, and device security after access is transferred or services are completed.' },
+  { id: 'e', title: 'E. Credential Handling', body: 'Client may provide credentials, temporary invites, API keys, or access links needed to complete the service. Client may revoke Provider access at any time, but doing so may pause or prevent completion. After completion, Client should rotate temporary credentials, revoke temporary invitations, and confirm final administrative ownership and access settings.' },
+  { id: 'f', title: 'F. Third-Party Platforms', body: "Tax Monitor Pro services may involve third-party platforms, software, hosting providers, payment providers, automation tools, and workspace systems. Provider does not control and is not responsible for those third parties' privacy practices, security controls, hosting terms, retention practices, or processing policies. Client is responsible for reviewing and accepting the terms and privacy policies of any third-party platforms Client uses." },
+  { id: 'g', title: 'G. Data Retention', body: 'Provider does not intend to retain Client information longer than reasonably necessary for service delivery, support, invoicing, bookkeeping, proof of delivery, security, dispute resolution, or legal compliance. Limited records, screenshots, configuration notes, receipts, or support artifacts may be retained for business and legal purposes.' },
+  { id: 'h', title: 'H. Client Requests', body: 'Client may request deletion of Provider-held materials containing Client information, to the extent Provider is not required to retain them for legal, tax, accounting, security, dispute, or operational recordkeeping obligations.' },
+]
+
+export default function PrivacyPage() {
   return (
-    <div className={styles.page}>
-      <div className={styles.amberGlow}>
-        <Header variant="site" />
+    <LegalPageLayout
+      config={tmpConfig}
+      title="Privacy Policy"
+      subtitle="Install, Template, and Service Data Handling"
+      lastUpdated="March 17, 2026"
+      currentPage="privacy"
+    >
+      <LegalSection>
+        <p>
+          This Privacy Policy explains how Tax Monitor Pro and its operator (&ldquo;Provider&rdquo;) may access, use, and handle Client information in connection with installs, setup work, templates, automation configuration, support, and related digital services.
+        </p>
+      </LegalSection>
 
-        <main className={styles.main}>
-          <div className={styles.brandBlock}>
-            <Link href="/" className={styles.brandLink} aria-label="Tax Monitor Pro Home">
-              <div className={styles.badge}>
-                <span className={styles.badgeText}>TM</span>
-              </div>
-              <div className={styles.brandTextWrap}>
-                <span className={styles.brandTitle}>Tax Monitor Pro</span>
-                <span className={styles.brandSub}>Owned by Lenore, Inc.</span>
-              </div>
-            </Link>
-          </div>
+      {sections.map((s) => (
+        <LegalSection key={s.id} title={s.title}>
+          <p>{s.body}</p>
+        </LegalSection>
+      ))}
 
-          <div className={styles.headingBlock}>
-            <h2 className={styles.pageTitle}>Privacy Policy</h2>
-            <p className={styles.pageSubtitle}>Directory, Profile, and Inquiry Data Handling</p>
-            <p className={styles.lastUpdated}>Last updated: March 13, 2026</p>
-          </div>
-
-          <div className={styles.card}>
-            {/* Intro */}
-            <section className={styles.section}>
-              <p className={styles.body}>
-                This Privacy Policy explains how Lenore, Inc. (&ldquo;Tax Monitor Pro,&rdquo; &ldquo;Provider,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) collects, uses, stores, and displays information through the Tax Monitor Pro platform, including practitioner profiles, directory listings, verification submissions, inquiry routing, and related platform services.
-              </p>
-            </section>
-
-            {/* A. Information We Collect */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>A. Information We Collect</h3>
-              <p className={styles.bodyBeforeList}>We may collect information that users voluntarily provide when using the platform, including:</p>
-              <ul className={styles.discList}>
-                <li>Name, firm name, and professional identity information.</li>
-                <li>Business contact details such as email, phone, city, and state.</li>
-                <li>Professional credentials such as JD, CPA, EA, attorney admission, licenses, or related claims.</li>
-                <li>Profile biography, services offered, languages spoken, and business descriptions.</li>
-                <li>Verification documents or credential materials submitted for review.</li>
-                <li>Inquiry messages submitted by taxpayers or prospective clients.</li>
-                <li>Technical information related to platform usage such as device, browser, or interaction data.</li>
-              </ul>
-            </section>
-
-            {/* B. Public Profile Information */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>B. Public Profile Information</h3>
-              <p className={styles.body}>
-                Certain information submitted to the platform may be publicly visible through the directory, search results, profile pages, or related discovery surfaces. This may include name, firm name, city, state, service categories, credentials, biography, profile photo, and similar information provided for listing purposes.
-              </p>
-              <p className={styles.bodySpaced}>
-                Users should not submit confidential or sensitive information intended to remain private within public profile fields.
-              </p>
-            </section>
-
-            {/* C. Verification Materials */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>C. Verification Materials</h3>
-              <p className={styles.body}>
-                If a user requests verification of credentials, professional status, or business identity, we may request supporting documentation. These materials may include license records, bar admissions, certification numbers, business registration documents, or other supporting evidence.
-              </p>
-              <p className={styles.bodySpaced}>
-                Verification materials are used solely for administrative review, qualification decisions, and platform trust and safety processes.
-              </p>
-            </section>
-
-            {/* D. Inquiry and Client Communication */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>D. Inquiry and Client Communication</h3>
-              <p className={styles.body}>
-                Taxpayers or prospective clients may submit inquiries through the platform. These messages may include contact details, general tax issues, or other information voluntarily provided by the sender.
-              </p>
-              <p className={styles.bodySpaced}>
-                Inquiry information may be shared with practitioners or firms through the platform&apos;s routing or client pool systems to facilitate communication between users.
-              </p>
-            </section>
-
-            {/* E. How We Use Information */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>E. How We Use Information</h3>
-              <p className={styles.bodyBeforeList}>Information collected through the platform may be used to:</p>
-              <ul className={styles.discList}>
-                <li>Operate and maintain the directory and platform.</li>
-                <li>Display practitioner profiles and listings.</li>
-                <li>Review verification submissions.</li>
-                <li>Route inquiries between users.</li>
-                <li>Maintain platform safety, trust, and compliance processes.</li>
-                <li>Provide support, troubleshooting, or account management.</li>
-                <li>Improve platform functionality and services.</li>
-              </ul>
-            </section>
-
-            {/* F. Data Sharing */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>F. Data Sharing</h3>
-              <p className={styles.body}>
-                We do not sell personal information. However, information may be shared in limited circumstances, including:
-              </p>
-              <ul className={`${styles.discList} ${styles.spacedList}`}>
-                <li>With practitioners when inquiries are submitted through the platform.</li>
-                <li>With service providers that support platform infrastructure.</li>
-                <li>When required by law, legal process, or regulatory request.</li>
-                <li>To protect the security, integrity, or legal rights of the platform.</li>
-              </ul>
-            </section>
-
-            {/* G. Data Retention */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>G. Data Retention</h3>
-              <p className={styles.body}>
-                We retain information for as long as reasonably necessary to operate the platform, maintain business records, support verification decisions, comply with legal obligations, resolve disputes, and enforce platform rules.
-              </p>
-            </section>
-
-            {/* H. Security */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>H. Security</h3>
-              <p className={styles.body}>
-                We implement commercially reasonable technical and administrative safeguards designed to protect information handled through the platform. However, no system can guarantee absolute security.
-              </p>
-            </section>
-
-            {/* I. User Responsibilities */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionHeading}>I. User Responsibilities</h3>
-              <p className={styles.body}>
-                Users are responsible for maintaining the confidentiality of their account credentials and for ensuring that the information they submit to the platform is accurate, lawful, and appropriate for publication.
-              </p>
-            </section>
-
-            {/* Contact */}
-            <section className={styles.sectionLast}>
-              <h3 className={styles.sectionHeading}>Contact</h3>
-              <p className={styles.body}>
-                For questions regarding this Privacy Policy or our data handling practices, contact Lenore, Inc. through official business channels.
-              </p>
-            </section>
-          </div>
-        </main>
-
-      </div>
-    </div>
+      <LegalSection title="Contact">
+        <p>
+          For questions regarding this Privacy Policy, contact Tax Monitor Pro through the{' '}
+          <Link href="/contact" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">
+            support page
+          </Link>{' '}
+          or by mail at 1175 Avocado Avenue Suite 101 PMB 1010, El Cajon, CA 92020.
+        </p>
+      </LegalSection>
+    </LegalPageLayout>
   )
 }
