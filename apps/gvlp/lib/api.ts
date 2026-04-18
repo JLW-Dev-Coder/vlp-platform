@@ -19,8 +19,12 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 export interface Session {
   account_id: string;
   email: string;
-  name?: string;
-  tier?: string;
+  role: string;
+  membership: string;
+  platform: string;
+  expires_at: string;
+  referral_code?: string;
+  transcript_tokens?: number;
 }
 
 export interface GvlpConfig {
@@ -66,7 +70,13 @@ export interface CheckoutResponse {
 
 export async function getSession(): Promise<Session | null> {
   try {
-    return await apiFetch<Session>('/v1/auth/session');
+    const res = await fetch(`${API_BASE}/v1/auth/session`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { ok?: boolean; session?: Session };
+    return data?.session ?? null;
   } catch {
     return null;
   }
