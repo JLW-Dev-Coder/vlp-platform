@@ -73,7 +73,10 @@ TCVLP passes `tcvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/`, `/demo`, `/what-is-form-843`, `/pricing`, `/onboarding`, `/support`, `/success`, `/sign-in`
 
 ### Member (authenticated)
-`/dashboard`, `/dashboard/embed`, `/dashboard/submissions`, `/dashboard/settings`, `/dashboard/upgrade`
+`/dashboard`, `/dashboard/embed`, `/dashboard/submissions`, `/dashboard/upgrade` (Plan)
+`/dashboard/account` (Firm Setup + Notifications + Manage Billing)
+`/dashboard/profile` (Firm Profile — renamed from `/dashboard/settings`)
+`/dashboard/usage` (Tool usage history)
 `/calendar`, `/affiliate`
 
 ### Client-facing (parameterized by slug)

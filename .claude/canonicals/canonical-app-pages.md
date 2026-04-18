@@ -85,6 +85,7 @@ The canonical reference is `apps/vlp/app/(member)/account/AccountClient.tsx`. Ev
 - **Account Details card** — `account_id`, `email`, `created_at` / member-since date, account status (rendered via a status badge).
 - **Current Plan / Membership card** — plan label, price, feature bullets, next-renewal date. Apps without tiered plans show a simplified single-plan card.
 - **Billing management** — see §3.3.
+- **Notifications card** — list of toggle-able notification preferences; persists via `PATCH /v1/accounts/preferences/:account_id` (or app-specific preferences endpoint where one exists — TCVLP uses `PATCH /v1/tcvlp/profile`). Each toggle has a revert-on-error fallback so the UI state matches the persisted state even on network failure.
 - **Sign out** — NOT page content. Sign-out lives in the AppShell topbar account menu and is provided by `@vlp/member-ui`. Pages must not render a second sign-out button.
 
 ### 3.2 Editable fields
@@ -93,16 +94,49 @@ The canonical reference is `apps/vlp/app/(member)/account/AccountClient.tsx`. Ev
 - Additional editable fields (display name, timezone, etc.) per VLP reference — lift the exact field list from `AccountClient.tsx`.
 - Form fields are optimistic-save-on-blur only when the VLP reference does so; otherwise use an explicit Save button that's enabled only when the form is dirty.
 
-### 3.3 Billing management — CANONICAL HOME
+### 3.3 Billing surfaces (canonical split)
 
-Per Owner rulings D1 + D2 + D3 (2026-04-17):
+Per Owner rulings D1+D2+D3 refined during A5 Phase 3 TCVLP sweep: Stripe-billed apps surface billing across TWO canonical pages with distinct purposes:
 
-- **Account is the canonical home for billing management across all 8 apps.** There is no separate "Plan & Billing", "Subscription", or "Billing" sidebar item on any app.
-- **Stripe-billed apps** include a **"Manage Subscription"** button that opens the Stripe Customer Portal via the shared Worker endpoint `POST /v1/billing/portal/sessions`.
-  - Implementation pattern: button `onClick` issues a `fetch` to the endpoint with `credentials: 'include'`, receives `{ url }`, and performs `window.location.assign(url)`.
-  - The endpoint resolves the Stripe customer ID from the authenticated session — there are **no platform-specific portal endpoints**.
-- **Apps without Stripe billing** — none currently; all 8 apps have Stripe checkout. If a future app ships without Stripe, Account hosts billing UI directly as a placeholder until first-party receipts ship.
-- **"Subscribed but missing app-row" recovery** — precedent set by the TCVLP Firm Setup card (commit `9f2c880`). Apps that can enter this inconsistent state MUST surface a **"Complete Setup"** CTA card on Account that detects the state (via an app-specific subscription/status endpoint) and routes the user to the app's onboarding flow.
+#### 3.3.1 Account page: billing management
+
+Account hosts the "Manage Billing" button that opens Stripe Customer Portal via `POST /v1/billing/portal/sessions`. The portal handles:
+
+- Payment method updates
+- Invoice downloads
+- Subscription cancellation
+- Proration / receipt history
+
+Implementation: button `onClick` calls the shared portal helper (see `apps/tcvlp/lib/billing.ts` for the reference pattern), sources `customerId` from `/v1/{platform}/subscription/status` response (or equivalent), `returnUrl` is the current page (`window.location.origin + '/dashboard/account'`).
+
+The "subscribed but missing app-row" recovery state (State B from the TCVLP Firm Setup card precedent) surfaces on Account with a "Complete Setup" CTA routing to the app's onboarding flow. Users paid via Stripe but lacking an app-row can self-recover without admin intervention.
+
+#### 3.3.2 Plan page: billing selection
+
+A separate sidebar item under SETTINGS (label: "Plan", path `/dashboard/plan` or `/dashboard/upgrade` — per-app existing path retained when present). Surfaces:
+
+- Plan tier grid with current-plan indicator
+- Upgrade/downgrade CTAs routing to Stripe Checkout
+- "Manage Your Billing" card below the tier grid, rendered only when user has active subscription AND valid `customerId`; opens the same portal as Account's button
+
+Plan and Account are deliberately separate because:
+
+- Plan selection (Checkout) and plan management (Portal) are distinct Stripe surfaces with distinct user intents
+- Keeping Plan separate prevents Account-page bloat
+- Users browsing tiers don't need to land on Account first
+
+#### 3.3.3 Non-Stripe apps
+
+Apps without Stripe billing (rare — all 8 currently have checkout) host billing UI directly on Account as a placeholder until first-party receipts ship. No Plan sidebar item required.
+
+#### 3.3.4 Worker endpoint
+
+`POST /v1/billing/portal/sessions` (`apps/worker/src/index.js:3970`)
+Request body: `{ accountId, customerId, eventId, returnUrl }`
+Response: `{ ok, url, eventId, status }`
+All fields required. `eventId` is client-generated UUID.
+
+For `customerId` sourcing: per-app subscription-status endpoints must expose `stripe_customer_id` in their response. Reference implementation: `/v1/tcvlp/subscription/status` (Worker commit `4057154`) — field typed as `string | null`.
 
 ### 3.4 Worker endpoints used
 
@@ -186,7 +220,10 @@ The canonical reference is `apps/vlp/app/(member)/usage/page.tsx` + `UsageClient
 
 ### 6.2 Worker endpoints used
 
-- `GET /v1/usage/by-account/:id`
+- `GET /v1/dashboard` (session-authenticated; returns dashboard payload including token usage summary)
+- `GET /v1/tokens/usage/{accountId}?limit=25` (per-tool usage detail, fixed 25-item limit)
+
+Note: `canonical-feature-matrix` Shared Features row previously listed `/v1/usage/by-account/:id`. That route may exist in the Worker but is not the one VLP or TCVLP consume. Feature matrix corrected separately.
 
 ### 6.3 Status note
 
@@ -251,10 +288,12 @@ Per Owner rulings Q1–Q7 from the A5 Phase 1 audit:
 | TTTMP | ✓       | + (P3)            | + (P3)  | + (P3)  | Q1 hot-fix done; Phase 3 creates Profile / Support / Usage |
 | DVLP  | + (P3)  | + (P3)            | ✓       | + (P3)  | Q5 — `/operator/*` shell, AdminGate wrap |
 | GVLP  | ✓       | ✓                 | ✓       | ✓       | — |
-| TCVLP | ✓       | ✓ (Firm Profile)  | ✓       | + (P3)  | Q2, Q4, Q7 — collapse legacy Plan & Billing, rename to `/dashboard/profile`, Phase 3 creates Usage |
+| TCVLP | ✓       | ✓ (Firm Profile)  | ✓       | ✓       | 5-item SETTINGS: Account, Plan, Firm Profile, Support, Usage. Plan retained at `/dashboard/upgrade` per sub-phase 1. Firm Profile at `/dashboard/profile` per sub-phase 3. Usage created faithful VLP lift per sub-phase 4. Stripe Portal wired on Account + Plan per sub-phase 5. Worker commit `4057154` exposes `stripe_customer_id`. See footnote. |
 | WLVLP | + (P3)  | + (P3)            | ✓       | + (P3)  | Q6 — Phase 3 creates 3 pages; portal button handles hosting renewals |
 
 **Legend:** ✓ = shipped per audit; **+ (P3)** = Phase 3 creates.
+
+**Footnote (TCVLP Plan item):** TCVLP SETTINGS includes an additional "Plan" item between Account and Firm Profile, routing to `/dashboard/upgrade`. Stripe-billed apps that add a Plan page in their sweep follow this pattern.
 
 ---
 
@@ -270,3 +309,7 @@ Append-only. New entries go at the bottom of the table.
 | 2026-04-17 | TCVLP retains Firm Profile as Profile specialization, routed to `/dashboard/profile` (D4, Q7) | Firm Profile is the public-facing pro identity and occupies the canonical Profile slot; no path exception |
 | 2026-04-17 | DVLP in scope, AdminGate accepted as auth wrap (Q5) | Operator-only role is the DVLP context; AdminGate is functionally equivalent to AuthGate for canonical purposes |
 | 2026-04-17 | D5 codified: SETTINGS pages may not redirect on profile / billing / onboarding state | Established by TCVLP hot-fixes `9a805e0` + `9f2c880`; Phase 1 audit confirmed no other app currently violates |
+| 2026-04-18 | Account/Plan split for Stripe-billed apps | Refined D1+D2+D3 per TCVLP sweep pre-flight finding #4 — `/dashboard/upgrade` already shipped as functional Plan page, retained as canonical Plan surface. Account hosts portal for billing-management (payment method, invoices, cancel); Plan hosts tier selection + embedded Manage Billing card. |
+| 2026-04-18 | Notifications card on Account | Per TCVLP sweep sub-phase 2 + Owner ruling on Phase 3 finding #2 — notification preferences are account-level (how user is contacted), not profile-level (what clients see). |
+| 2026-04-18 | Usage endpoints corrected to match VLP reality | Canonical §6.2 previously listed `/v1/usage/by-account/:id` per feature-matrix; reality is `GET /v1/dashboard` + `GET /v1/tokens/usage/{accountId}?limit=25`. Faithful VLP lift confirmed this during TCVLP sub-phase 4. |
+| 2026-04-18 | Worker commit `4057154` exposes `stripe_customer_id` | Subscription-status responses (authed + H_other branches) now include `stripe_customer_id`; unblocks Stripe Portal wiring for all Stripe-billed apps. Per-app subscription-status endpoints following TCVLP pattern must expose this field. |
