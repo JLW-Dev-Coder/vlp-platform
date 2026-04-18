@@ -18,6 +18,14 @@ export const dvlpConfig: PlatformConfig = {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/operator', icon: 'LayoutDashboard' },
+        { label: 'Submissions', href: '/operator/submissions', icon: 'Inbox' },
+        { label: 'Developers', href: '/operator/developers', icon: 'Users' },
+        { label: 'Jobs', href: '/operator/jobs', icon: 'Briefcase' },
+        { label: 'Post to Developer', href: '/operator/post', icon: 'Send' },
+        { label: 'Messages', href: '/operator/messages', icon: 'MessageSquare' },
+        { label: 'Tickets', href: '/operator/tickets', icon: 'Ticket' },
+        { label: 'Canned Responses', href: '/operator/canned-responses', icon: 'FileText' },
+        { label: 'Bulk Email', href: '/operator/bulk-email', icon: 'Mail' },
         { label: 'Find Developers', href: '/developers', icon: 'Search' },
         { label: 'Onboarding', href: '/onboarding', icon: 'UserPlus' },
       ],
@@ -25,14 +33,13 @@ export const dvlpConfig: PlatformConfig = {
     {
       title: 'EARNINGS',
       items: [
-        { label: 'Affiliate', href: '/affiliate', icon: 'Link2' },
+        { label: 'Affiliate', href: '/operator/affiliate', icon: 'Link2' },
       ],
     },
     {
       title: 'SETTINGS',
       items: [
-        { label: 'Account', href: '/operator', icon: 'Settings' },
-        { label: 'Support', href: '/support', icon: 'HelpCircle' },
+        { label: 'Support', href: '/operator/support', icon: 'HelpCircle' },
       ],
     },
   ],
@@ -43,6 +50,6 @@ export const dvlpConfig: PlatformConfig = {
     dashboard: '/operator',
     account: '/operator',
     profile: '/operator',
-    support: '/support',
+    support: '/operator/support',
   },
 }

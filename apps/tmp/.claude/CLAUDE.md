@@ -43,7 +43,7 @@ TMP passes `tmpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/`, `/about`, `/affiliate`, `/contact`, `/calendar`, `/directory`, `/directory/profile`, `/features`, `/pricing`, `/resources/transcript-central`, `/tools/irs-payment-calculator`, `/forms/2848`, `/legal/privacy`, `/legal/terms`, `/legal/refund`, `/sign-in`
 
 ### Member (protected — vlp_session cookie)
-`/dashboard`, `/dashboard/compliance-report`, `/dashboard/transcript-changes`, `/dashboard/esign-2848`, `/dashboard/active-alerts`, `/dashboard/tokens`, `/dashboard/receipts`, `/dashboard/profile`, `/dashboard/help-center`, `/dashboard/support`, `/dashboard/affiliate`, `/calendar`, `/messages`, `/office`, `/report`, `/report/view`, `/status`. Top-level `/affiliate` and `/support` are redirect stubs to `/dashboard/affiliate` and `/dashboard/support`.
+`/dashboard`, `/dashboard/compliance-report`, `/dashboard/transcript-changes`, `/dashboard/esign-2848`, `/dashboard/active-alerts`, `/dashboard/tokens`, `/dashboard/receipts`, `/dashboard/profile`, `/dashboard/help-center`, `/dashboard/support`, `/dashboard/affiliate`, `/calendar`, `/messages`, `/office`, `/report`, `/report/view`, `/status`. Top-level `/affiliate` is a redirect stub to `/dashboard/affiliate`; `/support` redirects to `/help`.
 
 ### Intake flow (public → authenticated)
 `/inquiry`, `/intake`, `/offer`, `/agreement`, `/payment`, `/payment-success`

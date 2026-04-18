@@ -1,10 +1,7 @@
-import type { Metadata } from 'next';
-import OperatorDashboard from './OperatorDashboard';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Operator Dashboard — Virtual Launch Pro',
-};
+import AnalyticsView from './components/AnalyticsView';
 
 export default function OperatorPage() {
-  return <OperatorDashboard />;
+  return <AnalyticsView />;
 }
