@@ -87,7 +87,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 - Never duplicate a canonical into an app directory
 - When a canonical is updated, it applies to all apps immediately
 
-### Canonical files (20 total):
+### Canonical files (21 total):
 
 | File | Purpose | Use when... |
 |------|---------|-------------|
@@ -104,6 +104,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 | `canonical-legal.md` | Legal page copy (privacy, refund, terms) + shared LegalPageLayout usage + businessInfo config requirement | Adding, editing, or migrating `/legal/*` pages on any app |
 | `canonical-market.md` | Market positioning template (12 sections) | Writing marketing copy or positioning docs |
 | `canonical-readme.md` | README template (14 sections) | Creating or editing README files |
+| `canonical-rc-prompt.md` | Principal → RC prompt template (10 required sections) | Authoring any prompt for Execution Engineer |
 | `canonical-roles.md` | Role definitions (Principal, Execution, Owner) | Understanding role boundaries and escalation |
 | `canonical-scale.md` | SCALE batch operations pipeline template | Working on SCALE outreach, enrichment, or email pipeline |
 | `canonical-site-nav.md` | Standard navigation structure (marketing + member) for all 8 platform frontends | Adding, removing, or reordering nav items on any platform |

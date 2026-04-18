@@ -82,17 +82,65 @@ The canonical reference is `apps/vlp/app/(member)/account/AccountClient.tsx`. Ev
 
 ### 3.1 Required UI sections
 
-- **Account Details card** — `account_id`, `email`, `created_at` / member-since date, account status (rendered via a status badge).
+- **Account Details card** — Required fields: `email`, `account_id` (displayed as monospace code), name, firm (optional — only when operator/account carries a firm), member-since (`created_at` formatted), status badge. Per Principal ruling during the A5 Phase 3 GVLP sweep commit-4a pre-audit: `account_id` is a required displayed field (VLP omits it; GVLP adds it; canonical codifies the GVLP decision).
 - **Current Plan / Membership card** — plan label, price, feature bullets, next-renewal date. Apps without tiered plans show a simplified single-plan card.
 - **Billing management** — see §3.3.
-- **Notifications card** — list of toggle-able notification preferences; persists via `PATCH /v1/accounts/preferences/:account_id` (or app-specific preferences endpoint where one exists — TCVLP uses `PATCH /v1/tcvlp/profile`). Each toggle has a revert-on-error fallback so the UI state matches the persisted state even on network failure.
+- **Notifications card** — see §3.1.4.
 - **Sign out** — NOT page content. Sign-out lives in the AppShell topbar account menu and is provided by `@vlp/member-ui`. Pages must not render a second sign-out button.
 
-### 3.2 Editable fields
+#### 3.1.1 Not required (VLP-specific legacy surface area)
+
+VLP's `AccountClient.tsx` ships three cards that are NOT part of the canonical §3.1 set:
+
+- **Payment Method card** — VLP-specific; canonical apps surface payment method via the Stripe Customer Portal (opened from the "Manage Billing" button — see §3.3).
+- **Subscription Summary card** — VLP-specific; canonical apps surface subscription state in the Current Plan card.
+- **Account Security card** — VLP-specific AND contains non-functional placeholder buttons (password change, 2FA toggles) in shipped VLP reality. If an app implements Account Security, wire the buttons to real auth flows; **do not ship placeholder UI**. Placeholder UI on a canonical card is a higher bug-risk surface than no card at all.
+
+These three cards are permitted on VLP (existing surface area). They are not required or expected on other apps.
+
+#### 3.1.2 Extensibility: app-specific cards
+
+Required card sets in §3.1 are a **minimum floor, not a ceiling**. Apps may add app-specific cards below the required ones to surface concerns unique to the app's product domain. Precedents:
+
+- **TCVLP Firm Setup card** — surfaces the "subscribed but missing app-row" recovery CTA on `/dashboard/account`.
+- **GVLP Client ID rotation card** — surfaces the operator Client ID with a rotate control on `/dashboard/account`.
+
+When adding an app-specific card: place it below the required canonical cards, not interleaved. Keep app-specific concerns visually distinct from canonical ones.
+
+#### 3.1.3 ToggleRow primitive
+
+The Notifications card uses a reusable `ToggleRow` primitive that currently lives inline in `apps/gvlp/app/dashboard/account/AccountClient.tsx`. Extraction to `@vlp/member-ui` is an escalation-level change deferred until at least two more apps (TMP expected) have ported and confirmed the primitive's contract is stable.
+
+#### 3.1.4 Notifications card contract (canonical shipped reality)
+
+Reference implementation: `apps/gvlp/app/dashboard/account/AccountClient.tsx` (established in commit `8cf5598`). This is the canonical Notifications card implementation across the ecosystem. Future app sweeps (TMP, TTTMP, DVLP, WLVLP) port from GVLP, not from TMP's `ProfileContent.tsx` (which has two known bugs — wrong preference key names and data-loss from partial PATCH; see queued reconciliation #17).
+
+Rules:
+
+- **Lives on Account page**, not a separate route.
+- **Toggle list uses only preference keys supported by the Worker schema.** Current Worker schema for `/v1/accounts/preferences/:account_id`: `in_app_enabled`, `sms_enabled`. The full preferences row has 6 keys: `appearance`, `timezone`, `default_dashboard`, `accent_color`, `in_app_enabled`, `sms_enabled`. **`email_enabled` is NOT in the Worker schema today.** Do not wire an Email toggle until the Worker is extended. See queued reconciliation #16.
+- **Critical Worker integration note — INSERT OR REPLACE full-row semantics.** The `PATCH /v1/accounts/preferences/:account_id` endpoint replaces the entire preferences row on every call. Clients MUST hold the **full 6-key preferences state** and send the complete object on every PATCH, even when only one key is changing. Sending a partial body nullifies omitted keys. This is a silent data-loss footgun — the Worker does not fail on a partial body, it just zeroes the missing fields.
+- **GET response envelope:** `{ ok: true, preferences: {...} }`. Frontend reads `body.preferences.{key}`.
+- **PATCH on each toggle change** — no Save button. Optimistic UI: flip the toggle immediately, call PATCH.
+- **Revert-on-error:** if PATCH fails, revert the UI toggle to its prior state and render an inline error message under the card.
+- **Loading state:** skeleton while the initial GET loads. Match the §2.5 skeleton pattern.
+- **Error state:** amber inline error card with a Retry button on GET failure. Match the §2.6 error pattern.
+- **Concurrent-click guard:** prevent an in-flight toggle from being re-toggled during a pending PATCH (disable or ignore input until the PATCH resolves).
+
+### 3.2 Editable fields *(planned / not yet implemented)*
+
+This section describes aspirational inline-editing behavior. **No shipped app in the VLP ecosystem currently implements inline-editable fields on the Account page.** Edit surfaces are:
+
+- **Profile fields** (display name, bio, photo, etc.): edited on `/dashboard/profile` or via an onboarding flow (see §3.5).
+- **Account-level fields** (email, etc.): changed via a support ticket. Inline email editing via `PATCH /v1/accounts/:account_id` is aspirational; Account page email is **read-only in shipped reality** across VLP, TCVLP, TMP, and GVLP.
+
+Retained as aspirational:
 
 - **Email** update via `PATCH /v1/accounts/:account_id`.
-- Additional editable fields (display name, timezone, etc.) per VLP reference — lift the exact field list from `AccountClient.tsx`.
+- Additional editable fields (display name, timezone, etc.) per VLP reference.
 - Form fields are optimistic-save-on-blur only when the VLP reference does so; otherwise use an explicit Save button that's enabled only when the form is dirty.
+
+When a future app implements inline-editable Account fields, this section graduates from aspirational to shipped and the implementing app becomes the reference.
 
 ### 3.3 Billing surfaces (canonical split)
 
@@ -107,9 +155,18 @@ Account hosts the "Manage Billing" button that opens Stripe Customer Portal via 
 - Subscription cancellation
 - Proration / receipt history
 
-Implementation: button `onClick` calls the shared portal helper (see `apps/tcvlp/lib/billing.ts` for the reference pattern), sources `customerId` from `/v1/{platform}/subscription/status` response (or equivalent), `returnUrl` is the current page (`window.location.origin + '/dashboard/account'`).
+Implementation: button `onClick` calls the shared portal helper (see `apps/tcvlp/lib/billing.ts` for the reference pattern — established in TCVLP A5 sub-phase 5, ported to GVLP in commit `084aca7`). `returnUrl` is the current page (`window.location.origin + '/dashboard/account'`).
 
-The "subscribed but missing app-row" recovery state (State B from the TCVLP Firm Setup card precedent) surfaces on Account with a "Complete Setup" CTA routing to the app's onboarding flow. Users paid via Stripe but lacking an app-row can self-recover without admin intervention.
+`customerId` sourcing is flexible. It can come from either:
+
+- **(a)** a dedicated subscription-status endpoint like `/v1/{platform}/subscription/status` (TCVLP pattern), or
+- **(b)** directly from an existing app-object context such as `useOperator()` (GVLP pattern — the Operator TypeScript type was extended in commit `6eff2da` to expose `stripe_customer_id`).
+
+The invariant: the component knows `status === 'active'` and `stripe_customer_id` is non-null before rendering the Manage Billing control. Pick whichever source is already available in the page; do not create a new endpoint if app-object context already carries the data.
+
+**"Complete Setup" recovery CTA — scoping note.** The "subscribed but missing app-row" recovery state (State B from the TCVLP Firm Setup card precedent) surfaces on Account with a "Complete Setup" CTA routing to the app's onboarding flow. This pattern applies **only to apps with multi-step onboarding** (e.g. TCVLP firm setup). It is **N/A for apps where the app-row is webhook-created on subscription** (GVLP operator rows, etc.) — those apps have no intermediate "subscribed but missing app-row" state to recover from. **Do not add placeholder recovery CTAs to apps that don't have this state.**
+
+**`openBillingPortal` helper — extraction candidate.** Both TCVLP (`apps/tcvlp/lib/billing.ts`) and GVLP (`apps/gvlp/lib/billing.ts`, commit `6eff2da`) now ship a local `openBillingPortal` helper with the same signature. Current adoption: 2 apps. Extraction to `@vlp/member-ui` is deferred until at least 2 more Stripe-billed apps have ported the same helper and confirmed the contract is stable (4 of 4+ Stripe-billed apps).
 
 #### 3.3.2 Plan page: billing selection
 
@@ -152,12 +209,22 @@ For `customerId` sourcing: per-app subscription-status endpoints must expose `st
 
 The canonical reference is `apps/vlp/app/(member)/profile/ProfileClient.tsx`. Every app's Profile page lifts its behavior from this file.
 
-### 4.1 Required UI sections
+### 4.1 Required UI sections (shipped reality: read-only with editing deferred to onboarding)
 
-- Public-profile fields (display name, photo, bio, and any app-specific public fields) — lift the exact list from the VLP reference for the base case.
-- Visibility toggle (public / unlisted) where the app supports a public directory.
-- **Save button enabled only when the form is dirty** — no continuous auto-save.
-- Photo upload flow via the two-step init/complete pattern (see §4.3).
+Shipped reality across VLP and GVLP: the Profile page is **read-only** — it displays the user's public profile fields but does not edit them inline. Editing is deferred to a separate `/profile/onboarding` flow (VLP) or equivalent wizard. Photo upload via two-step init/complete is also a property of the onboarding flow, not the Profile page.
+
+Required (shipped):
+
+- Read-only display of public-profile fields (display name, photo, bio, and any app-specific public fields) — lift the exact field list from the VLP reference.
+- Visibility indicator (public / unlisted) where the app supports a public directory.
+- "Edit Profile" CTA routing to the onboarding/wizard flow.
+
+Aspirational / planned (not yet implemented in any app):
+
+- Inline editable form with Save button enabled only when the form is dirty.
+- Inline photo upload via the two-step init/complete pattern (see §4.3).
+
+When an app implements inline Profile editing, it becomes the reference and this section graduates from aspirational to shipped.
 
 ### 4.2 TCVLP specialization (per Owner ruling D4)
 
@@ -182,8 +249,8 @@ The canonical reference is `apps/vlp/app/(member)/support/page.tsx` + `SupportCl
 ### 5.1 Required UI sections
 
 - **Ticket list**, sorted by `updated_at` desc, with status badges on each row.
-- **Create-ticket form** — subject, body, category. On submit, new ticket is prepended to the list and form resets.
-- **Ticket detail view** — modal or inline expansion (match VLP's chosen pattern; do not invent a new one).
+- **"Create Ticket" CTA** routing to a separate `/support/create` (or `/dashboard/support/create`) route. The create-ticket form lives on that route, NOT inline on the Support page. Shipped reality across VLP, TCVLP, and GVLP: all use a separate route. Reference implementation: `apps/gvlp/app/dashboard/support/create/` (commit `3b42562`) ports the VLP pattern.
+- **Ticket detail view** — *planned / not required.* Zero shipped apps currently implement a ticket detail view. Apps may add one, but it is not part of the required contract.
 
 ### 5.2 Co-location pattern
 
@@ -196,10 +263,14 @@ Lift the exact split from VLP for every page. Do not combine `page.tsx` and the 
 
 ### 5.3 Status badges
 
-- Values: `open`, `in_progress`, `resolved`, `closed`.
-- Lift the exact color mapping and label text from the VLP `StatusBadge` usage in `SupportClient.tsx`.
+- **Status value set TBD** — queued reconciliation #8 (see Phase 4 plan). Ecosystem divergence: Worker may emit `open | in_progress | resolved | closed`; frontends currently display `active | pending | resolved` (via a `statusLabel` mapping in VLP and GVLP). Canonical does not currently specify which set is authoritative — pending a Worker emission audit + all-apps-frontend coordinated change.
+- Until the reconciliation lands: lift the exact status value set, color mapping, and label text from the VLP `StatusBadge` usage in `SupportClient.tsx` (or GVLP `SupportClient.tsx` — both match).
 
-### 5.4 Worker endpoints used
+### 5.4 Ticket categories
+
+Ticket category options are **per-app, not canonical**. Each app's support form should offer categories that match its product surface (GVLP uses games, embed, etc.; VLP uses bookings; TMP will have its own set). There is **no canonical cross-app category list** — do not invent one.
+
+### 5.5 Worker endpoints used
 
 - `POST   /v1/support/tickets`
 - `GET    /v1/support/tickets/by-account/:id`
@@ -223,9 +294,13 @@ The canonical reference is `apps/vlp/app/(member)/usage/page.tsx` + `UsageClient
 - `GET /v1/dashboard` (session-authenticated; returns dashboard payload including token usage summary)
 - `GET /v1/tokens/usage/{accountId}?limit=25` (per-tool usage detail, fixed 25-item limit)
 
-Note: `canonical-feature-matrix` Shared Features row previously listed `/v1/usage/by-account/:id`. That route may exist in the Worker but is not the one VLP or TCVLP consume. Feature matrix corrected separately.
+Note: `canonical-feature-matrix` Shared Features row previously listed `/v1/usage/by-account/:id`. That route may exist in the Worker but is not the one VLP, TCVLP, or GVLP consume. Confirmed correct during GVLP A5 sub-phase 2 (commit `fba2863`). Feature matrix corrected separately.
 
-### 6.3 Status note
+### 6.3 Tool label rendering
+
+Tool labels come from the Worker response. Frontends render the raw `tool` string verbatim unless the VLP reference implementation defines an explicit mapping. **Do not invent app-specific tool label translations** — label consistency across apps requires the mapping to live in the Worker or a shared location, not in each app's client.
+
+### 6.4 Status note
 
 `canonical-feature-matrix.md` marks Tool Usage History as **"partial — route exists, UI incomplete on most platforms"**. This canonical establishes the UI contract; the Phase 3 sweep brings each app into compliance one at a time.
 
@@ -313,3 +388,4 @@ Append-only. New entries go at the bottom of the table.
 | 2026-04-18 | Notifications card on Account | Per TCVLP sweep sub-phase 2 + Owner ruling on Phase 3 finding #2 — notification preferences are account-level (how user is contacted), not profile-level (what clients see). |
 | 2026-04-18 | Usage endpoints corrected to match VLP reality | Canonical §6.2 previously listed `/v1/usage/by-account/:id` per feature-matrix; reality is `GET /v1/dashboard` + `GET /v1/tokens/usage/{accountId}?limit=25`. Faithful VLP lift confirmed this during TCVLP sub-phase 4. |
 | 2026-04-18 | Worker commit `4057154` exposes `stripe_customer_id` | Subscription-status responses (authed + H_other branches) now include `stripe_customer_id`; unblocks Stripe Portal wiring for all Stripe-billed apps. Per-app subscription-status endpoints following TCVLP pattern must expose this field. |
+| 2026-04-18 | Reconciled §3.1/§3.2/§3.3/§4/§5/§6 with shipped reality after GVLP A5 sweep; added Notifications Worker-integration notes | Seven-commit GVLP sweep (3b42562..8cf5598) surfaced consistent canonical-vs-reality drift; documenting shipped patterns as the source of truth with aspirational items explicitly flagged. Queued reconciliations #8 (Support status values) and #17 (TMP ProfileContent preferences data loss) referenced inline but NOT closed — cross-app coordination work. |
