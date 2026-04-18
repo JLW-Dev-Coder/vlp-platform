@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { ttmpConfig } from '@/lib/platform-config'
 
 const ARTICLES = [
   {
@@ -54,11 +55,12 @@ const ARTICLES = [
 
 export default function HelpCenterPage() {
   useEffect(() => {
+    const ns = ttmpConfig.calBookingNamespace
     const script = document.createElement('script')
     script.innerHTML = `
       (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-      Cal("init", "tax-monitor-transcript-support", {origin:"https://app.cal.com"});
-      Cal.ns["tax-monitor-transcript-support"]("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+      Cal("init", "${ns}", {origin:"https://app.cal.com"});
+      Cal.ns["${ns}"]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":"${ttmpConfig.brandColor}"}},"hideEventTypeDetails":false,"layout":"month_view"});
     `
     document.head.appendChild(script)
   }, [])
@@ -89,8 +91,8 @@ export default function HelpCenterPage() {
 
         {/* Book a support call — Cal.com popup */}
         <button
-          data-cal-link="tax-monitor-pro/tax-monitor-transcript-support"
-          data-cal-namespace="tax-monitor-transcript-support"
+          data-cal-link={ttmpConfig.calBookingSlug}
+          data-cal-namespace={ttmpConfig.calBookingNamespace}
           data-cal-config='{"layout":"month_view"}'
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
@@ -190,8 +192,8 @@ export default function HelpCenterPage() {
         </p>
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
-            data-cal-link="tax-monitor-pro/tax-monitor-transcript-support"
-            data-cal-namespace="tax-monitor-transcript-support"
+            data-cal-link={ttmpConfig.calBookingSlug}
+            data-cal-namespace={ttmpConfig.calBookingNamespace}
             data-cal-config='{"layout":"month_view"}'
             style={{ background: '#14b8a6', color: '#000', padding: '0.75rem 1.5rem', borderRadius: 10, fontWeight: 700, fontSize: '0.9375rem', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
             Book a Support Call

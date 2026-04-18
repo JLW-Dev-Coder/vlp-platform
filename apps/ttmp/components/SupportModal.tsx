@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { ttmpConfig } from "@/lib/platform-config";
 
 export const SUPPORT_LINKS = {
   ttmp: {
-    support: "tax-monitor-pro/tax-monitor-transcript-support",
+    support: ttmpConfig.calBookingSlug,
   },
 };
 

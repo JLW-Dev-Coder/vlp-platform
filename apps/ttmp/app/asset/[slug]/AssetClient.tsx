@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import styles from './AssetClient.module.css'
+import { ttmpConfig } from '@/lib/platform-config'
 
 interface Props {
   slug: string
@@ -100,11 +101,12 @@ export default function AssetPageClient({ slug }: Props) {
 
   useEffect(() => {
     if (typeof window === 'undefined' || window.Cal) return
+    const ns = ttmpConfig.calIntroNamespace
     const script = document.createElement('script')
     script.text = `
 (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-Cal("init", "transcript-tax-monitor-pro-intro", {origin:"https://app.cal.com"});
-Cal.ns["transcript-tax-monitor-pro-intro"]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":"#14b8a6"}},"hideEventTypeDetails":false,"layout":"month_view"});
+Cal("init", "${ns}", {origin:"https://app.cal.com"});
+Cal.ns["${ns}"]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":"${ttmpConfig.brandColor}"}},"hideEventTypeDetails":false,"layout":"month_view"});
 `
     document.head.appendChild(script)
   }, [])
@@ -380,8 +382,8 @@ Cal.ns["transcript-tax-monitor-pro-intro"]("ui", {"cssVarsPerTheme":{"light":{"c
           <div className={styles.ctaStack}>
             <a href={d.cta_pricing_url} className={styles.ctaPrimary}>Add this to my practice</a>
             <a
-              data-cal-link="tax-monitor-pro/transcript-tax-monitor-pro-intro"
-              data-cal-namespace="transcript-tax-monitor-pro-intro"
+              data-cal-link={ttmpConfig.calIntroSlug}
+              data-cal-namespace={ttmpConfig.calIntroNamespace}
               data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
               className={styles.ctaSecondary}
             >
