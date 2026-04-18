@@ -1,7 +1,7 @@
 # canonical-site-nav.md — VLP Ecosystem Site Navigation
 
 **Status:** Authoritative
-**Last updated:** 2026-04-15
+**Last updated:** 2026-04-17
 **Owner:** JLW (Principal Engineer review required for changes)
 **Scope:** All 8 apps in the vlp-platform monorepo
 **Parent:** `canonical-app-blueprint.md` (see §1 hierarchy)
@@ -200,11 +200,11 @@ components).
 | Discounts / Entitlements | TMP | /dashboard/discounts |
 | Directory Profile | DVLP, VLP | /dashboard/profile/directory |
 | Premium Domain Hosting | WLVLP | /dashboard/hosting |
-| Game Access | GVLP | /dashboard/games |
+| Game Access JS | GVLP | /dashboard/games |
 | Game Analytics | TTTMP | /dashboard/game-analytics |
 | Job Matching Access | DVLP | /dashboard/jobs |
 | Taxpayer Intake | TMP | /dashboard/intake |
-| Messaging | TMP, VLP | /dashboard/messages |
+| Messaging (Pro ↔ Taxpayer) | TMP, VLP | /dashboard/messages |
 | Parser | TTMP | /dashboard/parser |
 | Reports | ALL | /dashboard/reports |
 | Tax Monitoring | TMP | /dashboard/monitoring |
@@ -216,8 +216,8 @@ components).
 | Item | Platforms | Path |
 |------|-----------|------|
 | Affiliate | ALL | /dashboard/affiliate |
-| Bidding | WLVLP | /dashboard/bidding |
-| Winning | WLVLP | /dashboard/winning |
+| Bidding | ALL | /dashboard/bidding |
+| Winning | ALL | /dashboard/winning |
 
 **SETTINGS**
 
@@ -454,5 +454,6 @@ When a rule in this file conflicts with the blueprint, the blueprint wins. When 
 | 2026-04-15 | Replaced single `max-w-7xl` rule with three-tier container system | Blueprint §4.14 requires three max-widths (marketing/app/narrow) |
 | 2026-04-15 | Replaced `z-50` with `z-sticky` token | Blueprint §4.19 forbids raw z-index values |
 | 2026-04-15 | Expanded §4 from 6 bullets to 7 sub-sections covering mobile, a11y, topbar behavior, sidebar collapse | Existing content was too thin to implement against |
+| 2026-04-17 | Reconciled WORKSPACE/EARNINGS items to Owner spec ("Game Access JS", Messaging descriptor added, Bidding/Winning ALL) | Owner restated authoritative structure during Phase 4 Track B prep |
 
 Append-only. Do not rewrite prior entries.
