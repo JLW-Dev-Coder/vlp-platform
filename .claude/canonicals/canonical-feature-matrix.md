@@ -8,7 +8,7 @@ Parent: canonical-app-blueprint.md
 
 # canonical-feature-matrix.md — VLP Ecosystem Feature Matrix
 
-Last updated: 2026-04-14
+Last updated: 2026-04-19
 
 ---
 
@@ -163,3 +163,94 @@ Update this file whenever:
 - A frontend page is created for a feature
 
 This file lives at `.claude/canonicals/canonical-feature-matrix.md` in the vlp-platform monorepo.
+
+---
+
+## Per-App Page Conformance
+
+Last audit: 2026-04-19
+
+Status per app × canonical page. Existence-only check (not a quality audit) against `canonical-site-nav.md` §1 (marketing) and §2 (app), plus `canonical-app-pages.md` contracts. Updated at the end of each sweep.
+
+Legend: ✅ exists · 🟡 partial · ❌ missing · ⚪ n/a
+
+### Marketing Pages
+
+| Page | VLP | TMP | TTMP | TTTMP | DVLP | GVLP | TCVLP | WLVLP |
+|------|-----|-----|------|-------|------|------|-------|-------|
+| / (landing) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| /about | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| /features | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| /pricing | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| /how-it-works | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| /contact | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
+| /reviews | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| /support (public redirect) | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| /affiliate (public redirect) | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| /legal/privacy | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| /legal/terms | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| /legal/refund | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### App Pages — Settings (canonical-app-pages.md contracts)
+
+Paths shown as `/dashboard/*` canonical. Grandfathered exceptions per `canonical-site-nav.md` §2: VLP uses `(member)/*`, TTMP uses `/app/*`, DVLP uses `/operator/*` — ✅ if equivalent page exists at the grandfathered path.
+
+| Page | VLP | TMP | TTMP | TTTMP | DVLP | GVLP | TCVLP | WLVLP |
+|------|-----|-----|------|-------|------|------|-------|-------|
+| /dashboard/account | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| /dashboard/plan (/upgrade) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | 🟡 |
+| /dashboard/profile | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| /dashboard/support | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| /dashboard/usage | ✅ | ❌ | 🟡 | ❌ | ❌ | ✅ | ✅ | ❌ |
+
+### App Pages — Workspace (platform-specific per canonical-site-nav §2)
+
+"Applies to" column copied from canonical-site-nav §2 table. Status only evaluated for apps where the page applies; all others are ⚪.
+
+| Page | Applies to | Status |
+|------|-----------|--------|
+| /dashboard (home) | ALL | VLP ✅ · TMP ✅ · TTMP ✅ · TTTMP ❌ · DVLP ✅ · GVLP ✅ · TCVLP ✅ · WLVLP ✅ |
+| /dashboard/bookings (Booking Analytics) | VLP | ❌ |
+| /dashboard/calendar | VLP | ✅ |
+| /dashboard/clients (Client Pool) | VLP | ✅ |
+| /dashboard/discounts (Entitlements) | TMP | ❌ |
+| /dashboard/profile/directory | VLP, DVLP | VLP ✅ · DVLP ❌ |
+| /dashboard/hosting (Premium Domain) | WLVLP | ❌ |
+| /dashboard/games (Game Access JS) | GVLP | ✅ |
+| /dashboard/game-analytics | TTTMP | ❌ |
+| /dashboard/jobs (Job Matching) | DVLP | ❌ |
+| /dashboard/intake (Taxpayer Intake) | TMP | ❌ |
+| /dashboard/messages | TMP, VLP | TMP ❌ · VLP ❌ |
+| /dashboard/parser | TTMP | ❌ |
+| /dashboard/reports | ALL | VLP ✅ · TMP ❌ · TTMP ✅ · TTTMP ❌ · DVLP ❌ · GVLP ✅ · TCVLP 🟡 · WLVLP ❌ |
+| /dashboard/monitoring (Tax Monitoring) | TMP | ❌ |
+| /dashboard/voting (Voting Analytics) | WLVLP | ❌ |
+| /dashboard/sites (White-Labeled Site) | TCVLP, WLVLP | TCVLP ❌ · WLVLP ✅ |
+
+### App Pages — Earnings
+
+| Page | VLP | TMP | TTMP | TTTMP | DVLP | GVLP | TCVLP | WLVLP |
+|------|-----|-----|------|-------|------|------|-------|-------|
+| /dashboard/affiliate | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| /dashboard/bidding | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| /dashboard/winning | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
+
+### Notes
+
+- GVLP SETTINGS pages (Account, Plan/Upgrade, Profile, Support, Usage) achieved canonical §3.1 conformance in the A5 Phase 3 sweep (commits `3b42562..aa3b29f`, 2026-04-18).
+- TCVLP SETTINGS pages achieved canonical conformance in an earlier A5 sweep (commits `b694079..f48ae99`).
+- Remaining apps (VLP, TMP, TTMP, TTTMP, DVLP, WLVLP) have not yet been audited against `canonical-app-pages.md`.
+- WLVLP `/dashboard/plan` marked 🟡 because `/dashboard/subscription` is present and likely fills the Plan role, but path does not match canonical.
+- TTMP `/dashboard/usage` marked 🟡 because `/app/token-usage` exists at the grandfathered path but differs from the canonical `usage` name.
+- TCVLP `/dashboard/reports` marked 🟡 because `/dashboard/submissions` fills a reports-like role without matching the canonical path.
+- VLP grandfathered (member) paths are counted as conformant when a same-named destination exists (e.g. `(member)/account` satisfies `/dashboard/account`).
+
+### How to use this matrix
+
+When planning work:
+1. ❌ cells = missing pages; building them is canonical-aligned greenfield work.
+2. 🟡 cells = partial pages; existing code with known gaps or path-drift from canonical.
+3. ⚪ cells = not canonical for that app; leave alone.
+4. ✅ cells = shipped and conformant; don't touch without a reason.
+
+Priority is not determined by this matrix — business priority (revenue, users, bugs) wins. This matrix only answers "what would it take to make everything canonical" — an upper-bound work estimate.
