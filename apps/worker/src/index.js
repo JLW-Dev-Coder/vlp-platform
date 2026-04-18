@@ -4657,14 +4657,28 @@ const ROUTES = [
             // SCALE attribution tracking - check if purchase is from SCALE prospect
             try {
               const customerEmail = obj.customer_details?.email ?? obj.customer_email ?? '';
+              const crid = typeof obj.client_reference_id === 'string' ? obj.client_reference_id.trim() : '';
 
-              if (customerEmail) {
+              if (customerEmail || crid) {
                 // Read prospect index to check for SCALE attribution
                 const prospectIndexObj = await env.R2_VIRTUAL_LAUNCH.get('vlp-scale/prospect-index.json');
 
                 if (prospectIndexObj) {
                   const prospectIndex = await prospectIndexObj.json();
-                  const slug = prospectIndex[customerEmail];
+                  // Deterministic path: slug came through on the Stripe Payment Link click.
+                  // Fallback: email-based reverse lookup for organic/pricing-page traffic.
+                  let slug = null;
+                  if (crid) {
+                    const knownSlugs = new Set(Object.values(prospectIndex));
+                    if (knownSlugs.has(crid)) {
+                      slug = crid;
+                    } else {
+                      console.warn(`[stripe-webhook] SCALE client_reference_id not in prospect index: ${crid}`);
+                    }
+                  }
+                  if (!slug && customerEmail) {
+                    slug = prospectIndex[customerEmail] || null;
+                  }
 
                   if (slug) {
                     // This purchase is attributable to SCALE - create purchase event
@@ -20718,6 +20732,10 @@ function dailyNormalizeCred(profession) {
 
 // Build the full TTMP asset page shape expected by the TTMP frontend
 function buildTtmpAssetPageData({ slug, credKey, cred, firstDisplay, lastDisplay, city, state, firm, nowIso, backfilled }) {
+  // SCALE attribution: route the primary CTA directly at the 10-pack Stripe Payment Link
+  // with client_reference_id={slug} so attribution survives email mismatch at checkout.
+  const ttmpBuyLink = 'https://billing.taxmonitor.pro/b/4gM8wOaAe1oKcUEdTkaR203';
+  const ctaBuyUrl = `${ttmpBuyLink}?client_reference_id=${encodeURIComponent(slug)}`;
   return {
     slug,
     campaign: 'ttmp',
@@ -20736,9 +20754,9 @@ function buildTtmpAssetPageData({ slug, credKey, cred, firstDisplay, lastDisplay
       annual_hours: cred.annual,
       revenue_impact: cred.revenue,
     },
-    cta_pricing_url: 'https://transcript.taxmonitor.pro/pricing',
+    cta_pricing_url: ctaBuyUrl,
     cta_learn_more_url: 'https://transcript.taxmonitor.pro/resources',
-    cta_primary_url: 'https://transcript.taxmonitor.pro/pricing',
+    cta_primary_url: ctaBuyUrl,
     cta_primary_label: 'Start Free — 10 analyses for $19',
     cta_secondary_url: 'https://transcript.taxmonitor.pro/resources',
     cta_secondary_label: 'Try the free IRS code lookup tool',
