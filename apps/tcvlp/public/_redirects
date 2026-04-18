@@ -1,2 +1,4 @@
 # Cloudflare Pages _redirects
 # format: <from> <to> <status>
+/dashboard/settings  /dashboard/profile  301
+/dashboard/settings/  /dashboard/profile  301
