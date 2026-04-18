@@ -20734,6 +20734,9 @@ function dailyNormalizeCred(profession) {
 function buildTtmpAssetPageData({ slug, credKey, cred, firstDisplay, lastDisplay, city, state, firm, nowIso, backfilled }) {
   // SCALE attribution: route the primary CTA directly at the 10-pack Stripe Payment Link
   // with client_reference_id={slug} so attribution survives email mismatch at checkout.
+  // NOTE: This Payment Link URL is duplicated in apps/ttmp/app/(marketing)/pricing/page.tsx
+  // PACKS[0].url. If you rotate the 10-pack Payment Link in Stripe, update BOTH places
+  // or SCALE attribution will break silently. See commit bb7e0f4.
   const ttmpBuyLink = 'https://billing.taxmonitor.pro/b/4gM8wOaAe1oKcUEdTkaR203';
   const ctaBuyUrl = `${ttmpBuyLink}?client_reference_id=${encodeURIComponent(slug)}`;
   return {

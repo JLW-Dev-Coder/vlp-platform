@@ -8,6 +8,9 @@ export const metadata: Metadata = {
 }
 
 const PACKS = [
+  // NOTE: The 10-pack URL is duplicated in apps/worker/src/index.js buildTtmpAssetPageData()
+  // for SCALE attribution. If you rotate the Payment Link in Stripe, update BOTH places
+  // or SCALE attribution will break silently. See commit bb7e0f4.
   {
     tokens: 10, price: '$19', perToken: '$1.90',
     label: '10 Tokens', featured: false,
