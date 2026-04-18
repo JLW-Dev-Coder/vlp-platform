@@ -55,4 +55,58 @@ export const ttmpConfig: PlatformConfig = {
     profile: '/app/profile/',
     support: '/app/support/',
   },
+  businessInfo: {
+    legalEntity: 'Lenore, Inc.',
+    address: {
+      line1: '1175 Avocado Avenue',
+      line2: 'Suite 101 PMB 1010',
+      city: 'El Cajon',
+      state: 'CA',
+      zip: '92020',
+    },
+    phone: '619-800-5457',
+    supportEmail: 'outreach@virtuallaunch.pro',
+  },
+  marketing: {
+    tagline: 'Transcript automation',
+    summary: 'IRS transcript automation that turns raw codes into clear, client-ready insights.',
+    ctaLabel: 'Free Code Lookup',
+    ctaPath: '/tools/code-lookup',
+    megaMenu: {
+      discover: [
+        { label: 'About', href: '/about', description: 'Why Transcript Tax Monitor exists' },
+        { label: 'Contact', href: '/contact', description: 'Talk to our team or start intake' },
+        { label: 'Resource Guide', href: '/resources', description: 'Free transcript-reading playbook' },
+      ],
+      explore: [
+        { label: 'Features', href: '/features' },
+        { label: 'How It Works', href: '/how-it-works' },
+        { label: 'Pricing', href: '/pricing' },
+        { label: 'Help Center', href: '/app/support' },
+        { label: 'Code Lookup', href: '/tools/code-lookup' },
+      ],
+      toolsExtras: [
+        { label: 'Free Code Lookup', href: '/tools/code-lookup' },
+        { label: 'Free Guide', href: '/magnets/guide' },
+        { label: 'Transcript Codes', href: '/resources/transcript-codes' },
+        { label: 'IRS Phone Numbers', href: '/resources/irs-phone-numbers' },
+      ],
+      ctaText: 'Need human review before a transcript issue becomes a client fire drill?',
+      ctaMagnetLabel: 'Free Code Lookup',
+      ctaMagnetPath: '/tools/code-lookup',
+    },
+    footerResources: [
+      { label: 'Free Code Lookup', href: '/tools/code-lookup' },
+      { label: 'Affiliate Program', href: '/affiliate' },
+      { label: 'Tax Monitor Pro', href: 'https://taxmonitor.pro', external: true },
+      { label: 'Tax Tools Arcade', href: 'https://taxtools.taxmonitor.pro', external: true },
+      { label: 'Virtual Launch Pro', href: 'https://virtuallaunch.pro', external: true },
+    ],
+    footerLegal: [
+      { label: 'Privacy', href: '/legal/privacy' },
+      { label: 'Refund', href: '/legal/refund' },
+      { label: 'Terms', href: '/legal/terms' },
+    ],
+    footerTagline: 'Transcript automation',
+  },
 }
