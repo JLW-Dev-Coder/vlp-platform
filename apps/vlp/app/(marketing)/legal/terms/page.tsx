@@ -5,7 +5,7 @@ import { vlpConfig } from '@/lib/platform-config'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | Virtual Launch Pro',
-  description: 'Terms for Virtual Launch Pro digital products, installs, templates, implementation services, and platform use.',
+  description: 'Terms for Virtual Launch Pro subscriptions, tokens, digital deliverables, and platform use.',
 }
 
 export default function TermsPage() {
@@ -13,17 +13,17 @@ export default function TermsPage() {
     <LegalPageLayout
       config={vlpConfig}
       title="Terms of Service"
-      subtitle="Digital Products, Installs, and Service Use Agreement"
-      lastUpdated="March 17, 2026"
+      subtitle="Digital Service Use Agreement"
+      lastUpdated="April 17, 2026"
       currentPage="terms"
     >
       <LegalSection>
-        <p>This Agreement is entered into by and between Virtual Launch Pro&apos;s operating entity (&ldquo;Provider&rdquo;) and the individual or entity purchasing, accessing, or using Virtual Launch Pro products or services (&ldquo;Client&rdquo;).</p>
+        <p>Virtual Launch Pro provides a digital service offering subscriptions, tokens, and related digital deliverables (the &ldquo;Service&rdquo;). This Agreement is entered into by and between Virtual Launch Pro&apos;s operating entity (&ldquo;Provider&rdquo;) and the individual or entity purchasing, accessing, or using the Service (&ldquo;Client&rdquo;).</p>
       </LegalSection>
 
       <LegalSection title="Section 1. Covered Services & Scope of Use">
         <ul className="mb-4 space-y-2">
-          {['Digital templates, documents, and workflow assets','Setup, implementation, and onboarding services','Automation configuration and platform customization','Related account access, training, support, and digital deliverables'].map((item) => (
+          {['Subscriptions, tokens, and digital deliverables','Access to the Service and its features','Account configuration and platform features','Related account access, training, support, and digital deliverables'].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
         </ul>
@@ -32,7 +32,7 @@ export default function TermsPage() {
 
       <LegalSection title="Section 2. No Professional or Regulated Advice">
         <p className="mb-3">Client acknowledges that Provider does not provide legal, tax, accounting, financial, compliance, HR, employment, or other regulated professional advice under this Agreement unless separately and expressly stated in writing.</p>
-        <p>Any templates, examples, workflows, automations, labels, prompts, structure, content, or implementation suggestions are provided for operational and informational purposes only.</p>
+        <p>Any templates, examples, content, structure, prompts, or suggestions provided through the Service are for operational and informational purposes only.</p>
       </LegalSection>
 
       <LegalSection title="Section 3. Client Responsibilities">
@@ -44,30 +44,30 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection title="Section 4. Account Access & Credentials">
-        <p className="mb-3">Client is responsible for maintaining secure control of the accounts, workspaces, tools, and credentials used in connection with Virtual Launch Pro services.</p>
-        <p>Provider may rely on the credentials, invitations, workspace permissions, billing details, and account-linked identifiers supplied by Client to determine authorized access and service delivery.</p>
+        <p className="mb-3">Client is responsible for maintaining secure control of the accounts, workspaces, tools, and credentials used in connection with the Service.</p>
+        <p>Provider may rely on the credentials, invitations, workspace permissions, billing details, and account-linked identifiers supplied by Client to determine authorized access and Service delivery.</p>
       </LegalSection>
 
       <LegalSection title="Section 5. Third-Party Platforms, Tools, and Dependencies">
-        <p className="mb-3">Virtual Launch Pro services may depend on third-party platforms, hosting providers, payment processors, communication tools, productivity systems, automation platforms, or related software selected by Client or Provider.</p>
+        <p className="mb-3">The Service may depend on third-party platforms, hosting providers, payment processors, communication tools, productivity systems, or related software selected by Client or Provider.</p>
         <p>Provider is not responsible for outages, policy changes, pricing changes, API changes, account restrictions, lost access, feature removals, or technical limitations caused by third-party providers.</p>
       </LegalSection>
 
       <LegalSection title="Section 6. Acceptance of Deliverables">
         <ul className="space-y-2">
-          {["Delivery of files, templates, links, system access, or configuration work,","Implementation beginning in Client's environment, or","Client using, approving, publishing, or relying on any deliverable."].map((item) => (
+          {["Delivery of files, links, or system access,","The Service becoming available to Client, or","Client using, approving, publishing, or relying on any deliverable."].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
         </ul>
       </LegalSection>
 
       <LegalSection title="Section 7. Fees and Payment">
-        <p className="mb-3">Client agrees to pay the fees presented at checkout, invoice, proposal, or service order for the purchased Virtual Launch Pro product or service.</p>
+        <p className="mb-3">Client agrees to pay the fees presented at checkout, invoice, proposal, or service order for the purchased Service.</p>
         <p>Unless otherwise stated in writing, fees are due in advance and are non-refundable except as described in the <Link href="/legal/refund" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">Refund Policy</Link>.</p>
       </LegalSection>
 
       <LegalSection title="Section 8. Privacy and Data Handling">
-        <p>Provider may access and handle Client information only as reasonably necessary to deliver services, troubleshoot issues, verify work, provide support, maintain records, and protect service integrity. Additional details are described in the <Link href="/legal/privacy" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">Privacy Policy</Link>.</p>
+        <p>Provider may access and handle Client information only as reasonably necessary to deliver the Service, troubleshoot issues, verify work, provide support, maintain records, and protect Service integrity. Additional details are described in the <Link href="/legal/privacy" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">Privacy Policy</Link>.</p>
       </LegalSection>
 
       <LegalSection title="Section 9. Intellectual Property & License">
@@ -76,7 +76,7 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection title="Section 10. Revisions, Scope, and Change Requests">
-        <p className="mb-3">Any revisions, edits, additions, integrations, migrations, or customizations outside the purchased scope are outside this Agreement unless separately approved in writing.</p>
+        <p className="mb-3">Any changes, additions, integrations, or customizations to the Service outside the purchased scope are outside this Agreement unless separately approved in writing.</p>
         <p>Provider may treat new requirements, delayed feedback, missing assets, changed direction, or expanded technical requests as a scope change requiring a new fee, timeline, or order.</p>
       </LegalSection>
 
@@ -112,7 +112,7 @@ export default function TermsPage() {
 
       <div className="rounded-2xl border border-brand-primary/20 bg-brand-primary/5 p-8">
         <h2 className="mb-3 text-lg font-semibold text-text-primary">Electronic Acceptance</h2>
-        <p className="text-sm leading-relaxed text-text-muted">By purchasing, scheduling, accessing, downloading, or using a Virtual Launch Pro product or service, Client acknowledges that they have read, understood, and agreed to be bound by these terms.</p>
+        <p className="text-sm leading-relaxed text-text-muted">By purchasing, scheduling, accessing, downloading, or using the Service, Client acknowledges that they have read, understood, and agreed to be bound by these terms.</p>
       </div>
     </LegalPageLayout>
   )
