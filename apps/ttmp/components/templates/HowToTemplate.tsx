@@ -38,7 +38,7 @@ export default function HowToTemplate({ data }: { data: Resource }) {
         <span style={{ fontSize: '0.875rem', color: '#f9fafb', fontWeight: 500 }}>
           Skip the manual steps — parse in seconds
         </span>
-        <a href="/login" style={{
+        <a href="/sign-in" style={{
           background: '#14b8a6',
           color: '#000',
           fontSize: '0.8125rem',

@@ -43,7 +43,7 @@ function CallbackInner() {
       }}>
         <p style={{ color: '#f87171', fontSize: '1rem', fontWeight: 600 }}>Sign-in failed</p>
         <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>{error}</p>
-        <a href="/login/" style={{
+        <a href="/sign-in/" style={{
           background: '#14b8a6', color: '#000',
           padding: '0.625rem 1.25rem', borderRadius: 9999,
           fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none', marginTop: '0.5rem',

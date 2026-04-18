@@ -131,12 +131,12 @@ export default function SiteHeader() {
             )}
           </div>
 
-          <Link href="/login/" style={{
+          <Link href="/sign-in/" style={{
             fontSize: "0.875rem", fontWeight: 500,
             color: "var(--text-muted, #9ca3af)", textDecoration: "none",
           }}>Log In</Link>
 
-          <Link href="/login/" style={{
+          <Link href="/sign-in/" style={{
             fontSize: "0.875rem", fontWeight: 600, color: "#000",
             background: ACCENT, padding: "0.5rem 1.125rem",
             borderRadius: 9999, textDecoration: "none",
@@ -215,13 +215,13 @@ export default function SiteHeader() {
 
             <div style={{ height: 1, background: "var(--surface-border, #1f2937)", margin: "0.5rem 0" }} />
 
-            <Link href="/login/" onClick={() => setDrawerOpen(false)} style={{
+            <Link href="/sign-in/" onClick={() => setDrawerOpen(false)} style={{
               fontSize: "1rem", fontWeight: 500,
               color: "var(--text-muted, #9ca3af)", textDecoration: "none",
               padding: "0.625rem 0.75rem",
             }}>Log In</Link>
 
-            <Link href="/login/" onClick={() => setDrawerOpen(false)} style={{
+            <Link href="/sign-in/" onClick={() => setDrawerOpen(false)} style={{
               fontSize: "1rem", fontWeight: 600, color: "#000",
               background: ACCENT, padding: "0.75rem 1rem",
               borderRadius: 9999, textDecoration: "none", textAlign: "center",

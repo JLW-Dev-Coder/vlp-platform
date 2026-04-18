@@ -34,7 +34,7 @@ export default function Footer() {
             <li><Link href="/features/" className={styles.navLink}>Features</Link></li>
             <li><Link href="/#how-it-works" className={styles.navLink}>How It Works</Link></li>
             <li><Link href="/pricing/" className={styles.navLink}>Pricing</Link></li>
-            <li><Link href="/login" className={styles.navLink}>Sign In</Link></li>
+            <li><Link href="/sign-in" className={styles.navLink}>Sign In</Link></li>
             <li><Link href="/#use-cases" className={styles.navLink}>Use Cases</Link></li>
           </ul>
         </div>

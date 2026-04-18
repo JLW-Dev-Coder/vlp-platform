@@ -33,11 +33,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             transcript_tokens: res.session.transcript_tokens ?? 0,
           })
         } else {
-          window.location.href = `/login/?redirect=${encodeURIComponent(pathname)}`
+          window.location.href = `/sign-in/?redirect=${encodeURIComponent(pathname)}`
         }
       })
       .catch(() => {
-        window.location.href = `/login/?redirect=${encodeURIComponent(pathname)}`
+        window.location.href = `/sign-in/?redirect=${encodeURIComponent(pathname)}`
       })
       .finally(() => setLoading(false))
   }, [pathname])

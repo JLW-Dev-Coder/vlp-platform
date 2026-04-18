@@ -10,7 +10,7 @@ const ARTICLES = [
       { title: 'How to upload your first transcript', href: '/resources/how-to-read-irs-transcripts/' },
       { title: 'Understanding transcript types', href: '/resources/how-to-understand-irs-transaction-codes/' },
       { title: 'How tokens work', href: '/pricing/' },
-      { title: 'Signing in with magic link or Google', href: '/login/' },
+      { title: 'Signing in with magic link or Google', href: '/sign-in/' },
     ],
   },
   {

@@ -46,7 +46,7 @@ TTMP passes `ttmpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/app/dashboard/`, `/app/calendar/`, `/app/tools/`, `/app/token-usage/`, `/app/reports/`, `/app/report/`, `/app/receipts/`, `/app/affiliate/`, `/app/account/`, `/app/profile/`, `/app/support/`
 
 ### Special routes
-`/asset/[slug]` (personalized outreach), `/auth/callback`, `/auth/google/callback`, `/login/`, `/tools/code-lookup`
+`/asset/[slug]` (personalized outreach), `/auth/callback`, `/auth/google/callback`, `/sign-in/`, `/tools/code-lookup`
 
 ---
 

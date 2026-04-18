@@ -95,7 +95,7 @@ export default function ParserSection() {
             <label htmlFor="transcript-upload" className={styles.btnPrimary} style={{ cursor: 'pointer' }}>
               Upload Transcript PDF →
             </label>
-            <a href="/login" className={styles.btnSecondary}>Sign In for Full Access</a>
+            <a href="/sign-in" className={styles.btnSecondary}>Sign In for Full Access</a>
           </div>
           <p className={styles.parserLoadingText} style={{ marginTop: '0.875rem', fontSize: '0.75rem' }}>
             Preview is free. Save, print, or email reports with a token purchase.
@@ -119,7 +119,7 @@ export default function ParserSection() {
             Sign in with your email — no password, no credit card. Then upload your transcript.
           </p>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.25rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <a href="/login" className={styles.btnPrimary}>Create Free Account →</a>
+            <a href="/sign-in" className={styles.btnPrimary}>Create Free Account →</a>
             <button className={styles.btnSecondary} onClick={() => setStatus('idle')}>Back</button>
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function ParserSection() {
                   <a href="/pricing" className={styles.btnPrimary} style={{ fontSize: '0.875rem' }}>
                     Use a Token to Unlock →
                   </a>
-                  <a href="/login" className={styles.btnSecondary} style={{ fontSize: '0.875rem' }}>
+                  <a href="/sign-in" className={styles.btnSecondary} style={{ fontSize: '0.875rem' }}>
                     Sign In
                   </a>
                 </div>
@@ -231,7 +231,7 @@ export default function ParserSection() {
                   <a href="/pricing" className={styles.btnPrimary} style={{ justifyContent: 'center', fontSize: '0.9375rem' }}>
                     Purchase Tokens →
                   </a>
-                  <a href="/login" className={styles.btnSecondary} style={{ justifyContent: 'center', fontSize: '0.875rem' }}>
+                  <a href="/sign-in" className={styles.btnSecondary} style={{ justifyContent: 'center', fontSize: '0.875rem' }}>
                     Sign In (use existing tokens)
                   </a>
                   <button

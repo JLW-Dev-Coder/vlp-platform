@@ -3,7 +3,10 @@
 /resources/index.html    /resources/    301
 /about.html    /about/    301
 /contact.html    /contact/    301
-/sign-in.html    /login/    301
+/login           /sign-in/    301
+/login/          /sign-in/    301
+/login/*         /sign-in/:splat    301
+/sign-in.html    /sign-in/    301
 /legal/privacy.html    /legal/privacy/    301
 /legal/refund.html    /legal/refund/    301
 /legal/terms.html    /legal/terms/    301

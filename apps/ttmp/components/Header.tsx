@@ -132,7 +132,7 @@ export default function Header() {
                 <Link href="/magnets/guide" className={styles.btnPrimary} onClick={closeMega}>
                   Free Guide &rarr;
                 </Link>
-                <Link href="/login" className={styles.megaCtaLogin} onClick={closeMega}>
+                <Link href="/sign-in" className={styles.megaCtaLogin} onClick={closeMega}>
                   Log In
                 </Link>
               </div>
@@ -142,7 +142,7 @@ export default function Header() {
 
         {/* Right actions */}
         <div className={styles.actions}>
-          <Link href="/login" className={styles.loginLink}>Log In</Link>
+          <Link href="/sign-in" className={styles.loginLink}>Log In</Link>
           <Link href="/magnets/guide" className={styles.btnPrimary}>Free Guide &rarr;</Link>
         </div>
 
@@ -196,7 +196,7 @@ export default function Header() {
         )}
 
         <div className={styles.mobileDivider} />
-        <Link href="/login" className={styles.mobileLink} onClick={closeAll}>Log In</Link>
+        <Link href="/sign-in" className={styles.mobileLink} onClick={closeAll}>Log In</Link>
         <Link href="/magnets/guide" className={styles.mobileCta} onClick={closeAll}>Free Guide &rarr;</Link>
       </div>
     </header>

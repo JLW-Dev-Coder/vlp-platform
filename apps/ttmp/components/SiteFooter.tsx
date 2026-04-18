@@ -43,7 +43,7 @@ export default function SiteFooter() {
             in seconds — with every transaction code explained and recommendations included.
           </p>
           <div className={styles.ctaRow}>
-            <Link href="/login/" className={styles.btnPrimary}>Try Free</Link>
+            <Link href="/sign-in/" className={styles.btnPrimary}>Try Free</Link>
             <Link href="/pricing/" className={styles.btnSecondary}>View Pricing</Link>
           </div>
         </div>

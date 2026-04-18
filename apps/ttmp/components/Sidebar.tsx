@@ -35,7 +35,7 @@ export default function Sidebar({ resource }: { resource: Resource }) {
         <p className={styles.cardBody}>
           Upload a client PDF — get every code explained in plain English in seconds.
         </p>
-        <Link href="/login" className={styles.parserBtn}>
+        <Link href="/sign-in" className={styles.parserBtn}>
           Try the Parser →
         </Link>
       </div>
