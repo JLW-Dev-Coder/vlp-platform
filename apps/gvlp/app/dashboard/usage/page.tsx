@@ -1,9 +1,8 @@
-import { ContentCard } from '@vlp/member-ui';
+import type { Metadata } from 'next'
+import UsageClient from './UsageClient'
+
+export const metadata: Metadata = { title: 'Usage' }
 
 export default function UsagePage() {
-  return (
-    <ContentCard title="Usage">
-      <p className="text-sm text-white/60">Coming soon.</p>
-    </ContentCard>
-  );
+  return <UsageClient />
 }

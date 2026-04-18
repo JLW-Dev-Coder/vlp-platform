@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.virtuallaunch.pro';
+export const API_BASE = 'https://api.virtuallaunch.pro';
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
