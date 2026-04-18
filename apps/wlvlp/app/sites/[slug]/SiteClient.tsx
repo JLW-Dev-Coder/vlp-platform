@@ -19,6 +19,7 @@ export default function SiteClient({ slug }: Props) {
   const [bidAmount, setBidAmount] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
@@ -75,13 +76,18 @@ export default function SiteClient({ slug }: Props) {
   const price = getPrice(tier);
 
   async function handleBuyNow() {
-    if (!session) { router.push('/sign-in?redirect=/sites/' + slug); return; }
+    setError('');
+    setCheckoutLoading(true);
     try {
       const res = await createCheckout(slug, tier);
       const url = res.session_url ?? res.url;
-      if (url) window.location.href = url;
-      else setError('Checkout failed: no session URL');
-    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Checkout failed'); }
+      if (url) { window.location.href = url; return; }
+      setError('Checkout failed. Please try again.');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Checkout failed. Please try again.');
+    } finally {
+      setCheckoutLoading(false);
+    }
   }
 
   async function handlePlaceBid() {
@@ -138,7 +144,7 @@ export default function SiteClient({ slug }: Props) {
 
           {template.status === 'available' && (
             <div className={styles.statusPanel}>
-              <button className={styles.buyBtn} onClick={handleBuyNow}>Buy Now — ${price}</button>
+              <button className={styles.buyBtn} onClick={handleBuyNow} disabled={checkoutLoading}>{checkoutLoading ? 'Opening checkout…' : `Buy Now — $${price}`}</button>
               <div className={styles.bidSection}>
                 <p className={styles.bidLabel}>Or place a bid (min $29):</p>
                 <div className={styles.bidRow}>
