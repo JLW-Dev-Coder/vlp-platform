@@ -219,7 +219,7 @@ Paths shown as `/dashboard/*` canonical. Grandfathered exceptions per `canonical
 | /dashboard/calendar | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | /dashboard/clients | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | /dashboard/discounts | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
-| /dashboard/profile/directory | ✅ | ⚪ | ⚪ | ⚪ | ❌ | ⚪ | ⚪ | ⚪ |
+| /dashboard/profile/directory | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | /dashboard/hosting | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ❌ |
 | /dashboard/games | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ✅ | ⚪ | ⚪ |
 | /dashboard/game-analytics | ⚪ | ⚪ | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ |
@@ -251,6 +251,7 @@ Paths shown as `/dashboard/*` canonical. Grandfathered exceptions per `canonical
 - TCVLP `/dashboard/reports` marked 🟡 because `/dashboard/submissions` fills a reports-like role without matching the canonical path.
 - VLP grandfathered (member) paths are counted as conformant when a same-named destination exists (e.g. `(member)/account` satisfies `/dashboard/account`).
 - 2026-04-19 follow-up commit: expanded Workspace section from compressed "Applies to" list to full app × page matrix; added `/tools/code-lookup` Resources mega menu row to Marketing table. First commit (eb18bdc) shipped with Workspace rendered as a narrow "Applies to" summary and no Resources coverage.
+- Directory feature: per Owner, the professional directory is a TMP concept, not VLP. Canonical-site-nav.md §2 lists `/dashboard/profile/directory` as applying to DVLP/VLP which appears incorrect. TMP's directory feature is shipped at `/directory` (public listing) and edited via `/dashboard/profile` — not at the canonical path `/dashboard/profile/directory`. Matrix reflects reality (TMP ❌ at canonical path, others ⚪); canonical-site-nav.md needs Owner ruling on path/scope correction before that file is edited.
 
 ### How to use this matrix
 
