@@ -16,7 +16,7 @@ type TierKey = keyof typeof GVLP_TIERS;
 
 const TIER_ORDER: TierKey[] = ['starter', 'apprentice', 'strategist', 'navigator'];
 
-export default function Upgrade() {
+export default function UpgradeClient() {
   const { data: operator } = useOperator();
   const [loadingTier, setLoadingTier] = useState<TierKey | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);

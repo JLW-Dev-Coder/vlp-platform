@@ -1,7 +1,7 @@
 'use client';
 
-import Settings from '../components/Settings';
+import AccountClient from './AccountClient';
 
-export default function SettingsPage() {
-  return <Settings />;
+export default function AccountPage() {
+  return <AccountClient />;
 }

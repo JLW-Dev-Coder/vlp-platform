@@ -1,7 +1,7 @@
 'use client';
 
-import Upgrade from '../components/Upgrade';
+import UpgradeClient from './UpgradeClient';
 
 export default function UpgradePage() {
-  return <Upgrade />;
+  return <UpgradeClient />;
 }
