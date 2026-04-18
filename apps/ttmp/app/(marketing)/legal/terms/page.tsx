@@ -1,292 +1,119 @@
 import type { Metadata } from 'next'
-import styles from '../legal.module.css'
-
-const CANONICAL_BASE = 'https://transcript.taxmonitor.pro'
+import Link from 'next/link'
+import { LegalPageLayout, LegalSection } from '@vlp/member-ui'
+import { ttmpConfig } from '@/lib/platform-config'
 
 export const metadata: Metadata = {
-  title: 'Terms - Transcript Tax Monitor Pro',
-  description:
-    'Terms for Transcript Tax Monitor Pro transcript credit packs and platform use.',
-  alternates: { canonical: `${CANONICAL_BASE}/legal/terms` },
-  openGraph: {
-    title: 'Terms - Transcript Tax Monitor Pro',
-    description:
-      'Terms for Transcript Tax Monitor Pro transcript credit packs and platform use.',
-    url: `${CANONICAL_BASE}/legal/terms`,
-    type: 'website',
-  },
+  title: 'Terms of Service | Transcript Tax Monitor',
+  description: 'Terms for Transcript Tax Monitor digital products, installs, templates, implementation services, and platform use.',
 }
 
 export default function TermsPage() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <div className={styles.titleBlock}>
-          <h1 className={styles.pageTitle}>Terms</h1>
-          <p className={styles.pageSubtitle}>Transcript Credit Access &amp; Platform Use Agreement</p>
-          <p className={styles.lastUpdated}>Last updated: March 7, 2026</p>
-        </div>
+    <LegalPageLayout
+      config={ttmpConfig}
+      title="Terms of Service"
+      subtitle="Digital Products, Installs, and Service Use Agreement"
+      lastUpdated="March 17, 2026"
+      currentPage="terms"
+    >
+      <LegalSection>
+        <p>This Agreement is entered into by and between Transcript Tax Monitor&apos;s operating entity (&ldquo;Provider&rdquo;) and the individual or entity purchasing, accessing, or using Transcript Tax Monitor products or services (&ldquo;Client&rdquo;).</p>
+      </LegalSection>
 
-        <div className={styles.glassCard}>
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Service Agreement</h2>
-            <p className={styles.body}>
-              Transcript Credit Access &amp; Platform Use Agreement
-            </p>
-          </section>
+      <LegalSection title="Section 1. Covered Services & Scope of Use">
+        <ul className="mb-4 space-y-2">
+          {['Digital templates, documents, and workflow assets','Setup, implementation, and onboarding services','Automation configuration and platform customization','Related account access, training, support, and digital deliverables'].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+        <p>Unless expressly stated in writing, purchases do not include unlimited revisions, custom development beyond the purchased scope, legal review, compliance review, tax advice, accounting advice, employment advice, or regulated professional services.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <p className={styles.body}>
-              This Transcript Credit Access &amp; Platform Use Agreement (&ldquo;Agreement&rdquo;) is entered into by and between
-              Lenore, Inc. (&ldquo;Provider&rdquo;) and the individual or entity using or purchasing access to Transcript.Tax Monitor Pro (&ldquo;Client&rdquo;).
-              Provider and Client may be referred to individually as a &ldquo;Party&rdquo; and collectively as the &ldquo;Parties.&rdquo;
-            </p>
-          </section>
+      <LegalSection title="Section 2. No Professional or Regulated Advice">
+        <p className="mb-3">Client acknowledges that Provider does not provide legal, tax, accounting, financial, compliance, HR, employment, or other regulated professional advice under this Agreement unless separately and expressly stated in writing.</p>
+        <p>Any templates, examples, workflows, automations, labels, prompts, structure, content, or implementation suggestions are provided for operational and informational purposes only.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 1. Covered Services &amp; Scope of Use</h2>
-            <p className={styles.bodySpaced}>
-              This Agreement applies to Client purchases and use of Transcript.Tax Monitor Pro, including:
-            </p>
-            <ul className={styles.list}>
-              <li>Account-based transcript credit packs</li>
-              <li>Report unlocks, transcript-related access, and associated digital features</li>
-              <li>Related platform access delivered through the website</li>
-            </ul>
-            <p className={styles.bodyMt}>
-              Provider makes available a fixed-scope digital platform that allows Client to purchase credits, unlock eligible transcript-related functionality, and access associated outputs and support features made available through the service.
-            </p>
-            <p className={styles.bodyMt}>
-              Access may include account tools, transcript-related reports, token or credit balances, and related technical enablement required for the service to function.
-            </p>
-            <p className={styles.bodyMt}>
-              Provider&apos;s services are limited to the platform and its stated features. No legal, tax, accounting, compliance, or professional advisory services are included unless expressly stated in writing.
-            </p>
-          </section>
+      <LegalSection title="Section 3. Client Responsibilities">
+        <ul className="space-y-2">
+          {['Provide accurate business, billing, and access information.','Provide required content, approvals, credentials, and feedback in a timely manner.','Review all deliverables before relying on them in operations, sales, hiring, service delivery, or compliance activity.',"Ensure that Client's use of any deliverable complies with Client's own obligations, licenses, contracts, policies, and applicable law."].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 2. No Professional or Regulated Services</h2>
-            <p className={styles.body}>
-              Client acknowledges that Provider does not provide tax, legal, accounting, financial, compliance, employment, or regulated professional services under this Agreement.
-            </p>
-            <p className={styles.bodyMt}>
-              Any platform wording, examples, summaries, flags, labels, reports, or workflow outputs are informational and structural only and do not constitute advice, representation, filing authority, or a professional engagement.
-            </p>
-            <p className={styles.bodyMt}>
-              Client remains solely responsible for how Client interprets, uses, shares, or acts on any information made available through the platform.
-            </p>
-          </section>
+      <LegalSection title="Section 4. Account Access & Credentials">
+        <p className="mb-3">Client is responsible for maintaining secure control of the accounts, workspaces, tools, and credentials used in connection with Transcript Tax Monitor services.</p>
+        <p>Provider may rely on the credentials, invitations, workspace permissions, billing details, and account-linked identifiers supplied by Client to determine authorized access and service delivery.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 3. Client Responsibilities</h2>
-            <ul className={styles.list}>
-              <li>Provide accurate account, billing, and access information.</li>
-              <li>Maintain the confidentiality of login credentials and account access.</li>
-              <li>Review all outputs before relying on them for any internal or external purpose.</li>
-              <li>Ensure all use of the platform complies with Client&apos;s policies, contracts, permissions, and applicable law.</li>
-            </ul>
-          </section>
+      <LegalSection title="Section 5. Third-Party Platforms, Tools, and Dependencies">
+        <p className="mb-3">Transcript Tax Monitor services may depend on third-party platforms, hosting providers, payment processors, communication tools, productivity systems, automation platforms, or related software selected by Client or Provider.</p>
+        <p>Provider is not responsible for outages, policy changes, pricing changes, API changes, account restrictions, lost access, feature removals, or technical limitations caused by third-party providers.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 4. Account Access &amp; Control</h2>
-            <p className={styles.body}>
-              Client is responsible for maintaining control of the account used to access Transcript.Tax Monitor Pro.
-            </p>
-            <p className={styles.bodyMt}>
-              Provider may rely on account credentials, login status, purchase records, and account-linked identifiers to determine authorized access to credits, reports, and platform features.
-            </p>
-            <ul className={styles.listMt}>
-              <li>Client is responsible for activity occurring under Client&apos;s account.</li>
-              <li>Client must use the correct account email associated with purchase and access rights.</li>
-              <li>Provider is not responsible for loss caused by Client&apos;s failure to secure account credentials or use the correct login identity.</li>
-            </ul>
-          </section>
+      <LegalSection title="Section 6. Acceptance of Deliverables">
+        <ul className="space-y-2">
+          {["Delivery of files, templates, links, system access, or configuration work,","Implementation beginning in Client's environment, or","Client using, approving, publishing, or relying on any deliverable."].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 5. Third-Party Providers, Billing, and Availability</h2>
-            <p className={styles.body}>
-              The platform may rely on third-party providers for hosting, payments, email delivery, infrastructure, analytics, or related technical services.
-            </p>
-            <p className={styles.bodyMt}>
-              Client understands that payment processing, browser access, third-party integrations, and other external systems may affect availability, delivery, timing, or display of platform features.
-            </p>
-            <p className={styles.bodyMt}>
-              Provider is not responsible for pricing changes, outages, billing disputes, account holds, service interruptions, or feature changes caused by third-party providers.
-            </p>
-          </section>
+      <LegalSection title="Section 7. Fees and Payment">
+        <p className="mb-3">Client agrees to pay the fees presented at checkout, invoice, proposal, or service order for the purchased Transcript Tax Monitor product or service.</p>
+        <p>Unless otherwise stated in writing, fees are due in advance and are non-refundable except as described in the <Link href="/legal/refund" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">Refund Policy</Link>.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 6. Acceptance of Deliverables</h2>
-            <p className={styles.bodySpaced}>
-              Digital delivery under this Agreement is deemed accepted upon the earlier of:
-            </p>
-            <ul className={styles.list}>
-              <li>Credits, access, or reports being successfully provisioned to Client&apos;s account, or</li>
-              <li>Client using the platform, credits, reports, or account-based features.</li>
-            </ul>
-            <p className={styles.bodyMt}>
-              Any request for changes outside the available platform functionality is outside scope unless separately agreed to in writing.
-            </p>
-          </section>
+      <LegalSection title="Section 8. Privacy and Data Handling">
+        <p>Provider may access and handle Client information only as reasonably necessary to deliver services, troubleshoot issues, verify work, provide support, maintain records, and protect service integrity. Additional details are described in the <Link href="/legal/privacy" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">Privacy Policy</Link>.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 7. Fees and Payment</h2>
-            <p className={styles.body}>
-              Client agrees to pay the fees presented at checkout for transcript credits, access, or related digital features purchased through the platform.
-            </p>
-            <p className={styles.bodyMt}>
-              Fees are due at the time of purchase unless otherwise stated in writing.
-            </p>
-          </section>
+      <LegalSection title="Section 9. Intellectual Property & License">
+        <p className="mb-3">Provider retains all rights in Provider-owned templates, design systems, frameworks, code, workflows, branding, documentation, processes, and related proprietary materials except where a separate written transfer or license expressly says otherwise.</p>
+        <p>Client receives a limited, non-exclusive, non-transferable license to use purchased deliverables for Client&apos;s internal business use. Client may not resell, redistribute, sublicense, or falsely claim authorship of Provider-owned materials unless expressly authorized in writing.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 8. Privacy Policy (Data Handling)</h2>
-            <p className={styles.body}>
-              This section describes how Provider may access and handle Client information in connection with platform operation and support.
-            </p>
-            <div className={styles.subsectionGroup}>
-              <div>
-                <h3 className={styles.subsectionTitle}>A. Information Provider May Receive</h3>
-                <p className={styles.body}>
-                  Provider may receive or have access to Client-provided information such as account details, billing contact information, report identifiers, support submissions, transaction references, and platform usage records. Depending on Client&apos;s use of the platform, Provider may also incidentally process data required to render reports, account state, or support diagnostics.
-                </p>
-              </div>
-              <div>
-                <h3 className={styles.subsectionTitle}>B. Purpose of Access</h3>
-                <p className={styles.body}>
-                  Provider will access and use information only as reasonably necessary to operate the platform, deliver purchased access, troubleshoot issues, verify purchases, respond to support requests, and maintain service integrity.
-                </p>
-              </div>
-              <div>
-                <h3 className={styles.subsectionTitle}>C. Data Minimization</h3>
-                <p className={styles.body}>
-                  Provider will make reasonable efforts to minimize access to information not required for service delivery, troubleshooting, fraud prevention, or recordkeeping.
-                </p>
-              </div>
-              <div>
-                <h3 className={styles.subsectionTitle}>D. Confidentiality &amp; Security</h3>
-                <p className={styles.body}>
-                  Provider will maintain commercially reasonable administrative, technical, and organizational safeguards to protect information accessed in connection with the platform. Client remains responsible for secure account practices and device-level security.
-                </p>
-              </div>
-              <div>
-                <h3 className={styles.subsectionTitle}>E. Credential Handling</h3>
-                <p className={styles.body}>
-                  Client is responsible for safeguarding account credentials and using the correct account identity for purchases and access. Client should promptly update passwords and notify Provider of suspected unauthorized use.
-                </p>
-              </div>
-              <div>
-                <h3 className={styles.subsectionTitle}>F. Third-Party Platforms</h3>
-                <p className={styles.body}>
-                  The platform may depend on third-party services. Provider does not control and is not responsible for those third parties&apos; privacy practices, security controls, hosting, retention, or data processing terms.
-                </p>
-              </div>
-              <div>
-                <h3 className={styles.subsectionTitle}>G. Data Retention</h3>
-                <p className={styles.body}>
-                  Provider may retain limited records related to purchases, support activity, technical diagnostics, and delivery verification for business, security, legal, tax, accounting, dispute-resolution, or compliance purposes.
-                </p>
-              </div>
-              <div>
-                <h3 className={styles.subsectionTitle}>H. Client Requests</h3>
-                <p className={styles.body}>
-                  Client may request deletion of Provider-held information to the extent Provider is not required to retain that information for legal, tax, accounting, security, dispute, or operational recordkeeping obligations.
-                </p>
-              </div>
-            </div>
-          </section>
+      <LegalSection title="Section 10. Revisions, Scope, and Change Requests">
+        <p className="mb-3">Any revisions, edits, additions, integrations, migrations, or customizations outside the purchased scope are outside this Agreement unless separately approved in writing.</p>
+        <p>Provider may treat new requirements, delayed feedback, missing assets, changed direction, or expanded technical requests as a scope change requiring a new fee, timeline, or order.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 9. No Guarantees</h2>
-            <p className={styles.body}>
-              Provider does not guarantee uninterrupted availability, specific tax outcomes, legal outcomes, financial outcomes, filing results, compliance results, or suitability for any specific use case.
-            </p>
-            <p className={styles.bodyMt}>
-              Provider&apos;s obligation is limited solely to making the platform and purchased digital access available as described under this Agreement.
-            </p>
-          </section>
+      <LegalSection title="Section 11. No Guarantees">
+        <p>Provider does not guarantee revenue, lead volume, conversion rate, client retention, hiring success, time savings, business outcomes, regulatory outcomes, or uninterrupted availability of any third-party platform.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 10. Limitation of Liability</h2>
-            <p className={styles.body}>
-              To the maximum extent permitted by law, Provider will not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages, including loss of profits, revenue, data, goodwill, business interruption, or reliance-based harm arising out of or related to this Agreement, the platform, or Client&apos;s use of the service.
-            </p>
-            <p className={styles.bodyMt}>
-              Provider&apos;s total aggregate liability under this Agreement will not exceed the amount actually paid by Client to Provider for the specific purchase giving rise to the claim.
-            </p>
-          </section>
+      <LegalSection title="Section 12. Limitation of Liability">
+        <p className="mb-3">To the maximum extent permitted by law, Provider will not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages, including lost revenue, lost profits, lost data, business interruption, or reliance-based harm arising out of or related to this Agreement, the deliverables, or Client&apos;s use of any product or service.</p>
+        <p>Provider&apos;s total aggregate liability under this Agreement will not exceed the amount actually paid by Client for the specific product or service giving rise to the claim.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 11. Indemnification</h2>
-            <p className={styles.bodySpaced}>
-              Client agrees to indemnify and hold harmless Provider from and against any claims, damages, liabilities, costs, and expenses, including reasonable attorneys&apos; fees, arising out of or related to:
-            </p>
-            <ul className={styles.list}>
-              <li>Client&apos;s misuse of the platform,</li>
-              <li>Client&apos;s breach of this Agreement,</li>
-              <li>Client&apos;s violation of applicable law, or</li>
-              <li>Client&apos;s violation of third-party rights.</li>
-            </ul>
-          </section>
+      <LegalSection title="Section 13. Indemnification">
+        <ul className="space-y-2">
+          {["Client's misuse of deliverables or systems,","Client's breach of this Agreement,","Client's violation of applicable law, or","Client's violation of a third party's rights, terms, or content restrictions."].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 12. Confidentiality</h2>
-            <p className={styles.body}>
-              Each Party agrees to keep confidential any non-public business, technical, operational, or account information disclosed in connection with the platform and to use such information solely as permitted under this Agreement.
-            </p>
-            <p className={styles.bodyMt}>
-              This obligation does not apply to information that is public, independently developed, or rightfully obtained without restriction.
-            </p>
-          </section>
+      <LegalSection title="Section 14. Suspension or Termination">
+        <p>Provider may suspend or terminate access or project work if Client materially breaches this Agreement, fails to pay, engages in abusive conduct, misuses systems, creates security risk, or initiates fraudulent payment activity.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 13. Intellectual Property &amp; License</h2>
-            <p className={styles.body}>
-              Provider retains all rights in the platform, design, workflows, systems, branding, software logic, documentation, and related materials.
-            </p>
-            <p className={styles.bodyMt}>
-              Client receives a limited, non-exclusive, non-transferable right to use the platform for Client&apos;s internal lawful use in accordance with this Agreement. Client may not resell, sublicense, reverse engineer beyond applicable law, or redistribute Provider&apos;s proprietary materials without written authorization.
-            </p>
-          </section>
+      <LegalSection title="Section 15. Governing Law & Venue">
+        <p className="mb-3">This Agreement is governed by the laws of the State of California, without regard to conflict-of-law principles.</p>
+        <p>Any dispute arising from this Agreement will be resolved in the state or federal courts located in San Diego County, California, unless the Parties agree in writing to another dispute process.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 14. Suspension or Termination</h2>
-            <p className={styles.body}>
-              Provider may suspend or terminate access if Client materially breaches this Agreement, engages in misuse, initiates fraudulent or abusive activity, or creates risk to the platform, Provider, or other users.
-            </p>
-            <p className={styles.bodyMt}>
-              Client remains responsible for charges validly incurred before suspension or termination.
-            </p>
-          </section>
+      <LegalSection title="Section 16. Entire Agreement">
+        <p>This Agreement, together with the Privacy Policy, Refund Policy, and any written invoice, proposal, order, or scope document expressly incorporated by reference, constitutes the entire agreement between the Parties regarding the subject matter described here.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 15. Governing Law &amp; Venue</h2>
-            <p className={styles.body}>
-              This Agreement is governed by the laws of the jurisdiction in which Provider operates, without regard to conflict-of-law principles.
-            </p>
-            <p className={styles.bodyMt}>
-              Any dispute will be resolved in the courts located in Provider&apos;s local jurisdiction unless the Parties agree in writing to binding arbitration.
-            </p>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Section 16. Entire Agreement</h2>
-            <p className={styles.body}>
-              This Agreement constitutes the entire agreement between the Parties regarding Client&apos;s purchase and use of Transcript.Tax Monitor Pro and supersedes all prior discussions or representations on the same subject.
-            </p>
-            <p className={styles.bodyMt}>
-              Any amendment must be in writing and accepted by both Parties.
-            </p>
-          </section>
-
-          <section className={styles.sectionLast}>
-            <h2 className={styles.sectionTitle}>Electronic Acceptance</h2>
-            <p className={styles.body}>
-              By completing checkout, creating an account, purchasing credits, or electronically accepting this Agreement, Client acknowledges that they have read, understood, and agreed to be bound by these terms.
-            </p>
-          </section>
-        </div>
-      </main>
-    </div>
+      <div className="rounded-2xl border border-brand-primary/20 bg-brand-primary/5 p-8">
+        <h2 className="mb-3 text-lg font-semibold text-text-primary">Electronic Acceptance</h2>
+        <p className="text-sm leading-relaxed text-text-muted">By purchasing, scheduling, accessing, downloading, or using a Transcript Tax Monitor product or service, Client acknowledges that they have read, understood, and agreed to be bound by these terms.</p>
+      </div>
+    </LegalPageLayout>
   )
 }

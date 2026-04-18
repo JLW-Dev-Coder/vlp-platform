@@ -1,103 +1,80 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
-import styles from '../legal.module.css'
-
-const CANONICAL_BASE = 'https://transcript.taxmonitor.pro'
+import Link from 'next/link'
+import { LegalPageLayout, LegalSection } from '@vlp/member-ui'
+import { ttmpConfig } from '@/lib/platform-config'
 
 export const metadata: Metadata = {
-  title: 'Refund Policy - Transcript Tax Monitor Pro',
-  description:
-    'Refund policy for Transcript Tax Monitor Pro transcript credit packs and related purchases.',
-  alternates: { canonical: `${CANONICAL_BASE}/legal/refund` },
-  openGraph: {
-    title: 'Refund Policy - Transcript Tax Monitor Pro',
-    description:
-      'Refund policy for Transcript Tax Monitor Pro transcript credit packs and related purchases.',
-    url: `${CANONICAL_BASE}/legal/refund`,
-    type: 'website',
-  },
+  title: 'Refund Policy | Transcript Tax Monitor',
+  description: 'Refund Policy for Transcript Tax Monitor installs, templates, setup services, and related digital purchases.',
 }
 
 export default function RefundPage() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <div className={styles.titleBlock}>
-          <h1 className={styles.pageTitle}>Refund Policy</h1>
-          <p className={styles.lastUpdated}>Last updated: March 7, 2026</p>
-        </div>
+    <LegalPageLayout
+      config={ttmpConfig}
+      title="Refund Policy"
+      subtitle="Digital Installs, Templates, and Service Purchases"
+      lastUpdated="March 17, 2026"
+      currentPage="refund"
+    >
+      <LegalSection>
+        <p>
+          This Refund Policy applies to purchases made through Transcript Tax Monitor, including setup packages, digital templates, implementation services, onboarding systems, automation builds, and related digital deliverables. For help with an order, use the{' '}
+          <Link href="/contact" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">
+            support page
+          </Link>.
+        </p>
+      </LegalSection>
 
-        <div className={styles.glassCard}>
-          <section className={styles.section}>
-            <p className={styles.body}>
-              This Refund Policy applies to purchases made on Transcript.Tax Monitor Pro, including transcript credit packs and related digital access purchases. If you need help, use{' '}
-              <Link href="/contact/" className={styles.accentLink}>Contact Support</Link>.
-            </p>
-          </section>
+      <LegalSection title="A. What You're Buying">
+        <ul className="space-y-2">
+          {['Digital products and service-based setup work, including templates, workflows, configuration, implementation, and related assets.','Digitally delivered access or work product, not a physical shipped good.','Fixed-scope or staged services that may begin promptly after purchase, scheduling, kickoff, or credential handoff.'].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>A. What You&apos;re Buying</h2>
-            <ul className={styles.list}>
-              <li><span className={styles.strong}>Transcript credit packs</span> can be used to access transcript-related features and reports on the platform.</li>
-              <li><span className={styles.strong}>Credits are digital-use balances</span>, not a bank account, stored value account, or cash equivalent.</li>
-              <li>Purchased access is delivered <span className={styles.strong}>digitally through your account</span>. There are no shipped physical goods.</li>
-            </ul>
-          </section>
+      <LegalSection title="B. General Rule">
+        <p>Because Transcript Tax Monitor offers digital products, implementation work, and time-based service capacity that can be reserved or started quickly, purchases are generally <strong className="text-text-primary">non-refundable once delivery has started, access has been granted, files have been sent, or implementation work has begun</strong>.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>B. General Rule</h2>
-            <p className={styles.body}>
-              Because transcript credits and related access are digital products that can be provisioned and used immediately, purchases are generally <span className={styles.strong}>non-refundable once credits or access are delivered</span> to your account.
-            </p>
-          </section>
+      <LegalSection title="C. When We May Approve a Refund">
+        <p className="mb-4">We may approve a refund, partial refund, service credit, or adjustment in situations such as:</p>
+        <ul className="space-y-2">
+          {['Duplicate charge for the same order.','Unauthorized purchase claim, subject to review and payment processor rules.','Technical failure where paid digital access or files were never delivered.','Provider-side inability to start the purchased service within the stated scope for reasons not caused by Client delay, missing information, or third-party platform restrictions.','Verified billing error or materially incorrect charge amount.'].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+        <p className="mt-4 text-xs opacity-70">Refund decisions are case-by-case and may require documentation, timestamps, platform details, or payment evidence.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>C. When We May Approve a Refund</h2>
-            <p className={styles.bodySpaced}>We may approve a refund, credit, or adjustment in situations like:</p>
-            <ul className={styles.list}>
-              <li><span className={styles.strong}>Duplicate charge</span> for the same purchase.</li>
-              <li><span className={styles.strong}>Unrecognized charge</span> that appears to be unauthorized, subject to verification and payment processor rules.</li>
-              <li><span className={styles.strong}>Technical failure</span> where credits were purchased but never delivered to the account.</li>
-              <li><span className={styles.strong}>Verified system error</span> that caused improper credit deduction or prevented reasonable access and cannot be resolved.</li>
-            </ul>
-            <p className={styles.bodySmall}>Approvals are case-by-case and may require supporting details.</p>
-          </section>
+      <LegalSection title="D. When We Don't Refund">
+        <p className="mb-4">Refunds are not typically provided for:</p>
+        <ul className="space-y-2">
+          {['Change of mind after purchase.','Work already performed, including research, setup, implementation, revision rounds, automation configuration, or template customization.','Delivered digital files or assets.','Client delay in providing content, credentials, approvals, access, or required responses.','Third-party platform limitations, outages, account restrictions, or policy changes outside Provider control.','Mismatch between purchased scope and unpurchased custom requests.'].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>D. When We Don&apos;t Refund</h2>
-            <p className={styles.bodySpaced}>Refunds are not typically provided for:</p>
-            <ul className={styles.list}>
-              <li><span className={styles.strong}>Change of mind</span> after credits or access are delivered.</li>
-              <li><span className={styles.strong}>Used or partially used credits</span>.</li>
-              <li><span className={styles.strong}>Failure to sign in</span> to the correct account email used for purchase.</li>
-              <li><span className={styles.strong}>User-side device, browser, or extension issues</span> where the platform is otherwise functioning and support troubleshooting is available.</li>
-            </ul>
-          </section>
+      <LegalSection title="E. How to Request a Refund Review">
+        <ol className="space-y-2">
+          {['Submit your request through your official Transcript Tax Monitor support channel.','Include your name, purchase email, order date, and a clear description of the issue.','If available, include invoice, receipt, transaction ID, and any relevant project or workspace identifiers.'].map((item, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-primary/20 text-xs font-bold text-brand-primary">{i+1}</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ol>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>E. How to Request a Refund</h2>
-            <ol className={styles.listOrdered}>
-              <li>Submit a request through <Link href="/contact/" className={styles.accentLink}>Contact Support</Link>.</li>
-              <li>Include your account email and approximate purchase date and time.</li>
-              <li>If available, include the receipt details and any relevant token, report, or transaction identifiers.</li>
-            </ol>
-          </section>
+      <LegalSection title="F. Chargebacks">
+        <p>Initiating a chargeback or payment dispute may result in temporary suspension of access, pausing of project work, or withholding of undelivered items while the matter is reviewed.</p>
+      </LegalSection>
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>F. Chargebacks</h2>
-            <p className={styles.body}>
-              Initiating a chargeback or payment dispute for a platform purchase may result in temporary restriction or suspension of access while the matter is investigated.
-            </p>
-          </section>
-
-          <section className={styles.sectionLast}>
-            <h2 className={styles.sectionTitle}>G. Policy Changes</h2>
-            <p className={styles.body}>
-              We may update this policy from time to time. The &ldquo;Last updated&rdquo; date will reflect the most recent revision.
-            </p>
-          </section>
-        </div>
-      </main>
-    </div>
+      <LegalSection title="G. Policy Changes">
+        <p>We may update this policy from time to time. The last updated date reflects the most recent revision.</p>
+      </LegalSection>
+    </LegalPageLayout>
   )
 }
