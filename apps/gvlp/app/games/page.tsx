@@ -1,5 +1,5 @@
-import Nav from '@/components/Nav';
-import Footer from '@/components/Footer';
+import { MarketingHeader, MarketingFooter } from '@vlp/member-ui';
+import { gvlpConfig } from '@/lib/platform-config';
 import CtaBanner from '@/components/CtaBanner';
 import styles from './page.module.css';
 
@@ -33,7 +33,7 @@ const TIER_LABELS: Record<Game['tier'], string> = {
 export default function GamesPage() {
   return (
     <>
-      <Nav />
+      <MarketingHeader config={gvlpConfig} />
       <main className={styles.main}>
         {/* Background blobs */}
         <div className={styles.blob1} />
@@ -73,7 +73,7 @@ export default function GamesPage() {
         </section>
       </main>
       <CtaBanner />
-      <Footer />
+      <MarketingFooter config={gvlpConfig} />
     </>
   );
 }

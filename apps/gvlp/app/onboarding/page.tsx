@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Nav from '@/components/Nav';
+import { MarketingHeader } from '@vlp/member-ui';
+import { gvlpConfig } from '@/lib/platform-config';
 import { getSession, createCheckout } from '@/lib/api';
 import styles from './page.module.css';
 
@@ -355,7 +356,7 @@ function OnboardingContent() {
       <div className={[styles.blob, styles.blob3].join(' ')} />
       <div className={[styles.blob, styles.blob4].join(' ')} />
 
-      <Nav />
+      <MarketingHeader config={gvlpConfig} />
 
       <main className={styles.content}>
         {/* Page header */}

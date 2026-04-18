@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import Nav from '@/components/Nav';
-import Footer from '@/components/Footer';
+import { MarketingHeader, MarketingFooter } from '@vlp/member-ui';
+import { gvlpConfig } from '@/lib/platform-config';
 import CtaBanner from '@/components/CtaBanner';
 import styles from './page.module.css';
 
@@ -139,7 +139,7 @@ export default function HomePage() {
   return (
     <div className={styles.page}>
       {/* ── NAV ── */}
-      <Nav />
+      <MarketingHeader config={gvlpConfig} />
 
       {/* ══════════════════════════════════════════════════════
           HERO
@@ -517,7 +517,7 @@ export default function HomePage() {
       <CtaBanner />
 
       {/* ── FOOTER ── */}
-      <Footer />
+      <MarketingFooter config={gvlpConfig} />
     </div>
   );
 }

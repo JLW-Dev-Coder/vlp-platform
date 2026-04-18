@@ -1,5 +1,5 @@
-import Nav from '@/components/Nav';
-import Footer from '@/components/Footer';
+import { MarketingHeader, MarketingFooter } from '@vlp/member-ui';
+import { gvlpConfig } from '@/lib/platform-config';
 import CtaBanner from '@/components/CtaBanner';
 import styles from './page.module.css';
 
@@ -54,7 +54,7 @@ function Stars() {
 export default function ReviewsPage() {
   return (
     <>
-      <Nav />
+      <MarketingHeader config={gvlpConfig} />
       <main className={styles.main}>
         <div className={styles.blob1} />
         <div className={styles.blob2} />
@@ -93,7 +93,7 @@ export default function ReviewsPage() {
         </section>
       </main>
       <CtaBanner />
-      <Footer />
+      <MarketingFooter config={gvlpConfig} />
     </>
   );
 }
