@@ -49,6 +49,9 @@ export interface Operator {
   client_id: string;
   tokens_balance: number;
   unlocked_games: string[];
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  status?: string | null;
 }
 
 export interface Play {
