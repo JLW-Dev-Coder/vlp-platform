@@ -79,9 +79,9 @@ export const gvlpConfig: PlatformConfig = {
       ],
       toolsExtras: [
         { label: 'Game Library', href: '/games' },
-        { label: 'Sample Embed', href: '/games' },
-        { label: 'Tournament Rules', href: '/games' },
-        { label: 'Achievement Guide', href: '/games' },
+        { label: 'Sample Embed', href: '/tools/sample-embed' },
+        { label: 'Tournament Rules', href: '/tools/tournament-rules' },
+        { label: 'Achievement Guide', href: '/tools/achievement-guide' },
       ],
       ctaText: 'Want to embed real tax games on your site without building them yourself?',
       ctaMagnetLabel: 'Browse the Library',
