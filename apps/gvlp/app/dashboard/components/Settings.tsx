@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Operator, updateOperator } from '@/lib/api';
+import { openBillingPortal, BillingPortalError } from '@/lib/billing';
 import { useOperator } from '@/lib/operator-context';
 import styles from './Settings.module.css';
 
@@ -12,8 +13,32 @@ export default function Settings() {
   const [rotating, setRotating] = useState(false);
   const [rotateError, setRotateError] = useState<string | null>(null);
   const [rotateSuccess, setRotateSuccess] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   if (!operator) return null;
+
+  const hasActiveSubscription =
+    operator.status === 'active' && !!operator.stripe_customer_id;
+
+  const handleManageBilling = async () => {
+    setPortalLoading(true);
+    setPortalError(null);
+    try {
+      await openBillingPortal({
+        accountId: operator.account_id,
+        customerId: operator.stripe_customer_id ?? '',
+        returnUrl: window.location.origin + '/dashboard/account',
+      });
+    } catch (err) {
+      setPortalError(
+        err instanceof BillingPortalError
+          ? err.message
+          : 'Could not open billing portal'
+      );
+      setPortalLoading(false);
+    }
+  };
 
   const tierLabel = operator.tier.charAt(0).toUpperCase() + operator.tier.slice(1);
 
@@ -127,9 +152,25 @@ export default function Settings() {
         <p className={styles.cardDesc}>
           Need more tokens or more games? Upgrade your plan anytime.
         </p>
-        <Link href="/onboarding" className={styles.upgradeLink}>
-          View Plans &amp; Upgrade →
-        </Link>
+        {hasActiveSubscription ? (
+          <>
+            <button
+              type="button"
+              onClick={handleManageBilling}
+              disabled={portalLoading}
+              className={styles.upgradeLink}
+            >
+              {portalLoading ? 'Opening…' : 'Manage Billing →'}
+            </button>
+            {portalError && (
+              <div className={styles.errorMsg}>⚠️ {portalError}</div>
+            )}
+          </>
+        ) : (
+          <Link href="/dashboard/upgrade" className={styles.upgradeLink}>
+            View Plans &amp; Upgrade →
+          </Link>
+        )}
       </div>
     </div>
   );

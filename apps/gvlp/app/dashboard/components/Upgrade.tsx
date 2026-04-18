@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createCheckout } from '@/lib/api';
+import { openBillingPortal, BillingPortalError } from '@/lib/billing';
 import { useOperator } from '@/lib/operator-context';
 
 const GVLP_TIERS = {
@@ -19,10 +20,33 @@ export default function Upgrade() {
   const { data: operator } = useOperator();
   const [loadingTier, setLoadingTier] = useState<TierKey | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   if (!operator) return null;
 
   const currentIdx = TIER_ORDER.indexOf(operator.tier as TierKey);
+  const hasActiveSubscription =
+    operator.status === 'active' && !!operator.stripe_customer_id;
+
+  const handleManageBilling = async () => {
+    setPortalLoading(true);
+    setPortalError(null);
+    try {
+      await openBillingPortal({
+        accountId: operator.account_id,
+        customerId: operator.stripe_customer_id ?? '',
+        returnUrl: window.location.origin + '/dashboard/upgrade',
+      });
+    } catch (err) {
+      setPortalError(
+        err instanceof BillingPortalError
+          ? err.message
+          : 'Could not open billing portal'
+      );
+      setPortalLoading(false);
+    }
+  };
 
   const handleUpgrade = async (tier: TierKey) => {
     setLoadingTier(tier);
@@ -142,6 +166,31 @@ export default function Upgrade() {
           );
         })}
       </div>
+
+      {hasActiveSubscription && (
+        <div className="mt-8 rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-7">
+          <h2 className="text-base font-bold uppercase tracking-wider text-[var(--fg)]">
+            Manage Your Billing
+          </h2>
+          <p className="mt-2 text-sm text-[var(--muted)]">
+            Update your payment method, download invoices, or cancel your
+            subscription.
+          </p>
+          <button
+            type="button"
+            onClick={handleManageBilling}
+            disabled={portalLoading}
+            className="mt-4 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_12px_rgba(34,197,94,0.3)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {portalLoading ? 'Opening…' : 'Open Billing Portal'}
+          </button>
+          {portalError && (
+            <div className="mt-3 rounded-lg border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+              ⚠️ {portalError}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
