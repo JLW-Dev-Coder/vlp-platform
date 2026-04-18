@@ -30,10 +30,11 @@ export const tcvlpConfig: PlatformConfig = {
     {
       title: 'SETTINGS',
       items: [
-        { label: 'Plan & Billing', href: '/dashboard/upgrade', icon: 'CreditCard' },
         { label: 'Account', href: '/dashboard/account', icon: 'Settings' },
+        { label: 'Plan', href: '/dashboard/upgrade', icon: 'CreditCard' },
         { label: 'Firm Profile', href: '/dashboard/settings', icon: 'Settings' },
         { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
+        { label: 'Usage', href: '/dashboard/usage', icon: 'BarChart3' },
       ],
     },
   ],
