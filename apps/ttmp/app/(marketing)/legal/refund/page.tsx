@@ -5,7 +5,7 @@ import { ttmpConfig } from '@/lib/platform-config'
 
 export const metadata: Metadata = {
   title: 'Refund Policy | Transcript Tax Monitor',
-  description: 'Refund Policy for Transcript Tax Monitor installs, templates, setup services, and related digital purchases.',
+  description: 'Refund Policy for Transcript Tax Monitor subscriptions, tokens, and related digital purchases.',
 }
 
 export default function RefundPage() {
@@ -13,13 +13,13 @@ export default function RefundPage() {
     <LegalPageLayout
       config={ttmpConfig}
       title="Refund Policy"
-      subtitle="Digital Installs, Templates, and Service Purchases"
-      lastUpdated="March 17, 2026"
+      subtitle="Digital Service Purchases"
+      lastUpdated="April 17, 2026"
       currentPage="refund"
     >
       <LegalSection>
         <p>
-          This Refund Policy applies to purchases made through Transcript Tax Monitor, including setup packages, digital templates, implementation services, onboarding systems, automation builds, and related digital deliverables. For help with an order, use the{' '}
+          Transcript Tax Monitor provides a digital service offering subscriptions, tokens, and related digital deliverables (the &ldquo;Service&rdquo;). This Refund Policy applies to all purchases of the Service made through Transcript Tax Monitor. For help with an order, use the{' '}
           <Link href="/contact" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">
             support page
           </Link>.
@@ -28,20 +28,20 @@ export default function RefundPage() {
 
       <LegalSection title="A. What You're Buying">
         <ul className="space-y-2">
-          {['Digital products and service-based setup work, including templates, workflows, configuration, implementation, and related assets.','Digitally delivered access or work product, not a physical shipped good.','Fixed-scope or staged services that may begin promptly after purchase, scheduling, kickoff, or credential handoff.'].map((item) => (
+          {['Subscriptions, tokens, digital deliverables, and related services delivered through the Service.','Digitally delivered access or work product, not a physical shipped good.','Subscriptions, tokens, and services that may be activated or begin promptly after purchase.'].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
         </ul>
       </LegalSection>
 
       <LegalSection title="B. General Rule">
-        <p>Because Transcript Tax Monitor offers digital products, implementation work, and time-based service capacity that can be reserved or started quickly, purchases are generally <strong className="text-text-primary">non-refundable once delivery has started, access has been granted, files have been sent, or implementation work has begun</strong>.</p>
+        <p>Because Transcript Tax Monitor offers digital products and services that can be activated or started quickly, purchases are generally <strong className="text-text-primary">non-refundable once delivery has started, access has been granted, files have been sent, or the Service has begun</strong>.</p>
       </LegalSection>
 
       <LegalSection title="C. When We May Approve a Refund">
         <p className="mb-4">We may approve a refund, partial refund, service credit, or adjustment in situations such as:</p>
         <ul className="space-y-2">
-          {['Duplicate charge for the same order.','Unauthorized purchase claim, subject to review and payment processor rules.','Technical failure where paid digital access or files were never delivered.','Provider-side inability to start the purchased service within the stated scope for reasons not caused by Client delay, missing information, or third-party platform restrictions.','Verified billing error or materially incorrect charge amount.'].map((item) => (
+          {['Duplicate charge for the same order.','Unauthorized purchase claim, subject to review and payment processor rules.','Technical failure where paid digital access or files were never delivered.','Provider-side inability to deliver the purchased Service within the stated scope for reasons not caused by Client delay, missing information, or third-party platform restrictions.','Verified billing error or materially incorrect charge amount.'].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
         </ul>
@@ -51,7 +51,7 @@ export default function RefundPage() {
       <LegalSection title="D. When We Don't Refund">
         <p className="mb-4">Refunds are not typically provided for:</p>
         <ul className="space-y-2">
-          {['Change of mind after purchase.','Work already performed, including research, setup, implementation, revision rounds, automation configuration, or template customization.','Delivered digital files or assets.','Client delay in providing content, credentials, approvals, access, or required responses.','Third-party platform limitations, outages, account restrictions, or policy changes outside Provider control.','Mismatch between purchased scope and unpurchased custom requests.'].map((item) => (
+          {['Change of mind after purchase.','Services already performed or consumed through the Service, including research, configuration, or revisions.','Delivered digital files or deliverables.','Client delay in providing content, credentials, approvals, access, or required responses.','Third-party platform limitations, outages, account restrictions, or policy changes outside Provider control.','Mismatch between purchased scope and unpurchased custom requests.'].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
         </ul>
