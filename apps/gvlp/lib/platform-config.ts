@@ -47,6 +47,18 @@ export const gvlpConfig: PlatformConfig = {
     profile: '/dashboard',
     support: '/support',
   },
+  businessInfo: {
+    legalEntity: 'Lenore, Inc.',
+    address: {
+      line1: '1175 Avocado Avenue',
+      line2: 'Suite 101 PMB 1010',
+      city: 'El Cajon',
+      state: 'CA',
+      zip: '92020',
+    },
+    phone: '619-800-5457',
+    supportEmail: 'outreach@virtuallaunch.pro',
+  },
   marketing: {
     tagline: 'Game-based engagement',
     summary: 'Tax-themed mini-games for client education, lead capture, and practice differentiation.',
