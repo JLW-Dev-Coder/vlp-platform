@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Upload, X } from 'lucide-react'
 
-import { useAppSession } from '@/app/app/SessionContext'
+import { useAppShell } from '@vlp/member-ui'
+import { useBalance } from '@/lib/balance-context'
 import { getTokenPricing, purchaseTokens, type TokenPackage } from '@/lib/api'
 
 const WORKER_BASE = 'https://api.taxmonitor.pro'
@@ -89,8 +90,12 @@ function getCodeDescription(code: string): string {
 }
 
 export default function TranscriptParser() {
-  const session = useAppSession()
-  const [balance, setBalance] = useState(session.balance)
+  const { session } = useAppShell()
+  const { data: balanceData, refetch: refetchBalance } = useBalance()
+  const [balance, setBalance] = useState(balanceData?.transcript_tokens ?? 0)
+  useEffect(() => {
+    if (balanceData) setBalance(balanceData.transcript_tokens)
+  }, [balanceData])
   const [rawText, setRawText] = useState('')
   const [jsonText, setJsonText] = useState('')
   const [pdfFileName, setPdfFileName] = useState('')
@@ -134,21 +139,7 @@ export default function TranscriptParser() {
   }, [])
 
   const handleRefreshBalance = async () => {
-    if (!session?.accountId) return
-    try {
-      const tokenRes = await fetch(
-        `${WORKER_BASE}/v1/tokens/balance/${session.accountId}`,
-        { credentials: 'include' }
-      )
-      if (tokenRes.ok) {
-        const tokenData = await tokenRes.json()
-        const bal = tokenData.balance?.transcriptTokens
-          ?? tokenData.transcript_tokens
-          ?? tokenData.balance
-          ?? 0
-        setBalance(bal)
-      }
-    } catch { /* silently fail */ }
+    refetchBalance()
   }
 
   const handleOpenPurchaseModal = async () => {
@@ -402,7 +393,7 @@ export default function TranscriptParser() {
   }
 
   const handleSavePreview = async () => {
-    if (!session || !jsonText) return
+    if (!session.account_id || !jsonText) return
     setPreviewStatus('Saving report...')
     try {
       const eventId = crypto.randomUUID()
@@ -424,7 +415,7 @@ export default function TranscriptParser() {
   }
 
   const handleEmailReport = async () => {
-    if (!session || !reportId || !reportEventId || !emailInput) return
+    if (!session.account_id || !reportId || !reportEventId || !emailInput) return
     setEmailStatus('Sending...')
     const res = await fetch(`${WORKER_BASE}/v1/transcripts/report-email`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',

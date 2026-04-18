@@ -2,37 +2,38 @@
 
 import { useEffect, useState } from 'react'
 import { Link2, Wallet, CreditCard, CheckCircle, Copy } from 'lucide-react'
-import { useAppSession } from '../SessionContext'
 import {
-  api,
   getAffiliate,
   getAffiliateEvents,
   startAffiliateOnboarding,
   requestPayout,
-  type AffiliateData,
+  type Affiliate,
   type AffiliateEvent,
+  type PayoutResponse,
 } from '@/lib/api'
-import { KPICard, ContentCard, DataTable } from '@vlp/member-ui'
+import { KPICard, ContentCard, DataTable, useAppShell } from '@vlp/member-ui'
 
 export default function AffiliateClient() {
-  const session = useAppSession()
-  const [affiliate, setAffiliate] = useState<AffiliateData | null>(null)
+  const { session } = useAppShell()
+  const [affiliate, setAffiliate] = useState<Affiliate | null>(null)
   const [events, setEvents] = useState<AffiliateEvent[]>([])
   const [eventsLoading, setEventsLoading] = useState(true)
   const [affiliateError, setAffiliateError] = useState('')
   const [copyLabel, setCopyLabel] = useState('Copy')
   const [payoutLoading, setPayoutLoading] = useState(false)
-  const [payoutResult, setPayoutResult] = useState<{ payout_id: string; amount: number; status: string } | null>(null)
+  const [payoutResult, setPayoutResult] = useState<PayoutResponse | null>(null)
   const [payoutError, setPayoutError] = useState('')
   const [onboardLoading, setOnboardLoading] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
+    if (!session.account_id) return
+    const accountId = session.account_id
     ;(async () => {
       try {
         const [affiliateData, eventsData] = await Promise.all([
-          getAffiliate(session.accountId).catch(() => null),
-          getAffiliateEvents(session.accountId).catch(() => []),
+          getAffiliate(accountId).catch(() => null),
+          getAffiliateEvents(accountId).catch(() => []),
         ])
         if (!affiliateData) setAffiliateError('Could not load affiliate data.')
         else setAffiliate(affiliateData)
@@ -43,7 +44,7 @@ export default function AffiliateClient() {
         setEventsLoading(false)
       }
     })()
-  }, [session.accountId])
+  }, [session.account_id])
 
   const handleCopy = () => {
     if (!affiliate) return
@@ -167,10 +168,11 @@ export default function AffiliateClient() {
             { key: 'status', label: 'Status' },
           ]}
           data={events.map(ev => ({
+            key: ev.event_id,
             date: new Date(ev.created_at).toLocaleDateString(),
-            platform: ev.platform,
-            sale: fmtUSD(ev.gross_amount),
-            commission: fmtUSD(ev.commission_amount),
+            platform: ev.platform ?? '—',
+            sale: fmtUSD(ev.gross_amount_cents ?? 0),
+            commission: fmtUSD(ev.commission_amount_cents ?? 0),
             status: ev.status === 'paid' ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-semibold text-teal-400">Paid</span>
             ) : (

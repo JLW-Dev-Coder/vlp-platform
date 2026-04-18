@@ -2,11 +2,8 @@
 
 import Link from 'next/link'
 import { Receipt } from 'lucide-react'
-import { useAppSession } from '../SessionContext'
 
 export default function ReceiptsClient() {
-  const session = useAppSession()
-
   return (
     <div className="space-y-6">
       <div>

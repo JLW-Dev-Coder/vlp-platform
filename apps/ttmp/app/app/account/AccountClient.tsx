@@ -1,12 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { Settings, CreditCard, Shield, Mail } from 'lucide-react'
-import { useAppSession } from '../SessionContext'
-import { ContentCard } from '@vlp/member-ui'
+import { Settings, CreditCard, Shield } from 'lucide-react'
+import { ContentCard, useAppShell } from '@vlp/member-ui'
+import { useBalance } from '@/lib/balance-context'
 
 export default function AccountClient() {
-  const session = useAppSession()
+  const { session } = useAppShell()
+  const { data: balance } = useBalance()
+  const tokens = balance?.transcript_tokens ?? 0
 
   return (
     <div className="space-y-6">
@@ -25,7 +27,7 @@ export default function AccountClient() {
             </div>
             <div>
               <span className="text-[11px] font-bold uppercase tracking-widest text-white/40">Account ID</span>
-              <p className="mt-1 font-mono text-sm text-white/60">{session.accountId}</p>
+              <p className="mt-1 font-mono text-sm text-white/60">{session.account_id}</p>
             </div>
             <div>
               <span className="text-[11px] font-bold uppercase tracking-widest text-white/40">Plan</span>
@@ -46,8 +48,8 @@ export default function AccountClient() {
           <div className="space-y-4">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-widest text-white/40">Token Balance</span>
-              <p className={`mt-1 text-3xl font-semibold ${session.balance > 0 ? 'text-teal-400' : 'text-amber-400'}`}>
-                {session.balance}
+              <p className={`mt-1 text-3xl font-semibold ${tokens > 0 ? 'text-teal-400' : 'text-amber-400'}`}>
+                {tokens}
               </p>
             </div>
             <div className="flex gap-2">

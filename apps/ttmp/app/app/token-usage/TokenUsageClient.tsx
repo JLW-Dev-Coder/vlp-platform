@@ -1,11 +1,12 @@
 'use client'
 
 import { Coins, TrendingUp, ShoppingCart } from 'lucide-react'
-import { useAppSession } from '../SessionContext'
 import { KPICard, ContentCard } from '@vlp/member-ui'
+import { useBalance } from '@/lib/balance-context'
 
 export default function TokenUsageClient() {
-  const session = useAppSession()
+  const { data: balance } = useBalance()
+  const tokens = balance?.transcript_tokens ?? 0
 
   return (
     <div className="space-y-6">
@@ -15,7 +16,7 @@ export default function TokenUsageClient() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <KPICard label="Available" value={String(session.balance)} icon={Coins} />
+        <KPICard label="Available" value={String(tokens)} icon={Coins} />
         <KPICard label="Used This Month" value="—" icon={TrendingUp} />
         <KPICard label="Total Purchased" value="—" icon={ShoppingCart} />
       </div>

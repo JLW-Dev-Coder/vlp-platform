@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Coins, FileText, BarChart3, Zap, Upload, FolderOpen } from 'lucide-react'
 
-import { useAppSession } from '../SessionContext'
-import { KPICard, HeroCard, ContentCard } from '@vlp/member-ui'
+import { KPICard, HeroCard, ContentCard, useAppShell } from '@vlp/member-ui'
+import { useBalance } from '@/lib/balance-context'
 
 const WORKER_BASE = 'https://api.taxmonitor.pro'
 
@@ -19,26 +19,14 @@ interface ReportEntry {
 }
 
 export default function DashboardClient() {
-  const session = useAppSession()
-  const [balance, setBalance] = useState(session.balance)
+  const { session } = useAppShell()
+  const { data: balanceData } = useBalance()
+  const balance = balanceData?.transcript_tokens ?? 0
   const [reports, setReports] = useState<ReportEntry[]>([])
   const [reportsLoading, setReportsLoading] = useState(true)
   const [totalReports, setTotalReports] = useState(0)
 
   useEffect(() => {
-    // Fetch token balance
-    if (session.accountId) {
-      fetch(`${WORKER_BASE}/v1/tokens/balance/${session.accountId}`, { credentials: 'include' })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data) {
-            const bal = data.balance?.transcriptTokens ?? data.transcript_tokens ?? data.balance ?? 0
-            setBalance(bal)
-          }
-        })
-        .catch(() => {})
-    }
-
     // Fetch reports
     fetch(`${WORKER_BASE}/v1/transcripts/reports`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
@@ -53,7 +41,7 @@ export default function DashboardClient() {
       })
       .catch(() => {})
       .finally(() => setReportsLoading(false))
-  }, [session.accountId])
+  }, [])
 
   // Derive monthly stats from reports
   const now = new Date()
@@ -74,8 +62,8 @@ export default function DashboardClient() {
       {/* Hero Card */}
       <HeroCard
         brandColor="#14b8a6"
-        userName={session.email.split('@')[0]}
-        planName={session.plan.charAt(0).toUpperCase() + session.plan.slice(1) + ' Plan'}
+        userName={(session.email ?? 'member').split('@')[0]}
+        planName="Token-based Plan"
         memberSince={memberSince}
       />
 

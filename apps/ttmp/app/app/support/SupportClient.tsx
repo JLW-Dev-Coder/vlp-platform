@@ -2,12 +2,11 @@
 
 import { useState } from 'react'
 import { HelpCircle, Calendar, Book, Send, CheckCircle } from 'lucide-react'
-import { useAppSession } from '../SessionContext'
 import { api } from '@/lib/api'
-import { ContentCard } from '@vlp/member-ui'
+import { ContentCard, useAppShell } from '@vlp/member-ui'
 
 export default function SupportClient() {
-  const session = useAppSession()
+  const { session } = useAppShell()
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -67,7 +66,7 @@ export default function SupportClient() {
           <div className="py-6 text-center">
             <CheckCircle className="mx-auto mb-3 h-10 w-10 text-teal-400" />
             <p className="text-sm font-semibold text-white/80">Ticket submitted</p>
-            <p className="mt-1 text-xs text-white/40">We&apos;ll get back to you at {session.email}</p>
+            <p className="mt-1 text-xs text-white/40">We&apos;ll get back to you at {session.email ?? 'your email'}</p>
           </div>
         ) : (
           <div className="space-y-4">

@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { FileText, ExternalLink } from 'lucide-react'
-import { useAppSession } from '../SessionContext'
-import { ContentCard, DataTable } from '@vlp/member-ui'
+import { DataTable } from '@vlp/member-ui'
 
 const WORKER_BASE = 'https://api.taxmonitor.pro'
 
@@ -15,7 +14,6 @@ interface Report {
 }
 
 export default function ReportsClient() {
-  const session = useAppSession()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
