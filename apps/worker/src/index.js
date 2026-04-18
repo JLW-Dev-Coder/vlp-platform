@@ -15603,6 +15603,7 @@ TTMP Support Team
             plan: pro.plan || 'tcvlp_starter',
             product_id: planProductMap[pro.plan] || planProductMap.tcvlp_starter,
             pro_id: pro.pro_id,
+            stripe_customer_id: pro.stripe_customer_id ?? null,
           }, 200, request);
         }
 
@@ -15630,6 +15631,7 @@ TTMP Support Team
                   active: true,
                   plan: mapped,
                   product_id: planProductMap[mapped],
+                  stripe_customer_id: billing.stripe_customer_id ?? null,
                 }, 200, request);
               }
             }
