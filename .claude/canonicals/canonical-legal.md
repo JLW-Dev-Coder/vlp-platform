@@ -120,7 +120,7 @@ Sections are opt-in and content is locked here. Apps that opt in copy the sectio
 | TCVLP | ✓ | ✓ | ✓ |
 | WLVLP | — | — | — |
 
-Apps add a row check by amending this table during their migration.
+TCVLP opt-ins confirmed live 2026-04-17 after privacy alignment landed (commit `4ad6575`). Apps add a row check by amending this table during their migration.
 
 ---
 
@@ -383,14 +383,16 @@ Cross-links between legal pages use the Tailwind link pattern: `className="text-
 | App | /legal/privacy | /legal/refund | /legal/terms | Uses shared components | businessInfo on config |
 |-----|---------------|---------------|--------------|------------------------|------------------------|
 | VLP | ✅ | ✅ | ✅ | ✅ (canonical source) | ✅ |
-| TMP | ⚠️ bespoke | ⚠️ bespoke | ⚠️ bespoke | ❌ | ❌ |
-| TTMP | ❌ | ❌ | ❌ | ❌ | ✅ |
-| TTTMP | ⚠️ bespoke | ⚠️ bespoke | ⚠️ bespoke | ❌ | ❌ |
-| DVLP | ❌ | ❌ | ❌ | ❌ | ❌ |
-| GVLP | ❌ | ❌ | ❌ | ❌ | ❌ |
-| TCVLP | ❌ | ❌ | ❌ | ❌ | ✅ |
-| WLVLP | ❌ | ❌ | ❌ | ❌ | ❌ |
+| TMP | ✅ | ✅ | ✅ | ✅ | ✅ |
+| TTMP | ✅ | ✅ | ✅ | ✅ | ✅ |
+| TTTMP | ✅ | ✅ | ✅ | ✅ | ✅ |
+| DVLP | ✅ | ✅ | ✅ | ✅ | ✅ |
+| GVLP | ✅ | ✅ | ✅ | ✅ | ✅ |
+| TCVLP | ✅ | ⚠️ bespoke | ⚠️ bespoke | ✅ | ✅ |
+| WLVLP | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 Legend: ✅ live and on-canonical · ⚠️ live but bespoke (pre-canonical drift, scheduled for rewrite) · ❌ missing
 
-This table is updated at the end of Phase 3 after 24-URL smoke test.
+All 24 URLs verified returning 200 (TTMP and WLVLP return 308 → 200 due to trailing-slash).
+
+**TCVLP refund/terms:** retain pre-canonical bespoke pages pending Principal sign-off to remove IRS-specific legally-protective disclaimers (PREPARATION GUIDES disclaimer, Form 2848 authorization, IRS acceptance non-guarantee, Kwong eligibility language). Per §2.3 STOP-clause.
