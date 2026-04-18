@@ -188,6 +188,45 @@ TCVLP opt-ins confirmed live 2026-04-17 after privacy alignment landed (commit `
 
 ---
 
+## §3.5 Optional refund clauses — product-shape
+
+Apps selling regulated, IRS-adjacent, or other products with specific refund-eligibility carveouts MAY include these additional Refund Policy sections. Apps that do not sell such products MUST NOT include them (the disclosures imply product behavior that doesn't exist and create misleading-consumer-disclosure liability).
+
+Sections are opt-in and content is locked here. Apps that opt in append the opt-in sections (in the order listed below) after base section G and before any cross-page links. Each optional section is rendered as a `LegalSection` with the titles shown below.
+
+### Section: Form 843 — IRS Processing Disclaimer
+
+**Required for:** apps that prepare or assist with Form 843 abatement claims. Currently TCVLP only.
+
+**Section title (verbatim):** `H. Form 843 — IRS Processing Disclaimer`
+
+> Refunds are not provided for IRS rejection, non-acceptance, or delay in processing any Form 843 submission Client prepared using {Platform Name}.
+
+### Section: Form 843 — Kwong Eligibility Determination
+
+**Required for:** apps offering Kwong v. United States case-based abatement eligibility analysis. Currently TCVLP only.
+
+**Section title (verbatim):** `I. Form 843 — Kwong Eligibility Determination`
+
+> Refunds are not provided for Kwong eligibility determinations made by the platform that Client or end-taxpayer disagree with.
+
+---
+
+### Adoption matrix (refund opt-ins per app)
+
+| App | Form 843 IRS Processing | Kwong Eligibility |
+|-----|-------------------------|-------------------|
+| VLP | — | — |
+| TMP | — | — |
+| TTMP | — | — |
+| TTTMP | — | — |
+| DVLP | — | — |
+| GVLP | — | — |
+| TCVLP | — | — |
+| WLVLP | — | — |
+
+---
+
 ## §4. Terms of Service
 
 **Route:** `/legal/terms`
@@ -299,6 +338,61 @@ TCVLP opt-ins confirmed live 2026-04-17 after privacy alignment landed (commit `
 **Electronic Acceptance** — rendered as callout box (brand-tinted border, not a LegalSection)
 
 > By purchasing, scheduling, accessing, downloading, or using a {Platform Name} product or service, Client acknowledges that they have read, understood, and agreed to be bound by these terms.
+
+---
+
+## §4.5 Optional terms clauses — product-shape
+
+Apps with regulated, IRS-adjacent, or other product-specific Terms-of-Service obligations MAY include these additional Terms sections. Apps that do not sell such products MUST NOT include them (the disclosures imply product behavior and obligations that don't exist and create misleading-consumer-disclosure liability).
+
+Sections are opt-in and content is locked here. Apps that opt in append the opt-in sections (in the order listed below) after base Section 16 and before the `Electronic Acceptance` callout. Each optional section is rendered as a `LegalSection` with the titles shown below.
+
+### Section: Form 843 — Preparation Guide Status
+
+**Required for:** apps that ship preparation tooling explicitly NOT filed as an IRS form. Currently TCVLP only.
+
+**Section title (verbatim):** `Section 17. Form 843 — Preparation Guide Status`
+
+> {Platform Name} generates PREPARATION GUIDES for IRS Form 843. The generated document is NOT an official IRS form and cannot be filed with the IRS as-is. Client must transfer the prepared information to the official IRS Form 843 (available at irs.gov/pub/irs-pdf/f843.pdf) before mailing to the IRS.
+
+### Section: Form 843 — Power of Attorney Requirement
+
+**Required for:** apps that handle taxpayer data on behalf of practitioners. Currently TCVLP only.
+
+**Section title (verbatim):** `Section 18. Form 843 — Power of Attorney Requirement`
+
+> Client must not submit end-taxpayer data to the platform without appropriate authorization or signed Form 2848 (Power of Attorney) where required.
+
+### Section: Form 843 — IRS Acceptance Non-Guarantee + Kwong Window
+
+**Required for:** apps where outcomes depend on IRS discretion or case-law-driven eligibility windows. Currently TCVLP only.
+
+**Section title (verbatim):** `Section 19. Form 843 — IRS Acceptance Non-Guarantee + Kwong Window`
+
+> Provider does not guarantee IRS acceptance of any Form 843 submission, refund amounts, specific claim outcomes, Kwong eligibility determinations, time savings, business outcomes, or uninterrupted availability of any third-party platform. The Kwong v. US ruling window closes July 10, 2026; Provider does not guarantee the continued relevance or availability of Kwong-specific features after that date.
+
+### Section: Form 843 — IRS Regulations Indemnity
+
+**Required for:** apps where users may file or assist filings governed by IRS regulations. Currently TCVLP only.
+
+**Section title (verbatim):** `Section 20. Form 843 — IRS Regulations Indemnity`
+
+> Client agrees to indemnify and hold Provider harmless from any claim, loss, or expense arising from Client's violation of professional ethics rules or IRS regulations, or from Client's violation of end-taxpayer rights, including unauthorized submission of third-party data.
+
+---
+
+### Adoption matrix (terms opt-ins per app)
+
+| App | Preparation Guide Status | PoA Requirement | IRS Acceptance Non-Guarantee | IRS Regulations Indemnity |
+|-----|--------------------------|------------------|------------------------------|---------------------------|
+| VLP | — | — | — | — |
+| TMP | — | — | — | — |
+| TTMP | — | — | — | — |
+| TTTMP | — | — | — | — |
+| DVLP | — | — | — | — |
+| GVLP | — | — | — | — |
+| TCVLP | — | — | — | — |
+| WLVLP | — | — | — | — |
 
 ---
 
