@@ -32,6 +32,7 @@ export const gvlpConfig: PlatformConfig = {
       title: 'SETTINGS',
       items: [
         { label: 'Account', href: '/dashboard/account', icon: 'Settings' },
+        { label: 'Plan', href: '/dashboard/upgrade', icon: 'CreditCard' },
         { label: 'Profile', href: '/dashboard/profile', icon: 'UserCircle' },
         { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
         { label: 'Usage', href: '/dashboard/usage', icon: 'Activity' },

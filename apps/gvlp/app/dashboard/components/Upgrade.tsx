@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { createCheckout } from '@/lib/api';
 import { useOperator } from '@/lib/operator-context';
-import styles from './Upgrade.module.css';
 
 const GVLP_TIERS = {
   starter:    { tokens: 100,  games: 1, monthly: 0,  label: 'Starter'    },
@@ -38,72 +37,91 @@ export default function Upgrade() {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Upgrade Your Plan</h1>
-      <p className={styles.subheading}>
+    <div>
+      <h1 className="text-3xl font-bold text-[var(--fg)] mb-1.5">Upgrade Your Plan</h1>
+      <p className="text-sm text-[var(--muted)] mb-8">
         Choose a plan that fits your practice. Upgrade anytime — pay monthly, cancel anytime.
       </p>
 
       {checkoutError && (
-        <div className={styles.errorMsg}>⚠️ {checkoutError}</div>
+        <div className="mb-6 rounded-lg border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          ⚠️ {checkoutError}
+        </div>
       )}
 
-      <div className={styles.tierGrid}>
+      <div className="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
         {TIER_ORDER.map((key) => {
           const tier = GVLP_TIERS[key];
           const isCurrent = key === operator.tier;
           const tierIdx = TIER_ORDER.indexOf(key);
           const isUpgrade = tierIdx > currentIdx;
           const isDowngrade = tierIdx < currentIdx;
+          const isFeatured = key === 'strategist';
+
+          const cardClasses = [
+            'relative flex flex-col gap-5 rounded-xl border p-7 pb-6 transition-colors',
+            'bg-[var(--member-card)]',
+            isCurrent
+              ? 'border-brand-500 shadow-[0_0_20px_rgba(34,197,94,0.15)]'
+              : isFeatured
+              ? 'border-brand-500/60 shadow-[0_0_24px_rgba(34,197,94,0.18)]'
+              : 'border-[var(--member-border)] hover:border-brand-500/50',
+          ].join(' ');
 
           return (
-            <div
-              key={key}
-              className={`${styles.tierCard} ${isCurrent ? styles.tierCardCurrent : ''} ${key === 'strategist' ? styles.tierCardFeatured : ''}`}
-            >
-              {key === 'strategist' && (
-                <div className={styles.featuredBadge}>Most Popular</div>
+            <div key={key} className={cardClasses}>
+              {isFeatured && (
+                <div className="absolute left-1/2 top-0 -translate-x-1/2 rounded-b-lg bg-brand-500 px-3 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-white">
+                  Most Popular
+                </div>
               )}
 
-              <div className={styles.tierHeader}>
-                <span className={styles.tierLabel}>{tier.label}</span>
-                <div className={styles.tierPrice}>
+              <div className="flex flex-col gap-2">
+                <span className="text-base font-bold uppercase tracking-wider text-[var(--fg)]">
+                  {tier.label}
+                </span>
+                <div className="flex items-baseline gap-0.5">
                   {tier.monthly === 0 ? (
-                    <span className={styles.priceFree}>Free</span>
+                    <span className="text-2xl font-extrabold text-[var(--muted)]">Free</span>
                   ) : (
                     <>
-                      <span className={styles.priceAmount}>${tier.monthly}</span>
-                      <span className={styles.pricePer}>/mo</span>
+                      <span className="text-3xl font-extrabold leading-none text-brand-500">
+                        ${tier.monthly}
+                      </span>
+                      <span className="ml-0.5 text-sm text-[var(--muted)]">/mo</span>
                     </>
                   )}
                 </div>
               </div>
 
-              <ul className={styles.featureList}>
-                <li className={styles.featureItem}>
-                  <span className={styles.featureIcon}>🪙</span>
+              <ul className="flex flex-1 flex-col gap-2.5 text-sm text-[var(--fg)]">
+                <li className="flex items-center gap-2.5">
+                  <span className="flex-shrink-0 text-base leading-none">🪙</span>
                   <span><strong>{tier.tokens.toLocaleString()}</strong> tokens / month</span>
                 </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.featureIcon}>🎮</span>
+                <li className="flex items-center gap-2.5">
+                  <span className="flex-shrink-0 text-base leading-none">🎮</span>
                   <span><strong>{tier.games}</strong> game{tier.games > 1 ? 's' : ''} unlocked</span>
                 </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.featureIcon}>🔗</span>
+                <li className="flex items-center gap-2.5">
+                  <span className="flex-shrink-0 text-base leading-none">🔗</span>
                   <span>Embed code access</span>
                 </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.featureIcon}>📊</span>
+                <li className="flex items-center gap-2.5">
+                  <span className="flex-shrink-0 text-base leading-none">📊</span>
                   <span>Play analytics</span>
                 </li>
               </ul>
 
-              <div className={styles.tierAction}>
+              <div className="mt-1">
                 {isCurrent ? (
-                  <span className={styles.currentBadge}>Current Plan</span>
+                  <span className="flex w-full items-center justify-center rounded-lg border border-brand-500/40 bg-brand-500/10 px-3 py-2.5 text-sm font-bold uppercase tracking-wider text-brand-500">
+                    Current Plan
+                  </span>
                 ) : isUpgrade ? (
                   <button
-                    className={styles.upgradeBtn}
+                    type="button"
+                    className="w-full rounded-lg bg-brand-500 px-3 py-2.5 text-sm font-semibold text-white shadow-[0_2px_12px_rgba(34,197,94,0.3)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
                     onClick={() => handleUpgrade(key)}
                     disabled={loadingTier !== null}
                   >
@@ -111,7 +129,8 @@ export default function Upgrade() {
                   </button>
                 ) : isDowngrade ? (
                   <button
-                    className={styles.downgradeBtn}
+                    type="button"
+                    className="w-full rounded-lg border border-[var(--member-border)] bg-transparent px-3 py-2.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-brand-500/40 hover:text-[var(--fg)] disabled:cursor-not-allowed disabled:opacity-55"
                     onClick={() => handleUpgrade(key)}
                     disabled={loadingTier !== null}
                   >
