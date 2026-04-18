@@ -80,7 +80,7 @@ export default function AffiliatePage() {
       })
       .catch((err) => {
         if (err.message?.includes('401') || err.message?.includes('session')) {
-          router.replace('/login?redirect=/affiliate')
+          router.replace('/sign-in?redirect=/affiliate')
         } else {
           setError('Failed to load affiliate data.')
           setLoading(false)

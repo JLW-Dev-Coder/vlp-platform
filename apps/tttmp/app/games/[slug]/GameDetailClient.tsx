@@ -134,7 +134,7 @@ export default function GameDetailClient({ game }: { game: Game }) {
   async function preflightUnlock() {
     setError('')
     if (!loggedIn) {
-      router.push(`/login?redirect=/games/${game.slug}`)
+      router.push(`/sign-in?redirect=/games/${game.slug}`)
       return
     }
     if (hasGrant) {

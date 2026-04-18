@@ -16,7 +16,7 @@ export default function PlayClient({ slug, title }: { slug: string; title: strin
     try {
       await api.getSession()
     } catch {
-      router.replace(`/login?redirect=/games/${slug}`)
+      router.replace(`/sign-in?redirect=/games/${slug}`)
       return
     }
 

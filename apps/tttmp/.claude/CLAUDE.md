@@ -44,7 +44,7 @@ TTTMP passes `tttmpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/account` (balance + token purchase), `/affiliate` (referral earnings), `/games/[slug]/play` (game access)
 
 ### Auth
-`/login` (magic link)
+`/sign-in` (magic link)
 
 ---
 

@@ -29,7 +29,7 @@ function AccountContent() {
         setLoading(false)
       })
       .catch(() => {
-        router.replace('/login')
+        router.replace('/sign-in')
       })
   }, [router])
 

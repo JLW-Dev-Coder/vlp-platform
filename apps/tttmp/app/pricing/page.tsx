@@ -34,7 +34,7 @@ export default function PricingPage() {
 
   async function handleBuy(sku: TokenPackSku) {
     if (!loggedIn) {
-      router.push('/login?redirect=/pricing')
+      router.push('/sign-in?redirect=/pricing')
       return
     }
     setBuyingId(sku)

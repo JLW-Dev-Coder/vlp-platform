@@ -36,8 +36,8 @@ export const tttmpConfig: PlatformConfig = {
   ],
   routes: {
     home: '/',
-    signIn: '/login',
-    signOut: '/login',
+    signIn: '/sign-in',
+    signOut: '/sign-in',
     dashboard: '/account',
     account: '/account',
     profile: '/account',

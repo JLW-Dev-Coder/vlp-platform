@@ -48,7 +48,7 @@ export default function Header() {
               </button>
             </>
           ) : (
-            <Link href="/login" className={styles.cta}>
+            <Link href="/sign-in" className={styles.cta}>
               Sign In
             </Link>
           )}
