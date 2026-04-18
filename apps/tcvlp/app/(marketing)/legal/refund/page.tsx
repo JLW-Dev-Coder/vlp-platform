@@ -5,7 +5,7 @@ import { tcvlpConfig } from '@/lib/platform-config'
 
 export const metadata: Metadata = {
   title: 'Refund Policy | TaxClaim Pro',
-  description: 'Refund Policy for TaxClaim Pro subscriptions, Form 843 preparation guides, and related digital services.',
+  description: 'Refund Policy for TaxClaim Pro installs, setup services, and related digital purchases.',
 }
 
 export default function RefundPage() {
@@ -13,13 +13,13 @@ export default function RefundPage() {
     <LegalPageLayout
       config={tcvlpConfig}
       title="Refund Policy"
-      subtitle="Subscriptions, Preparation Guides, and Service Purchases"
-      lastUpdated="April 16, 2026"
+      subtitle="Digital Installs, Templates, and Service Purchases"
+      lastUpdated="March 17, 2026"
       currentPage="refund"
     >
       <LegalSection>
         <p>
-          This Refund Policy applies to purchases made through TaxClaim Pro, including monthly subscriptions (Starter, Professional, Firm tiers), Form 843 preparation guides, branded client page setup, and related digital services. For help with an order, use the{' '}
+          This Refund Policy applies to purchases made through TaxClaim Pro, including setup packages, digital templates, implementation services, onboarding systems, automation builds, and related digital deliverables. For help with an order, use the{' '}
           <Link href="/support" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">
             support page
           </Link>.
@@ -29,9 +29,9 @@ export default function RefundPage() {
       <LegalSection title="A. What You're Buying">
         <ul className="space-y-2">
           {[
-            'Monthly subscription access to TaxClaim Pro dashboard, branded client pages, and Form 843 preparation features.',
-            'Digitally delivered preparation guides, not physical goods.',
-            'Immediate access to the platform upon successful subscription payment.',
+            'Digital products and service-based setup work, including templates, workflows, configuration, implementation, and related assets.',
+            'Digitally delivered access or work product, not a physical shipped good.',
+            'Fixed-scope or staged services that may begin promptly after purchase, scheduling, kickoff, or credential handoff.',
           ].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
@@ -39,18 +39,18 @@ export default function RefundPage() {
       </LegalSection>
 
       <LegalSection title="B. General Rule">
-        <p>Because TaxClaim Pro is a digital subscription service with immediate access, subscription fees are generally <strong className="text-text-primary">non-refundable once the billing period has begun</strong>. Client may cancel a subscription at any time through the dashboard; cancellation stops future billing but does not refund the current billing period.</p>
+        <p>Because TaxClaim Pro offers digital products, implementation work, and time-based service capacity that can be reserved or started quickly, purchases are generally <strong className="text-text-primary">non-refundable once delivery has started, access has been granted, files have been sent, or implementation work has begun</strong>.</p>
       </LegalSection>
 
       <LegalSection title="C. When We May Approve a Refund">
         <p className="mb-4">We may approve a refund, partial refund, service credit, or adjustment in situations such as:</p>
         <ul className="space-y-2">
           {[
-            'Duplicate charge for the same subscription period.',
+            'Duplicate charge for the same order.',
             'Unauthorized purchase claim, subject to review and payment processor rules.',
-            'Technical failure where the dashboard or core services were unavailable for an extended period during the billing cycle.',
+            'Technical failure where paid digital access or files were never delivered.',
+            'Provider-side inability to start the purchased service within the stated scope for reasons not caused by Client delay, missing information, or third-party platform restrictions.',
             'Verified billing error or materially incorrect charge amount.',
-            'Provider-side discontinuation of a core service feature during a paid subscription period.',
           ].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
@@ -62,13 +62,12 @@ export default function RefundPage() {
         <p className="mb-4">Refunds are not typically provided for:</p>
         <ul className="space-y-2">
           {[
-            'Change of mind after a billing period has begun.',
-            'Partial-month cancellations (the current billing period remains paid through its end date).',
-            'Generated Form 843 preparation guides already created during the billing period.',
-            'Client delay in using the platform, configuring the branded page, or submitting claim data.',
-            'Third-party platform limitations, outages, or policy changes (Stripe, Cloudflare, Cal.com, etc.) outside Provider control.',
-            'IRS rejection, non-acceptance, or delay in processing any Form 843 submission Client prepared using TaxClaim Pro.',
-            'Kwong eligibility determinations made by the platform that Client or end-taxpayer disagree with.',
+            'Change of mind after purchase.',
+            'Work already performed, including research, setup, implementation, revision rounds, automation configuration, or template customization.',
+            'Delivered digital files or assets.',
+            'Client delay in providing content, credentials, approvals, access, or required responses.',
+            'Third-party platform limitations, outages, account restrictions, or policy changes outside Provider control.',
+            'Mismatch between purchased scope and unpurchased custom requests.',
           ].map((item) => (
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
@@ -78,9 +77,9 @@ export default function RefundPage() {
       <LegalSection title="E. How to Request a Refund Review">
         <ol className="space-y-2">
           {[
-            'Submit your request through the TaxClaim Pro support page.',
-            'Include your name, subscription email, order date, tier, and a clear description of the issue.',
-            'If available, include your Stripe subscription ID, invoice, receipt, or transaction ID.',
+            'Submit your request through your official TaxClaim Pro support channel.',
+            'Include your name, purchase email, order date, and a clear description of the issue.',
+            'If available, include invoice, receipt, transaction ID, and any relevant project or workspace identifiers.',
           ].map((item, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-primary/20 text-xs font-bold text-brand-primary">{i+1}</span>
@@ -91,11 +90,19 @@ export default function RefundPage() {
       </LegalSection>
 
       <LegalSection title="F. Chargebacks">
-        <p>Initiating a chargeback or payment dispute with Stripe may result in temporary suspension of access to the TaxClaim Pro dashboard, pausing of branded client page rendering, or withholding of preparation guide generation while the matter is reviewed.</p>
+        <p>Initiating a chargeback or payment dispute may result in temporary suspension of access, pausing of project work, or withholding of undelivered items while the matter is reviewed.</p>
       </LegalSection>
 
       <LegalSection title="G. Policy Changes">
-        <p>We may update this policy from time to time. The last updated date reflects the most recent revision. Material changes will be communicated to active subscribers by email.</p>
+        <p>We may update this policy from time to time. The last updated date reflects the most recent revision.</p>
+      </LegalSection>
+
+      <LegalSection title="H. Form 843 — IRS Processing Disclaimer">
+        <p>Refunds are not provided for IRS rejection, non-acceptance, or delay in processing any Form 843 submission Client prepared using TaxClaim Pro.</p>
+      </LegalSection>
+
+      <LegalSection title="I. Form 843 — Kwong Eligibility Determination">
+        <p>Refunds are not provided for Kwong eligibility determinations made by the platform that Client or end-taxpayer disagree with.</p>
       </LegalSection>
     </LegalPageLayout>
   )

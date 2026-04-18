@@ -222,7 +222,7 @@ Sections are opt-in and content is locked here. Apps that opt in append the opt-
 | TTTMP | — | — |
 | DVLP | — | — |
 | GVLP | — | — |
-| TCVLP | — | — |
+| TCVLP | ✓ | ✓ |
 | WLVLP | — | — |
 
 ---
@@ -391,7 +391,7 @@ Sections are opt-in and content is locked here. Apps that opt in append the opt-
 | TTTMP | — | — | — | — |
 | DVLP | — | — | — | — |
 | GVLP | — | — | — | — |
-| TCVLP | — | — | — | — |
+| TCVLP | ✓ | ✓ | ✓ | ✓ |
 | WLVLP | — | — | — | — |
 
 ---
@@ -482,11 +482,11 @@ Cross-links between legal pages use the Tailwind link pattern: `className="text-
 | TTTMP | ✅ | ✅ | ✅ | ✅ | ✅ |
 | DVLP | ✅ | ✅ | ✅ | ✅ | ✅ |
 | GVLP | ✅ | ✅ | ✅ | ✅ | ✅ |
-| TCVLP | ✅ | ⚠️ bespoke | ⚠️ bespoke | ✅ | ✅ |
+| TCVLP | ✅ | ✅ | ✅ | ✅ | ✅ |
 | WLVLP | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 Legend: ✅ live and on-canonical · ⚠️ live but bespoke (pre-canonical drift, scheduled for rewrite) · ❌ missing
 
 All 24 URLs verified returning 200 (TTMP and WLVLP return 308 → 200 due to trailing-slash).
 
-**TCVLP refund/terms:** retain pre-canonical bespoke pages pending Principal sign-off to remove IRS-specific legally-protective disclaimers (PREPARATION GUIDES disclaimer, Form 2848 authorization, IRS acceptance non-guarantee, Kwong eligibility language). Per §2.3 STOP-clause.
+**TCVLP refund/terms:** aligned to canonical 2026-04-17. IRS-specific legally-protective disclaimers (PREPARATION GUIDES status, Form 2848 PoA, IRS acceptance non-guarantee, Kwong eligibility, IRS regulations indemnity, Form 843 IRS processing) preserved via §3.5 + §4.5 product-shape opt-ins. TCVLP is the only opter-in across all six.
