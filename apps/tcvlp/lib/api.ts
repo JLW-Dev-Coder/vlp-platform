@@ -268,6 +268,7 @@ export interface SubscriptionStatus {
   plan?: string;
   product_id?: string;
   pro_id?: string;
+  stripe_customer_id: string | null;
 }
 
 export async function checkSubscription(slug: string): Promise<SubscriptionStatus> {
@@ -276,7 +277,7 @@ export async function checkSubscription(slug: string): Promise<SubscriptionStatu
       `/v1/tcvlp/subscription/status?slug=${encodeURIComponent(slug)}`
     );
   } catch {
-    return { active: false };
+    return { active: false, stripe_customer_id: null };
   }
 }
 
@@ -284,7 +285,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   try {
     return await apiFetch<SubscriptionStatus>('/v1/tcvlp/subscription/status');
   } catch {
-    return { active: false };
+    return { active: false, stripe_customer_id: null };
   }
 }
 

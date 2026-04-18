@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useAppShell } from '@vlp/member-ui';
 import { createTcvlpCheckout } from '@/lib/api';
 import { TcvlpTier, tierLabel, tierPrice, STRIPE_PRICES } from '@/lib/tiers';
 import { useSubscriptionStatus } from '@/lib/account-context';
+import { openBillingPortal, BillingPortalError } from '@/lib/billing';
 import styles from './shared.module.css';
 
 const TIER_FEATURES: Record<TcvlpTier, string[]> = {
@@ -34,12 +36,32 @@ const TIER_FEATURES: Record<TcvlpTier, string[]> = {
 const TIERS: TcvlpTier[] = ['tcvlp_starter', 'tcvlp_professional', 'tcvlp_firm'];
 
 export default function Upgrade() {
+  const { session } = useAppShell();
   const { data: sub } = useSubscriptionStatus();
   const [loading, setLoading] = useState<TcvlpTier | null>(null);
   const [error, setError] = useState('');
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   const currentTier = (sub?.plan || null) as TcvlpTier | null;
   const isActive = sub?.active ?? false;
+  const customerId = sub?.stripe_customer_id ?? null;
+
+  const handleManageBilling = async () => {
+    setPortalError(null);
+    try {
+      await openBillingPortal({
+        accountId: session.account_id ?? '',
+        customerId: customerId ?? '',
+        returnUrl: window.location.origin + '/dashboard/upgrade',
+      });
+    } catch (err) {
+      setPortalError(
+        err instanceof BillingPortalError
+          ? err.message
+          : 'Could not open billing portal'
+      );
+    }
+  };
 
   const handleCheckout = async (tier: TcvlpTier) => {
     setLoading(tier);
@@ -119,6 +141,29 @@ export default function Upgrade() {
           );
         })}
       </div>
+
+      {isActive && customerId && (
+        <div className={styles.urlCard} style={{ marginTop: '2rem' }}>
+          <div className={styles.urlCardLabel}>Manage Your Billing</div>
+          <p className={styles.hint} style={{ marginTop: '0.5rem' }}>
+            Update your payment method, download invoices, or cancel your
+            subscription.
+          </p>
+          <button
+            type="button"
+            onClick={handleManageBilling}
+            className={styles.saveBtn}
+            style={{ marginTop: '0.75rem' }}
+          >
+            Open Billing Portal
+          </button>
+          {portalError && (
+            <div className={styles.errorMsg} style={{ marginTop: '0.75rem' }}>
+              {portalError}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className={styles.deadlineCard}>
         <strong>Deadline:</strong> Kwong claim deadline is <strong>July 10, 2026</strong>.

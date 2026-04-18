@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAppShell } from '@vlp/member-ui';
 import { useTaxPro, useSubscriptionStatus } from '@/lib/account-context';
 import { tierLabel, tierPrice } from '@/lib/tiers';
 import { getProfile, updateProfile } from '@/lib/api';
+import { openBillingPortal, BillingPortalError } from '@/lib/billing';
 import styles from '../components/shared.module.css';
 
 export default function AccountPage() {
+  const { session } = useAppShell();
   const { data: pro, loading: proLoading } = useTaxPro();
   const { data: sub, loading: subLoading } = useSubscriptionStatus();
   const [copied, setCopied] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   const loading = proLoading || subLoading;
   const landingUrl = pro?.slug
@@ -23,6 +27,23 @@ export default function AccountPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  };
+
+  const handleManageBilling = async () => {
+    setPortalError(null);
+    try {
+      await openBillingPortal({
+        accountId: session.account_id ?? '',
+        customerId: sub?.stripe_customer_id ?? '',
+        returnUrl: window.location.origin + '/dashboard/account',
+      });
+    } catch (err) {
+      setPortalError(
+        err instanceof BillingPortalError
+          ? err.message
+          : 'Could not open billing portal'
+      );
+    }
   };
 
   return (
@@ -45,6 +66,8 @@ export default function AccountPage() {
             landingUrl={landingUrl}
             copied={copied}
             onCopy={handleCopy}
+            onManageBilling={handleManageBilling}
+            portalError={portalError}
           />
           <NotificationsCard />
         </>
@@ -120,6 +143,8 @@ function FirmSetupCard({
   landingUrl,
   copied,
   onCopy,
+  onManageBilling,
+  portalError,
 }: {
   pro: { firm_name?: string | null; slug?: string | null } | null;
   subActive: boolean;
@@ -127,6 +152,8 @@ function FirmSetupCard({
   landingUrl: string | null;
   copied: boolean;
   onCopy: () => void;
+  onManageBilling: () => void;
+  portalError: string | null;
 }) {
   // State A — no pro, no active sub
   if (!pro && !subActive) {
@@ -205,13 +232,13 @@ function FirmSetupCard({
       )}
 
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <Link
-          href="/dashboard/upgrade"
+        <button
+          type="button"
+          onClick={onManageBilling}
           className={styles.saveBtn}
-          style={{ display: 'inline-block', textDecoration: 'none' }}
         >
-          Manage Subscription
-        </Link>
+          Manage Billing
+        </button>
         <Link
           href="/onboarding"
           style={{
@@ -223,6 +250,11 @@ function FirmSetupCard({
           Edit Firm Details →
         </Link>
       </div>
+      {portalError && (
+        <div className={styles.errorMsg} style={{ marginTop: '0.75rem' }}>
+          {portalError}
+        </div>
+      )}
     </div>
   );
 }
