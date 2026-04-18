@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { AppShell } from '@vlp/member-ui'
+import { AppShell, AuthGate } from '@vlp/member-ui'
 import { tttmpConfig } from '@/lib/platform-config'
 import { api } from '@/lib/api'
 import styles from './page.module.css'
@@ -29,9 +29,9 @@ function AccountContent() {
         setLoading(false)
       })
       .catch(() => {
-        router.replace('/sign-in')
+        setLoading(false)
       })
-  }, [router])
+  }, [])
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id')
@@ -114,14 +114,16 @@ function AccountContent() {
 
 export default function AccountPage() {
   return (
-    <AppShell config={tttmpConfig}>
-      <Suspense fallback={
-        <div className={styles.main}>
-          <p className={styles.loading}>Loading...</p>
-        </div>
-      }>
-        <AccountContent />
-      </Suspense>
-    </AppShell>
+    <AuthGate apiBaseUrl={tttmpConfig.apiBaseUrl}>
+      <AppShell config={tttmpConfig}>
+        <Suspense fallback={
+          <div className={styles.main}>
+            <p className={styles.loading}>Loading...</p>
+          </div>
+        }>
+          <AccountContent />
+        </Suspense>
+      </AppShell>
+    </AuthGate>
   )
 }
