@@ -1,76 +1,80 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import Header from '@/components/Header'
-import styles from './page.module.css'
+import { LegalPageLayout, LegalSection } from '@vlp/member-ui'
+import { tttmpConfig } from '@/lib/platform-config'
+
+export const metadata: Metadata = {
+  title: 'Refund Policy | Tax Tools Arcade',
+  description: 'Refund Policy for Tax Tools Arcade installs, templates, setup services, and related digital purchases.',
+}
 
 export default function RefundPage() {
   return (
-    <>
-      <Header />
-      <main className={styles.main}>
-        <h1 className={styles.title}>Refund Policy</h1>
-        <p className={styles.updated}>Last updated: March 3, 2026</p>
+    <LegalPageLayout
+      config={tttmpConfig}
+      title="Refund Policy"
+      subtitle="Digital Installs, Templates, and Service Purchases"
+      lastUpdated="March 17, 2026"
+      currentPage="refund"
+    >
+      <LegalSection>
+        <p>
+          This Refund Policy applies to purchases made through Tax Tools Arcade, including setup packages, digital templates, implementation services, onboarding systems, automation builds, and related digital deliverables. For help with an order, use the{' '}
+          <Link href="/contact" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">
+            support page
+          </Link>.
+        </p>
+      </LegalSection>
 
-        <div className={styles.section}>
-          <p>
-            This Refund Policy applies to purchases made on TaxTools (token packs used to unlock browser-based educational games). If you need help, use <Link href="/contact" style={{ color: 'var(--accent)' }}>Contact Support</Link>.
-          </p>
-        </div>
+      <LegalSection title="A. What You're Buying">
+        <ul className="space-y-2">
+          {['Digital products and service-based setup work, including templates, workflows, configuration, implementation, and related assets.','Digitally delivered access or work product, not a physical shipped good.','Fixed-scope or staged services that may begin promptly after purchase, scheduling, kickoff, or credential handoff.'].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
 
-        <div className={styles.section}>
-          <h2>A. What You&apos;re Buying</h2>
-          <ul>
-            <li><strong>Token packs</strong> can be used across any game in the arcade.</li>
-            <li><strong>Tokens never expire</strong>.</li>
-            <li>Games run <strong>in your browser</strong>. There are no files to download.</li>
-          </ul>
-        </div>
+      <LegalSection title="B. General Rule">
+        <p>Because Tax Tools Arcade offers digital products, implementation work, and time-based service capacity that can be reserved or started quickly, purchases are generally <strong className="text-text-primary">non-refundable once delivery has started, access has been granted, files have been sent, or implementation work has begun</strong>.</p>
+      </LegalSection>
 
-        <div className={styles.section}>
-          <h2>B. General Rule</h2>
-          <p>
-            Because token packs are digital credits that deliver immediate access and can be spent right away, purchases are generally <strong>non-refundable once tokens are delivered</strong> to your account.
-          </p>
-        </div>
+      <LegalSection title="C. When We May Approve a Refund">
+        <p className="mb-4">We may approve a refund, partial refund, service credit, or adjustment in situations such as:</p>
+        <ul className="space-y-2">
+          {['Duplicate charge for the same order.','Unauthorized purchase claim, subject to review and payment processor rules.','Technical failure where paid digital access or files were never delivered.','Provider-side inability to start the purchased service within the stated scope for reasons not caused by Client delay, missing information, or third-party platform restrictions.','Verified billing error or materially incorrect charge amount.'].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+        <p className="mt-4 text-xs opacity-70">Refund decisions are case-by-case and may require documentation, timestamps, platform details, or payment evidence.</p>
+      </LegalSection>
 
-        <div className={styles.section}>
-          <h2>C. When We May Approve a Refund</h2>
-          <p>We may approve a refund (in full or part) in situations like:</p>
-          <ul>
-            <li><strong>Duplicate charge</strong> for the same purchase.</li>
-            <li><strong>Unrecognized charge</strong> that appears to be unauthorized (subject to verification and payment processor rules).</li>
-            <li><strong>Technical failure</strong> where tokens were purchased but never delivered to the account.</li>
-            <li><strong>Service outage at purchase time</strong> that prevented access after purchase, and we cannot reasonably resolve it.</li>
-          </ul>
-          <p className={styles.muted}>Approvals are case-by-case and may require supporting details.</p>
-        </div>
+      <LegalSection title="D. When We Don't Refund">
+        <p className="mb-4">Refunds are not typically provided for:</p>
+        <ul className="space-y-2">
+          {['Change of mind after purchase.','Work already performed, including research, setup, implementation, revision rounds, automation configuration, or template customization.','Delivered digital files or assets.','Client delay in providing content, credentials, approvals, access, or required responses.','Third-party platform limitations, outages, account restrictions, or policy changes outside Provider control.','Mismatch between purchased scope and unpurchased custom requests.'].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
 
-        <div className={styles.section}>
-          <h2>D. When We Don&apos;t Refund</h2>
-          <p>Refunds are not typically provided for:</p>
-          <ul>
-            <li><strong>Change of mind</strong> after tokens are delivered.</li>
-            <li><strong>Partially used tokens</strong> or gameplay completed.</li>
-            <li><strong>Failure to sign in</strong> to the correct account email used for purchase.</li>
-            <li><strong>Browser extensions</strong> or device settings causing display issues (we&apos;ll help you troubleshoot).</li>
-          </ul>
-        </div>
+      <LegalSection title="E. How to Request a Refund Review">
+        <ol className="space-y-2">
+          {['Submit your request through your official Tax Tools Arcade support channel.','Include your name, purchase email, order date, and a clear description of the issue.','If available, include invoice, receipt, transaction ID, and any relevant project or workspace identifiers.'].map((item, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-primary/20 text-xs font-bold text-brand-primary">{i+1}</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ol>
+      </LegalSection>
 
-        <div className={styles.section}>
-          <h2>E. How to Request a Refund</h2>
-          <ol>
-            <li>Submit a request through <Link href="/contact" style={{ color: 'var(--accent)' }}>Contact Support</Link>.</li>
-            <li>Include your account email and the approximate purchase date/time.</li>
-            <li>If available, include the receipt or last 4 digits of the card shown on the receipt.</li>
-          </ol>
-        </div>
+      <LegalSection title="F. Chargebacks">
+        <p>Initiating a chargeback or payment dispute may result in temporary suspension of access, pausing of project work, or withholding of undelivered items while the matter is reviewed.</p>
+      </LegalSection>
 
-        <div className={styles.section}>
-          <h2>F. Policy Changes</h2>
-          <p>
-            We may update this policy from time to time. The &quot;Last updated&quot; date will reflect the most recent revision.
-          </p>
-        </div>
-      </main>
-    </>
+      <LegalSection title="G. Policy Changes">
+        <p>We may update this policy from time to time. The last updated date reflects the most recent revision.</p>
+      </LegalSection>
+    </LegalPageLayout>
   )
 }
