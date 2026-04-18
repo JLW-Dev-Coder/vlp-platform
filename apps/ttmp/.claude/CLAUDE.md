@@ -107,6 +107,19 @@ Output: `scale/batches/scale-batch-*.json` + `scale/gmail/email1/*.csv`
 
 ---
 
+## Theming Divergences
+
+- **Marketing max-width via CSS modules.** `app/(marketing)/page.module.css` and
+  `components/Header.module.css`/`Footer.module.css`-style legacy wrappers used
+  custom `max-width` containers (`var(--max-width, 1280px)`) instead of the
+  canonical Tailwind `max-w-marketing` (1280px) / `max-w-app` (1200px) /
+  `max-w-narrow` (960px) tokens defined in `canonical-app-blueprint.md` §4.14.
+  Documented for visibility; full Tailwind container migration is deferred to
+  Track E. The shared `MarketingHeader`/`MarketingFooter` (adopted Phase 4)
+  already use `max-w-7xl` per the canonical.
+
+---
+
 ## Hard Constraints
 
 - No backend changes in this repo — all backend logic lives in `apps/worker`
