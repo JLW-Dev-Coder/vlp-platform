@@ -1,6 +1,6 @@
 # Canonical: Legal Pages
 
-Last updated: 2026-04-17
+Last updated: 2026-04-17 (Phase A4.1 base scrub)
 
 ## §1. Purpose
 
@@ -22,44 +22,44 @@ The canonical copy below is the source of truth. The lifted copy comes from VLP'
 
 **Route:** `/legal/privacy`
 **Title:** `Privacy Policy`
-**Subtitle:** `Install, Template, and Service Data Handling`
-**Last updated (content):** `March 17, 2026`
+**Subtitle:** `Service Data Handling`
+**Last updated (content):** `April 17, 2026`
 **Metadata title:** `Privacy Policy | {Platform Name}`
-**Metadata description:** `Privacy Policy for {Platform Name} installs, templates, onboarding systems, and related digital services.`
+**Metadata description:** `Privacy Policy for {Platform Name} subscriptions, tokens, digital deliverables, and related services.`
 
 ### Intro paragraph (unlabeled LegalSection)
 
-> This Privacy Policy explains how {Platform Name} and its operator ("Provider") may access, use, and handle Client information in connection with installs, setup work, templates, automation configuration, support, and related digital services.
+> {Platform Name} provides a digital service offering subscriptions, tokens, and related digital deliverables (the "Service"). This Privacy Policy explains how {Platform Name} and its operator ("Provider") may access, use, and handle Client information in connection with the Service and related support.
 
 ### Sections
 
 **A. Information Provider May Receive**
 
-> Provider may receive or have access to Client-provided information such as account credentials, workspace configuration, business contact information, forms, workflows, portal content, files, templates, onboarding assets, task data, automation settings, and related administrative information. Depending on the service, Provider may also incidentally view information uploaded by Client or Client's end users.
+> Provider may receive or have access to Client-provided information such as account credentials, workspace configuration, business contact information, forms, workflows, portal content, files, content, configuration data, and related administrative information. Depending on the Service, Provider may also incidentally view information uploaded by Client or Client's end users.
 
 **B. Purpose of Access**
 
-> Provider will access and use information only as reasonably necessary to complete the purchased service, perform setup or configuration, troubleshoot issues, verify deliverables, provide support, maintain records, and transfer administrative control back to Client where applicable.
+> Provider will access and use information only as reasonably necessary to deliver the Service, operate and maintain the Service, troubleshoot issues, verify deliverables, provide support, maintain records, and transfer administrative control back to Client where applicable.
 
 **C. Data Minimization**
 
-> Provider will make reasonable efforts to minimize access to information not required for service delivery, testing, troubleshooting, fraud prevention, documentation, or recordkeeping. Client is encouraged not to expose sensitive information during setup unless required for the requested work.
+> Provider will make reasonable efforts to minimize access to information not required for Service delivery, testing, troubleshooting, fraud prevention, documentation, or recordkeeping. Client is encouraged not to expose sensitive information during use of the Service unless required for the requested work.
 
 **D. Confidentiality & Security**
 
-> Provider will maintain commercially reasonable administrative, technical, and organizational safeguards to protect information accessed during service delivery. Client remains responsible for secure passwords, platform-level security settings, user permissions, and device security after access is transferred or services are completed.
+> Provider will maintain commercially reasonable administrative, technical, and organizational safeguards to protect information accessed during Service delivery. Client remains responsible for secure passwords, platform-level security settings, user permissions, and device security after access is transferred or Services are completed.
 
 **E. Credential Handling**
 
-> Client may provide credentials, temporary invites, API keys, or access links needed to complete the service. Client may revoke Provider access at any time, but doing so may pause or prevent completion. After completion, Client should rotate temporary credentials, revoke temporary invitations, and confirm final administrative ownership and access settings.
+> Client may provide credentials, temporary invites, API keys, or access links needed to use the Service. Client may revoke Provider access at any time, but doing so may pause or prevent the Service. After completion, Client should rotate temporary credentials, revoke temporary invitations, and confirm final administrative ownership and access settings.
 
 **F. Third-Party Platforms**
 
-> {Platform Name} services may involve third-party platforms, software, hosting providers, payment providers, automation tools, and workspace systems. Provider does not control and is not responsible for those third parties' privacy practices, security controls, hosting terms, retention practices, or processing policies. Client is responsible for reviewing and accepting the terms and privacy policies of any third-party platforms Client uses.
+> The Service may involve third-party platforms, software, hosting providers, payment providers, and related systems. Provider does not control and is not responsible for those third parties' privacy practices, security controls, hosting terms, retention practices, or processing policies. Client is responsible for reviewing and accepting the terms and privacy policies of any third-party platforms Client uses.
 
 **G. Data Retention**
 
-> Provider does not intend to retain Client information longer than reasonably necessary for service delivery, support, invoicing, bookkeeping, proof of delivery, security, dispute resolution, or legal compliance. Limited records, screenshots, configuration notes, receipts, or support artifacts may be retained for business and legal purposes.
+> Provider does not intend to retain Client information longer than reasonably necessary for Service delivery, support, invoicing, bookkeeping, proof of delivery, security, dispute resolution, or legal compliance. Limited records, screenshots, configuration notes, receipts, or support artifacts may be retained for business and legal purposes.
 
 **H. Client Requests**
 
@@ -128,26 +128,26 @@ TCVLP opt-ins confirmed live 2026-04-17 after privacy alignment landed (commit `
 
 **Route:** `/legal/refund`
 **Title:** `Refund Policy`
-**Subtitle:** `Digital Installs, Templates, and Service Purchases`
-**Last updated (content):** `March 17, 2026`
+**Subtitle:** `Digital Service Purchases`
+**Last updated (content):** `April 17, 2026`
 **Metadata title:** `Refund Policy | {Platform Name}`
-**Metadata description:** `Refund Policy for {Platform Name} installs, templates, setup services, and related digital purchases.`
+**Metadata description:** `Refund Policy for {Platform Name} subscriptions, tokens, and related digital purchases.`
 
 ### Intro paragraph (unlabeled LegalSection)
 
-> This Refund Policy applies to purchases made through {Platform Name}, including setup packages, digital templates, implementation services, onboarding systems, automation builds, and related digital deliverables. For help with an order, use the [support page](/contact).
+> {Platform Name} provides a digital service offering subscriptions, tokens, and related digital deliverables (the "Service"). This Refund Policy applies to all purchases of the Service made through {Platform Name}. For help with an order, use the [support page](/contact).
 
 ### Sections
 
 **A. What You're Buying** — bulleted list
 
-- Digital products and service-based setup work, including templates, workflows, configuration, implementation, and related assets.
+- Subscriptions, tokens, digital deliverables, and related services delivered through the Service.
 - Digitally delivered access or work product, not a physical shipped good.
-- Fixed-scope or staged services that may begin promptly after purchase, scheduling, kickoff, or credential handoff.
+- Subscriptions, tokens, and services that may be activated or begin promptly after purchase.
 
 **B. General Rule**
 
-> Because {Platform Name} offers digital products, implementation work, and time-based service capacity that can be reserved or started quickly, purchases are generally **non-refundable once delivery has started, access has been granted, files have been sent, or implementation work has begun**.
+> Because {Platform Name} offers digital products and services that can be activated or started quickly, purchases are generally **non-refundable once delivery has started, access has been granted, files have been sent, or the Service has begun**.
 
 **C. When We May Approve a Refund**
 
@@ -156,7 +156,7 @@ TCVLP opt-ins confirmed live 2026-04-17 after privacy alignment landed (commit `
 - Duplicate charge for the same order.
 - Unauthorized purchase claim, subject to review and payment processor rules.
 - Technical failure where paid digital access or files were never delivered.
-- Provider-side inability to start the purchased service within the stated scope for reasons not caused by Client delay, missing information, or third-party platform restrictions.
+- Provider-side inability to deliver the purchased Service within the stated scope for reasons not caused by Client delay, missing information, or third-party platform restrictions.
 - Verified billing error or materially incorrect charge amount.
 
 > Refund decisions are case-by-case and may require documentation, timestamps, platform details, or payment evidence. *(rendered in small opaque text)*
@@ -166,8 +166,8 @@ TCVLP opt-ins confirmed live 2026-04-17 after privacy alignment landed (commit `
 > Refunds are not typically provided for:
 
 - Change of mind after purchase.
-- Work already performed, including research, setup, implementation, revision rounds, automation configuration, or template customization.
-- Delivered digital files or assets.
+- Services already performed or consumed through the Service, including research, configuration, or revisions.
+- Delivered digital files or deliverables.
 - Client delay in providing content, credentials, approvals, access, or required responses.
 - Third-party platform limitations, outages, account restrictions, or policy changes outside Provider control.
 - Mismatch between purchased scope and unpurchased custom requests.
@@ -231,22 +231,22 @@ Sections are opt-in and content is locked here. Apps that opt in append the opt-
 
 **Route:** `/legal/terms`
 **Title:** `Terms of Service`
-**Subtitle:** `Digital Products, Installs, and Service Use Agreement`
-**Last updated (content):** `March 17, 2026`
+**Subtitle:** `Digital Service Use Agreement`
+**Last updated (content):** `April 17, 2026`
 **Metadata title:** `Terms of Service | {Platform Name}`
-**Metadata description:** `Terms for {Platform Name} digital products, installs, templates, implementation services, and platform use.`
+**Metadata description:** `Terms for {Platform Name} subscriptions, tokens, digital deliverables, and platform use.`
 
 ### Intro paragraph (unlabeled LegalSection)
 
-> This Agreement is entered into by and between {Platform Name}'s operating entity ("Provider") and the individual or entity purchasing, accessing, or using {Platform Name} products or services ("Client").
+> {Platform Name} provides a digital service offering subscriptions, tokens, and related digital deliverables (the "Service"). This Agreement is entered into by and between {Platform Name}'s operating entity ("Provider") and the individual or entity purchasing, accessing, or using the Service ("Client").
 
 ### Sections
 
 **Section 1. Covered Services & Scope of Use** — bulleted list + paragraph
 
-- Digital templates, documents, and workflow assets
-- Setup, implementation, and onboarding services
-- Automation configuration and platform customization
+- Subscriptions, tokens, and digital deliverables
+- Access to the Service and its features
+- Account configuration and platform features
 - Related account access, training, support, and digital deliverables
 
 > Unless expressly stated in writing, purchases do not include unlimited revisions, custom development beyond the purchased scope, legal review, compliance review, tax advice, accounting advice, employment advice, or regulated professional services.
@@ -255,7 +255,7 @@ Sections are opt-in and content is locked here. Apps that opt in append the opt-
 
 > Client acknowledges that Provider does not provide legal, tax, accounting, financial, compliance, HR, employment, or other regulated professional advice under this Agreement unless separately and expressly stated in writing.
 >
-> Any templates, examples, workflows, automations, labels, prompts, structure, content, or implementation suggestions are provided for operational and informational purposes only.
+> Any templates, examples, content, structure, prompts, or suggestions provided through the Service are for operational and informational purposes only.
 
 **Section 3. Client Responsibilities** — bulleted list
 
@@ -266,31 +266,31 @@ Sections are opt-in and content is locked here. Apps that opt in append the opt-
 
 **Section 4. Account Access & Credentials**
 
-> Client is responsible for maintaining secure control of the accounts, workspaces, tools, and credentials used in connection with {Platform Name} services.
+> Client is responsible for maintaining secure control of the accounts, workspaces, tools, and credentials used in connection with the Service.
 >
-> Provider may rely on the credentials, invitations, workspace permissions, billing details, and account-linked identifiers supplied by Client to determine authorized access and service delivery.
+> Provider may rely on the credentials, invitations, workspace permissions, billing details, and account-linked identifiers supplied by Client to determine authorized access and Service delivery.
 
 **Section 5. Third-Party Platforms, Tools, and Dependencies**
 
-> {Platform Name} services may depend on third-party platforms, hosting providers, payment processors, communication tools, productivity systems, automation platforms, or related software selected by Client or Provider.
+> The Service may depend on third-party platforms, hosting providers, payment processors, communication tools, productivity systems, or related software selected by Client or Provider.
 >
 > Provider is not responsible for outages, policy changes, pricing changes, API changes, account restrictions, lost access, feature removals, or technical limitations caused by third-party providers.
 
 **Section 6. Acceptance of Deliverables** — bulleted list
 
-- Delivery of files, templates, links, system access, or configuration work,
-- Implementation beginning in Client's environment, or
+- Delivery of files, links, or system access,
+- The Service becoming available to Client, or
 - Client using, approving, publishing, or relying on any deliverable.
 
 **Section 7. Fees and Payment**
 
-> Client agrees to pay the fees presented at checkout, invoice, proposal, or service order for the purchased {Platform Name} product or service.
+> Client agrees to pay the fees presented at checkout, invoice, proposal, or service order for the purchased Service.
 >
 > Unless otherwise stated in writing, fees are due in advance and are non-refundable except as described in the [Refund Policy](/legal/refund).
 
 **Section 8. Privacy and Data Handling**
 
-> Provider may access and handle Client information only as reasonably necessary to deliver services, troubleshoot issues, verify work, provide support, maintain records, and protect service integrity. Additional details are described in the [Privacy Policy](/legal/privacy).
+> Provider may access and handle Client information only as reasonably necessary to deliver the Service, troubleshoot issues, verify work, provide support, maintain records, and protect Service integrity. Additional details are described in the [Privacy Policy](/legal/privacy).
 
 **Section 9. Intellectual Property & License**
 
@@ -300,7 +300,7 @@ Sections are opt-in and content is locked here. Apps that opt in append the opt-
 
 **Section 10. Revisions, Scope, and Change Requests**
 
-> Any revisions, edits, additions, integrations, migrations, or customizations outside the purchased scope are outside this Agreement unless separately approved in writing.
+> Any changes, additions, integrations, or customizations to the Service outside the purchased scope are outside this Agreement unless separately approved in writing.
 >
 > Provider may treat new requirements, delayed feedback, missing assets, changed direction, or expanded technical requests as a scope change requiring a new fee, timeline, or order.
 
@@ -337,7 +337,7 @@ Sections are opt-in and content is locked here. Apps that opt in append the opt-
 
 **Electronic Acceptance** — rendered as callout box (brand-tinted border, not a LegalSection)
 
-> By purchasing, scheduling, accessing, downloading, or using a {Platform Name} product or service, Client acknowledges that they have read, understood, and agreed to be bound by these terms.
+> By purchasing, scheduling, accessing, downloading, or using the Service, Client acknowledges that they have read, understood, and agreed to be bound by these terms.
 
 ---
 
@@ -490,3 +490,11 @@ Legend: ✅ live and on-canonical · ⚠️ live but bespoke (pre-canonical drif
 All 24 URLs verified returning 200 (TTMP and WLVLP return 308 → 200 due to trailing-slash).
 
 **TCVLP refund/terms:** aligned to canonical 2026-04-17. IRS-specific legally-protective disclaimers (PREPARATION GUIDES status, Form 2848 PoA, IRS acceptance non-guarantee, Kwong eligibility, IRS regulations indemnity, Form 843 IRS processing) preserved via §3.5 + §4.5 product-shape opt-ins. TCVLP is the only opter-in across all six.
+
+---
+
+## §8. Decision log
+
+| Date | Decision | Reason |
+|------|----------|--------|
+| 2026-04-17 | Scrubbed §2/§3/§4 base sections to product-agnostic language; defined "the Service" as a portable term | A4 closure found base sections described VLP-specific products ("setup packages / implementation services / installs / templates / automation configuration"). Apps not selling those products were shipping legal copy describing the wrong product — consumer-disclosure liability. Scrub eliminates per-app product-misdescription without altering any §2.5/§3.5/§4.5 product-shape opt-ins. |
