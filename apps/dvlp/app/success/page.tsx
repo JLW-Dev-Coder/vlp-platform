@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import { getSessionStatus } from '@/lib/api';
+import { dvlpConfig } from '@/lib/platform-config';
 import styles from './page.module.css';
 
 type PaymentState = 'processing' | 'completed' | 'error';
@@ -143,7 +144,7 @@ function SuccessContent() {
           {plan === 'paid' ? (
             <div className={styles.actions}>
               <a
-                href="https://cal.com/tax-monitor-pro/developers-virtual-launch-pro-onboarding"
+                href={`https://cal.com/${dvlpConfig.calOnboardingSlug}`}
                 target="_blank" rel="noopener noreferrer"
                 className={styles.calBtn}>
                 Schedule Your 1-on-1 Intro Call
