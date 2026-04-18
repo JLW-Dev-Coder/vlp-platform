@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { vlpConfig } from '@/lib/platform-config'
 
 const API_BASE = 'https://api.virtuallaunch.pro'
 const SUPPORT_POST = `${API_BASE}/v1/support/tickets`
 const SUPPORT_STATUS_GET = `${API_BASE}/v1/support/tickets/`
 
-const CAL_LINK = 'tax-monitor-pro/virtual-launch-pro-support'
-const CAL_NS   = 'virtual-launch-pro-support'
+const CAL_LINK = vlpConfig.calIntroSlug
+const CAL_NS   = vlpConfig.calIntroNamespace
 
 const contactOptions = [
   {
@@ -99,7 +100,7 @@ export default function ContactPage() {
       if (!Cal) return
       Cal('init', CAL_NS, { origin: 'https://app.cal.com' })
       Cal.ns[CAL_NS]('ui', {
-        cssVarsPerTheme: { dark: { 'cal-brand': '#f97316' } },
+        cssVarsPerTheme: { dark: { 'cal-brand': vlpConfig.brandColor } },
         hideEventTypeDetails: false,
         layout: 'month_view',
       })
