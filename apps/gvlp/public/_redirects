@@ -1,2 +1,6 @@
 /dashboard/settings    /dashboard/account    301
 /dashboard/settings/*  /dashboard/account/:splat  301
+/affiliate    /dashboard/affiliate    301
+/affiliate/   /dashboard/affiliate    301
+/calendar     /dashboard/calendar     301
+/calendar/    /dashboard/calendar     301
