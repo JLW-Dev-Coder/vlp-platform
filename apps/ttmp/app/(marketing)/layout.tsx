@@ -1,10 +1,9 @@
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import { BusinessJsonLd } from '@vlp/member-ui'
+import { MarketingHeader, MarketingFooter, BusinessJsonLd } from '@vlp/member-ui'
+import { ttmpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex min-h-screen flex-col bg-surface-bg">
       <BusinessJsonLd
         type="ProfessionalService"
         name="Transcript Tax Monitor Pro"
@@ -12,9 +11,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         url="https://transcript.taxmonitor.pro"
         priceRange="$"
       />
-      <Header />
-      <main>{children}</main>
-      <Footer />
-    </>
+      <MarketingHeader config={ttmpConfig} />
+      <main className="flex-1">{children}</main>
+      <MarketingFooter config={ttmpConfig} />
+    </div>
   )
 }
