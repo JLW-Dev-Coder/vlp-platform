@@ -125,6 +125,7 @@ Total routes: ~193
 | Method | Path | Purpose | Auth |
 |--------|------|---------|------|
 | POST | `/v1/contact/submit` | Submit contact form | No |
+| POST | `/v1/leads/chatbot` | Submit chatbot lead (anonymous) | No |
 | POST | `/v1/support/tickets` | Create support ticket | Yes |
 | GET | `/v1/support/tickets/by-account/:account_id` | Get account tickets | Yes |
 | GET | `/v1/support/tickets/:ticket_id` | Get ticket details | Yes |

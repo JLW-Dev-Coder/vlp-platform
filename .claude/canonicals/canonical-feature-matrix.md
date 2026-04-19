@@ -33,6 +33,7 @@ These features exist on every platform. The Worker routes are shared; each platf
 | Support Tickets | POST /v1/support/tickets, GET /v1/support/tickets/by-account/{id}, PATCH /v1/support/tickets/{id} | support/{id}.json | support_tickets | /dashboard/support | live |
 | Token Balances | GET /v1/tokens/balance/{id} | tokens/{id}.json | tokens | /dashboard (shown in sidebar or header) | live |
 | Tool Usage History | GET /v1/dashboard (summary), GET /v1/tokens/usage/{account_id}?limit=25 (detail) | usage/{account_id}/{tool}/{timestamp}.json | usage_log | /dashboard/usage (per shell-path conventions) | partial — VLP + TCVLP shipped per canonical; other 6 apps pending their sweeps |
+| Lead Chatbot | POST /v1/leads/chatbot | leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json | chatbot_leads | (marketing)/* via @vlp/member-ui LeadChatbot | partial — TTMP live, 7 other apps pending Prompt 2 |
 
 ---
 
