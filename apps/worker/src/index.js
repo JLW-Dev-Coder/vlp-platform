@@ -715,6 +715,189 @@ function isAdminEmail(email) {
 }
 
 // ---------------------------------------------------------------------------
+// YouTube Analytics API helpers (OAuth-gated metrics)
+// ---------------------------------------------------------------------------
+
+async function getFreshYouTubeOAuthToken(env) {
+  const raw = await env.ENRICHMENT_KV.get('youtube:oauth:tokens')
+  if (!raw) return { connected: false }
+  let rec
+  try { rec = JSON.parse(raw) } catch { return { connected: false, error: 'parse_error' } }
+  const expiresAt = rec.expires_at ? Date.parse(rec.expires_at) : 0
+  if (!rec.access_token || Date.now() + 60000 > expiresAt) {
+    if (!rec.refresh_token) {
+      return { connected: true, record: rec, error: 'token_expired_no_refresh' }
+    }
+    const clientId = env.YOUTUBE_OAUTH_CLIENT_ID
+    const clientSecret = env.YOUTUBE_OAUTH_CLIENT_SECRET
+    if (!clientId || !clientSecret) {
+      return { connected: true, record: rec, error: 'oauth_not_configured' }
+    }
+    try {
+      const res = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          refresh_token: rec.refresh_token,
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: 'refresh_token',
+        }),
+      })
+      if (!res.ok) return { connected: true, record: rec, error: `refresh_failed_${res.status}` }
+      const t = await res.json()
+      rec.access_token = t.access_token
+      rec.expires_at = new Date(Date.now() + ((t.expires_in ?? 3600) * 1000)).toISOString()
+      await env.ENRICHMENT_KV.put('youtube:oauth:tokens', JSON.stringify(rec))
+    } catch (e) {
+      return { connected: true, record: rec, error: `refresh_error_${e.message || 'unknown'}` }
+    }
+  }
+  return { connected: true, record: rec }
+}
+
+async function fetchYouTubeOAuthAnalytics(env, channelId, videos) {
+  if (!channelId) return { connected: false }
+  const cacheKey = `youtube:oauth:analytics:v1:${channelId}`
+  const CACHE_TTL = 900
+  try {
+    const cached = await env.ENRICHMENT_KV.get(cacheKey)
+    if (cached) {
+      const parsed = JSON.parse(cached)
+      if (parsed.cached_at && Date.now() - Date.parse(parsed.cached_at) < CACHE_TTL * 1000) {
+        return parsed.payload
+      }
+    }
+  } catch { /* miss */ }
+
+  const tokenState = await getFreshYouTubeOAuthToken(env)
+  if (!tokenState.connected) return { connected: false }
+  if (tokenState.error || !tokenState.record?.access_token) {
+    return {
+      connected: true,
+      connected_by_email: tokenState.record?.connected_by_email || null,
+      connected_at: tokenState.record?.connected_at || null,
+      error: tokenState.error || 'no_access_token',
+    }
+  }
+  const accessToken = tokenState.record.access_token
+
+  const today = new Date()
+  const endDate = today.toISOString().slice(0, 10)
+  const startDateObj = new Date(today.getTime() - 30 * 86400000)
+  const startDate = startDateObj.toISOString().slice(0, 10)
+
+  function ytAnalyticsUrl(params) {
+    const url = new URL('https://youtubeanalytics.googleapis.com/v2/reports')
+    url.searchParams.set('ids', `channel==${channelId}`)
+    url.searchParams.set('startDate', startDate)
+    url.searchParams.set('endDate', endDate)
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
+    return url.toString()
+  }
+
+  async function runQuery(params) {
+    const res = await fetch(ytAnalyticsUrl(params), {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    })
+    if (!res.ok) return { error: `upstream_${res.status}` }
+    return await res.json()
+  }
+
+  const videoIds = (videos || []).map(v => v.id).filter(Boolean).slice(0, 20)
+
+  const [channelRow, trafficRow, impressionsRow, perVideoRow] = await Promise.all([
+    runQuery({
+      metrics: 'views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,subscribersLost',
+    }),
+    runQuery({
+      metrics: 'views,estimatedMinutesWatched',
+      dimensions: 'insightTrafficSourceType',
+      sort: '-views',
+      maxResults: '10',
+    }),
+    runQuery({
+      metrics: 'impressions,impressionClickThroughRate,viewsPerImpression',
+    }),
+    videoIds.length > 0
+      ? runQuery({
+          metrics: 'views,estimatedMinutesWatched,averageViewDuration,subscribersGained',
+          dimensions: 'video',
+          filters: `video==${videoIds.join(',')}`,
+          maxResults: String(videoIds.length),
+        })
+      : Promise.resolve({ rows: [] }),
+  ])
+
+  function firstRow(result) {
+    if (!result || result.error) return null
+    const rows = result.rows || []
+    return rows[0] || null
+  }
+
+  const chRow = firstRow(channelRow)
+  const impRow = firstRow(impressionsRow)
+
+  const channel_30d = chRow ? {
+    views: Math.round(chRow[0] || 0),
+    watch_time_minutes: Math.round(chRow[1] || 0),
+    avg_view_duration_seconds: Math.round(chRow[2] || 0),
+    avg_view_percentage: Math.round(((chRow[3] || 0)) * 10) / 10,
+    subscribers_gained: Math.round(chRow[4] || 0),
+    subscribers_lost: Math.round(chRow[5] || 0),
+    subscribers_net: Math.round((chRow[4] || 0) - (chRow[5] || 0)),
+  } : null
+
+  const impressions_30d = impRow ? {
+    impressions: Math.round(impRow[0] || 0),
+    ctr_pct: Math.round(((impRow[1] || 0)) * 10) / 10,
+    views_per_impression: Math.round((impRow[2] || 0) * 1000) / 1000,
+  } : null
+
+  const traffic_sources = (!trafficRow || trafficRow.error) ? [] :
+    (trafficRow.rows || []).map(r => ({
+      source: r[0],
+      views: Math.round(r[1] || 0),
+      watch_time_minutes: Math.round(r[2] || 0),
+    }))
+
+  const per_video = {}
+  if (perVideoRow && !perVideoRow.error) {
+    for (const r of (perVideoRow.rows || [])) {
+      per_video[r[0]] = {
+        views: Math.round(r[1] || 0),
+        watch_time_minutes: Math.round(r[2] || 0),
+        avg_view_duration_seconds: Math.round(r[3] || 0),
+        subscribers_gained: Math.round(r[4] || 0),
+      }
+    }
+  }
+
+  const errors = [channelRow, trafficRow, impressionsRow, perVideoRow]
+    .filter(r => r && r.error).map(r => r.error)
+
+  const payload = {
+    connected: true,
+    connected_by_email: tokenState.record.connected_by_email || null,
+    connected_at: tokenState.record.connected_at || null,
+    period: { start_date: startDate, end_date: endDate },
+    analytics: {
+      channel_30d,
+      impressions_30d,
+      traffic_sources,
+      per_video,
+    },
+    ...(errors.length > 0 ? { partial_errors: errors } : {}),
+  }
+
+  try {
+    await env.ENRICHMENT_KV.put(cacheKey, JSON.stringify({ cached_at: new Date().toISOString(), payload }), { expirationTtl: CACHE_TTL * 4 })
+  } catch { /* best effort */ }
+
+  return payload
+}
+
+// ---------------------------------------------------------------------------
 // JWT helpers (HMAC-SHA256)
 // ---------------------------------------------------------------------------
 
@@ -8121,22 +8304,26 @@ const ROUTES = [
       if (cached && cached.cached_at) {
         const ageMs = Date.now() - Date.parse(cached.cached_at)
         if (ageMs < TTL * 1000) {
+          const oauth = await fetchYouTubeOAuthAnalytics(env, cached.channel?.id, cached.videos || [])
           return json({
             channel: cached.channel,
             videos: cached.videos,
             derived: cached.derived,
             cache: { cached_at: cached.cached_at, fresh: true, ttl_seconds: TTL },
+            oauth,
           }, 200, request)
         }
       }
 
-      function staleResponse(upstreamStatus, reason) {
+      async function staleResponse(upstreamStatus, reason) {
         if (cached && cached.cached_at) {
+          const oauth = await fetchYouTubeOAuthAnalytics(env, cached.channel?.id, cached.videos || [])
           return json({
             channel: cached.channel,
             videos: cached.videos,
             derived: cached.derived,
             cache: { cached_at: cached.cached_at, fresh: false, ttl_seconds: TTL, stale_reason: reason },
+            oauth,
           }, 200, request)
         }
         if (upstreamStatus === 404) {
@@ -8305,6 +8492,8 @@ const ROUTES = [
         const toStore = { channel, videos, derived, cached_at: nowIso }
         await env.ENRICHMENT_KV.put(kvKey, JSON.stringify(toStore), { expirationTtl: TTL * 4 })
       } catch { /* best effort */ }
+
+      payload.oauth = await fetchYouTubeOAuthAnalytics(env, channel.id, videos)
 
       return json(payload, 200, request)
     },
