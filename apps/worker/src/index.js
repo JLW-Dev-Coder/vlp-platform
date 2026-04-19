@@ -8543,25 +8543,39 @@ const ROUTES = [
       const oauthError = url.searchParams.get('error')
       const scaleBase = 'https://virtuallaunch.pro/scale?tab=youtube'
       if (oauthError) {
+        console.log('[yt-oauth-callback] google returned error', { oauthError })
         return Response.redirect(`${scaleBase}&yt_oauth=error&reason=${encodeURIComponent(oauthError)}`, 302)
       }
       if (!code || !state) {
+        console.log('[yt-oauth-callback] missing params', { has_code: !!code, has_state: !!state })
         return Response.redirect(`${scaleBase}&yt_oauth=error&reason=missing_params`, 302)
       }
       let stateObj = {}
       try { stateObj = JSON.parse(atob(state)) } catch {
+        console.log('[yt-oauth-callback] invalid state')
         return Response.redirect(`${scaleBase}&yt_oauth=error&reason=invalid_state`, 302)
       }
       const connectedEmail = stateObj.email
       if (!connectedEmail || !isAdminEmail(connectedEmail)) {
+        console.log('[yt-oauth-callback] forbidden email', { connectedEmail })
         return Response.redirect(`${scaleBase}&yt_oauth=error&reason=forbidden`, 302)
       }
       const clientId = env.YOUTUBE_OAUTH_CLIENT_ID
       const clientSecret = env.YOUTUBE_OAUTH_CLIENT_SECRET
       const redirectUri = env.YOUTUBE_OAUTH_REDIRECT_URI
       if (!clientId || !clientSecret || !redirectUri) {
+        console.log('[yt-oauth-callback] not configured', {
+          has_client_id: !!clientId,
+          has_client_secret: !!clientSecret,
+          has_redirect_uri: !!redirectUri,
+        })
         return Response.redirect(`${scaleBase}&yt_oauth=error&reason=not_configured`, 302)
       }
+      console.log('[yt-oauth-callback] entry', {
+        has_code: !!code,
+        has_state: !!state,
+        connected_email: connectedEmail,
+      })
       try {
         const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
           method: 'POST',
@@ -8574,10 +8588,23 @@ const ROUTES = [
             grant_type: 'authorization_code',
           }),
         })
+        console.log('[yt-oauth-callback] token response', {
+          status: tokenRes.status,
+          ok: tokenRes.ok,
+        })
         if (!tokenRes.ok) {
+          const errBody = await tokenRes.text()
+          console.log('[yt-oauth-callback] token exchange failed', { status: tokenRes.status, body: errBody })
           return Response.redirect(`${scaleBase}&yt_oauth=error&reason=token_exchange_failed`, 302)
         }
         const t = await tokenRes.json()
+        console.log('[yt-oauth-callback] parsed tokens', {
+          has_access_token: !!t.access_token,
+          has_refresh_token: !!t.refresh_token,
+          expires_in: t.expires_in,
+          scope: t.scope,
+          token_type: t.token_type,
+        })
         const expiresAt = new Date(Date.now() + ((t.expires_in ?? 3600) * 1000)).toISOString()
         const record = {
           access_token: t.access_token,
@@ -8588,8 +8615,13 @@ const ROUTES = [
           connected_at: new Date().toISOString(),
         }
         await env.ENRICHMENT_KV.put('youtube:oauth:tokens', JSON.stringify(record))
+        console.log('[yt-oauth-callback] KV write complete', {
+          key: 'youtube:oauth:tokens',
+          record_has_refresh_token: !!record.refresh_token,
+        })
         return Response.redirect(`${scaleBase}&yt_oauth=connected`, 302)
-      } catch {
+      } catch (err) {
+        console.log('[yt-oauth-callback] exception', { message: err.message, stack: err.stack })
         return Response.redirect(`${scaleBase}&yt_oauth=error&reason=internal_error`, 302)
       }
     },
