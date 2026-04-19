@@ -52,11 +52,46 @@ interface YouTubeCache {
   stale_reason?: string
 }
 
+interface YouTubeOAuthAnalytics {
+  channel_30d: {
+    views: number
+    watch_time_minutes: number
+    avg_view_duration_seconds: number
+    avg_view_percentage: number
+    subscribers_gained: number
+    subscribers_lost: number
+    subscribers_net: number
+  } | null
+  impressions_30d: {
+    impressions: number
+    ctr_pct: number
+    views_per_impression: number
+  } | null
+  traffic_sources: Array<{ source: string; views: number; watch_time_minutes: number }>
+  per_video: Record<string, {
+    views: number
+    watch_time_minutes: number
+    avg_view_duration_seconds: number
+    subscribers_gained: number
+  }>
+}
+
+interface YouTubeOAuth {
+  connected: boolean
+  connected_by_email?: string | null
+  connected_at?: string | null
+  period?: { start_date: string; end_date: string }
+  analytics?: YouTubeOAuthAnalytics
+  error?: string
+  partial_errors?: string[]
+}
+
 interface YouTubePayload {
   channel: YouTubeChannel
   videos: YouTubeVideo[]
   derived: YouTubeDerived
   cache: YouTubeCache
+  oauth?: YouTubeOAuth
 }
 
 interface YouTubeError {
@@ -342,20 +377,179 @@ export default function YouTubeView() {
         </button>
       </div>
 
-      {/* Availability notice */}
-      <div className="space-y-2">
-        <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-3 text-xs text-sky-200/90">
-          <strong className="font-semibold">Coming in the next release:</strong>{' '}
-          watch time, audience retention, traffic sources, impressions and CTR, and
-          subscribers gained per video. OAuth integration is queued for the next prompt.
-        </div>
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-[11px] text-slate-500">
-          <strong className="font-semibold">Not available via any YouTube API:</strong>{' '}
-          community posts and dislike counts.
-        </div>
+      {/* OAuth analytics */}
+      <OAuthPanel oauth={data.oauth} />
+
+      {/* Availability notice — permanent caveats only */}
+      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-[11px] text-slate-500">
+        <strong className="font-semibold">Not available via any YouTube API:</strong>{' '}
+        community posts and dislike counts.
       </div>
     </div>
   )
+}
+
+function OAuthPanel({ oauth }: { oauth?: YouTubeOAuth }) {
+  const [disconnecting, setDisconnecting] = useState(false)
+
+  const handleConnect = () => {
+    window.location.href = 'https://api.virtuallaunch.pro/v1/scale/youtube-oauth/start'
+  }
+
+  const handleDisconnect = async () => {
+    if (!confirm('Disconnect YouTube OAuth? You will lose access to watch time, retention, traffic sources, and CTR until reconnected.')) return
+    setDisconnecting(true)
+    try {
+      await fetch('https://api.virtuallaunch.pro/v1/scale/youtube-oauth/disconnect', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      window.location.reload()
+    } catch {
+      setDisconnecting(false)
+    }
+  }
+
+  if (!oauth || !oauth.connected) {
+    return (
+      <Card>
+        <div className="p-4">
+          <div className="mb-2 text-sm font-semibold text-white">YouTube Analytics API — not connected</div>
+          <div className="mb-3 text-xs text-slate-400">
+            Connect a Google account with access to this YouTube channel to unlock
+            watch time, audience retention, traffic sources, impressions/CTR, and
+            subscribers gained per video.
+          </div>
+          <button
+            type="button"
+            onClick={handleConnect}
+            className="inline-flex items-center gap-2 rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-200 hover:bg-orange-500/20"
+          >
+            Connect YouTube Analytics
+          </button>
+        </div>
+      </Card>
+    )
+  }
+
+  if (oauth.error || !oauth.analytics) {
+    return (
+      <Card>
+        <div className="p-4">
+          <div className="mb-1 text-sm font-semibold text-white">YouTube Analytics API — error</div>
+          <div className="mb-3 text-xs text-slate-400">
+            Connected as {oauth.connected_by_email || 'unknown'}, but analytics fetch failed
+            {oauth.error ? ` (${oauth.error})` : ''}. Reconnect to refresh the token.
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleConnect}
+              className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-200 hover:bg-orange-500/20"
+            >
+              Reconnect
+            </button>
+            <button
+              type="button"
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/[0.08]"
+            >
+              {disconnecting ? 'Disconnecting…' : 'Disconnect'}
+            </button>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
+  const { channel_30d, impressions_30d, traffic_sources } = oauth.analytics
+
+  return (
+    <Card>
+      <div className="p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold text-white">Analytics API — last 30 days</div>
+            <div className="text-[11px] text-slate-500">
+              Connected as {oauth.connected_by_email || 'unknown'}
+              {oauth.period ? ` · ${oauth.period.start_date} → ${oauth.period.end_date}` : ''}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleDisconnect}
+            disabled={disconnecting}
+            className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold text-slate-300 hover:bg-white/[0.08]"
+          >
+            {disconnecting ? 'Disconnecting…' : 'Disconnect'}
+          </button>
+        </div>
+
+        {channel_30d && (
+          <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <Insight label="Watch time" value={`${fmtNumber(channel_30d.watch_time_minutes)} min`} />
+            <Insight label="Avg view duration" value={`${channel_30d.avg_view_duration_seconds}s`} hint={`${channel_30d.avg_view_percentage}% retention`} />
+            <Insight label="Subs gained (net)" value={fmtNumber(channel_30d.subscribers_net)} hint={`+${channel_30d.subscribers_gained} / −${channel_30d.subscribers_lost}`} />
+            <Insight label="Views (30d)" value={fmtNumber(channel_30d.views)} />
+          </div>
+        )}
+
+        {impressions_30d && (
+          <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+            <Insight label="Impressions" value={fmtNumber(impressions_30d.impressions)} />
+            <Insight label="Click-through rate" value={`${impressions_30d.ctr_pct}%`} />
+            <Insight label="Views / impression" value={impressions_30d.views_per_impression.toFixed(3)} />
+          </div>
+        )}
+
+        {traffic_sources.length > 0 && (
+          <div className="mt-2">
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Traffic sources</div>
+            <ul className="divide-y divide-white/5 rounded-lg border border-white/10 bg-white/[0.02]">
+              {traffic_sources.map((s) => (
+                <li key={s.source} className="flex items-center justify-between px-3 py-2 text-xs">
+                  <span className="text-slate-300">{humanizeSource(s.source)}</span>
+                  <span className="tabular-nums text-slate-400">
+                    {fmtNumber(s.views)} views · {fmtNumber(s.watch_time_minutes)} min
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {oauth.partial_errors && oauth.partial_errors.length > 0 && (
+          <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
+            Some analytics queries failed: {oauth.partial_errors.join(', ')}
+          </div>
+        )}
+      </div>
+    </Card>
+  )
+}
+
+function humanizeSource(code: string): string {
+  const map: Record<string, string> = {
+    ADVERTISING: 'Advertising',
+    ANNOTATION: 'Annotations / end screens',
+    CAMPAIGN_CARD: 'Campaign card',
+    END_SCREEN: 'End screens',
+    EXT_URL: 'External',
+    NO_LINK_EMBEDDED: 'Embedded (no link)',
+    NO_LINK_OTHER: 'Direct / unknown',
+    NOTIFICATION: 'Notifications',
+    PLAYLIST: 'Playlists',
+    RELATED_VIDEO: 'Suggested videos',
+    SEARCH: 'YouTube search',
+    SHORTS: 'Shorts feed',
+    SUBSCRIBER: 'Subscriber feed',
+    YT_CHANNEL: 'Channel page',
+    YT_OTHER_PAGE: 'Other YouTube page',
+    YT_PLAYLIST_PAGE: 'Playlist page',
+    YT_SEARCH: 'YouTube search',
+  }
+  return map[code] || code
 }
 
 function Insight({ label, value, hint }: { label: string; value: string; hint?: string }) {
