@@ -241,12 +241,12 @@ export function CookieConsent({ config, privacyPath = '/legal/privacy' }: Cookie
                     }`}
                   >
                     <span
-                      className={`absolute top-1 h-6 w-6 rounded-full shadow-sm transition-transform ${
+                      className={`absolute left-0 top-1 h-6 w-6 rounded-full shadow-sm transition-transform ${
                         analyticsOn
                           ? 'bg-white'
                           : 'border border-subtle bg-surface-elevated'
                       }`}
-                      style={{ transform: analyticsOn ? 'translateX(24px)' : 'translateX(4px)' }}
+                      style={{ transform: analyticsOn ? 'translateX(28px)' : 'translateX(4px)' }}
                     />
                   </button>
                 </div>
