@@ -384,7 +384,10 @@ Total routes: ~193
 |--------|------|---------|------|----------|
 | GET | `/v1/scale/dashboard` | Scale dashboard | Yes | VLP |
 | GET | `/v1/scale/analytics` | Scale analytics | Yes | VLP |
-| GET | `/v1/scale/youtube-analytics` | YouTube channel analytics (public API) | Yes | VLP |
+| GET | `/v1/scale/youtube-analytics` | YouTube Data + Analytics API (public API always, OAuth analytics when connected) | Admin | VLP |
+| GET | `/v1/scale/youtube-oauth/start` | Begin YouTube Analytics OAuth flow | Admin | VLP |
+| GET | `/v1/scale/youtube-oauth/callback` | YouTube Analytics OAuth callback, persists tokens to KV | Admin (via state) | VLP |
+| POST | `/v1/scale/youtube-oauth/disconnect` | Revoke stored YouTube Analytics OAuth tokens | Admin | VLP |
 | GET | `/scale/asset-page/:slug` | Asset page (legacy path) | No | Public |
 | POST | `/scale/init-send-state` | Initialize send state | Internal | Cron |
 | GET | `/v1/scale/prospects/status` | Prospect status | Admin | VLP |

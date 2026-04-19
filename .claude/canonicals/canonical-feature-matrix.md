@@ -87,6 +87,7 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 | Tax Tool Game Tokens | GET /v1/tokens/balance/{id} (tax_game_tokens field) | tokens/{id}.json | tokens | /dashboard (balance display) | live |
 | Transcript Tokens | GET /v1/tokens/balance/{id} (transcript_tokens field) | tokens/{id}.json | tokens | /dashboard (balance display) | live |
 | YouTube Analytics Tab | GET /v1/scale/youtube-analytics | KV: youtube:analytics:v1:{channel_id} | n/a | /scale (YouTube tab) | live |
+| YouTube Analytics OAuth | GET /v1/scale/youtube-oauth/start, /callback; POST /v1/scale/youtube-oauth/disconnect | KV: youtube:oauth:tokens, youtube:oauth:analytics:v1:{channel_id} | n/a | /scale (YouTube tab → OAuth panel) | live |
 
 ---
 
