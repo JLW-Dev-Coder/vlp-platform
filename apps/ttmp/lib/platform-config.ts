@@ -111,4 +111,76 @@ export const ttmpConfig: PlatformConfig = {
     ],
     footerTagline: 'Transcript automation',
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'Tax Transcript AI',
+      message: 'Save 15 min per transcript',
+    },
+    header: {
+      avatarInitials: 'TT',
+      title: 'Tax Transcript AI',
+      subtitle: 'AI + real humans · fast reply',
+    },
+    welcome:
+      "Hey — I can show you how this works, what it costs, or point you at a real human. Which one?",
+    questions: [
+      {
+        id: 'q1',
+        label: 'How does the parser work?',
+        response: [
+          "Good question — here's the short version.",
+          "Upload an IRS transcript PDF and the parser explains every code, flags holds, and interprets dates in plain English. About 10 seconds per transcript instead of 15–20 minutes manually.",
+        ],
+        askBack: 'Are you mostly looking at client transcripts, or your own?',
+        primaryCta: { label: 'See a sample report →', action: { type: 'link', href: '/features' } },
+        secondaryCta: {
+          label: 'Watch the 90-sec demo',
+          action: { type: 'link', href: 'https://www.youtube.com/@TaxTranscriptAI', external: true },
+        },
+      },
+      {
+        id: 'q2',
+        label: 'What does it cost?',
+        response: [
+          "Depends on your volume — here's the honest breakdown.",
+          "Pay-as-you-go tokens (first parse is free), or monthly subscription for unlimited parses. No per-seat fees, no setup cost.",
+        ],
+        askBack: 'Rough sense of how many transcripts you handle a month?',
+        primaryCta: { label: 'See pricing →', action: { type: 'link', href: '/pricing' } },
+        secondaryCta: { label: 'Talk it through', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'Is this right for my practice?',
+        response: [
+          'Honestly? Probably.',
+          'Built for CPAs, EAs, and tax attorneys reading client transcripts. If you do more than five a month, most say the time savings cover the cost in week one.',
+        ],
+        primaryCta: {
+          label: 'Start free →',
+          action: { type: 'link', href: '/tools/code-lookup' },
+        },
+        secondaryCta: { label: 'Book 10 min with us', action: { type: 'cal-intro' } },
+      },
+    ],
+    emailFooterLabel: 'Prefer email?',
+    humanPath: {
+      intro: 'Pick the fastest path — we read every message.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+    socialProof: {
+      text: 'Trusted by tax pros · @TaxTranscriptAI on YouTube',
+      href: 'https://www.youtube.com/@TaxTranscriptAI',
+    },
+  },
 }

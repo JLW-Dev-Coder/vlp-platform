@@ -1,4 +1,4 @@
-import { MarketingHeader, MarketingFooter, BusinessJsonLd } from '@vlp/member-ui'
+import { MarketingHeader, MarketingFooter, BusinessJsonLd, LeadChatbot } from '@vlp/member-ui'
 import { ttmpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +14,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <MarketingHeader config={ttmpConfig} />
       <main className="flex-1">{children}</main>
       <MarketingFooter config={ttmpConfig} />
+      <LeadChatbot config={ttmpConfig} />
     </div>
   )
 }
