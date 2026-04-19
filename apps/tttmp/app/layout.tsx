@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google'
-import { BusinessJsonLd } from '@vlp/member-ui'
+import { BusinessJsonLd, CookieConsent, PostHogPageview } from '@vlp/member-ui'
+import { tttmpConfig } from '@/lib/platform-config'
 import './globals.css'
 import CtaBanner from '@/components/CtaBanner'
 import SiteFooter from '@/components/SiteFooter'
@@ -55,6 +57,10 @@ export default function RootLayout({
         {children}
         <CtaBanner />
         <SiteFooter />
+        <CookieConsent config={tttmpConfig} />
+        <Suspense fallback={null}>
+          <PostHogPageview />
+        </Suspense>
       </body>
     </html>
   )

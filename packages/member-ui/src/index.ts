@@ -33,6 +33,8 @@ export { ManageCookiesLink } from './components/cookies/ManageCookiesLink'
 export { applyAnalyticsConsent, setAnalyticsConfig, getPostHogClient } from './lib/analytics'
 export type { AnalyticsConfig, PostHogAnalyticsConfig } from './lib/analytics'
 export { PostHogPageview } from './components/analytics/PostHogPageview'
+export { initPostHog, capture, identify, setConsent } from './analytics'
+export type { AnalyticsEvent, AnalyticsEventName, InitPostHogOptions } from './analytics'
 
 // Chatbot
 export { LeadChatbot } from './components/chatbot/LeadChatbot'

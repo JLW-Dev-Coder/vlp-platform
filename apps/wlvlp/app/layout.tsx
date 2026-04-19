@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
-import { BusinessJsonLd } from '@vlp/member-ui';
+import { BusinessJsonLd, CookieConsent, PostHogPageview } from '@vlp/member-ui';
+import { wlvlpConfig } from '@/lib/platform-config';
 import './globals.css';
 
 const sora = Sora({
@@ -51,6 +53,10 @@ export default function RootLayout({
           priceRange="$249 - $399"
         />
         {children}
+        <CookieConsent config={wlvlpConfig} />
+        <Suspense fallback={null}>
+          <PostHogPageview />
+        </Suspense>
       </body>
     </html>
   );
