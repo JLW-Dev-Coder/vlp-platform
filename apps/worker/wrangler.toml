@@ -83,6 +83,9 @@ SESSION_TTL_SECONDS = "86400"
 SCALE_BATCH_SIZE = "150"
 SCALE_ROUTING_MODE = "ttmp_only"  # ttmp_only = 100% TTMP, split = 65/25/10 TTMP/VLP/WLVLP
 
+# YouTube analytics (Project 3) — Tax Transcript AI channel
+YOUTUBE_CHANNEL_ID = "UCMWWyBdpnYHX3OGMWMHKX6A"
+
 # =================================================
 # Auth
 # =================================================
@@ -291,6 +294,7 @@ STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
 # =================================================
 
 # REOON_API_KEY  — Reoon email verifier ($9/mo plan, 500 verifications/day)
+# YOUTUBE_API_KEY  — YouTube Data API v3 key. Set via `wrangler secret put YOUTUBE_API_KEY`.
 
 # =================================================
 # Optional / Future Integrations
