@@ -1,4 +1,12 @@
-import { MarketingHeader, MarketingFooter, BusinessJsonLd, LeadChatbot } from '@vlp/member-ui'
+import { Suspense } from 'react'
+import {
+  MarketingHeader,
+  MarketingFooter,
+  BusinessJsonLd,
+  LeadChatbot,
+  CookieConsent,
+  PostHogPageview,
+} from '@vlp/member-ui'
 import { ttmpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +23,10 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <main className="flex-1">{children}</main>
       <MarketingFooter config={ttmpConfig} />
       <LeadChatbot config={ttmpConfig} />
+      <CookieConsent config={ttmpConfig} />
+      <Suspense fallback={null}>
+        <PostHogPageview />
+      </Suspense>
     </div>
   )
 }
