@@ -63,4 +63,46 @@ export const wlvlpConfig: PlatformConfig = {
     phone: '619-800-5457',
     supportEmail: 'outreach@virtuallaunch.pro',
   },
+  marketing: {
+    tagline: 'Website marketplace',
+    summary: 'Win, bid on, or buy professionally designed websites — ready to launch with your brand.',
+    ctaLabel: 'Free Ticket',
+    ctaPath: '/scratch',
+    megaMenu: {
+      discover: [
+        { label: 'About', href: '/about', description: 'Why Website Lotto exists' },
+        { label: 'Contact', href: '/contact', description: 'Talk to our team or start intake' },
+        { label: 'Site Hosting FAQ', href: '/support', description: 'How hosting and domains work' },
+      ],
+      explore: [
+        { label: 'Features', href: '/features' },
+        { label: 'How It Works', href: '/how-it-works' },
+        { label: 'Pricing', href: '/pricing' },
+        { label: 'Help Center', href: '/support' },
+        { label: 'Template Gallery', href: '/' },
+      ],
+      toolsExtras: [
+        { label: 'Template Gallery', href: '/' },
+        { label: 'Before/After Preview', href: '/' },
+        { label: 'Design Tips', href: '/support' },
+        { label: 'Free Scratch Ticket', href: '/scratch' },
+      ],
+      ctaText: 'Want a professional website without building one yourself?',
+      ctaMagnetLabel: 'Try a Free Scratch Ticket',
+      ctaMagnetPath: '/scratch',
+    },
+    footerResources: [
+      { label: 'Free Scratch Ticket', href: '/scratch' },
+      { label: 'Affiliate Program', href: '/affiliate' },
+      { label: 'Virtual Launch Pro', href: 'https://virtuallaunch.pro', external: true },
+      { label: 'Tax Monitor Pro', href: 'https://taxmonitor.pro', external: true },
+      { label: 'Developers VLP', href: 'https://developers.virtuallaunch.pro', external: true },
+    ],
+    footerLegal: [
+      { label: 'Privacy', href: '/legal/privacy' },
+      { label: 'Refund', href: '/legal/refund' },
+      { label: 'Terms', href: '/legal/terms' },
+    ],
+    footerTagline: 'Website marketplace',
+  },
 }
