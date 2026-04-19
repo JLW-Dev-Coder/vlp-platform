@@ -337,6 +337,25 @@
   margin: 2rem 0;
 }
 
+/* IRS-code JSON content injects <section class="grid gap-6 lg:grid-cols-3">
+   with <article> + <aside> children. Without an explicit grid-template-columns
+   below lg, CSS Grid auto-places the two children into 2 implicit columns
+   side-by-side, collapsing <article> toward min-content (~80px). Force a
+   single-column stack until lg, then restore the intended 3-col layout with
+   article spanning 2 (lg:col-span-2 in the JSON isn't compiled by Tailwind). */
+.content :global(section.grid) {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .content :global(section.grid) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .content :global(section.grid) > :global(article) {
+    grid-column: span 2 / span 2;
+  }
+}
+
 /* ── Responsive ─────────────────────────────── */
 @media (max-width: 768px) {
   .wrapper {
