@@ -8311,6 +8311,117 @@ const ROUTES = [
   },
 
   // -------------------------------------------------------------------------
+  // YouTube OAuth — authorize admin to read YouTube Analytics API data
+  // Single-channel scope; tokens stored globally at `youtube:oauth:tokens`.
+  // -------------------------------------------------------------------------
+
+  {
+    method: 'GET', pattern: '/v1/scale/youtube-oauth/start',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env)
+      if (error) return error
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'forbidden' }, 403, request)
+      }
+      const clientId = env.YOUTUBE_OAUTH_CLIENT_ID
+      const redirectUri = env.YOUTUBE_OAUTH_REDIRECT_URI
+      if (!clientId || !redirectUri) {
+        return json({ ok: false, error: 'youtube_oauth_not_configured' }, 503, request)
+      }
+      const state = btoa(JSON.stringify({ email: session.email, nonce: crypto.randomUUID() }))
+      const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+      url.searchParams.set('client_id', clientId)
+      url.searchParams.set('redirect_uri', redirectUri)
+      url.searchParams.set('response_type', 'code')
+      url.searchParams.set('scope', [
+        'https://www.googleapis.com/auth/yt-analytics.readonly',
+        'https://www.googleapis.com/auth/youtube.readonly',
+      ].join(' '))
+      url.searchParams.set('access_type', 'offline')
+      url.searchParams.set('prompt', 'consent')
+      url.searchParams.set('include_granted_scopes', 'true')
+      url.searchParams.set('state', state)
+      return Response.redirect(url.toString(), 302)
+    },
+  },
+
+  {
+    method: 'GET', pattern: '/v1/scale/youtube-oauth/callback',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const url = new URL(request.url)
+      const code = url.searchParams.get('code')
+      const state = url.searchParams.get('state')
+      const oauthError = url.searchParams.get('error')
+      const scaleBase = 'https://virtuallaunch.pro/scale?tab=youtube'
+      if (oauthError) {
+        return Response.redirect(`${scaleBase}&yt_oauth=error&reason=${encodeURIComponent(oauthError)}`, 302)
+      }
+      if (!code || !state) {
+        return Response.redirect(`${scaleBase}&yt_oauth=error&reason=missing_params`, 302)
+      }
+      let stateObj = {}
+      try { stateObj = JSON.parse(atob(state)) } catch {
+        return Response.redirect(`${scaleBase}&yt_oauth=error&reason=invalid_state`, 302)
+      }
+      const connectedEmail = stateObj.email
+      if (!connectedEmail || !isAdminEmail(connectedEmail)) {
+        return Response.redirect(`${scaleBase}&yt_oauth=error&reason=forbidden`, 302)
+      }
+      const clientId = env.YOUTUBE_OAUTH_CLIENT_ID
+      const clientSecret = env.YOUTUBE_OAUTH_CLIENT_SECRET
+      const redirectUri = env.YOUTUBE_OAUTH_REDIRECT_URI
+      if (!clientId || !clientSecret || !redirectUri) {
+        return Response.redirect(`${scaleBase}&yt_oauth=error&reason=not_configured`, 302)
+      }
+      try {
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            code,
+            client_id: clientId,
+            client_secret: clientSecret,
+            redirect_uri: redirectUri,
+            grant_type: 'authorization_code',
+          }),
+        })
+        if (!tokenRes.ok) {
+          return Response.redirect(`${scaleBase}&yt_oauth=error&reason=token_exchange_failed`, 302)
+        }
+        const t = await tokenRes.json()
+        const expiresAt = new Date(Date.now() + ((t.expires_in ?? 3600) * 1000)).toISOString()
+        const record = {
+          access_token: t.access_token,
+          refresh_token: t.refresh_token || null,
+          expires_at: expiresAt,
+          scope: t.scope || null,
+          connected_by_email: connectedEmail,
+          connected_at: new Date().toISOString(),
+        }
+        await env.ENRICHMENT_KV.put('youtube:oauth:tokens', JSON.stringify(record))
+        return Response.redirect(`${scaleBase}&yt_oauth=connected`, 302)
+      } catch {
+        return Response.redirect(`${scaleBase}&yt_oauth=error&reason=internal_error`, 302)
+      }
+    },
+  },
+
+  {
+    method: 'POST', pattern: '/v1/scale/youtube-oauth/disconnect',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env)
+      if (error) return error
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'forbidden' }, 403, request)
+      }
+      try {
+        await env.ENRICHMENT_KV.delete('youtube:oauth:tokens')
+      } catch { /* best effort */ }
+      return json({ ok: true }, 200, request)
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // VLP PREFERENCES
   // -------------------------------------------------------------------------
 

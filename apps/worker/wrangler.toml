@@ -85,6 +85,8 @@ SCALE_ROUTING_MODE = "ttmp_only"  # ttmp_only = 100% TTMP, split = 65/25/10 TTMP
 
 # YouTube analytics (Project 3) — Tax Transcript AI channel
 YOUTUBE_CHANNEL_ID = "UCMWWyBdpnYHX3OGMWMHKX6A"
+YOUTUBE_OAUTH_CLIENT_ID = "567315945471-t231g2f08bnti82h5omhg90dflc9ljtj.apps.googleusercontent.com"
+YOUTUBE_OAUTH_REDIRECT_URI = "https://api.virtuallaunch.pro/v1/scale/youtube-oauth/callback"
 
 # =================================================
 # Auth
@@ -295,6 +297,7 @@ STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
 
 # REOON_API_KEY  — Reoon email verifier ($9/mo plan, 500 verifications/day)
 # YOUTUBE_API_KEY  — YouTube Data API v3 key. Set via `wrangler secret put YOUTUBE_API_KEY`.
+# YOUTUBE_OAUTH_CLIENT_SECRET  — OAuth client secret for YouTube Analytics API. Set via `wrangler secret put YOUTUBE_OAUTH_CLIENT_SECRET`.
 
 # =================================================
 # Optional / Future Integrations
