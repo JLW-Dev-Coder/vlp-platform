@@ -1,0 +1,90 @@
+{
+  "auth": {
+    "required": false,
+    "trustClientIdentityFields": false,
+    "type": "none"
+  },
+  "contract": {
+    "authority": [
+      "R2_VIRTUAL_LAUNCH"
+    ],
+    "governs": "POST /v1/leads/chatbot",
+    "path": "/contracts/shared/shared.leads.chatbot.v1.json",
+    "source": "Shared (all VLP platforms)",
+    "title": "Shared \u2014 Lead Chatbot Submission",
+    "usedOnPages": ["(marketing)/*"],
+    "validation": {
+      "enumStrict": true,
+      "rejectUnknownValues": true,
+      "requireJsonContentType": true
+    },
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/v1/leads/chatbot",
+    "method": "POST",
+    "receiptKeyPattern": "leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json",
+    "receiptSource": "chatbot_lead",
+    "signature": {
+      "header": null,
+      "required": false,
+      "secretEnvVar": null
+    }
+  },
+  "effects": {
+    "canonicalUpsert": {
+      "target": "leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json"
+    },
+    "dedupeKey": "id",
+    "eventIdFrom": "id",
+    "receiptAppend": {
+      "to": "leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json"
+    },
+    "writeOrder": [
+      "receiptAppend",
+      "canonicalUpsert"
+    ],
+    "writes": [
+      "chatbot_leads",
+      "R2:leads/chatbot/*"
+    ]
+  },
+  "payload": {
+    "additionalProperties": false,
+    "properties": {
+      "platform": { "type": "string", "minLength": 1, "maxLength": 16 },
+      "email": { "type": "string", "format": "email", "maxLength": 320 },
+      "question_id": { "type": "string", "maxLength": 64 },
+      "question_label": { "type": "string", "maxLength": 256 },
+      "message": { "type": "string", "maxLength": 4000 },
+      "cal_booked": { "type": "boolean" },
+      "source": {
+        "type": "string",
+        "enum": [
+          "chatbot",
+          "chatbot_email_footer",
+          "chatbot_book_call",
+          "chatbot_message"
+        ]
+      },
+      "referrer": { "type": "string", "maxLength": 2048 },
+      "user_agent": { "type": "string", "maxLength": 1024 }
+    },
+    "required": ["platform", "source"]
+  },
+  "response": {
+    "success": {
+      "ok": { "type": "boolean", "const": true },
+      "lead_id": { "type": "string" }
+    },
+    "error": {
+      "ok": { "type": "boolean", "const": false },
+      "error": { "type": "string" },
+      "message": { "type": "string" }
+    }
+  },
+  "schema": {
+    "name": "shared.leads.chatbot",
+    "version": 1
+  }
+}

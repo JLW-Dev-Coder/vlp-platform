@@ -1,0 +1,25 @@
+{
+  "platform": "shared",
+  "name": "Shared (all VLP platforms)",
+  "version": "1.0",
+  "lastUpdated": "2026-04-18",
+  "contracts": [
+    {
+      "id": "shared_leads_chatbot",
+      "path": "/contracts/shared/shared.leads.chatbot.v1.json",
+      "endpoint": "https://api.virtuallaunch.pro/v1/leads/chatbot",
+      "method": "POST",
+      "status": "active",
+      "category": "form",
+      "authRequired": false,
+      "signatureRequired": false,
+      "dedupeKey": "id",
+      "receiptSource": "chatbot_lead",
+      "receiptKeyPattern": "leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json",
+      "usedOnPages": ["(marketing)/*"],
+      "version": 1,
+      "writes": ["chatbot_leads", "R2:leads/chatbot/*"],
+      "addedDate": "2026-04-18"
+    }
+  ]
+}

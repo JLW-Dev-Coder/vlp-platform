@@ -3213,6 +3213,66 @@ const ROUTES = [
   },
 
   // -------------------------------------------------------------------------
+  // LEADS (anonymous chatbot lead capture, all platforms)
+  // -------------------------------------------------------------------------
+
+  {
+    method: 'POST', pattern: '/v1/leads/chatbot',
+    handler: async (_method, _pattern, _params, request, env) => {
+      try {
+        const body = await parseBody(request);
+        if (!body || typeof body !== 'object') {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'JSON body required' }, 400, request);
+        }
+        const platform = typeof body.platform === 'string' ? body.platform.trim().toLowerCase() : '';
+        const source = typeof body.source === 'string' ? body.source : '';
+        const validSources = new Set(['chatbot', 'chatbot_email_footer', 'chatbot_book_call', 'chatbot_message']);
+        if (!platform || platform.length > 16) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'platform required' }, 400, request);
+        }
+        if (!validSources.has(source)) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'invalid source' }, 400, request);
+        }
+        const email = typeof body.email === 'string' ? body.email.slice(0, 320) : null;
+        const question_id = typeof body.question_id === 'string' ? body.question_id.slice(0, 64) : null;
+        const question_label = typeof body.question_label === 'string' ? body.question_label.slice(0, 256) : null;
+        const message = typeof body.message === 'string' ? body.message.slice(0, 4000) : null;
+        const cal_booked = body.cal_booked === true ? 1 : 0;
+        const referrer = typeof body.referrer === 'string' ? body.referrer.slice(0, 2048) : null;
+        const user_agent = typeof body.user_agent === 'string' ? body.user_agent.slice(0, 1024) : null;
+
+        const id = crypto.randomUUID().replace(/-/g, '');
+        const createdAt = Date.now();
+        const d = new Date(createdAt);
+        const yyyy = d.getUTCFullYear();
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const dd = String(d.getUTCDate()).padStart(2, '0');
+        const r2Key = `leads/chatbot/${platform}/${yyyy}/${mm}/${dd}/${id}.json`;
+
+        const record = {
+          id, platform, email, question_id, question_label, message,
+          cal_booked: Boolean(cal_booked), source, referrer, user_agent,
+          created_at: createdAt,
+        };
+
+        // R2 first (authoritative), then D1 (projection) — per canonical write order
+        await r2Put(env.R2_VIRTUAL_LAUNCH, r2Key, record);
+        await d1Run(env.DB,
+          `INSERT INTO chatbot_leads
+           (id, platform, email, question_id, question_label, message, cal_booked, source, referrer, user_agent, created_at, r2_key)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, platform, email, question_id, question_label, message, cal_booked, source, referrer, user_agent, createdAt, r2Key]
+        );
+
+        // TODO (Prompt 1.5): rate-limit anonymous chatbot lead POSTs (suggest 10/min/IP)
+        return json({ ok: true, lead_id: id }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Lead submit failed' }, 500, request);
+      }
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // SUBMISSIONS (cross-platform reviews, case studies, testimonials)
   // -------------------------------------------------------------------------
 
