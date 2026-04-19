@@ -8100,6 +8100,225 @@ const ROUTES = [
     },
   },
 
+  {
+    method: 'GET', pattern: '/v1/scale/youtube-analytics',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env)
+      if (error) return error
+
+      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
+      if (!adminEmails.includes(session.email)) {
+        return json({ ok: false, error: 'forbidden' }, 403, request)
+      }
+
+      const channelId = env.YOUTUBE_CHANNEL_ID
+      const apiKey = env.YOUTUBE_API_KEY
+      if (!channelId || !apiKey) {
+        return json({ error: 'youtube_api_not_configured' }, 503, request)
+      }
+
+      const kvKey = `youtube:analytics:v1:${channelId}`
+      const TTL = 900
+
+      // Cache read
+      let cached = null
+      try {
+        const raw = await env.ENRICHMENT_KV.get(kvKey)
+        if (raw) cached = JSON.parse(raw)
+      } catch { /* treat as miss */ }
+
+      if (cached && cached.cached_at) {
+        const ageMs = Date.now() - Date.parse(cached.cached_at)
+        if (ageMs < TTL * 1000) {
+          return json({
+            channel: cached.channel,
+            videos: cached.videos,
+            derived: cached.derived,
+            cache: { cached_at: cached.cached_at, fresh: true, ttl_seconds: TTL },
+          }, 200, request)
+        }
+      }
+
+      function staleResponse(upstreamStatus, reason) {
+        if (cached && cached.cached_at) {
+          return json({
+            channel: cached.channel,
+            videos: cached.videos,
+            derived: cached.derived,
+            cache: { cached_at: cached.cached_at, fresh: false, ttl_seconds: TTL, stale_reason: reason },
+          }, 200, request)
+        }
+        if (upstreamStatus === 404) {
+          return json({ error: 'youtube_channel_not_found' }, 503, request)
+        }
+        return json({ error: 'youtube_api_upstream_error', upstream_status: upstreamStatus }, 503, request)
+      }
+
+      // Fetch channel + search results in parallel
+      const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${encodeURIComponent(channelId)}&key=${encodeURIComponent(apiKey)}`
+      const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${encodeURIComponent(channelId)}&maxResults=20&order=date&type=video&key=${encodeURIComponent(apiKey)}`
+
+      let chRes, srRes
+      try {
+        [chRes, srRes] = await Promise.all([fetch(channelUrl), fetch(searchUrl)])
+      } catch (e) {
+        return staleResponse(0, `fetch_error: ${e.message || 'unknown'}`)
+      }
+      if (!chRes.ok) return staleResponse(chRes.status, `channels.list ${chRes.status}`)
+      if (!srRes.ok) return staleResponse(srRes.status, `search.list ${srRes.status}`)
+
+      const chJson = await chRes.json()
+      const srJson = await srRes.json()
+      const chItem = (chJson.items || [])[0]
+      if (!chItem) return staleResponse(404, 'channel_not_found')
+
+      const videoIds = (srJson.items || [])
+        .map(it => it.id && it.id.videoId)
+        .filter(Boolean)
+
+      let vidJson = { items: [] }
+      if (videoIds.length > 0) {
+        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds.join(',')}&key=${encodeURIComponent(apiKey)}`
+        const vidRes = await fetch(videosUrl)
+        if (!vidRes.ok) return staleResponse(vidRes.status, `videos.list ${vidRes.status}`)
+        vidJson = await vidRes.json()
+      }
+
+      // ---- Parse duration (ISO 8601 like PT12M34S) --------------------------
+      function parseDuration(iso) {
+        if (!iso) return 0
+        const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso)
+        if (!m) return 0
+        const h = parseInt(m[1] || '0', 10)
+        const mi = parseInt(m[2] || '0', 10)
+        const s = parseInt(m[3] || '0', 10)
+        return h * 3600 + mi * 60 + s
+      }
+      function formatDuration(sec) {
+        const h = Math.floor(sec / 3600)
+        const m = Math.floor((sec % 3600) / 60)
+        const s = sec % 60
+        if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+        return `${m}:${String(s).padStart(2, '0')}`
+      }
+
+      const videos = (vidJson.items || []).map(v => {
+        const duration = parseDuration(v.contentDetails && v.contentDetails.duration)
+        const stats = v.statistics || {}
+        const sn = v.snippet || {}
+        const thumb = (sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails.default)) || {}
+        return {
+          id: v.id,
+          title: sn.title || '',
+          published_at: sn.publishedAt || null,
+          thumbnail_url: thumb.url || '',
+          duration_seconds: duration,
+          duration_display: formatDuration(duration),
+          is_short: duration > 0 && duration <= 60,
+          view_count: parseInt(stats.viewCount || '0', 10),
+          like_count: parseInt(stats.likeCount || '0', 10),
+          comment_count: parseInt(stats.commentCount || '0', 10),
+          youtube_url: `https://www.youtube.com/watch?v=${v.id}`,
+        }
+      })
+      videos.sort((a, b) => (b.published_at || '').localeCompare(a.published_at || ''))
+
+      // ---- Channel normalization --------------------------------------------
+      const chSn = chItem.snippet || {}
+      const chStats = chItem.statistics || {}
+      const chThumb = (chSn.thumbnails && (chSn.thumbnails.medium || chSn.thumbnails.default)) || {}
+      const hiddenSubs = chStats.hiddenSubscriberCount === true
+      const customUrl = chSn.customUrl || null
+      const handle = customUrl
+        ? (customUrl.startsWith('@') ? customUrl : `@${customUrl}`)
+        : `@${(chSn.title || '').replace(/\s+/g, '')}`
+
+      const channel = {
+        id: chItem.id,
+        title: chSn.title || '',
+        handle,
+        description: chSn.description || '',
+        published_at: chSn.publishedAt || null,
+        thumbnail_url: chThumb.url || '',
+        subscriber_count: hiddenSubs ? null : parseInt(chStats.subscriberCount || '0', 10),
+        subscriber_hidden: hiddenSubs,
+        view_count: parseInt(chStats.viewCount || '0', 10),
+        video_count: parseInt(chStats.videoCount || '0', 10),
+      }
+
+      // ---- Derived metrics ---------------------------------------------------
+      const totalViews = videos.reduce((a, v) => a + v.view_count, 0)
+      const totalLikes = videos.reduce((a, v) => a + v.like_count, 0)
+      const totalComments = videos.reduce((a, v) => a + v.comment_count, 0)
+      const avgViewsPerVideo = channel.video_count > 0
+        ? Math.round(channel.view_count / channel.video_count)
+        : 0
+      const recentAvgViews = videos.length > 0 ? Math.round(totalViews / videos.length) : 0
+      const engagementRatePct = totalViews > 0
+        ? Math.round(((totalLikes + totalComments) / totalViews) * 1000) / 10
+        : 0
+
+      let cadenceDays = 0
+      if (videos.length >= 2) {
+        const first = Date.parse(videos[0].published_at)
+        const last = Date.parse(videos[videos.length - 1].published_at)
+        if (isFinite(first) && isFinite(last) && first > last) {
+          cadenceDays = Math.round(((first - last) / (86400000 * (videos.length - 1))) * 10) / 10
+        }
+      }
+      function cadenceText(d) {
+        if (d <= 0) return 'not enough recent data'
+        if (d < 3) return 'multiple videos per week'
+        if (d < 5) return 'a couple per week'
+        if (d < 9) return '~1 video per week'
+        if (d < 17) return '~1 video every 2 weeks'
+        if (d < 45) return '~1 video per month'
+        return 'occasional uploads'
+      }
+
+      const shortCount = videos.filter(v => v.is_short).length
+      const longformCount = videos.length - shortCount
+      const shortRatioPct = videos.length > 0 ? Math.round((shortCount / videos.length) * 100) : 0
+      const longformRatioPct = videos.length > 0 ? 100 - shortRatioPct : 0
+
+      let topVid = null
+      for (const v of videos) {
+        if (!topVid || v.view_count > topVid.view_count) topVid = v
+      }
+
+      const derived = {
+        avg_views_per_video: avgViewsPerVideo,
+        recent_avg_views: recentAvgViews,
+        engagement_rate_pct: engagementRatePct,
+        publishing_cadence_days: cadenceDays,
+        publishing_cadence_text: cadenceText(cadenceDays),
+        short_count: shortCount,
+        longform_count: longformCount,
+        short_ratio_pct: shortRatioPct,
+        longform_ratio_pct: longformRatioPct,
+        top_recent_video_id: topVid ? topVid.id : null,
+        top_recent_video_title: topVid ? topVid.title : null,
+        top_recent_video_views: topVid ? topVid.view_count : 0,
+      }
+
+      const nowIso = new Date().toISOString()
+      const payload = {
+        channel,
+        videos,
+        derived,
+        cache: { cached_at: nowIso, fresh: true, ttl_seconds: TTL },
+      }
+
+      // Cache write — store without the cache field mutations above (it is overwritten on read)
+      try {
+        const toStore = { channel, videos, derived, cached_at: nowIso }
+        await env.ENRICHMENT_KV.put(kvKey, JSON.stringify(toStore), { expirationTtl: TTL * 4 })
+      } catch { /* best effort */ }
+
+      return json(payload, 200, request)
+    },
+  },
+
   // -------------------------------------------------------------------------
   // VLP PREFERENCES
   // -------------------------------------------------------------------------
