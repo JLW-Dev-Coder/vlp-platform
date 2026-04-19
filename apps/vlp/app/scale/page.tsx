@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import FormsPanel from './components/FormsPanel'
+import YouTubeView from './components/YouTubeView'
 import styles from './page.module.css'
 
 // ---------------------------------------------------------------------------
@@ -210,7 +211,7 @@ function RepoCard({ platform, data }: { platform: PlatformKey; data: PlatformAna
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
-type Tab = 'all-repos' | 'pipeline'
+type Tab = 'all-repos' | 'pipeline' | 'youtube'
 
 export default function ScaleAnalyticsPage() {
   const [tab, setTab] = useState<Tab>('all-repos')
@@ -342,7 +343,9 @@ export default function ScaleAnalyticsPage() {
           <p className="mt-1 text-sm text-slate-400">
             {tab === 'all-repos'
               ? 'Cloudflare traffic across all 8 VLP repos'
-              : 'Outreach pipeline metrics and live data'}
+              : tab === 'pipeline'
+                ? 'Outreach pipeline metrics and live data'
+                : 'Tax Transcript AI channel — public YouTube Data API'}
           </p>
         </div>
         <button
@@ -382,6 +385,15 @@ export default function ScaleAnalyticsPage() {
         >
           Pipeline
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'youtube'}
+          className={`${styles.tabButton} ${tab === 'youtube' ? styles.tabButtonActive : ''}`}
+          onClick={() => setTab('youtube')}
+        >
+          YouTube
+        </button>
       </div>
 
       {tab === 'all-repos' ? (
@@ -391,7 +403,7 @@ export default function ScaleAnalyticsPage() {
           data={allAnalytics}
           summary={summary}
         />
-      ) : (
+      ) : tab === 'pipeline' ? (
         <PipelineView
           loading={pipelineLoading}
           error={pipelineError}
@@ -400,6 +412,8 @@ export default function ScaleAnalyticsPage() {
           stats={stats}
           bookingCounts={bookingCounts}
         />
+      ) : (
+        <YouTubeView />
       )}
     </div>
   )
