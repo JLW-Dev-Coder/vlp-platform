@@ -44,10 +44,12 @@ Some shared components in `@vlp/member-ui` are opt-in per app rather than enable
 
 Legend: `✓` = live, `—` = not wired, `○` = partial (see notes).
 
-| Component       | VLP | TMP | TTMP | TTTMP | TCVLP | DVLP | GVLP | WLVLP |
-|-----------------|-----|-----|------|-------|-------|------|------|-------|
-| LeadChatbot     | —   | —   | ✓    | —     | —     | —    | —    | —     |
-| PostHogPageview | —   | —   | ✓    | —     | —     | —    | —    | —     |
+| Component         | VLP | TMP | TTMP | TTTMP | TCVLP | DVLP | GVLP | WLVLP |
+|-------------------|-----|-----|------|-------|-------|------|------|-------|
+| LeadChatbot       | —   | —   | ✓    | —     | —     | —    | —    | —     |
+| PostHogPageview   | —   | —   | ✓    | —     | —     | —    | —    | —     |
+| CookieConsent     | ✓   | —   | ✓    | —     | ✓     | —    | —    | —     |
+| ManageCookiesLink | ✓   | —   | ✓    | —     | ✓     | —    | ✓    | —     |
 
 ### Notes
 
@@ -55,7 +57,11 @@ Legend: `✓` = live, `—` = not wired, `○` = partial (see notes).
 
 **PostHogPageview** — TTMP wired 2026-04-18. US host (https://us.i.posthog.com). Autocapture + SPA pageview. SDK loads only after user opts in to analytics cookies. Expansion to other apps: add `posthog` block to each app's PlatformConfig and mount `<PostHogPageview />` (inside `<Suspense fallback={null}>`) in its `(marketing)/layout.tsx`.
 
-Future shared components (CookieConsent rollout, MarketingHeader/Footer adoption, HelpCenter usage) can be added as rows here as they become opt-in.
+**CookieConsent** — Banner + preferences panel. Lives in `@vlp/member-ui`. Mount in `(marketing)/layout.tsx` with `config={platformConfig}`. localStorage key derived from `brandAbbrev` (e.g., `ttmp_cookie_prefs_v1`) unless `cookiePrefsStorageKey` is set on PlatformConfig. See canonical-cookies.md.
+
+**ManageCookiesLink** — Footer link that re-opens CookieConsent via the `vlp:open-cookie-prefs` custom event. Auto-rendered inside `MarketingFooter`'s legal column, so apps using shared `MarketingFooter` inherit it automatically. Apps with a local footer must either adopt `MarketingFooter` or dispatch the event manually from their own link. Note: rollout matrix shows `✓` where the shared `MarketingFooter` is mounted — which renders the link — regardless of whether `CookieConsent` itself is present to respond; an app with `ManageCookiesLink ✓` but `CookieConsent —` will dispatch into the void.
+
+Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can be added as rows here as they become opt-in.
 
 ---
 
