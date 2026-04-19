@@ -34,6 +34,7 @@ These features exist on every platform. The Worker routes are shared; each platf
 | Token Balances | GET /v1/tokens/balance/{id} | tokens/{id}.json | tokens | /dashboard (shown in sidebar or header) | live |
 | Tool Usage History | GET /v1/dashboard (summary), GET /v1/tokens/usage/{account_id}?limit=25 (detail) | usage/{account_id}/{tool}/{timestamp}.json | usage_log | /dashboard/usage (per shell-path conventions) | partial — VLP + TCVLP shipped per canonical; other 6 apps pending their sweeps |
 | Lead Chatbot | POST /v1/leads/chatbot | leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json | chatbot_leads | (marketing)/* via @vlp/member-ui LeadChatbot | opt-in per app — see Shared Component Rollout below |
+| Page Analytics | (client-side) | (none — PostHog cloud) | (none) | (marketing)/* via @vlp/member-ui PostHogPageview | opt-in per app — see Shared Component Rollout below |
 
 ---
 
@@ -43,13 +44,16 @@ Some shared components in `@vlp/member-ui` are opt-in per app rather than enable
 
 Legend: `✓` = live, `—` = not wired, `○` = partial (see notes).
 
-| Component     | VLP | TMP | TTMP | TTTMP | TCVLP | DVLP | GVLP | WLVLP |
-|---------------|-----|-----|------|-------|-------|------|------|-------|
-| LeadChatbot   | —   | —   | ✓    | —     | —     | —    | —    | —     |
+| Component       | VLP | TMP | TTMP | TTTMP | TCVLP | DVLP | GVLP | WLVLP |
+|-----------------|-----|-----|------|-------|-------|------|------|-------|
+| LeadChatbot     | —   | —   | ✓    | —     | —     | —    | —    | —     |
+| PostHogPageview | —   | —   | ✓    | —     | —     | —    | —    | —     |
 
 ### Notes
 
 **LeadChatbot** — TTMP wired 2026-04-18 via PlatformConfig.chatbot + marketing layout mount. Lead endpoint `POST /v1/leads/chatbot` (anonymous). Expansion to other apps paused pending TTMP conversion data.
+
+**PostHogPageview** — TTMP wired 2026-04-18. US host (https://us.i.posthog.com). Autocapture + SPA pageview. SDK loads only after user opts in to analytics cookies. Expansion to other apps: add `posthog` block to each app's PlatformConfig and mount `<PostHogPageview />` (inside `<Suspense fallback={null}>`) in its `(marketing)/layout.tsx`.
 
 Future shared components (CookieConsent rollout, MarketingHeader/Footer adoption, HelpCenter usage) can be added as rows here as they become opt-in.
 

@@ -653,7 +653,36 @@ Mount in each app's `(marketing)/layout.tsx`, alongside `<CookieConsent />`. Pos
 
 ---
 
-## 12. Self-check
+## 12. Analytics
+
+### 12.1 PostHogPageview
+
+Client-side SPA pageview tracker for marketing (and optionally member) layouts. Captures a `$pageview` event to PostHog on every pathname change.
+
+```tsx
+import { Suspense } from 'react'
+import { PostHogPageview } from '@vlp/member-ui'
+
+<Suspense fallback={null}>
+  <PostHogPageview />
+</Suspense>
+```
+
+**Requires:** `config.posthog` on PlatformConfig. SDK is lazy-loaded via `applyAnalyticsConsent` — component is a no-op for users who haven't opted in to analytics cookies.
+
+**Mount location:** marketing layout (and member layout if analytics covers authenticated pages). Adjacent to `<CookieConsent />`.
+
+**Props:** none. Reads singleton client from `lib/analytics`.
+
+**Output:** returns `null`. No DOM.
+
+**Autocapture:** PostHog captures clicks, form submits, page performance automatically. Custom events can be added later via `getPostHogClient().capture('event_name', { ... })`.
+
+**Next 15 note:** `usePathname` / `useSearchParams` require a Suspense boundary. Wrap the component in `<Suspense fallback={null}>` at the mount site.
+
+---
+
+## 13. Self-check
 
 Before shipping any component, verify:
 
@@ -673,7 +702,7 @@ Before shipping any component, verify:
 
 ---
 
-## 13. Relationship to other canonicals
+## 14. Relationship to other canonicals
 
 | Canonical | What lives there |
 |-----------|-----------------|
@@ -686,7 +715,7 @@ When this file conflicts with the blueprint, the blueprint wins. When this file 
 
 ---
 
-## 14. Decision log
+## 15. Decision log
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
@@ -696,5 +725,6 @@ When this file conflicts with the blueprint, the blueprint wins. When this file 
 | 2026-04-15 | Mandatory self-check in §11 for every component before shipping | Consistent with style canonical §11 pattern |
 | 2026-04-16 | Modal/Popover/Tooltip tokens updated to `surface-popover` + `surface-overlay` | Old spec referenced `bg-surface-elevated` for floating containers — a 6% alpha token that produces transparent panels over page content. New tokens added to canonical-style.md §2.2 solve the class of bug. |
 | 2026-04-18 | Added §11 LeadChatbot component entry | Ships on TTMP; opt-in per app via PlatformConfig.chatbot. Documents Phase 2 aiEnabled scaffold as deliberately inert in v1. |
+| 2026-04-18 | Added §12 Analytics → PostHogPageview | PostHog wired as shared analytics provider behind cookie consent (TTMP first adopter). SDK lazy-loads only for opted-in users. Self-check renumbered from §12 → §13; subsequent sections renumbered accordingly. |
 
 Append-only. Do not rewrite prior entries.
