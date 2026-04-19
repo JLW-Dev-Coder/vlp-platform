@@ -217,23 +217,39 @@ export function CookieConsent({ config, privacyPath = '/legal/privacy' }: Cookie
                     Helps us understand usage and improve pages (e.g., anonymized metrics).
                   </p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={analyticsOn}
-                  aria-label="Toggle analytics cookies"
-                  onClick={() => setAnalyticsOn((v) => !v)}
-                  className={`relative h-8 w-14 flex-shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:shadow-focus ${
-                    analyticsOn
-                      ? 'bg-brand-primary/35 border-brand-primary/45'
-                      : 'bg-surface-card border-subtle'
-                  }`}
-                >
+                <div className="flex shrink-0 items-center gap-2">
                   <span
-                    className="absolute left-1 top-1 h-6 w-6 rounded-full bg-text-primary/80 transition-transform"
-                    style={{ transform: analyticsOn ? 'translateX(24px)' : 'translateX(0px)' }}
-                  />
-                </button>
+                    aria-hidden="true"
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
+                      analyticsOn
+                        ? 'border-brand-primary/40 bg-brand-primary/15 text-brand-primary'
+                        : 'border-subtle bg-surface-card text-text-muted'
+                    }`}
+                  >
+                    {analyticsOn ? 'On' : 'Off'}
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={analyticsOn}
+                    aria-label="Toggle analytics cookies"
+                    onClick={() => setAnalyticsOn((v) => !v)}
+                    className={`relative h-8 w-14 flex-shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:shadow-focus ${
+                      analyticsOn
+                        ? 'border-brand-primary bg-brand-primary'
+                        : 'border-subtle bg-surface-card'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 h-6 w-6 rounded-full shadow-sm transition-transform ${
+                        analyticsOn
+                          ? 'bg-white'
+                          : 'border border-subtle bg-surface-elevated'
+                      }`}
+                      style={{ transform: analyticsOn ? 'translateX(24px)' : 'translateX(4px)' }}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
 
