@@ -87,6 +87,16 @@ export interface PlatformConfig {
   cookiePrefsStorageKey?: string;      // e.g., "vlp_cookie_prefs_v1" — defaults to `${brandAbbrev.toLowerCase()}_cookie_prefs_v1`
   marketing?: MarketingConfig;
   chatbot?: ChatbotConfig;
+  posthog?: PostHogAnalyticsConfig;
+}
+
+export interface PostHogAnalyticsConfig {
+  apiKey: string;                  // PostHog project API key (public — ships in client bundle)
+  apiHost?: string;                // e.g., "https://us.i.posthog.com" (US) or "https://eu.i.posthog.com"
+  autocapture?: boolean;           // default true
+  capturePageview?: boolean;       // default true (SPA pageviews via PostHogPageview)
+  capturePageleave?: boolean;      // default true
+  disabledInDev?: boolean;         // default false — set true to skip loading in development
 }
 
 export type ChatbotCtaAction =

@@ -25,9 +25,14 @@ export { MarketingFooter } from './components/marketing/MarketingFooter'
 export type { MarketingFooterProps } from './components/marketing/MarketingFooter'
 
 // Cookie Components
-export { CookieConsent, applyAnalyticsConsent } from './components/cookies/CookieConsent'
+export { CookieConsent } from './components/cookies/CookieConsent'
 export type { CookieConsentProps } from './components/cookies/CookieConsent'
 export { ManageCookiesLink } from './components/cookies/ManageCookiesLink'
+
+// Analytics
+export { applyAnalyticsConsent, setAnalyticsConfig, getPostHogClient } from './lib/analytics'
+export type { AnalyticsConfig, PostHogAnalyticsConfig } from './lib/analytics'
+export { PostHogPageview } from './components/analytics/PostHogPageview'
 
 // Chatbot
 export { LeadChatbot } from './components/chatbot/LeadChatbot'

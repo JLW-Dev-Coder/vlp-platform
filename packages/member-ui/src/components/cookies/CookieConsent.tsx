@@ -24,17 +24,15 @@
 
 import { useEffect, useState } from 'react'
 import type { PlatformConfig } from '../../types/config'
+import { applyAnalyticsConsent, setAnalyticsConfig } from '../../lib/analytics'
+
+export { applyAnalyticsConsent } from '../../lib/analytics'
 
 const CUSTOM_EVENT = 'vlp:open-cookie-prefs'
 
 interface CookiePrefs {
   analytics: boolean
   ts: number
-}
-
-export function applyAnalyticsConsent(_enabled: boolean): void {
-  // Hook analytics provider here when selected (Plausible, GA4, PostHog, etc.)
-  // no-op for now
 }
 
 function getStorageKey(config: PlatformConfig): string {
@@ -71,6 +69,12 @@ export function CookieConsent({ config, privacyPath = '/legal/privacy' }: Cookie
   const [analyticsOn, setAnalyticsOn] = useState(false)
 
   const storageKey = getStorageKey(config)
+
+  useEffect(() => {
+    if (config.posthog) {
+      setAnalyticsConfig({ posthog: config.posthog })
+    }
+  }, [config.posthog])
 
   useEffect(() => {
     const prefs = getStoredPrefs(storageKey)
