@@ -796,31 +796,45 @@ async function fetchYouTubeOAuthAnalytics(env, channelId, videos) {
     return url.toString()
   }
 
-  async function runQuery(params) {
-    const res = await fetch(ytAnalyticsUrl(params), {
+  async function runQuery(queryName, params) {
+    const rawUrl = ytAnalyticsUrl(params)
+    const loggedUrl = rawUrl.replace(/([?&]access_token=)[^&]*/g, '$1<redacted>')
+    console.log('[yt-analytics-query] request', {
+      query_name: queryName,
+      url: loggedUrl,
+    })
+    const res = await fetch(rawUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     })
-    if (!res.ok) return { error: `upstream_${res.status}` }
+    if (!res.ok) {
+      const errBody = await res.text()
+      console.log('[yt-analytics-query] error', {
+        query_name: queryName,
+        status: res.status,
+        body: errBody,
+      })
+      return { error: `upstream_${res.status}` }
+    }
     return await res.json()
   }
 
   const videoIds = (videos || []).map(v => v.id).filter(Boolean).slice(0, 20)
 
   const [channelRow, trafficRow, impressionsRow, perVideoRow] = await Promise.all([
-    runQuery({
+    runQuery('channel_totals', {
       metrics: 'views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,subscribersLost',
     }),
-    runQuery({
+    runQuery('traffic_sources', {
       metrics: 'views,estimatedMinutesWatched',
       dimensions: 'insightTrafficSourceType',
       sort: '-views',
       maxResults: '10',
     }),
-    runQuery({
+    runQuery('impressions', {
       metrics: 'impressions,impressionClickThroughRate,viewsPerImpression',
     }),
     videoIds.length > 0
-      ? runQuery({
+      ? runQuery('per_video', {
           metrics: 'views,estimatedMinutesWatched,averageViewDuration,subscribersGained',
           dimensions: 'video',
           filters: `video==${videoIds.join(',')}`,
