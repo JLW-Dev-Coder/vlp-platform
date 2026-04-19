@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PurchaseBeacon } from '@vlp/member-ui'
 
 export const metadata: Metadata = {
   title: 'Welcome to VLP | Virtual Launch Pro',
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
 export default function CheckoutSuccessPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <PurchaseBeacon app="vlp" />
       {/* Hero */}
       <section className="mx-auto max-w-[77.5rem] px-4 pb-10 pt-16 md:pb-14 md:pt-24">
         <div className="mx-auto max-w-4xl text-center">

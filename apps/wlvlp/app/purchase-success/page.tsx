@@ -2,6 +2,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { PurchaseBeacon } from '@vlp/member-ui';
 import styles from './page.module.css';
 
 function PurchaseSuccessInner() {
@@ -10,6 +11,7 @@ function PurchaseSuccessInner() {
 
   return (
     <div className={styles.page}>
+      <PurchaseBeacon app="wlvlp" sessionId={sessionId ?? undefined} />
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.navLogo}>Website Lotto</Link>

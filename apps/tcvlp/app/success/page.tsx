@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
+import { PurchaseBeacon } from '@vlp/member-ui';
 import styles from './page.module.css';
 
 function SuccessContent() {
@@ -23,6 +24,7 @@ function SuccessContent() {
 
   return (
     <div className={styles.card}>
+      <PurchaseBeacon app="tcvlp" />
       <div className={styles.checkIcon}>
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="20 6 9 17 4 12" />

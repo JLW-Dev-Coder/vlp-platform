@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getTemplate, getTemplateBids, voteTemplate, placeBid, createCheckout, getSession, Template, Bid } from '@/lib/api';
+import { capture } from '@vlp/member-ui';
 import { getTierForSlug, getPrice } from '@/lib/pricing';
 import { TEMPLATES, getCategoryLabel } from '@/lib/templates';
 import styles from './page.module.css';
@@ -81,7 +82,14 @@ export default function SiteClient({ slug }: Props) {
     try {
       const res = await createCheckout(slug, tier);
       const url = res.session_url ?? res.url;
-      if (url) { window.location.href = url; return; }
+      if (url) {
+        capture({
+          name: 'checkout_started',
+          props: { app: 'wlvlp', sku: `${slug}:${tier}`, amount_cents: price * 100 },
+        });
+        window.location.href = url;
+        return;
+      }
       setError('Checkout failed. Please try again.');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Checkout failed. Please try again.');

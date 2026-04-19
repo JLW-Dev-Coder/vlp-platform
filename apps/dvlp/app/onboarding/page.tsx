@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import Header from '@/components/Header';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import { submitOnboarding, getOnboarding, createCheckout, getDvlpPricing, type DvlpPricing } from '@/lib/api';
+import { capture } from '@vlp/member-ui';
 import styles from './page.module.css';
 
 function generateEventId() {
@@ -162,6 +163,10 @@ function OnboardingContent() {
       const internal = sessionStorage.getItem('vlp_internal') === 'true';
       const checkout = await createCheckout({ plan, eventId, email: form.email, internal });
       if (checkout.url) {
+        capture({
+          name: 'checkout_started',
+          props: { app: 'dvlp', sku: plan, amount_cents: 0 },
+        });
         window.location.href = checkout.url;
       } else {
         setError('Could not create checkout session. Please try again or contact support.');

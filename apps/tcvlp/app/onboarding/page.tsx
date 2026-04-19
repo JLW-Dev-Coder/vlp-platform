@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import Header from '@/components/Header';
 import { Session, getProBySlug, createCheckout, tcvlpOnboarding, getSubscriptionStatus } from '@/lib/api';
+import { capture } from '@vlp/member-ui';
 import { tierLabel } from '@/lib/tiers';
 import { formatPhone, filterPhoneInput } from '@/lib/phone';
 import styles from './page.module.css';
@@ -215,6 +216,10 @@ function OnboardingContent({ session }: { session: Session }) {
       await tcvlpOnboarding(onboardingPayload());
       // Then redirect to Stripe
       const checkout = await createCheckout(session.account_id, 'tcvlp');
+      capture({
+        name: 'checkout_started',
+        props: { app: 'tcvlp', sku: 'tcvlp', amount_cents: 0 },
+      });
       window.location.href = checkout.session_url || checkout.url || '/dashboard';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');

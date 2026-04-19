@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import { PurchaseBeacon } from '@vlp/member-ui';
 import styles from './page.module.css';
 
 export default function SuccessPage() {
   return (
     <div className={styles.page}>
+      <PurchaseBeacon app="wlvlp" />
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.navLogo}>Website Lotto</Link>

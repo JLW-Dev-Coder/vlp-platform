@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import { getSessionStatus } from '@/lib/api';
 import { dvlpConfig } from '@/lib/platform-config';
+import { PurchaseBeacon } from '@vlp/member-ui';
 import styles from './page.module.css';
 
 type PaymentState = 'processing' | 'completed' | 'error';
@@ -109,6 +110,7 @@ function SuccessContent() {
 
       {state === 'completed' && (
         <>
+          <PurchaseBeacon app="dvlp" sku={plan ?? 'unknown'} clientReferenceId={ref ?? undefined} />
           <div className={styles.successIcon}>
             <svg viewBox="0 0 24 24" fill="white" width="40" height="40">
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />

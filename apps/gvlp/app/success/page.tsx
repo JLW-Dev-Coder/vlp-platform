@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense, useState } from 'react';
+import { PurchaseBeacon } from '@vlp/member-ui';
 import styles from './page.module.css';
 
 function SuccessContent() {
@@ -21,6 +22,7 @@ function SuccessContent() {
 
   return (
     <main className={styles.main}>
+      <PurchaseBeacon app="gvlp" clientReferenceId={clientId} />
       <div className={styles.blob1} />
       <div className={styles.blob2} />
       <div className={styles.blob3} />

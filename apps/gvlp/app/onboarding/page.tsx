@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { MarketingHeader } from '@vlp/member-ui';
+import { MarketingHeader, capture } from '@vlp/member-ui';
 import { gvlpConfig } from '@/lib/platform-config';
 import { getSession, createCheckout } from '@/lib/api';
 import styles from './page.module.css';
@@ -268,6 +268,14 @@ function OnboardingContent() {
         return;
       }
       const checkout = await createCheckout(session.account_id, selectedTier);
+      capture({
+        name: 'checkout_started',
+        props: {
+          app: 'gvlp',
+          sku: selectedTier,
+          amount_cents: TIERS[selectedTier].monthly * 100,
+        },
+      });
       router.push(checkout.session_url);
     } catch (err: unknown) {
       const message =

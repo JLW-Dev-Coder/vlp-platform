@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import { api, type TokenPackage, type TokenPackSku } from '@/lib/api'
+import { capture } from '@vlp/member-ui'
 import styles from './page.module.css'
 
 export default function PricingPage() {
@@ -40,6 +41,11 @@ export default function PricingPage() {
     setBuyingId(sku)
     try {
       const data = await api.createCheckoutSession(sku)
+      const pkg = prices.find((p) => p.sku === sku)
+      capture({
+        name: 'checkout_started',
+        props: { app: 'tttmp', sku, amount_cents: pkg?.amount ?? 0 },
+      })
       window.location.href = data.checkout_url
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed')

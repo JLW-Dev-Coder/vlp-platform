@@ -33,6 +33,8 @@ export { ManageCookiesLink } from './components/cookies/ManageCookiesLink'
 export { applyAnalyticsConsent, setAnalyticsConfig, getPostHogClient } from './lib/analytics'
 export type { AnalyticsConfig, PostHogAnalyticsConfig } from './lib/analytics'
 export { PostHogPageview } from './components/analytics/PostHogPageview'
+export { PurchaseBeacon } from './components/analytics/PurchaseBeacon'
+export type { PurchaseBeaconProps } from './components/analytics/PurchaseBeacon'
 export { initPostHog, capture, identify, setConsent } from './analytics'
 export type { AnalyticsEvent, AnalyticsEventName, InitPostHogOptions } from './analytics'
 

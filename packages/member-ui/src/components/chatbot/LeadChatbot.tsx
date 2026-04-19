@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { PlatformConfig, ChatbotQuestion, ChatbotCtaAction } from '../../types/config'
+import { capture } from '../../analytics'
 
 declare global {
   interface Window {
@@ -174,6 +175,13 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(enriched),
         keepalive: true,
+      })
+      capture({
+        name: 'chatbot_lead',
+        props: {
+          app: config.brandAbbrev.toLowerCase(),
+          intent: typeof payload.intent === 'string' ? payload.intent : undefined,
+        },
       })
     } catch {
       // Fire-and-forget; do not block UX

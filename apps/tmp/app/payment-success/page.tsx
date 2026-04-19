@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import StepProgress from '@/components/StepProgress'
 import { api } from '@/lib/api'
+import { PurchaseBeacon } from '@vlp/member-ui'
 import styles from './page.module.css'
 
 const STEPS = ['Inquiry', 'Intake', 'Offer', 'Agreement', 'Payment']
@@ -47,6 +48,7 @@ function PaymentSuccessContent() {
 
   return (
     <>
+      {status === 'success' && <PurchaseBeacon app="tmp" />}
       <Header variant="site" />
       <main className={styles.main}>
         <div className={styles.stepperWrap}>
