@@ -25,6 +25,9 @@ export const wlvlpConfig: PlatformConfig = {
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'My Sites', href: '/dashboard/sites', icon: 'Globe' },
+        { label: 'Hosting', href: '/dashboard/hosting', icon: 'Server' },
+        { label: 'Voting', href: '/dashboard/voting', icon: 'ThumbsUp' },
+        { label: 'Reports', href: '/dashboard/reports', icon: 'BarChart3' },
         { label: 'Templates', href: '/', icon: 'LayoutGrid' },
         { label: 'Scratch', href: '/scratch', icon: 'Ticket' },
       ],
@@ -33,12 +36,17 @@ export const wlvlpConfig: PlatformConfig = {
       title: 'EARNINGS',
       items: [
         { label: 'Affiliate', href: '/dashboard/affiliate', icon: 'Link2' },
+        { label: 'Bidding', href: '/dashboard/bidding', icon: 'Gavel' },
+        { label: 'Winning', href: '/dashboard/winning', icon: 'Trophy' },
       ],
     },
     {
       title: 'SETTINGS',
       items: [
-        { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
+        { label: 'Account', href: '/dashboard/account', icon: 'Settings' },
+        { label: 'Profile', href: '/dashboard/profile', icon: 'User' },
+        { label: 'Support', href: '/dashboard/support', icon: 'LifeBuoy' },
+        { label: 'Usage', href: '/dashboard/usage', icon: 'Activity' },
       ],
     },
   ],
@@ -47,9 +55,9 @@ export const wlvlpConfig: PlatformConfig = {
     signIn: '/sign-in',
     signOut: '/sign-in',
     dashboard: '/dashboard',
-    account: '/dashboard',
-    profile: '/dashboard',
-    support: '/support',
+    account: '/dashboard/account',
+    profile: '/dashboard/profile',
+    support: '/dashboard/support',
   },
   businessInfo: {
     legalEntity: 'Lenore, Inc.',

@@ -169,6 +169,26 @@ export function createScratchTicket(): Promise<ScratchTicket> {
   return apiFetch('/v1/wlvlp/scratch', { method: 'POST' });
 }
 
+export interface ScratchPrize {
+  ticket_id: string;
+  prize: string;
+  prize_code?: string;
+  revealed_at?: string;
+  redeemed?: boolean;
+}
+
+export async function getScratchPrizes(account_id: string): Promise<ScratchPrize[]> {
+  try {
+    const data = await apiFetch<{ ok?: boolean; prizes?: ScratchPrize[] } | ScratchPrize[]>(
+      `/v1/wlvlp/scratch/prizes/${encodeURIComponent(account_id)}`
+    );
+    if (Array.isArray(data)) return data;
+    return data?.prizes ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export function revealScratchTicket(ticket_id: string): Promise<ScratchTicket> {
   return apiFetch(`/v1/wlvlp/scratch/${ticket_id}/reveal`, { method: 'POST' });
 }
