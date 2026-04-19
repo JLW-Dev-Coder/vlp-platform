@@ -604,7 +604,56 @@ Small pill for status, category, or count.
 
 ---
 
-## 11. Self-check
+## 11. Conversion + lead capture
+
+### 11.1 LeadChatbot
+
+Shared lead-capture chatbot for marketing pages. Config-driven via `PlatformConfig.chatbot`. Opt-in per app (no chatbot renders if `config.chatbot?.enabled !== true`).
+
+```tsx
+<LeadChatbot config={platformConfig} />
+```
+
+Mount in each app's `(marketing)/layout.tsx`, alongside `<CookieConsent />`. Positions fixed bottom-right; CookieConsent is bottom-left — no spatial conflict.
+
+**Config:** see `ChatbotConfig` in `packages/member-ui/src/types/config.ts`. Required fields: `enabled`, `nudge`, `header`, `welcome`, `questions` (exactly 3 in v1), `emailFooterLabel`, `humanPath`. Optional: `aiEnabled` (Phase 2 scaffold — renders nothing in v1), `socialProof`.
+
+**States (state machine):**
+- `nudge` — launcher pill with dismissible teaser (default first load)
+- `bubble` — bare round launcher (post-dismiss, persisted to localStorage)
+- `home` — expanded panel, welcome + 3 quick-action chips + human path
+- `question` — expanded panel, shows typed conversation for one question
+- `human` — expanded panel, book-call + send-message options
+
+**Humanization behaviors:**
+- Typing indicator (three pulsing dots) before each bot bubble
+- Typing duration = clamp(400 + chars*25, 500, 1800) ms per bubble
+- 250ms pause between consecutive bubbles
+- All animations wrapped in `motion-safe:` variants; reduced-motion users see fixed 300ms typing + instant bubble appearance
+
+**Tokens:**
+- Surface: `bg-surface-popover`
+- Border: `border border-subtle`
+- Text: `text-text-primary`, `text-text-muted`, `text-text-tertiary`
+- Radius: `rounded-lg` (panel), `rounded-md` (bubbles, chips, CTAs)
+- Shadow: `shadow-md`
+- Brand color: from `config.brandColor` via inline style (never hardcoded)
+- Z-index: `z-overlay` (same layer as CookieConsent; no spatial overlap)
+
+**Cal embed:** element-click popup pattern per canonical-cal-events.md §4. The `calTarget` field in `humanPath.bookCall` maps to PlatformConfig's `calIntroSlug` / `calDiscoverySlug` / `calBookingSlug` (with `calIntroSlug` fallback if the named target is undefined).
+
+**Lead submission:** all submit paths POST to `${config.apiBaseUrl}/v1/leads/chatbot` (anonymous). Payload schema defined in contract `apps/worker/contracts/shared/shared.leads.chatbot.v1.json`. Respects `applyAnalyticsConsent` — does not attach `referrer` or `user_agent` unless analytics is opted-in in cookie prefs.
+
+**Accessibility:**
+- Launcher: `<button aria-label="Open chat">`
+- Panel: `role="dialog"` with `aria-label` from `config.chatbot.header.title`
+- Escape minimizes panel → bubble state
+
+**Adoption:** see Shared Component Rollout table in `canonical-feature-matrix.md`.
+
+---
+
+## 12. Self-check
 
 Before shipping any component, verify:
 
@@ -624,7 +673,7 @@ Before shipping any component, verify:
 
 ---
 
-## 12. Relationship to other canonicals
+## 13. Relationship to other canonicals
 
 | Canonical | What lives there |
 |-----------|-----------------|
@@ -637,7 +686,7 @@ When this file conflicts with the blueprint, the blueprint wins. When this file 
 
 ---
 
-## 13. Decision log
+## 14. Decision log
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
@@ -646,5 +695,6 @@ When this file conflicts with the blueprint, the blueprint wins. When this file 
 | 2026-04-15 | Components framed as React props, not HTML/CSS | Matches shipped reality (Next.js + React across all 8 apps) |
 | 2026-04-15 | Mandatory self-check in §11 for every component before shipping | Consistent with style canonical §11 pattern |
 | 2026-04-16 | Modal/Popover/Tooltip tokens updated to `surface-popover` + `surface-overlay` | Old spec referenced `bg-surface-elevated` for floating containers — a 6% alpha token that produces transparent panels over page content. New tokens added to canonical-style.md §2.2 solve the class of bug. |
+| 2026-04-18 | Added §11 LeadChatbot component entry | Ships on TTMP; opt-in per app via PlatformConfig.chatbot. Documents Phase 2 aiEnabled scaffold as deliberately inert in v1. |
 
 Append-only. Do not rewrite prior entries.

@@ -33,7 +33,25 @@ These features exist on every platform. The Worker routes are shared; each platf
 | Support Tickets | POST /v1/support/tickets, GET /v1/support/tickets/by-account/{id}, PATCH /v1/support/tickets/{id} | support/{id}.json | support_tickets | /dashboard/support | live |
 | Token Balances | GET /v1/tokens/balance/{id} | tokens/{id}.json | tokens | /dashboard (shown in sidebar or header) | live |
 | Tool Usage History | GET /v1/dashboard (summary), GET /v1/tokens/usage/{account_id}?limit=25 (detail) | usage/{account_id}/{tool}/{timestamp}.json | usage_log | /dashboard/usage (per shell-path conventions) | partial — VLP + TCVLP shipped per canonical; other 6 apps pending their sweeps |
-| Lead Chatbot | POST /v1/leads/chatbot | leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json | chatbot_leads | (marketing)/* via @vlp/member-ui LeadChatbot | partial — TTMP live, 7 other apps pending Prompt 2 |
+| Lead Chatbot | POST /v1/leads/chatbot | leads/chatbot/{platform}/{yyyy}/{mm}/{dd}/{id}.json | chatbot_leads | (marketing)/* via @vlp/member-ui LeadChatbot | opt-in per app — see Shared Component Rollout below |
+
+---
+
+## Shared Component Rollout
+
+Some shared components in `@vlp/member-ui` are opt-in per app rather than enabled automatically. This matrix tracks which apps have wired which component.
+
+Legend: `✓` = live, `—` = not wired, `○` = partial (see notes).
+
+| Component     | VLP | TMP | TTMP | TTTMP | TCVLP | DVLP | GVLP | WLVLP |
+|---------------|-----|-----|------|-------|-------|------|------|-------|
+| LeadChatbot   | —   | —   | ✓    | —     | —     | —    | —    | —     |
+
+### Notes
+
+**LeadChatbot** — TTMP wired 2026-04-18 via PlatformConfig.chatbot + marketing layout mount. Lead endpoint `POST /v1/leads/chatbot` (anonymous). Expansion to other apps paused pending TTMP conversion data.
+
+Future shared components (CookieConsent rollout, MarketingHeader/Footer adoption, HelpCenter usage) can be added as rows here as they become opt-in.
 
 ---
 
