@@ -709,6 +709,11 @@ async function requireSession(request, env) {
   return { session };
 }
 
+const ADMIN_EMAILS = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
+function isAdminEmail(email) {
+  return ADMIN_EMAILS.includes((email || '').toLowerCase());
+}
+
 // ---------------------------------------------------------------------------
 // JWT helpers (HMAC-SHA256)
 // ---------------------------------------------------------------------------
@@ -6638,8 +6643,7 @@ const ROUTES = [
       if (error) return error
 
       // Only allow VLP admin accounts
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -6704,8 +6708,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -6753,8 +6756,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -6844,8 +6846,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7053,8 +7054,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7210,8 +7210,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7295,8 +7294,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7338,8 +7336,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7368,8 +7365,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7445,8 +7441,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7595,8 +7590,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
       }
 
@@ -7699,8 +7693,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'forbidden' }, 403, request)
       }
 
@@ -7888,8 +7881,7 @@ const ROUTES = [
       if (error) return error
 
       // Only allow VLP admin accounts
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'forbidden' }, 403, request)
       }
 
@@ -8106,8 +8098,7 @@ const ROUTES = [
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro']
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'forbidden' }, 403, request)
       }
 
@@ -16111,8 +16102,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
       try {
@@ -16134,8 +16124,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
       let body;
@@ -16164,8 +16153,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env, ctx) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes((session.email || '').toLowerCase())) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
       try {
@@ -18426,8 +18414,7 @@ TTMP Support Team
       } else {
         const { session, error } = await requireSession(request, env);
         if (error) return error;
-        const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-        if (!adminEmails.includes(session.email)) {
+        if (!isAdminEmail(session.email)) {
           return json({ ok: false, error: 'forbidden' }, 403, request);
         }
       }
@@ -18449,8 +18436,7 @@ TTMP Support Team
       } else {
         const { session, error } = await requireSession(request, env);
         if (error) return error;
-        const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-        if (!adminEmails.includes(session.email)) {
+        if (!isAdminEmail(session.email)) {
           return json({ ok: false, error: 'forbidden' }, 403, request);
         }
       }
@@ -18476,8 +18462,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -18513,8 +18498,7 @@ TTMP Support Team
     handler: async (_method, _pattern, params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -18547,8 +18531,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -18567,8 +18550,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -18618,8 +18600,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -18665,8 +18646,7 @@ TTMP Support Team
     handler: async (_method, _pattern, params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -18762,8 +18742,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -18964,8 +18943,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -19012,8 +18990,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -19051,8 +19028,7 @@ TTMP Support Team
     handler: async (_method, _pattern, params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -19085,8 +19061,7 @@ TTMP Support Team
     handler: async (_method, _pattern, params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
@@ -19119,8 +19094,7 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      const adminEmails = ['jamie.williams@virtuallaunch.pro', 'hello@virtuallaunch.pro'];
-      if (!adminEmails.includes(session.email)) {
+      if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
