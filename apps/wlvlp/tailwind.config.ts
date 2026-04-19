@@ -12,10 +12,6 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          purple: '#a855f7',
-          violet: '#8b5cf6',
-          400: '#c084fc',
-          500: '#a855f7',
           primary: '#a855f7',
           hover: '#af63f8',
           dark: '#8f48d2',
@@ -24,9 +20,6 @@ const config: Config = {
           'text-on-primary': '#ffffff',
           'gradient-to': 'rgba(168, 85, 247, 0.15)',
         },
-        ink: {
-          900: '#07070A',
-        },
       },
       fontFamily: {
         sora: ['var(--font-sora)', 'system-ui', 'sans-serif'],
@@ -34,7 +27,7 @@ const config: Config = {
         mono: ['var(--font-plex-mono)', 'ui-monospace', 'monospace'],
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(to right, #a855f7, #8b5cf6)',
+        'gradient-brand': 'linear-gradient(to right, var(--brand-primary), var(--brand-gradient-to))',
       },
     },
   },

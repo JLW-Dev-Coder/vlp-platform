@@ -12,20 +12,23 @@
     --member-hero-bg: #2e1065;
     --member-hero-bg-end: #1a0533;
 
-    /* Brand glow — used by shared --border-focus + shadow-focus */
+    /* Brand tokens exposed as CSS variables (mirror tailwind.config brand.*) */
+    --brand-primary: #a855f7;
+    --brand-hover: #af63f8;
+    --brand-dark: #8f48d2;
+    --brand-light: rgba(168, 85, 247, 0.15);
     --brand-glow: rgba(168, 85, 247, 0.40);
+    --brand-gradient-to: rgba(168, 85, 247, 0.15);
 
-    /* WLVLP legacy brand tokens (used by CSS module marketing pages) */
+    /* WLVLP legacy marketing tokens — see CLAUDE.md "Theming Divergences".
+       These power CSS Module marketing pages (page.module.css, asset/[slug]/page.module.css)
+       scheduled for Tier 3 migration to shared tokens + Tailwind. */
     --void: #07070A;
     --charcoal: #12121A;
     --neon-blue: #00D4FF;
     --neon-yellow: #FFE534;
     --neon-magenta: #FF2D8A;
     --neon-cyan: #00F0D0;
-    --text: #ffffff;
-    --text-muted: #888888;
-    --glass: rgba(255,255,255,0.04);
-    --glass-border: rgba(255,255,255,0.08);
   }
 }
 
@@ -35,8 +38,10 @@
 html { scroll-behavior: smooth; height: 100%; }
 
 body {
-  background: linear-gradient(180deg, #07070A 0%, #0D0D15 40%, #12121A 100%);
-  color: var(--text);
+  /* Custom three-stop gradient — documented divergence (see CLAUDE.md Theming Divergences).
+     Shared --surface-bg is a flat color; WLVLP marketing requires this gradient. */
+  background: linear-gradient(180deg, var(--void) 0%, #0D0D15 40%, var(--charcoal) 100%);
+  color: var(--text-primary);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
   min-height: 100vh;
 }
@@ -53,8 +58,8 @@ body {
   display: inline-block;
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0,212,255,0.2);
-  border-top-color: var(--neon-blue);
+  border: 3px solid var(--brand-light);
+  border-top-color: var(--brand-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

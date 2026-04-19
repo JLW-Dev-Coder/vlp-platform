@@ -11,7 +11,7 @@ See monorepo root `.claude/CLAUDE.md` for shared context, canonical docs, and ar
 - **Domain:** websitelotto.virtuallaunch.pro
 - **Brand Color:** #a855f7 (purple)
 - **Adapter:** static export (`output: 'export'`, `trailingSlash: true`) → Cloudflare Pages
-- **Fonts:** Sora + DM Sans (Google Fonts link)
+- **Fonts:** next/font/google (Sora, DM Sans, IBM Plex Mono)
 
 ---
 
@@ -37,7 +37,7 @@ WLVLP passes `wlvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 - **Asset/prospect pages** (`app/asset/[slug]/`) — dynamic prospect targeting (shell + Cloudflare rewrite)
 - **Template catalog** (`wlvlp-catalog.json`) — 223 entries with metadata
 - **Template previews** (`public/sites/{slug}/`) — HTML preview + schema.json + thumbnails
-- **AuthGuard** (`components/AuthGuard.tsx`) — session check for protected pages
+- **AuthGuard** (`components/AuthGuard.tsx`) — session check for protected pages. NOT migrated to shared `AuthGate` from `@vlp/member-ui` because AuthGuard exposes the authenticated `Session` to children via a render-prop API (`children: (session) => ReactNode`), while `AuthGate` only gates rendering and does not pass session. Callers (`/onboarding`, `/admin/upload`, `/scratch`) rely on `session.account_id`. Migration would require adding session exposure to `AuthGate` or extracting a session-provider pattern — flagged for Owner.
 - **Pricing logic** (`lib/pricing.ts`) — Standard $249, Premium $399 (one-time)
 
 ---
@@ -74,3 +74,32 @@ The sitemap includes all 211 dynamically generated `/sites/[slug]` pages. This i
 ```bash
 npx turbo build --filter=wlvlp
 ```
+
+---
+
+## Theming Divergences
+
+The following local tokens exist in `app/globals.css` and are NOT part of the shared
+canonical token set. They power CSS Module marketing pages scheduled for Tier 3
+migration (WLVLP-CANON MarketingHeader/Footer adoption).
+
+| Variable | Value | Used By | Canonical Equivalent (post-migration) |
+|----------|-------|---------|---------------------------------------|
+| `--void` | `#07070A` | `app/page.module.css`, `app/asset/[slug]/page.module.css`, body gradient | `--surface-bg` |
+| `--charcoal` | `#12121A` | `app/page.module.css` (mobile panel), body gradient | `--surface-elevated` |
+| `--neon-blue` | `#00D4FF` | `app/page.module.css`, `app/asset/[slug]/page.module.css` (logo, hover, accents) | `--brand-primary` |
+| `--neon-yellow` | `#FFE534` | `app/page.module.css`, `app/asset/[slug]/page.module.css` | TBD (accent token) |
+| `--neon-magenta` | `#FF2D8A` | `app/page.module.css` (gradients only) | TBD (accent token) |
+| `--neon-cyan` | `#00F0D0` | `app/page.module.css` (marquee gradient only) | TBD (accent token) |
+
+**Body background:** `app/globals.css` applies a custom three-stop gradient
+(`--void` → `#0D0D15` → `--charcoal`) rather than the flat shared `--surface-bg`.
+The middle stop `#0D0D15` has no token alias — it's a visual-only blend step.
+This divergence is intentional for marketing pages and will be revisited during Tier 3.
+
+**`--text-muted` note:** WLVLP previously defined a local `--text-muted: #888888`.
+This local has been removed — references now resolve to the shared
+`rgba(255, 255, 255, 0.66)` value, which is authoritative per `canonical-style.md` §2.4.
+
+These divergences will be removed when WLVLP marketing pages migrate from CSS Modules
+to Tailwind + shared tokens (Tier 3 scope).
