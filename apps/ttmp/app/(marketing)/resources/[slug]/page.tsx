@@ -6,8 +6,15 @@ import type { Metadata } from 'next'
 
 const CANONICAL_BASE = 'https://transcript.taxmonitor.pro'
 
+// Slugs that have their own static folder route under /resources/. The dynamic
+// [slug] route must skip them so it doesn't shadow the static page (which
+// happens at runtime under OpenNext even though static > dynamic in Next.js).
+const STATIC_FOLDER_SLUGS = new Set(['transcript-codes', 'help-center', 'irs-phone-numbers'])
+
 export async function generateStaticParams() {
-  return getAllResources().map(r => ({ slug: r.slug }))
+  return getAllResources()
+    .filter(r => !STATIC_FOLDER_SLUGS.has(r.slug))
+    .map(r => ({ slug: r.slug }))
 }
 
 export async function generateMetadata(
@@ -29,6 +36,7 @@ export default async function ResourcePage(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
+  if (STATIC_FOLDER_SLUGS.has(slug)) notFound()
   const resource = getResource(slug)
   if (!resource) notFound()
   const Template = getTemplate(resource.template)
