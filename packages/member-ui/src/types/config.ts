@@ -86,4 +86,55 @@ export interface PlatformConfig {
   businessInfo?: BusinessInfo;
   cookiePrefsStorageKey?: string;      // e.g., "vlp_cookie_prefs_v1" — defaults to `${brandAbbrev.toLowerCase()}_cookie_prefs_v1`
   marketing?: MarketingConfig;
+  chatbot?: ChatbotConfig;
+}
+
+export type ChatbotCtaAction =
+  | { type: 'link'; href: string; external?: boolean }
+  | { type: 'human-path' }
+  | { type: 'cal-intro' }
+  | { type: 'cal-discovery' }
+  | { type: 'cal-booking' };
+
+export interface ChatbotCta {
+  label: string;
+  action: ChatbotCtaAction;
+}
+
+export interface ChatbotQuestion {
+  id: string;
+  label: string;
+  response: string[];     // [0] short ack, [1] body — staggered
+  askBack?: string;
+  primaryCta: ChatbotCta;
+  secondaryCta?: ChatbotCta;
+}
+
+export interface ChatbotHumanPath {
+  intro: string;
+  bookCall: {
+    label: string;
+    description: string;
+    calTarget: 'intro' | 'discovery' | 'booking';
+  };
+  sendMessage: {
+    label: string;
+    description: string;
+  };
+}
+
+export interface ChatbotConfig {
+  enabled: boolean;
+  aiEnabled?: boolean;    // Phase 2 — falsy in v1; no free-text input renders
+  nudge: { label: string; message: string };
+  header: {
+    avatarInitials: string;
+    title: string;
+    subtitle: string;
+  };
+  welcome: string;
+  questions: ChatbotQuestion[];   // exactly 3 in v1
+  emailFooterLabel: string;
+  humanPath: ChatbotHumanPath;
+  socialProof?: { text: string; href?: string };
 }

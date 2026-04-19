@@ -29,6 +29,10 @@ export { CookieConsent, applyAnalyticsConsent } from './components/cookies/Cooki
 export type { CookieConsentProps } from './components/cookies/CookieConsent'
 export { ManageCookiesLink } from './components/cookies/ManageCookiesLink'
 
+// Chatbot
+export { LeadChatbot } from './components/chatbot/LeadChatbot'
+export type { LeadChatbotProps } from './components/chatbot/LeadChatbot'
+
 // Legal Components
 export { LegalPageLayout } from './components/legal/LegalPageLayout'
 export type { LegalPageLayoutProps } from './components/legal/LegalPageLayout'
@@ -50,6 +54,11 @@ export type {
   FooterLink,
   BusinessInfo,
   BusinessAddress,
+  ChatbotConfig,
+  ChatbotCta,
+  ChatbotCtaAction,
+  ChatbotQuestion,
+  ChatbotHumanPath,
 } from './types/config'
 export type { ReviewConfig, ReviewCardData } from './types/review'
 export type { ReviewCardProps } from './components/reviews/ReviewCard'
