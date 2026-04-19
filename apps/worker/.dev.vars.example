@@ -1,0 +1,17 @@
+# Example dev vars for apps/worker. Copy to .dev.vars (gitignored) and fill in.
+# Production secrets must be set with `wrangler secret put <NAME>`.
+
+# Required for /v1/analytics/posthog/* endpoints. Personal API key from
+# PostHog with "Read" scope on `query` endpoint. Set in prod via:
+#   wrangler secret put POSTHOG_PERSONAL_API_KEY
+POSTHOG_PERSONAL_API_KEY=
+
+# Required for /v1/analytics/posthog/* endpoints. PostHog project (team) ID,
+# derived from the PostHog dashboard URL. Do NOT hardcode in code — always
+# read from env. Set in prod via:
+#   wrangler secret put POSTHOG_PROJECT_ID
+POSTHOG_PROJECT_ID=
+
+# Optional. Defaults to https://us.posthog.com. EU cloud would be
+# https://eu.posthog.com.
+POSTHOG_HOST=

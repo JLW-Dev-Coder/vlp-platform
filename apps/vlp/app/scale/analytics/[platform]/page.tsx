@@ -60,6 +60,20 @@ interface PlatformDetail {
   firewall: FirewallEntry[]
 }
 
+interface PostHogZone {
+  ok: boolean
+  zone: string
+  days: number
+  collecting: boolean
+  days_until_ready?: number
+  pageviews_by_path: { path: string; count: number }[]
+  signups: number
+  purchases: number
+  revenue_cents: number
+  funnel: { pageview: number; sign_up: number; purchase: number }
+  error?: string
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -352,6 +366,8 @@ export default function PlatformAnalyticsDetailPage() {
   const abbrev = PLATFORM_ABBREV[platform] || platform.toUpperCase()
 
   const [data, setData] = useState<PlatformDetail | null>(null)
+  const [posthog, setPosthog] = useState<PostHogZone | null>(null)
+  const [posthogError, setPosthogError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [granularity, setGranularity] = useState<'hourly' | 'daily' | 'monthly'>('daily')
@@ -361,14 +377,30 @@ export default function PlatformAnalyticsDetailPage() {
     if (!isValid) return
     setLoading(true)
     setError(null)
+    setPosthogError(null)
     try {
-      const res = await fetch(`https://api.virtuallaunch.pro/v1/admin/analytics/${platform}`, {
-        credentials: 'include',
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json: PlatformDetail = await res.json()
+      const [cfRes, phRes] = await Promise.all([
+        fetch(`https://api.virtuallaunch.pro/v1/admin/analytics/${platform}`, { credentials: 'include' }),
+        fetch(`https://api.virtuallaunch.pro/v1/analytics/posthog/repo/${platform}?days=7`, {
+          credentials: 'include',
+        }).catch(() => null),
+      ])
+      if (!cfRes.ok) throw new Error(`HTTP ${cfRes.status}`)
+      const json: PlatformDetail = await cfRes.json()
       if (!json.ok) throw new Error(json.error || 'Unknown error')
       setData(json)
+
+      if (phRes && phRes.ok) {
+        const phJson: PostHogZone = await phRes.json()
+        if (phJson.ok) setPosthog(phJson)
+        else {
+          setPosthog(null)
+          setPosthogError(phJson.error || 'PostHog data unavailable')
+        }
+      } else {
+        setPosthog(null)
+        setPosthogError('PostHog data unavailable — showing Cloudflare metrics only.')
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load analytics')
     } finally {
@@ -983,6 +1015,123 @@ export default function PlatformAnalyticsDetailPage() {
           )}
         </GlassCard>
       </div>
+
+      {/* ================================================================ */}
+      {/* SECTION 4 — Behavioral Analytics (PostHog)                        */}
+      {/* ================================================================ */}
+      <h2 style={sectionHeading}>Behavioral Analytics (PostHog)</h2>
+
+      {posthogError && (
+        <GlassCard style={{ borderColor: 'rgba(245, 158, 11, 0.3)', backgroundColor: 'rgba(245, 158, 11, 0.08)' }}>
+          <p style={{ fontSize: '0.8rem', color: '#f59e0b' }}>{posthogError}</p>
+        </GlassCard>
+      )}
+
+      {posthog && posthog.collecting && (
+        <GlassCard>
+          <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+            Collecting data — PostHog needs ~7 days of traffic to produce a reliable funnel.
+            {typeof posthog.days_until_ready === 'number' && posthog.days_until_ready > 0
+              ? ` ${posthog.days_until_ready} days to go.`
+              : ''}
+          </p>
+          <p style={{ ...mutedText, marginTop: '0.5rem' }}>
+            Events tracked so far: {posthog.funnel.pageview} pageviews, {posthog.funnel.sign_up} signups, {posthog.funnel.purchase} purchases.
+          </p>
+        </GlassCard>
+      )}
+
+      {posthog && !posthog.collecting && (
+        <>
+          <div className="kpi-grid-detail">
+            {[
+              { label: 'Signups (7d)', value: formatNumber(posthog.signups), sub: 'sign_up events' },
+              { label: 'Purchases (7d)', value: formatNumber(posthog.purchases), sub: 'purchase events' },
+              {
+                label: 'Revenue (7d)',
+                value: `$${(posthog.revenue_cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                sub: 'sum of amount_cents',
+              },
+            ].map((k) => (
+              <GlassCard key={k.label}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: '#f97316', display: 'inline-block',
+                    boxShadow: '0 0 6px #f9731640',
+                  }} />
+                  <span style={kpiLabel}>{k.label}</span>
+                </div>
+                <div style={kpiNumber}>{k.value}</div>
+                <p style={{ ...mutedText, marginTop: '0.25rem' }}>{k.sub}</p>
+              </GlassCard>
+            ))}
+          </div>
+
+          <div className="section-grid">
+            <GlassCard>
+              <div style={cardTitle}>Top Pages (PostHog)</div>
+              <div style={cardSubtitle}>Pageviews by path — top 10, last 7d</div>
+              {posthog.pageviews_by_path.length === 0 ? (
+                <p style={{ ...mutedText, marginTop: '0.75rem' }}>No pageview data yet for this window</p>
+              ) : (
+                <div style={{ marginTop: '0.75rem', overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                        <th style={{ textAlign: 'left', padding: '0.5rem 0', color: 'rgba(148,163,184,0.7)', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Path</th>
+                        <th style={{ textAlign: 'right', padding: '0.5rem 0', color: 'rgba(148,163,184,0.7)', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pageviews</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {posthog.pageviews_by_path.map((row) => (
+                        <tr key={row.path} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <td style={{ padding: '0.5rem 0', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{row.path}</td>
+                          <td style={{ padding: '0.5rem 0', textAlign: 'right', color: 'rgba(255,255,255,0.7)' }}>{formatNumber(row.count)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </GlassCard>
+
+            <GlassCard>
+              <div style={cardTitle}>Funnel</div>
+              <div style={cardSubtitle}>Pageview → Sign up → Purchase</div>
+              <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                {(() => {
+                  const max = Math.max(posthog.funnel.pageview, posthog.funnel.sign_up, posthog.funnel.purchase, 1)
+                  const steps: { label: string; value: number }[] = [
+                    { label: 'Pageviews', value: posthog.funnel.pageview },
+                    { label: 'Signups', value: posthog.funnel.sign_up },
+                    { label: 'Purchases', value: posthog.funnel.purchase },
+                  ]
+                  return steps.map((s) => (
+                    <div key={s.label}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{s.label}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>{formatNumber(s.value)}</span>
+                      </div>
+                      <div style={{ height: '10px', borderRadius: '5px', background: 'rgba(148,163,184,0.15)', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            height: '100%',
+                            width: `${(s.value / max) * 100}%`,
+                            background: brandGradient,
+                            borderRadius: '5px',
+                            transition: 'width 0.5s ease',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                })()}
+              </div>
+            </GlassCard>
+          </div>
+        </>
+      )}
 
       {/* ================================================================ */}
       {/* FOOTER                                                           */}

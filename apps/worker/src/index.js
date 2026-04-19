@@ -7516,6 +7516,137 @@ const ROUTES = [
     },
   },
 
+  // ---------------------------------------------------------------------------
+  // PostHog-backed per-zone behavioral analytics (admin-gated)
+  // Secrets required in prod:
+  //   wrangler secret put POSTHOG_PERSONAL_API_KEY
+  //   wrangler secret put POSTHOG_PROJECT_ID
+  // ---------------------------------------------------------------------------
+  {
+    method: 'GET', pattern: '/v1/analytics/posthog/repo/:zone',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env)
+      if (error) return error
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request)
+      }
+
+      const zone = (params.zone || '').toLowerCase()
+      if (!CF_ZONE_MAP[zone]) {
+        return json({ ok: false, error: 'VALIDATION', message: `unknown zone: ${zone}` }, 400, request)
+      }
+
+      const url = new URL(request.url)
+      const daysRaw = parseInt(url.searchParams.get('days') || '7', 10)
+      const days = Number.isFinite(daysRaw) ? Math.max(1, Math.min(90, daysRaw)) : 7
+
+      const apiKey = env.POSTHOG_PERSONAL_API_KEY
+      const projectId = env.POSTHOG_PROJECT_ID
+      const emptyShape = {
+        zone,
+        days,
+        collecting: true,
+        days_until_ready: days,
+        pageviews_by_path: [],
+        signups: 0,
+        purchases: 0,
+        revenue_cents: 0,
+        funnel: { pageview: 0, sign_up: 0, purchase: 0 },
+      }
+      if (!apiKey || !projectId) {
+        return json({ ok: true, ...emptyShape, error: 'POSTHOG_NOT_CONFIGURED' }, 200, request)
+      }
+
+      const posthogHost = env.POSTHOG_HOST || 'https://us.posthog.com'
+      async function runHogQL(query) {
+        try {
+          const res = await fetch(`${posthogHost}/api/projects/${projectId}/query/`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: { kind: 'HogQLQuery', query } }),
+          })
+          if (!res.ok) return { ok: false, error: `HTTP ${res.status}` }
+          const body = await res.json()
+          return { ok: true, rows: Array.isArray(body.results) ? body.results : [] }
+        } catch (e) {
+          return { ok: false, error: (e && e.message) || 'fetch failed' }
+        }
+      }
+
+      const interval = `INTERVAL ${days} DAY`
+      const appFilter = `properties.app = '${zone.replace(/'/g, "''")}'`
+
+      const [pvRes, countsRes, funnelRes] = await Promise.all([
+        runHogQL(
+          `SELECT properties.$pathname AS path, count() AS c
+           FROM events
+           WHERE event = '$pageview' AND ${appFilter} AND timestamp > now() - ${interval}
+           GROUP BY path ORDER BY c DESC LIMIT 10`
+        ),
+        runHogQL(
+          `SELECT event, count() AS c, sumIf(toFloat(properties.amount_cents), event = 'purchase') AS revenue_cents
+           FROM events
+           WHERE event IN ('sign_up','purchase','$pageview') AND ${appFilter} AND timestamp > now() - ${interval}
+           GROUP BY event`
+        ),
+        runHogQL(
+          `SELECT
+              countIf(event = '$pageview') AS pageviews,
+              countIf(event = 'sign_up') AS signups,
+              countIf(event = 'purchase') AS purchases
+           FROM events
+           WHERE event IN ('$pageview','sign_up','purchase') AND ${appFilter} AND timestamp > now() - ${interval}`
+        ),
+      ])
+
+      const anyErr = !pvRes.ok || !countsRes.ok || !funnelRes.ok
+      if (anyErr) {
+        return json({ ok: true, ...emptyShape, error: 'POSTHOG_QUERY_ERROR' }, 200, request)
+      }
+
+      const pageviews_by_path = pvRes.rows.map((r) => ({
+        path: String(r[0] ?? '/'),
+        count: Number(r[1] ?? 0),
+      }))
+
+      let signups = 0, purchases = 0, revenue_cents = 0
+      for (const row of countsRes.rows) {
+        const ev = row[0]
+        const c = Number(row[1] ?? 0)
+        const rev = Number(row[2] ?? 0)
+        if (ev === 'sign_up') signups = c
+        else if (ev === 'purchase') { purchases = c; revenue_cents = Math.round(rev) }
+      }
+
+      const funnelRow = funnelRes.rows[0] || [0, 0, 0]
+      const funnel = {
+        pageview: Number(funnelRow[0] ?? 0),
+        sign_up: Number(funnelRow[1] ?? 0),
+        purchase: Number(funnelRow[2] ?? 0),
+      }
+
+      const totalEvents = funnel.pageview + funnel.sign_up + funnel.purchase
+      const collecting = totalEvents < 10
+      const days_until_ready = collecting ? Math.max(1, 7 - days) : 0
+
+      return json({
+        ok: true,
+        zone,
+        days,
+        collecting,
+        ...(collecting ? { days_until_ready } : {}),
+        pageviews_by_path,
+        signups,
+        purchases,
+        revenue_cents,
+        funnel,
+      }, 200, request)
+    },
+  },
+
   {
     method: 'GET', pattern: '/v1/admin/scale/workflow',
     handler: async (_method, _pattern, _params, request, env) => {

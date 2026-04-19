@@ -218,6 +218,7 @@ Total routes: ~193
 | GET | `/v1/admin/accounts/:account_id` | Get account (admin) | Admin |
 | GET | `/v1/admin/analytics/all` | Analytics across platforms | Admin |
 | GET | `/v1/admin/analytics/:platform` | Platform analytics | Admin |
+| GET | `/v1/analytics/posthog/repo/:zone` | PostHog-backed per-zone behavioral analytics (pageviews-by-path, signups, purchases, revenue, 3-step funnel). Requires `POSTHOG_PERSONAL_API_KEY` + `POSTHOG_PROJECT_ID` Worker secrets. Returns `collecting:true` with zeroed counts when PostHog has insufficient data. | Admin |
 | GET | `/v1/admin/scale/workflow` | Scale workflow info | Admin |
 | GET | `/v1/admin/scale/prospects/search` | Search prospects | Admin |
 | GET | `/v1/admin/scale/prospects/:slug` | Get prospect details | Admin |
