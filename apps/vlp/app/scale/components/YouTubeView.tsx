@@ -342,12 +342,17 @@ export default function YouTubeView() {
         </button>
       </div>
 
-      {/* Not-available notice */}
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-200/90">
-        <strong className="font-semibold">Not available via public API:</strong>{' '}
-        watch time · audience retention · traffic sources · CTR · demographics · revenue ·
-        community posts · subscriber history. These require OAuth, which is planned for a
-        follow-up release.
+      {/* Availability notice */}
+      <div className="space-y-2">
+        <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-3 text-xs text-sky-200/90">
+          <strong className="font-semibold">Coming in the next release:</strong>{' '}
+          watch time, audience retention, traffic sources, impressions and CTR, and
+          subscribers gained per video. OAuth integration is queued for the next prompt.
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-[11px] text-slate-500">
+          <strong className="font-semibold">Not available via any YouTube API:</strong>{' '}
+          community posts and dislike counts.
+        </div>
       </div>
     </div>
   )
