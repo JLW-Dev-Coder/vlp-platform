@@ -103,12 +103,10 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
   const [view, setView] = useState<View>('bubble')
   const [activeQuestion, setActiveQuestion] = useState<ChatbotQuestion | null>(null)
   const [bubbles, setBubbles] = useState<BotBubble[]>([])
-  const [typing, setTyping] = useState(false)
-  const [emailFooter, setEmailFooter] = useState('')
-  const [emailFooterSent, setEmailFooterSent] = useState(false)
   const [messageEmail, setMessageEmail] = useState('')
   const [messageBody, setMessageBody] = useState('')
   const [messageSent, setMessageSent] = useState(false)
+  const [showScrollHint, setShowScrollHint] = useState(false)
   const transcriptRef = useRef<HTMLDivElement | null>(null)
   const initRef = useRef(false)
 
@@ -147,7 +145,26 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
     if (transcriptRef.current) {
       transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight
     }
-  }, [bubbles, typing])
+  }, [bubbles])
+
+  // Track whether there is more content below the viewport
+  useEffect(() => {
+    const el = transcriptRef.current
+    if (!el) {
+      setShowScrollHint(false)
+      return
+    }
+    const check = () => {
+      setShowScrollHint(el.scrollTop + el.clientHeight < el.scrollHeight - 4)
+    }
+    check()
+    el.addEventListener('scroll', check, { passive: true })
+    window.addEventListener('resize', check)
+    return () => {
+      el.removeEventListener('scroll', check)
+      window.removeEventListener('resize', check)
+    }
+  }, [bubbles, view])
 
   function dismissNudge() {
     try { localStorage.setItem(nudgeKey, '1') } catch { /* ignore */ }
@@ -191,22 +208,11 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
   async function runConversation(q: ChatbotQuestion) {
     setActiveQuestion(q)
     setView('question')
-    setBubbles([{ id: `u-${q.id}`, text: q.label, from: 'user' }])
-    setTyping(false)
-
-    const reduced = prefersReducedMotion()
-    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
-
     const allBot = [...q.response, ...(q.askBack ? [q.askBack] : [])]
-    for (let i = 0; i < allBot.length; i++) {
-      const text = allBot[i]
-      const typeFor = reduced ? 300 : Math.min(1800, Math.max(500, 400 + text.length * 25))
-      setTyping(true)
-      await wait(typeFor)
-      setTyping(false)
-      setBubbles((prev) => [...prev, { id: `b-${q.id}-${i}`, text, from: 'bot' }])
-      if (i < allBot.length - 1) await wait(reduced ? 100 : 250)
-    }
+    setBubbles([
+      { id: `u-${q.id}`, text: q.label, from: 'user' },
+      ...allBot.map((text, i) => ({ id: `b-${q.id}-${i}`, text, from: 'bot' as const })),
+    ])
 
     await postLead({
       question_id: q.id,
@@ -245,17 +251,6 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
     document.body.appendChild(a)
     a.click()
     setTimeout(() => a.remove(), 100)
-  }
-
-  function submitEmailFooter(e: React.FormEvent) {
-    e.preventDefault()
-    if (!emailFooter) return
-    void postLead({
-      email: emailFooter,
-      source: 'chatbot_email_footer',
-      question_id: activeQuestion?.id,
-    })
-    setEmailFooterSent(true)
   }
 
   function submitMessage(e: React.FormEvent) {
@@ -415,32 +410,44 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
 
       {view === 'question' && activeQuestion && (
         <div className="flex flex-col">
-          <div ref={transcriptRef} className="flex max-h-80 flex-col gap-2 overflow-y-auto p-3">
-            {bubbles.map((b) => (
-              <div
-                key={b.id}
-                className={`max-w-[85%] rounded-md px-3 py-2 text-sm leading-relaxed ${
-                  b.from === 'user'
-                    ? 'self-end text-white'
-                    : 'self-start border border-subtle bg-surface-card text-text-primary'
-                }`}
-                style={b.from === 'user' ? { backgroundColor: brandColor } : undefined}
+          <div className="relative">
+            <div
+              ref={transcriptRef}
+              className="flex max-h-80 flex-col gap-2 overflow-y-auto p-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {bubbles.map((b) => (
+                <div
+                  key={b.id}
+                  className={`max-w-[85%] rounded-md px-3 py-2 text-sm leading-relaxed ${
+                    b.from === 'user'
+                      ? 'self-end text-white'
+                      : 'self-start border border-subtle bg-surface-card text-text-primary'
+                  }`}
+                  style={b.from === 'user' ? { backgroundColor: brandColor } : undefined}
+                >
+                  {b.text}
+                </div>
+              ))}
+            </div>
+            {showScrollHint && (
+              <button
+                type="button"
+                onClick={() => {
+                  const el = transcriptRef.current
+                  if (el) el.scrollTo({ top: el.scrollHeight, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+                }}
+                aria-label="Scroll to latest message"
+                className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-subtle bg-surface-card/90 p-1.5 shadow-sm motion-safe:animate-bounce focus-visible:outline-none focus-visible:shadow-focus"
+                style={{ color: brandColor }}
               >
-                {b.text}
-              </div>
-            ))}
-            {typing && (
-              <div className="self-start rounded-md border border-subtle bg-surface-card px-3 py-2" aria-live="polite" aria-label="Assistant is typing">
-                <span className="inline-flex gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-text-tertiary motion-safe:animate-pulse" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-text-tertiary motion-safe:animate-pulse [animation-delay:150ms]" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-text-tertiary motion-safe:animate-pulse [animation-delay:300ms]" />
-                </span>
-              </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
             )}
           </div>
 
-          {!typing && bubbles.length > 1 && (
+          {bubbles.length > 1 && (
             <div className="flex flex-col gap-2 border-t border-subtle p-3">
               <button
                 type="button"
@@ -458,33 +465,6 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
                 >
                   {activeQuestion.secondaryCta.label}
                 </button>
-              )}
-
-              {emailFooterSent ? (
-                <p className="text-[11px] text-text-muted">Thanks — we'll be in touch.</p>
-              ) : (
-                <form onSubmit={submitEmailFooter} className="flex flex-col gap-2 border-t border-subtle pt-2">
-                  <label htmlFor="chatbot-email-footer" className="text-[11px] font-semibold text-text-muted">
-                    {cb.emailFooterLabel}
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      id="chatbot-email-footer"
-                      type="email"
-                      required
-                      value={emailFooter}
-                      onChange={(e) => setEmailFooter(e.target.value)}
-                      placeholder="you@firm.com"
-                      className="min-w-0 flex-1 rounded-md border border-subtle bg-surface-card px-2 py-1.5 text-xs text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:shadow-focus"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-md border border-subtle bg-surface-card px-3 py-1.5 text-xs font-bold text-text-primary hover:bg-surface-elevated focus-visible:outline-none focus-visible:shadow-focus"
-                    >
-                      Send
-                    </button>
-                  </div>
-                </form>
               )}
             </div>
           )}

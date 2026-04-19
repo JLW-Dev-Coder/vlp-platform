@@ -247,6 +247,7 @@ export default function HomePage() {
       </section>
 
       {/* 3. HOW IT WORKS — PARSER */}
+      <span id="parser" className="block" aria-hidden="true" />
       <section className={styles.parserSection} id="how-it-works">
         <div className={styles.sectionInner}>
           <div className={styles.sectionBadge}>How It Works</div>

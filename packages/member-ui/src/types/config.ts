@@ -143,7 +143,7 @@ export interface ChatbotConfig {
     subtitle: string;
   };
   welcome: string;
-  questions: ChatbotQuestion[];   // exactly 3 in v1
+  questions: ChatbotQuestion[];   // 3-5 buttons fit comfortably; layout tested at 5
   emailFooterLabel: string;
   humanPath: ChatbotHumanPath;
   socialProof?: { text: string; href?: string };

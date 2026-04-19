@@ -124,58 +124,67 @@ export const ttmpConfig: PlatformConfig = {
     aiEnabled: false,
     nudge: {
       label: 'Tax Transcript AI',
-      message: 'Save 15 min per transcript',
+      message: 'Try it free — parse any IRS transcript in 10 seconds',
     },
     header: {
       avatarInitials: 'TT',
       title: 'Tax Transcript AI',
       subtitle: 'AI + real humans · fast reply',
     },
-    welcome:
-      "Hey — I can show you how this works, what it costs, or point you at a real human. Which one?",
+    welcome: 'What brings you here today?',
     questions: [
       {
-        id: 'q1',
-        label: 'How does the parser work?',
+        id: 'q1-how',
+        label: 'How does it work?',
         response: [
-          "Good question — here's the short version.",
-          "Upload an IRS transcript PDF and the parser explains every code, flags holds, and interprets dates in plain English. About 10 seconds per transcript instead of 15–20 minutes manually.",
+          "You upload an IRS transcript PDF — the parser reads every transaction code, explains what each one means in plain English, flags holds or issues, and gives you a clean report. Takes about 10 seconds. You can try it right now on the homepage with our sample transcript, no account needed.",
         ],
-        askBack: 'Are you mostly looking at client transcripts, or your own?',
-        primaryCta: { label: 'See a sample report →', action: { type: 'link', href: '/features' } },
+        primaryCta: { label: 'Try it now →', action: { type: 'link', href: '/#parser' } },
+        secondaryCta: { label: 'See a sample report', action: { type: 'link', href: '/features' } },
+      },
+      {
+        id: 'q2-cost',
+        label: 'What does it cost?',
+        response: [
+          "No subscription required. You buy transcript tokens — each one parses one transcript. 10 tokens for $19, 25 for $29, 100 for $129. Your first parse is free on the homepage so you can see exactly what you get before spending anything.",
+        ],
+        primaryCta: { label: 'See pricing →', action: { type: 'link', href: '/pricing' } },
+        secondaryCta: { label: 'Try a free parse first', action: { type: 'link', href: '/#parser' } },
+      },
+      {
+        id: 'q3-free',
+        label: 'Can I try it free?',
+        response: [
+          "Yes — go to the homepage and upload any IRS transcript (or use our sample). You'll see the full parsed report on screen, no account needed. Saving or downloading the report requires tokens, but the preview is completely free.",
+        ],
+        primaryCta: { label: 'Try it free →', action: { type: 'link', href: '/#parser' } },
         secondaryCta: {
-          label: 'Watch the 90-sec demo',
+          label: 'Watch a 90-sec demo',
           action: { type: 'link', href: 'https://www.youtube.com/@TaxTranscriptAI', external: true },
         },
       },
       {
-        id: 'q2',
-        label: 'What does it cost?',
+        id: 'q4-fit',
+        label: 'Is this right for me?',
         response: [
-          "Depends on your volume — here's the honest breakdown.",
-          "Pay-as-you-go tokens (first parse is free), or monthly subscription for unlimited parses. No per-seat fees, no setup cost.",
+          "If you read IRS transcripts for clients — yes. Built for CPAs, EAs, and tax attorneys. Most users say if you handle more than five transcripts a month, the time savings pay for themselves in the first week.",
         ],
-        askBack: 'Rough sense of how many transcripts you handle a month?',
-        primaryCta: { label: 'See pricing →', action: { type: 'link', href: '/pricing' } },
-        secondaryCta: { label: 'Talk it through', action: { type: 'human-path' } },
+        primaryCta: { label: 'Try it and see →', action: { type: 'link', href: '/#parser' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
       },
       {
-        id: 'q3',
-        label: 'Is this right for my practice?',
+        id: 'q5-security',
+        label: 'Is my data secure?',
         response: [
-          'Honestly? Probably.',
-          'Built for CPAs, EAs, and tax attorneys reading client transcripts. If you do more than five a month, most say the time savings cover the cost in week one.',
+          "Transcripts are parsed in your browser — the PDF never leaves your device. We don't store transcript content on our servers. Saved reports are encrypted and tied to your account. We're built on Cloudflare's infrastructure with SOC 2-grade security practices.",
         ],
-        primaryCta: {
-          label: 'Start free →',
-          action: { type: 'link', href: '/tools/code-lookup' },
-        },
-        secondaryCta: { label: 'Book 10 min with us', action: { type: 'cal-intro' } },
+        primaryCta: { label: 'Read our privacy policy →', action: { type: 'link', href: '/legal/privacy' } },
+        secondaryCta: { label: 'Try the parser →', action: { type: 'link', href: '/#parser' } },
       },
     ],
     emailFooterLabel: 'Prefer email?',
     humanPath: {
-      intro: 'Pick the fastest path — we read every message.',
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
       bookCall: {
         label: 'Book a 10-min intro call',
         description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
