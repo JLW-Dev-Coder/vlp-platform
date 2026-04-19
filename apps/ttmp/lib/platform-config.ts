@@ -8,7 +8,7 @@ export const ttmpConfig: PlatformConfig = {
   logoText: 'TT',
   apiBaseUrl: 'https://api.taxmonitor.pro',
   posthog: {
-    apiKey: 'phc_TTMP_REPLACE_WITH_PROJECT_KEY',
+    apiKey: 'phc_o5nTrNkxc37W2G9PXFL8peXMjWzdjo5d2HSjE5XzggkY',
     apiHost: 'https://us.i.posthog.com',
     autocapture: true,
     capturePageview: true,
