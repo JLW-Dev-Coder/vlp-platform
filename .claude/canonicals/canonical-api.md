@@ -384,6 +384,7 @@ Total routes: ~193
 |--------|------|---------|------|----------|
 | GET | `/v1/scale/dashboard` | Scale dashboard | Yes | VLP |
 | GET | `/v1/scale/analytics` | Scale analytics | Yes | VLP |
+| GET | `/v1/scale/youtube-analytics` | YouTube channel analytics (public API) | Yes | VLP |
 | GET | `/scale/asset-page/:slug` | Asset page (legacy path) | No | Public |
 | POST | `/scale/init-send-state` | Initialize send state | Internal | Cron |
 | GET | `/v1/scale/prospects/status` | Prospect status | Admin | VLP |

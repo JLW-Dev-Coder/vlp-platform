@@ -86,6 +86,7 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 | Profile Visibility | PATCH /v1/profiles/{id} (visibility field) | profiles/{id}.json | profiles | /dashboard/profile (toggle) | live |
 | Tax Tool Game Tokens | GET /v1/tokens/balance/{id} (tax_game_tokens field) | tokens/{id}.json | tokens | /dashboard (balance display) | live |
 | Transcript Tokens | GET /v1/tokens/balance/{id} (transcript_tokens field) | tokens/{id}.json | tokens | /dashboard (balance display) | live |
+| YouTube Analytics Tab | GET /v1/scale/youtube-analytics | KV: youtube:analytics:v1:{channel_id} | n/a | /scale (YouTube tab) | live |
 
 ---
 
