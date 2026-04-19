@@ -2,66 +2,78 @@
 
 import { useState, useRef } from 'react'
 import styles from './page.module.css'
+import {
+  extractRawTextFromPdf,
+  parseTranscriptText,
+  getCodeDescription,
+  type ParsedTranscript,
+} from '@/lib/parseTranscript'
 
-const API = 'https://api.taxmonitor.pro'
-type Status = 'idle' | 'uploading' | 'done' | 'error' | 'auth'
+type Status = 'idle' | 'parsing' | 'done' | 'error'
+
+const SAMPLE_URL = '/assets/sample-transcript.pdf'
 
 export default function ParserSection() {
-  const [status, setStatus]     = useState<Status>('idle')
-  const [report, setReport]     = useState<string | null>(null)
-  const [error, setError]       = useState<string | null>(null)
-  const [showGate, setShowGate] = useState(false)
+  const [status, setStatus] = useState<Status>('idle')
+  const [parsed, setParsed] = useState<ParsedTranscript | null>(null)
+  const [fileName, setFileName] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
-  const fileRef                 = useRef<HTMLInputElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  async function handleFile(file: File | null) {
-    if (!file) return
-    if (file.type !== 'application/pdf') {
+  async function parseFile(file: File) {
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
       setError('Please upload a PDF file.')
       setStatus('error')
       return
     }
-    setStatus('uploading')
+    setStatus('parsing')
     setError(null)
-    setReport(null)
-
-    const formData = new FormData()
-    formData.append('file', file)
-
+    setParsed(null)
+    setFileName(file.name)
     try {
-      const res = await fetch(`${API}/v1/transcripts/preview`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      })
-      if (res.status === 401 || res.status === 403) {
-        setStatus('auth')
-        return
-      }
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data?.message || `Upload failed (${res.status})`)
-      }
-      const data = await res.json()
-      setReport(data?.html || data?.report || '')
+      const text = await extractRawTextFromPdf(file)
+      const result = parseTranscriptText(text)
+      setParsed(result)
       setStatus('done')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
+      setError(err instanceof Error ? err.message : 'Could not parse this PDF. Please try another file.')
       setStatus('error')
     }
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  return (
-    <div className={styles.parserWrapper}>
+  async function handleTrySample() {
+    try {
+      setStatus('parsing')
+      setError(null)
+      const res = await fetch(SAMPLE_URL)
+      if (!res.ok) throw new Error(`Sample unavailable (${res.status})`)
+      const blob = await res.blob()
+      const file = new File([blob], 'sample-transcript.pdf', { type: 'application/pdf' })
+      await parseFile(file)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not load sample transcript.')
+      setStatus('error')
+    }
+  }
 
+  function reset() {
+    setStatus('idle')
+    setParsed(null)
+    setError(null)
+    setFileName('')
+  }
+
+  return (
+    <div className={`${styles.parserWrapper} parser-preview`}>
       {status === 'idle' && (
         <div
           className={styles.parserLoading}
-          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
-          onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files?.[0] ?? null) }}
-          style={dragging ? { outline: '2px dashed #14b8a6', outlineOffset: -4, borderRadius: 12 } : {}}
+          onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files?.[0]; if (f) parseFile(f) }}
+          style={dragging ? { outline: '2px dashed var(--brand-500, #14b8a6)', outlineOffset: -4, borderRadius: 12 } : {}}
         >
           <div style={{
             width: 56, height: 56, borderRadius: 12,
@@ -78,178 +90,214 @@ export default function ParserSection() {
             </svg>
           </div>
           <p className={styles.parserLoadingText} style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.25rem' }}>
-            Upload a Transcript — See It Parsed Instantly
+            Try It — Parse a Transcript in Your Browser
           </p>
           <p className={styles.parserLoadingText}>
-            Drop your IRS transcript PDF here or click to upload. See a real plain-English report free — no account needed for preview.
+            Drop an IRS transcript PDF, pick one, or try our sample. Parsing runs entirely in your browser — no upload, no account needed.
           </p>
           <input
             ref={fileRef}
             type="file"
-            accept="application/pdf"
-            onChange={e => handleFile(e.target.files?.[0] ?? null)}
+            accept="application/pdf,.pdf"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) parseFile(f) }}
             style={{ display: 'none' }}
             id="transcript-upload"
           />
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.25rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <label htmlFor="transcript-upload" className={styles.btnPrimary} style={{ cursor: 'pointer' }}>
-              Upload Transcript PDF →
+            <button type="button" className={styles.btnPrimary} onClick={handleTrySample}>
+              Try Sample Transcript
+            </button>
+            <label htmlFor="transcript-upload" className={styles.btnSecondary} style={{ cursor: 'pointer' }}>
+              Upload Your PDF
             </label>
-            <a href="/sign-in" className={styles.btnSecondary}>Sign In for Full Access</a>
           </div>
           <p className={styles.parserLoadingText} style={{ marginTop: '0.875rem', fontSize: '0.75rem' }}>
-            Preview is free. Save, print, or email reports with a token purchase.
+            Preview is free. Your file never leaves your computer.
           </p>
         </div>
       )}
 
-      {status === 'uploading' && (
+      {status === 'parsing' && (
         <div className={styles.parserLoading}>
           <span className={styles.spinner} aria-hidden="true" />
-          <p className={styles.parserLoadingText}>Parsing transcript…</p>
-        </div>
-      )}
-
-      {status === 'auth' && (
-        <div className={styles.parserLoading}>
-          <p className={styles.parserLoadingText} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.25rem' }}>
-            Free account required to parse
-          </p>
-          <p className={styles.parserLoadingText}>
-            Sign in with your email — no password, no credit card. Then upload your transcript.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1.25rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <a href="/sign-in" className={styles.btnPrimary}>Create Free Account →</a>
-            <button className={styles.btnSecondary} onClick={() => setStatus('idle')}>Back</button>
-          </div>
+          <p className={styles.parserLoadingText}>Parsing {fileName || 'transcript'}&hellip;</p>
         </div>
       )}
 
       {status === 'error' && (
         <div className={styles.parserLoading}>
           <p style={{ color: '#f87171', fontSize: '0.9rem', marginBottom: '0.5rem' }}>{error}</p>
-          <button className={styles.btnSecondary} onClick={() => { setStatus('idle'); setError(null) }}>
+          <button className={styles.btnSecondary} onClick={reset}>
             Try Again
           </button>
         </div>
       )}
 
-      {status === 'done' && report && (
-        <div style={{ width: '100%', position: 'relative' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0.875rem 1.5rem',
-            background: 'var(--surface)',
-            borderBottom: '1px solid var(--surface-border)',
-            flexWrap: 'wrap', gap: '0.75rem',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#14b8a6', display: 'inline-block' }} />
-              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>
-                Report generated — preview mode
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                className={styles.btnSecondary}
-                style={{ fontSize: '0.8125rem', padding: '0.4rem 1rem' }}
-                onClick={() => { setStatus('idle'); setReport(null) }}
-              >
-                Upload Another
-              </button>
-              <button
-                className={styles.btnPrimary}
-                style={{ fontSize: '0.8125rem', padding: '0.4rem 1rem' }}
-                onClick={() => setShowGate(true)}
-              >
-                Save / Print / Email Report →
-              </button>
-            </div>
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <div
-              style={{ maxHeight: 480, overflow: 'hidden', pointerEvents: 'none', userSelect: 'none' }}
-              dangerouslySetInnerHTML={{ __html: report }}
-            />
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to bottom, transparent 30%, var(--bg) 80%)',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'flex-end',
-              paddingBottom: '2rem',
-            }}>
-              <div style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--surface-border)',
-                borderRadius: 12, padding: '1.5rem 2rem',
-                textAlign: 'center', maxWidth: 420,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-              }}>
-                <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.375rem' }}>
-                  Your report is ready
-                </p>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                  Use one token to unlock the full report — save as PDF, print, or email directly to your client.
-                </p>
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <a href="/pricing" className={styles.btnPrimary} style={{ fontSize: '0.875rem' }}>
-                    Use a Token to Unlock →
-                  </a>
-                  <a href="/sign-in" className={styles.btnSecondary} style={{ fontSize: '0.875rem' }}>
-                    Sign In
-                  </a>
-                </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.875rem' }}>
-                  10 tokens — $19 &nbsp;·&nbsp; 25 tokens — $29 &nbsp;·&nbsp; 100 tokens — $129
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {showGate && (
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 10,
-              background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '1rem',
-            }}>
-              <div style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--surface-border)',
-                borderRadius: 16, padding: '2rem',
-                maxWidth: 400, width: '100%', textAlign: 'center',
-                boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
-              }}>
-                <p style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.5rem' }}>
-                  Unlock this report
-                </p>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                  One token unlocks the full report — save as PDF, print, or email to your client. Tokens never expire.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <a href="/pricing" className={styles.btnPrimary} style={{ justifyContent: 'center', fontSize: '0.9375rem' }}>
-                    Purchase Tokens →
-                  </a>
-                  <a href="/sign-in" className={styles.btnSecondary} style={{ justifyContent: 'center', fontSize: '0.875rem' }}>
-                    Sign In (use existing tokens)
-                  </a>
-                  <button
-                    onClick={() => setShowGate(false)}
-                    style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
-                  10 tokens — $19 &nbsp;·&nbsp; 25 tokens — $29 &nbsp;·&nbsp; 100 tokens — $129
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+      {status === 'done' && parsed && (
+        <ParsedPreview parsed={parsed} fileName={fileName} onReset={reset} />
       )}
 
+      <style>{`
+        @media print {
+          .parser-preview { display: none !important; }
+        }
+      `}</style>
     </div>
   )
+}
+
+function ParsedPreview({ parsed, fileName, onReset }: { parsed: ParsedTranscript; fileName: string; onReset: () => void }) {
+  const tp = parsed.taxpayer || {}
+  const rs = parsed.returnSummary || {}
+  const bal = parsed.balances || {}
+  const txs = parsed.transactions || []
+  const typeLabel = parsed.metadata?.transcriptType || parsed.transcriptType
+
+  return (
+    <div style={{ width: '100%' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0.875rem 1.5rem',
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--surface-border)',
+        flexWrap: 'wrap', gap: '0.75rem',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#14b8a6', display: 'inline-block' }} />
+          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>
+            {typeLabel} — free preview
+          </span>
+        </div>
+        <button
+          className={styles.btnSecondary}
+          style={{ fontSize: '0.8125rem', padding: '0.4rem 1rem' }}
+          onClick={onReset}
+          type="button"
+        >
+          Parse Another
+        </button>
+      </div>
+
+      <div style={{ padding: '1.5rem', display: 'grid', gap: '1.25rem' }}>
+        <section>
+          <h4 style={sectionTitleStyle}>Taxpayer</h4>
+          <dl style={dlStyle}>
+            <KV label="Name" value={tp.name} />
+            <KV label="SSN" value={tp.ssn} />
+            <KV label="Tax Year" value={tp.taxYear} />
+            <KV label="Filing Status" value={tp.filingStatus} />
+            <KV label="Form" value={tp.formNumber} />
+            <KV label="Request Date" value={tp.requestDate} />
+          </dl>
+        </section>
+
+        {Object.keys(rs).length > 0 && (
+          <section>
+            <h4 style={sectionTitleStyle}>Return Summary</h4>
+            <dl style={dlStyle}>
+              <KV label="Adjusted Gross Income" value={rs.adjustedGrossIncome} />
+              <KV label="Taxable Income" value={rs.taxableIncome} />
+              <KV label="Tax Per Return" value={rs.taxPerReturn} />
+              <KV label="Processing Date" value={rs.processingDate} />
+              <KV label="Return Due Date" value={rs.returnDueDate} />
+            </dl>
+          </section>
+        )}
+
+        {Object.keys(bal).length > 0 && (
+          <section>
+            <h4 style={sectionTitleStyle}>Account Balance</h4>
+            <dl style={dlStyle}>
+              <KV label="Balance" value={bal.balance} />
+              <KV label="Accrued Interest" value={bal.accruedInt} />
+              <KV label="Accrued Penalty" value={bal.accruedPenalty} />
+              <KV label="Payoff" value={bal.payoffAmount} />
+            </dl>
+          </section>
+        )}
+
+        {txs.length > 0 && (
+          <section>
+            <h4 style={sectionTitleStyle}>Transactions ({txs.length})</h4>
+            <div style={{ overflowX: 'auto', border: '1px solid var(--surface-border)', borderRadius: 10 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ background: 'var(--surface)' }}>
+                    <th style={thStyle}>Code</th>
+                    <th style={thStyle}>Plain-English Meaning</th>
+                    <th style={thStyle}>Date</th>
+                    <th style={{ ...thStyle, textAlign: 'right' }}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {txs.map((t, i) => (
+                    <tr key={`${t.code}-${t.date}-${i}`} style={{ borderTop: '1px solid var(--surface-border)' }}>
+                      <td style={tdStyle}><code style={codeStyle}>{t.code}</code></td>
+                      <td style={tdStyle}>{getCodeDescription(t.code)}</td>
+                      <td style={{ ...tdStyle, whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>{t.date}</td>
+                      <td style={{ ...tdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{t.amount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        <div style={{
+          marginTop: '0.5rem',
+          background: 'var(--surface)',
+          border: '1px solid var(--surface-border)',
+          borderRadius: 12,
+          padding: '1.25rem 1.5rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexWrap: 'wrap', gap: '1rem',
+        }}>
+          <div>
+            <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+              Want to save this report?
+            </p>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>
+              Unlock branded PDF export, email-to-client, and a saved history — one token per report.
+            </p>
+          </div>
+          <a href="/pricing" className={styles.btnPrimary} style={{ fontSize: '0.875rem' }}>
+            Get transcript tokens →
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function KV({ label, value }: { label: string; value?: string }) {
+  if (!value || value === '\u2014') return null
+  return (
+    <>
+      <dt style={dtStyle}>{label}</dt>
+      <dd style={ddStyle}>{value}</dd>
+    </>
+  )
+}
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em',
+  textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 0.625rem',
+}
+const dlStyle: React.CSSProperties = {
+  display: 'grid', gridTemplateColumns: 'max-content 1fr',
+  columnGap: '1.25rem', rowGap: '0.375rem', margin: 0,
+}
+const dtStyle: React.CSSProperties = { fontSize: '0.8125rem', color: 'var(--text-muted)' }
+const ddStyle: React.CSSProperties = { fontSize: '0.875rem', color: 'var(--text)', margin: 0 }
+const thStyle: React.CSSProperties = {
+  textAlign: 'left', padding: '0.625rem 0.875rem',
+  fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.04em',
+  textTransform: 'uppercase', color: 'var(--text-muted)',
+}
+const tdStyle: React.CSSProperties = { padding: '0.625rem 0.875rem', color: 'var(--text)', verticalAlign: 'top' }
+const codeStyle: React.CSSProperties = {
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontSize: '0.8125rem', fontWeight: 700, color: '#14b8a6',
+  background: 'rgba(20,184,166,0.08)', padding: '0.15rem 0.45rem', borderRadius: 6,
 }

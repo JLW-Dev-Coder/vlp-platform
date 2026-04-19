@@ -148,6 +148,17 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 
 ---
 
+## RC Standing Instructions
+
+Unless a prompt explicitly says "do NOT push" or "do NOT deploy":
+- RC commits all changes with a descriptive commit message
+- RC pushes to `origin/main`
+- RC deploys if the prompt scope includes deployed infrastructure (Worker, static sites)
+
+If a prompt says "do not push" — commit locally only, report the commit hash.
+
+---
+
 ## 9. Repo Locations (Legacy → Monorepo)
 
 | Platform | Legacy Path | Monorepo Path |

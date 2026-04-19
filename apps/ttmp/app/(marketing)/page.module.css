@@ -640,3 +640,44 @@
     align-items: center;
   }
 }
+
+/* ─── Social Proof Strip (below hero) ───────────────────── */
+.proofStrip {
+  background: var(--surface);
+  border-top: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--surface-border);
+  padding: 1.25rem 1.5rem;
+}
+.proofInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+}
+.proofItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.25rem;
+}
+.proofStat {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.proofLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+@media (max-width: 700px) {
+  .proofInner {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

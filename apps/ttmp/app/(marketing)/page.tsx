@@ -1,8 +1,21 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import CtaBand from '@/components/CtaBand'
 import { generatePageMeta } from '@vlp/member-ui'
 import ParserSection from './ParserSection'
 import PricingSection from './PricingSection'
 import styles from './page.module.css'
+
+function countResourceJson(): number {
+  try {
+    const dir = path.join(process.cwd(), 'content', 'resources')
+    return fs.readdirSync(dir).filter((f) => f.endsWith('.json')).length
+  } catch {
+    return 450
+  }
+}
+const RESOURCE_COUNT = countResourceJson()
+const RESOURCE_ROUND = Math.floor(RESOURCE_COUNT / 50) * 50
 
 export const metadata = generatePageMeta({
   title: 'Transcript Tax Monitor Pro - IRS Transcript Automation',
@@ -145,10 +158,8 @@ export default function HomePage() {
             </p>
             <div className={styles.heroCtas}>
               <a
-                href="https://transcript.taxmonitor.pro/magnets/lead-magnet.html"
+                href="/magnets/lead-magnet/"
                 className={styles.btnPrimary}
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 Get Your Free Guide →
               </a>
@@ -197,6 +208,24 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 1b. SOCIAL PROOF STRIP */}
+      <section className={styles.proofStrip}>
+        <div className={styles.proofInner}>
+          <div className={styles.proofItem}>
+            <span className={styles.proofStat}>{RESOURCE_ROUND}+</span>
+            <span className={styles.proofLabel}>IRS transcript codes explained</span>
+          </div>
+          <div className={styles.proofItem}>
+            <span className={styles.proofStat}>Instant</span>
+            <span className={styles.proofLabel}>AI-powered transcript analysis</span>
+          </div>
+          <div className={styles.proofItem}>
+            <span className={styles.proofStat}>Nationwide</span>
+            <span className={styles.proofLabel}>Used by tax professionals across the US</span>
           </div>
         </div>
       </section>

@@ -2,20 +2,24 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getPostHogClient } from '@vlp/member-ui'
 import styles from './lead-magnet.module.css'
+
+const API = 'https://api.taxmonitor.pro'
 
 export default function LeadMagnetForm() {
   const router = useRouter()
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
 
     const form = e.currentTarget
     const name = (form.elements.namedItem('lead-name') as HTMLInputElement).value.trim()
     const email = (form.elements.namedItem('lead-email') as HTMLInputElement).value.trim()
+    const firm = (form.elements.namedItem('lead-firm') as HTMLInputElement).value.trim()
 
     if (!name) {
       setError('Please enter your full name.')
@@ -27,6 +31,41 @@ export default function LeadMagnetForm() {
     }
 
     setSubmitting(true)
+
+    try {
+      const eventId =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+
+      const res = await fetch(`${API}/v1/contact/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          eventId,
+          source: 'ttmp_lead_magnet_free_guide',
+          message: `Lead magnet: free-guide${firm ? ` | Firm: ${firm}` : ''}`,
+        }),
+      })
+      // Don't block the user on backend failure — they still get the guide.
+      if (!res.ok) {
+        // eslint-disable-next-line no-console
+        console.warn('[lead-magnet] submit non-OK', res.status)
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('[lead-magnet] submit error', err)
+    }
+
+    try {
+      const ph = getPostHogClient()
+      ph?.capture('lead_magnet_submit', { app: 'ttmp', magnet: 'free-guide' })
+    } catch {
+      /* analytics must never block nav */
+    }
+
     router.push('/magnets/guide')
   }
 
@@ -78,7 +117,7 @@ export default function LeadMagnetForm() {
           className={styles.submitBtn}
           disabled={submitting}
         >
-          Download Free Guide →
+          {submitting ? 'Sending…' : 'Download Free Guide →'}
         </button>
 
         <p className={styles.finePrint}>We respect your privacy. Unsubscribe anytime.</p>
