@@ -519,11 +519,13 @@ function OAuthPanel({ oauth }: { oauth?: YouTubeOAuth }) {
           </div>
         )}
 
-        {oauth.partial_errors && oauth.partial_errors.length > 0 && (
+        {/* p3-2.4: partial_errors hidden from UI pending debug of upstream_400 on one analytics query.
+            Field is still populated in the API response for future diagnostic work. */}
+        {/* {oauth.partial_errors && oauth.partial_errors.length > 0 && (
           <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
             Some analytics queries failed: {oauth.partial_errors.join(', ')}
           </div>
-        )}
+        )} */}
       </div>
     </Card>
   )

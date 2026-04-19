@@ -798,21 +798,10 @@ async function fetchYouTubeOAuthAnalytics(env, channelId, videos) {
 
   async function runQuery(queryName, params) {
     const rawUrl = ytAnalyticsUrl(params)
-    const loggedUrl = rawUrl.replace(/([?&]access_token=)[^&]*/g, '$1<redacted>')
-    console.log('[yt-analytics-query] request', {
-      query_name: queryName,
-      url: loggedUrl,
-    })
     const res = await fetch(rawUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     })
     if (!res.ok) {
-      const errBody = await res.text()
-      console.log('[yt-analytics-query] error', {
-        query_name: queryName,
-        status: res.status,
-        body: errBody,
-      })
       return { error: `upstream_${res.status}` }
     }
     return await res.json()
