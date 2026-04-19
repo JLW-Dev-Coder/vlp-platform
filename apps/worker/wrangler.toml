@@ -85,7 +85,7 @@ SCALE_ROUTING_MODE = "ttmp_only"  # ttmp_only = 100% TTMP, split = 65/25/10 TTMP
 
 # YouTube analytics (Project 3) — Tax Transcript AI channel
 YOUTUBE_CHANNEL_ID = "UCMWWyBdpnYHX3OGMWMHKX6A"
-YOUTUBE_OAUTH_CLIENT_ID = "567315945471-t231g2f08bnti82h5omhg90dflc9ljtj.apps.googleusercontent.com"
+YOUTUBE_OAUTH_CLIENT_ID = "567315945471-0b516ihtbrd7c7dk2oer9vnqcoqr0a1o.apps.googleusercontent.com"
 YOUTUBE_OAUTH_REDIRECT_URI = "https://api.virtuallaunch.pro/v1/scale/youtube-oauth/callback"
 
 # =================================================
