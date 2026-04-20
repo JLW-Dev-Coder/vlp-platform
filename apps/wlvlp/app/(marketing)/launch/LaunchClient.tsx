@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { TEMPLATES } from '../../lib/templates';
+import { TEMPLATES } from '../../../lib/templates';
 
 const POSTHOG_KEY = 'phc_o5nTrNkxc37W2G9PXFL8peXMjWzdjo5d2HSjE5XzggkY';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
@@ -820,7 +820,7 @@ export default function LaunchClient() {
   const closeExit = () => setExitOpen(false);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a2e] text-white font-[var(--font-dm-sans)] overflow-x-hidden">
+    <div className="relative text-white overflow-x-hidden">
       {/* Bokeh background */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
         <div
@@ -844,32 +844,7 @@ export default function LaunchClient() {
         className="pointer-events-none fixed inset-0 z-[1]"
       />
 
-      {/* Sticky nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-[#00D4FF]/10">
-        <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-          <div className="font-[var(--font-sora)] text-lg font-bold tracking-tight" style={{ color: NEON.yellow }}>
-            Website Lotto
-          </div>
-          <div className="hidden md:flex items-center gap-7 text-sm text-white/70">
-            <a href="#how" className="hover:text-white transition-colors">How it works</a>
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-          </div>
-          <a
-            href="#email-form"
-            className="cta-glow-pulse rounded-lg px-4 py-2 text-sm font-bold"
-            style={{
-              background: NEON.yellow,
-              color: '#0a0a0a',
-            }}
-          >
-            Get Free Access
-          </a>
-        </div>
-      </nav>
-
-      <main className="relative z-10 pt-24">
+      <div className="relative z-10">
         {/* Hero */}
         <section className="mx-auto max-w-6xl px-6 pt-12 pb-4" data-reveal>
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -1166,23 +1141,7 @@ export default function LaunchClient() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="border-t border-white/10 py-10">
-          <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row gap-4 items-center justify-between text-sm">
-            <div className="font-[var(--font-sora)] text-lg font-bold" style={{ color: NEON.yellow }}>
-              Website Lotto
-            </div>
-            <div className="text-white/50">
-              © {new Date().getFullYear()} Website Lotto. All rights reserved.
-            </div>
-            <div className="flex gap-5 text-white/60">
-              <a href="/legal/privacy" className="hover:text-white">Privacy</a>
-              <a href="/legal/terms" className="hover:text-white">Terms</a>
-              <a href="/contact" className="hover:text-white">Contact</a>
-            </div>
-          </div>
-        </footer>
-      </main>
+      </div>
 
       {/* Activity toasts */}
       <div className="fixed bottom-6 left-6 z-[1500] flex flex-col gap-2 pointer-events-none">

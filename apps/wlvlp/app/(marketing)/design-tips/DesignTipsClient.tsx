@@ -22,7 +22,7 @@ export default function DesignTipsClient() {
   const ordered = [...VIDEOS].reverse();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-[#1a1a2e] text-white">
+    <div className="text-white">
       <section className="px-6 pt-20 pb-12 text-center">
         <h1
           className="text-5xl md:text-6xl font-bold tracking-tight"
@@ -91,6 +91,6 @@ export default function DesignTipsClient() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

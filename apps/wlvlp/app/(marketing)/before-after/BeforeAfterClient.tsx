@@ -66,7 +66,7 @@ const COMPARISONS: Comparison[] = [
 
 export default function BeforeAfterClient() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-[#1a1a2e] text-white">
+    <div className="text-white">
       <section className="px-6 pt-20 pb-12 text-center">
         <h1
           className="text-5xl md:text-6xl font-bold tracking-tight"
@@ -153,6 +153,6 @@ export default function BeforeAfterClient() {
           Browse Templates →
         </Link>
       </section>
-    </main>
+    </div>
   );
 }
