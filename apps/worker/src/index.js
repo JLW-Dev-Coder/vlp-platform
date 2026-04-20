@@ -21151,6 +21151,211 @@ websitelotto.virtuallaunch.pro
 }
 
 // ---------------------------------------------------------------------------
+// WLVLP /launch Welcome Drip Cron — 15:00 UTC daily.
+//
+// Reads all rows from wlvlp_leads, cross-references wlvlp_drip_log to find
+// which drip emails each lead has received, and sends the next due email via
+// Resend (plaintext). Drip schedule (offset from created_at):
+//   welcome       day 0  — welcome + template gallery + scratch ticket
+//   social-proof  day 2  — social proof + LAUNCH50 (50% off)
+//   urgency       day 5  — urgency + FREEMONTH (free first month)
+//
+// Email copy is inlined here because the Worker cannot import from frontend
+// apps. The frontend reference copy lives at
+// apps/wlvlp/lib/data/welcome-drip.ts — changes there must be mirrored here.
+//
+// Honors env.WLVLP_DRIP_DRY_RUN: when set to '1' the handler logs the intended
+// sends and writes drip-log rows but does NOT call Resend.
+// ---------------------------------------------------------------------------
+
+const WLVLP_DRIP_SENDER = 'Xavier @ Website Lotto <noreply@virtuallaunch.pro>';
+
+const WLVLP_DRIP_EMAILS = [
+  {
+    id: 'welcome',
+    delayDays: 0,
+    subject: 'Your Website Lotto ticket is in — welcome, {first_name}',
+    body: `Hey {first_name},
+
+Xavier here from Website Lotto.
+
+You just pulled the tab on a new way to get online — a real, live
+website for your business without the designer price tag.
+
+Here's what's waiting for you:
+
+1. Browse the template gallery — every one is production-ready and
+   mobile-first. Pick the look that fits your hustle.
+   https://websitelotto.virtuallaunch.pro/templates
+
+2. Scratch your ticket — seriously. You're holding a scratch card
+   that gives you a shot at a free site. Play it now:
+   https://websitelotto.virtuallaunch.pro/scratch
+
+3. Set up in under 10 minutes. Once you pick a template, we launch
+   your custom subdomain the same day.
+
+If you have a question, just reply to this email — it comes straight
+to my inbox.
+
+— Xavier
+Website Lotto | websitelotto.virtuallaunch.pro`,
+  },
+  {
+    id: 'social-proof',
+    delayDays: 2,
+    subject: '{first_name}, here\u2019s what other owners built this week (+ 50% off)',
+    body: `Hey {first_name},
+
+Quick one — I pulled up the last 7 days of Website Lotto launches
+and thought you'd want to see what's possible:
+
+  • A mobile detailer in Phoenix went live Tuesday morning. Had a
+    booking by Tuesday night.
+  • A small-town bakery swapped out their Facebook-only presence
+    for a real site in one afternoon.
+  • A tax pro in Atlanta picked our "Firm" template and is already
+    ranking for her town name.
+
+None of them had a designer. None of them had a developer. They just
+picked a template, filled in their details, and launched.
+
+Still on the fence? Here's a nudge:
+
+  Use code LAUNCH50 at checkout — 50% off any template.
+
+This one's time-limited and won't stack with other promos. If you
+want to take a look first:
+
+https://websitelotto.virtuallaunch.pro/templates
+
+Reply if you need help picking — happy to point you at the right
+template based on what your business does.
+
+— Xavier
+Website Lotto`,
+  },
+  {
+    id: 'urgency',
+    delayDays: 5,
+    subject: '{first_name}, last call — a full month on the house',
+    body: `Hey {first_name},
+
+This is the last email in the series from me, so I want to make it
+worth your while.
+
+You signed up almost a week ago. If Website Lotto still feels like
+the right move but something's holding you back, here's a final
+offer — no strings:
+
+  Use code FREEMONTH at checkout — first month of hosting, free.
+
+That covers your custom subdomain, the live site, and all the
+updates for 30 days. If you hate it, cancel with one click. If you
+love it, keep it going at standard pricing.
+
+The whole point of Website Lotto is to take the risk out of getting
+online. This offer does the same.
+
+  https://websitelotto.virtuallaunch.pro/templates
+
+If you ever want to come back later, the door's open — just reply
+to any of my emails.
+
+Thanks for giving us a look, {first_name}.
+
+— Xavier
+Website Lotto | websitelotto.virtuallaunch.pro`,
+  },
+];
+
+async function sendWlvlpDripEmail(env, to, subject, text) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: WLVLP_DRIP_SENDER,
+      to: [to],
+      subject,
+      text,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`resend_${res.status}: ${err.slice(0, 200)}`);
+  }
+  const data = await res.json().catch(() => ({}));
+  return data.id || null;
+}
+
+async function handleWlvlpDripCron(env) {
+  const startedAt = new Date();
+  const dryRun = env.WLVLP_DRIP_DRY_RUN === '1';
+  const stats = { leads_checked: 0, sent: 0, skipped_complete: 0, skipped_not_due: 0, errors: [], dry_run: dryRun };
+
+  const leadsRes = await env.DB.prepare(
+    'SELECT id, name, email, created_at FROM wlvlp_leads'
+  ).all();
+  const leads = leadsRes.results || [];
+  stats.leads_checked = leads.length;
+
+  const nowMs = Date.now();
+
+  for (const lead of leads) {
+    try {
+      const sentRes = await env.DB.prepare(
+        'SELECT email_id FROM wlvlp_drip_log WHERE lead_email = ?'
+      ).bind(lead.email).all();
+      const sentIds = new Set((sentRes.results || []).map(r => r.email_id));
+
+      if (sentIds.size >= WLVLP_DRIP_EMAILS.length) {
+        stats.skipped_complete++;
+        continue;
+      }
+
+      const next = WLVLP_DRIP_EMAILS.find(e => !sentIds.has(e.id));
+      if (!next) { stats.skipped_complete++; continue; }
+
+      const createdMs = Date.parse(lead.created_at);
+      if (!Number.isFinite(createdMs)) {
+        stats.errors.push({ email: lead.email, error: 'invalid_created_at' });
+        continue;
+      }
+      const dueMs = createdMs + next.delayDays * 86400000;
+      if (nowMs < dueMs) { stats.skipped_not_due++; continue; }
+
+      const firstName = (lead.name || '').split(/\s+/)[0] || 'there';
+      const subject = next.subject.replace(/\{first_name\}/g, firstName);
+      const body = next.body.replace(/\{first_name\}/g, firstName);
+
+      if (dryRun) {
+        console.log(`[wlvlp-drip] DRY-RUN would send ${next.id} to ${lead.email}`);
+      } else {
+        await sendWlvlpDripEmail(env, lead.email, subject, body);
+      }
+
+      const logId = `DRIP_${crypto.randomUUID()}`;
+      await env.DB.prepare(
+        'INSERT OR IGNORE INTO wlvlp_drip_log (id, lead_email, email_id, sent_at) VALUES (?, ?, ?, ?)'
+      ).bind(logId, lead.email, next.id, new Date().toISOString()).run();
+
+      stats.sent++;
+    } catch (e) {
+      console.error(`[wlvlp-drip] send failed for ${lead.email}:`, e.message);
+      stats.errors.push({ email: lead.email, error: e.message });
+    }
+  }
+
+  const endedAt = new Date();
+  const summary = { ...stats, started_at: startedAt.toISOString(), ended_at: endedAt.toISOString(), duration_ms: endedAt - startedAt };
+  console.log('WLVLP drip cron:', JSON.stringify(summary));
+  return summary;
+}
+
+// ---------------------------------------------------------------------------
 // WLVLP Email Send (called from 14:00 UTC cron)
 // ---------------------------------------------------------------------------
 
@@ -24298,6 +24503,19 @@ export default {
       } catch (e) {
         console.error('WLVLP email send cron failed:', e);
       }
+    }
+
+    // WLVLP /launch Welcome Drip Cron — 15:00 UTC daily.
+    // Sends the next due email (welcome / social-proof / urgency) to each
+    // wlvlp_leads row based on created_at + delay offsets.
+    if (event && event.cron === '0 15 * * *') {
+      try {
+        const dripStats = await handleWlvlpDripCron(env);
+        console.log('WLVLP drip cron:', JSON.stringify(dripStats));
+      } catch (e) {
+        console.error('WLVLP drip cron failed:', e);
+      }
+      return;
     }
   },
 };
