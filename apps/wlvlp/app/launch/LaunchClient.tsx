@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { TEMPLATES } from '../../lib/templates';
 
 const POSTHOG_KEY = 'phc_o5nTrNkxc37W2G9PXFL8peXMjWzdjo5d2HSjE5XzggkY';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
 const LEADS_ENDPOINT = 'https://api.virtuallaunch.pro/v1/wlvlp/leads';
+const TEMPLATES_ENDPOINT = 'https://api.virtuallaunch.pro/v1/wlvlp/templates';
 const YT_EMBED_ID = 'REPLACE_WITH_YT00A_VIDEO_ID';
 
 const NEON = {
@@ -13,6 +15,15 @@ const NEON = {
   magenta: '#FF2D8A',
   cyan: '#00F0D0',
 };
+
+const NEON_COLORS_ARR = [NEON.blue, NEON.yellow, NEON.magenta, NEON.cyan];
+
+const FIRST_NAMES = [
+  'Alex', 'Jordan', 'Priya', 'Marcus', 'Yuki', 'Dana', 'Luis', 'Amara',
+  'Chen', 'Sofia', 'Kwame', 'Riley', 'Mei', 'Andre', 'Fatima', 'Kai',
+  'Nadia', 'Tomas', 'Zara', 'Devon', 'Ines', 'Rohan', 'Leah', 'Omar',
+  'Suki', 'Mateo', 'Ava', 'Idris', 'Lena', 'Jaden', 'Nia', 'Erik',
+];
 
 type PostHogGlobal = {
   capture?: (event: string, props?: Record<string, unknown>) => void;
@@ -65,18 +76,8 @@ function trackEvent(event: string, properties: Record<string, unknown> = {}) {
 }
 
 type ToastType = 'vote' | 'bid' | 'winner' | 'new';
-type Toast = { id: number; type: ToastType; text: string };
-
-const TOAST_POOL: Array<{ type: ToastType; text: string }> = [
-  { type: 'vote', text: 'Morgan just voted on “Tampa Coastal CPA”' },
-  { type: 'bid', text: 'A new bid of $312 was placed on “Boulder Wealth”' },
-  { type: 'winner', text: 'Dana scratched a 50% OFF ticket' },
-  { type: 'new', text: 'New template dropped: “Denver Tax Collective”' },
-  { type: 'vote', text: 'Priya just voted on “Atlanta Legal Group”' },
-  { type: 'bid', text: 'A new bid of $189 was placed on “Chicago Bookkeeping”' },
-  { type: 'winner', text: 'Marcus won a free month of hosting' },
-  { type: 'new', text: 'New template dropped: “Portland Estate Planning”' },
-];
+type Toast = { id: number; type: ToastType; text: string; departing?: boolean };
+type TemplateLite = { slug: string; title: string; category?: string };
 
 const TOAST_META: Record<ToastType, { icon: string; color: string; label: string }> = {
   vote: { icon: '👍', color: NEON.blue, label: 'New vote' },
@@ -113,6 +114,30 @@ const FAQS: Array<{ q: string; a: string }> = [
     a: 'Yes. Cancel in one click. You keep your data export, and you can transfer the site to any host you want.',
   },
 ];
+
+function pick<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateToast(
+  templates: TemplateLite[],
+  newTemplates: TemplateLite[],
+): { type: ToastType; text: string } {
+  const type = pick<ToastType>(['vote', 'bid', 'winner', 'new']);
+  const title = (templates.length > 0 ? pick(templates).title : 'Tampa Coastal CPA');
+  if (type === 'vote') {
+    return { type, text: `${pick(FIRST_NAMES)} just voted on “${title}”` };
+  }
+  if (type === 'bid') {
+    const amount = 79 + Math.floor(Math.random() * (499 - 79 + 1));
+    return { type, text: `A new bid of $${amount} was placed on “${title}”` };
+  }
+  if (type === 'winner') {
+    return { type, text: `${pick(FIRST_NAMES)} scratched a ${pick(SCRATCH_PRIZES)}` };
+  }
+  const newTitle = newTemplates.length > 0 ? pick(newTemplates).title : title;
+  return { type, text: `New template dropped: “${newTitle}”` };
+}
 
 type EmailFormProps = {
   source: 'launch-hero' | 'launch-footer';
@@ -213,11 +238,10 @@ function EmailCaptureForm({ source, showName }: EmailFormProps) {
       <button
         type="submit"
         disabled={state === 'submitting'}
-        className="w-full rounded-lg px-5 py-3 text-base font-bold transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:cursor-wait"
+        className="cta-glow-pulse w-full rounded-lg px-5 py-3 text-base font-bold transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:cursor-wait"
         style={{
           background: NEON.yellow,
           color: '#0a0a0a',
-          boxShadow: `0 0 24px ${NEON.yellow}55`,
         }}
       >
         {state === 'submitting' ? 'Submitting…' : 'Get Free Access'}
@@ -243,14 +267,20 @@ function FeatureCard({
   title,
   body,
   accent,
+  delay,
 }: {
   icon: React.ReactNode;
   title: string;
   body: string;
   accent: string;
+  delay: number;
 }) {
   return (
-    <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 hover:border-white/20 transition-colors">
+    <div
+      data-reveal-child
+      data-delay={delay}
+      className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 hover:border-white/20 transition-colors"
+    >
       <div
         className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg"
         style={{ background: `${accent}1A`, border: `1px solid ${accent}55`, color: accent }}
@@ -268,14 +298,20 @@ function FaqItem({
   a,
   open,
   onToggle,
+  delay,
 }: {
   q: string;
   a: string;
   open: boolean;
   onToggle: () => void;
+  delay: number;
 }) {
   return (
-    <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 overflow-hidden">
+    <div
+      data-reveal-child
+      data-delay={delay}
+      className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 overflow-hidden"
+    >
       <button
         type="button"
         onClick={onToggle}
@@ -303,6 +339,214 @@ function FaqItem({
   );
 }
 
+type Particle = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  color: string;
+  sparkle: boolean;
+};
+
+function ScratchCard({
+  prize,
+  onRevealed,
+  reduced,
+}: {
+  prize: string;
+  onRevealed: () => void;
+  reduced: boolean;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const scratchingRef = useRef(false);
+  const hasScratchedRef = useRef(false);
+  const revealedRef = useRef(false);
+  const [showHint, setShowHint] = useState(false);
+  const [fading, setFading] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
+
+  const fillFoil = useCallback((canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const { width, height } = canvas;
+    ctx.globalCompositeOperation = 'source-over';
+    const grad = ctx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, '#c0c0c0');
+    grad.addColorStop(0.3, '#e8e8e8');
+    grad.addColorStop(0.5, '#d4af37');
+    grad.addColorStop(0.7, '#e8e8e8');
+    grad.addColorStop(1, '#c0c0c0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = 'rgba(10,10,10,0.85)';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🎟️ Scratch Here', width / 2, height / 2);
+  }, []);
+
+  const revealAll = useCallback(() => {
+    if (revealedRef.current) return;
+    revealedRef.current = true;
+    setFading(true);
+    setTimeout(() => {
+      onRevealed();
+    }, 450);
+  }, [onRevealed]);
+
+  const checkProgress = useCallback((canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const step = 8;
+    const { width, height } = canvas;
+    const data = ctx.getImageData(0, 0, width, height).data;
+    let cleared = 0;
+    let total = 0;
+    for (let y = 0; y < height; y += step) {
+      for (let x = 0; x < width; x += step) {
+        const idx = (y * width + x) * 4 + 3;
+        if (data[idx] < 40) cleared++;
+        total++;
+      }
+    }
+    if (cleared / total > 0.5) revealAll();
+  }, [revealAll]);
+
+  useEffect(() => {
+    setIsTouch(typeof window !== 'undefined' && 'ontouchstart' in window);
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const resize = () => {
+      const rect = container.getBoundingClientRect();
+      canvas.width = Math.floor(rect.width);
+      canvas.height = Math.floor(rect.height);
+      fillFoil(canvas);
+    };
+    resize();
+
+    const scratchAt = (clientX: number, clientY: number) => {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(x, y, 22, 0, Math.PI * 2);
+      ctx.fill();
+      hasScratchedRef.current = true;
+    };
+
+    const onDown = (e: MouseEvent) => {
+      scratchingRef.current = true;
+      scratchAt(e.clientX, e.clientY);
+    };
+    const onMove = (e: MouseEvent) => {
+      if (!scratchingRef.current) return;
+      scratchAt(e.clientX, e.clientY);
+    };
+    const onUp = () => {
+      if (scratchingRef.current) {
+        scratchingRef.current = false;
+        checkProgress(canvas);
+      }
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      scratchingRef.current = true;
+      const t = e.touches[0];
+      if (t) scratchAt(t.clientX, t.clientY);
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!scratchingRef.current) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      if (t) scratchAt(t.clientX, t.clientY);
+    };
+    const onTouchEnd = () => {
+      if (scratchingRef.current) {
+        scratchingRef.current = false;
+        checkProgress(canvas);
+      }
+    };
+
+    canvas.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    canvas.addEventListener('touchstart', onTouchStart, { passive: true });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('resize', resize);
+
+    const hintTimer = window.setTimeout(() => {
+      if (!hasScratchedRef.current) setShowHint(true);
+    }, 5000);
+
+    return () => {
+      canvas.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('resize', resize);
+      window.clearTimeout(hintTimer);
+    };
+  }, [fillFoil, checkProgress]);
+
+  useEffect(() => {
+    if (reduced) revealAll();
+  }, [reduced, revealAll]);
+
+  return (
+    <div className="relative">
+      <div
+        ref={containerRef}
+        className="relative mx-auto rounded-xl border overflow-hidden select-none"
+        style={{
+          width: '100%',
+          maxWidth: 320,
+          height: 150,
+          borderColor: `${NEON.cyan}55`,
+          boxShadow: `0 0 32px ${NEON.cyan}33`,
+          background: `${NEON.cyan}12`,
+        }}
+      >
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+          <div className="text-xs uppercase tracking-widest mb-1" style={{ color: NEON.cyan }}>
+            You won
+          </div>
+          <div
+            className="font-[var(--font-sora)] text-xl md:text-2xl font-extrabold"
+            style={{ color: NEON.yellow }}
+          >
+            {prize}
+          </div>
+        </div>
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 cursor-crosshair touch-none"
+          style={{
+            opacity: fading ? 0 : 1,
+            transition: 'opacity 0.45s ease-out',
+            pointerEvents: fading ? 'none' : 'auto',
+          }}
+        />
+      </div>
+      {showHint && !fading && (
+        <div className="mt-3 text-center text-xs text-white/60 anim-fade-up">
+          ↑ Scratch with your {isTouch ? 'finger' : 'mouse'}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LaunchClient() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [exitOpen, setExitOpen] = useState(false);
@@ -311,24 +555,88 @@ export default function LaunchClient() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const toastIdRef = useRef(1);
   const exitFiredRef = useRef(false);
+  const templatesRef = useRef<TemplateLite[]>([]);
+  const newTemplatesRef = useRef<TemplateLite[]>([]);
+  const reducedMotionRef = useRef(false);
 
   useEffect(() => {
     trackEvent('$pageview', { page: 'launch' });
+    reducedMotionRef.current =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  // Fetch template list for real toasts
+  useEffect(() => {
+    const fallback: TemplateLite[] = TEMPLATES.map((t) => ({
+      slug: t.slug,
+      title: t.title,
+      category: t.category,
+    }));
+    templatesRef.current = fallback;
+    newTemplatesRef.current = fallback.filter((t) => t.category === 'other');
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(TEMPLATES_ENDPOINT);
+        if (!res.ok) return;
+        const json = (await res.json()) as unknown;
+        if (cancelled) return;
+        const list: TemplateLite[] = [];
+        const maybeArr = Array.isArray(json)
+          ? json
+          : Array.isArray((json as { templates?: unknown }).templates)
+          ? ((json as { templates: unknown[] }).templates)
+          : Array.isArray((json as { data?: unknown }).data)
+          ? ((json as { data: unknown[] }).data)
+          : null;
+        if (!maybeArr) return;
+        for (const item of maybeArr) {
+          if (item && typeof item === 'object') {
+            const rec = item as Record<string, unknown>;
+            const slug = typeof rec.slug === 'string' ? rec.slug : null;
+            const title = typeof rec.title === 'string' ? rec.title : typeof rec.name === 'string' ? rec.name : null;
+            const category = typeof rec.category === 'string' ? rec.category : undefined;
+            if (slug && title) list.push({ slug, title, category });
+          }
+        }
+        if (list.length > 0) {
+          templatesRef.current = list;
+          const only = list.filter((t) => t.category === 'other');
+          newTemplatesRef.current = only.length > 0 ? only : list;
+        }
+      } catch {
+        // keep fallback
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const removeToast = useCallback((id: number) => {
+    setToasts((cur) =>
+      cur.map((t) => (t.id === id ? { ...t, departing: true } : t)),
+    );
+    window.setTimeout(() => {
+      setToasts((cur) => cur.filter((t) => t.id !== id));
+    }, 320);
   }, []);
 
   const pushToast = useCallback(() => {
-    const pick = TOAST_POOL[Math.floor(Math.random() * TOAST_POOL.length)];
+    const generated = generateToast(templatesRef.current, newTemplatesRef.current);
     setToasts((prev) => {
       const nextId = toastIdRef.current++;
-      const next: Toast = { id: nextId, type: pick.type, text: pick.text };
+      const next: Toast = { id: nextId, type: generated.type, text: generated.text };
       const withNew = [...prev, next];
       const trimmed = withNew.slice(-3);
-      setTimeout(() => {
-        setToasts((cur) => cur.filter((t) => t.id !== nextId));
+      window.setTimeout(() => {
+        removeToast(nextId);
       }, 5000);
       return trimmed;
     });
-  }, []);
+  }, [removeToast]);
 
   useEffect(() => {
     const intervalRef: { current: number | null } = { current: null };
@@ -365,6 +673,9 @@ export default function LaunchClient() {
           // ignore
         }
         trackEvent('exit_intent_triggered', { source: 'launch' });
+        // Pre-pick prize so the scratch card can render the real value underneath
+        const prize = SCRATCH_PRIZES[Math.floor(Math.random() * SCRATCH_PRIZES.length)];
+        setScratchPrize(prize);
         setExitOpen(true);
       }
     };
@@ -372,12 +683,138 @@ export default function LaunchClient() {
     return () => document.removeEventListener('mouseleave', onMouseLeave);
   }, []);
 
-  const onScratchReveal = () => {
+  // Scroll reveal
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const nodes = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-child]'),
+    );
+    if (reduced) {
+      for (const n of nodes) n.classList.add('reveal-in');
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            const delay = Number(el.dataset.delay ?? '0');
+            el.style.transitionDelay = `${delay}ms`;
+            el.classList.add('reveal-in');
+            io.unobserve(el);
+          }
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' },
+    );
+    for (const n of nodes) io.observe(n);
+    return () => io.disconnect();
+  }, []);
+
+  // Particle canvas
+  const particleCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const canvas = particleCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let raf = 0;
+    let lastTime = performance.now();
+    let sparkleTimer = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const resize = () => {
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+
+    const spawn = (sparkle = false): Particle => {
+      const life = sparkle ? 1000 : 4000 + Math.random() * 4000;
+      return {
+        x: Math.random() * window.innerWidth,
+        y: window.innerHeight + Math.random() * 40,
+        vx: (Math.random() - 0.5) * 0.1,
+        vy: -(0.15 + Math.random() * 0.35),
+        life,
+        maxLife: life,
+        size: sparkle ? 4 + Math.random() * 2 : 1 + Math.random() * 2,
+        color: NEON_COLORS_ARR[Math.floor(Math.random() * NEON_COLORS_ARR.length)],
+        sparkle,
+      };
+    };
+
+    const particles: Particle[] = [];
+    for (let i = 0; i < 50; i++) {
+      const p = spawn(false);
+      p.y = Math.random() * window.innerHeight;
+      p.life = Math.random() * p.maxLife;
+      particles.push(p);
+    }
+
+    const tick = (now: number) => {
+      const dt = Math.min(now - lastTime, 50);
+      lastTime = now;
+      sparkleTimer += dt;
+
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      if (sparkleTimer > 2000) {
+        sparkleTimer = 0;
+        particles.push(spawn(true));
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        if (p.life <= 0) {
+          if (p.sparkle) {
+            particles.splice(i, 1);
+          } else {
+            particles[i] = spawn(false);
+          }
+          continue;
+        }
+        const t = p.life / p.maxLife;
+        const fade = p.sparkle
+          ? Math.sin((1 - t) * Math.PI) * 0.9
+          : Math.sin(t * Math.PI) * 0.7;
+        ctx.globalAlpha = Math.max(0, fade);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        if (p.sparkle) {
+          ctx.globalAlpha = Math.max(0, fade * 0.4);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    window.addEventListener('resize', resize);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  const onScratchRevealed = () => {
     if (scratchRevealed) return;
-    const prize = SCRATCH_PRIZES[Math.floor(Math.random() * SCRATCH_PRIZES.length)];
-    setScratchPrize(prize);
     setScratchRevealed(true);
-    trackEvent('scratch_card_revealed', { prize, source: 'exit-intent' });
+    trackEvent('scratch_card_revealed', { prize: scratchPrize, source: 'exit-intent' });
   };
 
   const closeExit = () => setExitOpen(false);
@@ -387,18 +824,25 @@ export default function LaunchClient() {
       {/* Bokeh background */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
         <div
-          className="absolute top-[-10%] left-[-10%] h-[40vw] w-[40vw] rounded-full"
-          style={{ background: NEON.blue, opacity: 0.03, filter: 'blur(40px)' }}
+          className="blob blob-1 absolute top-[-10%] left-[-10%] h-[40vw] w-[40vw] rounded-full"
+          style={{ background: NEON.blue, opacity: 0.05, filter: 'blur(40px)' }}
         />
         <div
-          className="absolute top-[30%] right-[-15%] h-[45vw] w-[45vw] rounded-full"
-          style={{ background: NEON.yellow, opacity: 0.03, filter: 'blur(40px)' }}
+          className="blob blob-2 absolute top-[30%] right-[-15%] h-[45vw] w-[45vw] rounded-full"
+          style={{ background: NEON.yellow, opacity: 0.04, filter: 'blur(40px)' }}
         />
         <div
-          className="absolute bottom-[-15%] left-[20%] h-[50vw] w-[50vw] rounded-full"
-          style={{ background: NEON.magenta, opacity: 0.03, filter: 'blur(40px)' }}
+          className="blob blob-3 absolute bottom-[-15%] left-[20%] h-[50vw] w-[50vw] rounded-full"
+          style={{ background: NEON.magenta, opacity: 0.04, filter: 'blur(40px)' }}
         />
       </div>
+
+      {/* Particle canvas layer */}
+      <canvas
+        ref={particleCanvasRef}
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-[1]"
+      />
 
       {/* Sticky nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-[#00D4FF]/10">
@@ -414,11 +858,10 @@ export default function LaunchClient() {
           </div>
           <a
             href="#email-form"
-            className="rounded-lg px-4 py-2 text-sm font-bold"
+            className="cta-glow-pulse rounded-lg px-4 py-2 text-sm font-bold"
             style={{
               background: NEON.yellow,
               color: '#0a0a0a',
-              boxShadow: `0 0 16px ${NEON.yellow}55`,
             }}
           >
             Get Free Access
@@ -428,7 +871,7 @@ export default function LaunchClient() {
 
       <main className="relative z-10 pt-24">
         {/* Hero */}
-        <section className="mx-auto max-w-6xl px-6 pt-12 pb-4">
+        <section className="mx-auto max-w-6xl px-6 pt-12 pb-4" data-reveal>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="anim-fade-up">
               <h1
@@ -486,7 +929,7 @@ export default function LaunchClient() {
         <NeonDivider />
 
         {/* How It Works */}
-        <section id="how" className="mx-auto max-w-6xl px-6">
+        <section id="how" className="mx-auto max-w-6xl px-6" data-reveal>
           <h2
             className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
             style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
@@ -498,8 +941,13 @@ export default function LaunchClient() {
               { n: 1, t: 'Pick a Site', d: 'Browse proven layouts and claim the one that fits your business.' },
               { n: 2, t: 'Customize + Connect', d: 'Update copy, brand, contact info, and wire up Stripe in minutes.' },
               { n: 3, t: 'Launch + Sell', d: 'Flip the switch and start turning visitors into customers.' },
-            ].map((s) => (
-              <div key={s.n} className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 text-center">
+            ].map((s, i) => (
+              <div
+                key={s.n}
+                data-reveal-child
+                data-delay={i * 100}
+                className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 text-center"
+              >
                 <div
                   className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full font-[var(--font-sora)] text-xl font-extrabold"
                   style={{
@@ -519,7 +967,7 @@ export default function LaunchClient() {
         <NeonDivider />
 
         {/* Features */}
-        <section id="features" className="mx-auto max-w-6xl px-6">
+        <section id="features" className="mx-auto max-w-6xl px-6" data-reveal>
           <h2
             className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
             style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
@@ -528,6 +976,7 @@ export default function LaunchClient() {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
+              delay={0}
               accent={NEON.yellow}
               title="High-Converting Layout"
               body="Every template is designed around intent — built to turn visitors into paying customers."
@@ -538,6 +987,7 @@ export default function LaunchClient() {
               }
             />
             <FeatureCard
+              delay={100}
               accent={NEON.cyan}
               title="Premium Domain Hosting"
               body="Connect your own domain or get a fresh one. Cloudflare-powered DNS included."
@@ -550,6 +1000,7 @@ export default function LaunchClient() {
               }
             />
             <FeatureCard
+              delay={200}
               accent={NEON.magenta}
               title="Cloudflare Security"
               body="DDoS protection, SSL, and global edge CDN on every site — no config required."
@@ -560,6 +1011,7 @@ export default function LaunchClient() {
               }
             />
             <FeatureCard
+              delay={300}
               accent={NEON.blue}
               title="Mobile Optimized"
               body="Pixel-perfect on every device — phones, tablets, big screens, and everything in between."
@@ -571,6 +1023,7 @@ export default function LaunchClient() {
               }
             />
             <FeatureCard
+              delay={400}
               accent={NEON.yellow}
               title="Easy Transfer Anytime"
               body="You own your content. Cancel anytime and export everything — no lock-in, ever."
@@ -584,6 +1037,7 @@ export default function LaunchClient() {
               }
             />
             <FeatureCard
+              delay={500}
               accent={NEON.cyan}
               title="Plug-and-Play Payments"
               body="Stripe built in. Accept payments from day one without touching a line of code."
@@ -600,10 +1054,10 @@ export default function LaunchClient() {
         <NeonDivider />
 
         {/* Social proof */}
-        <section className="mx-auto max-w-6xl px-6">
+        <section className="mx-auto max-w-6xl px-6" data-reveal>
           <div className="rounded-2xl bg-gradient-to-r from-[#00D4FF]/5 to-[#FF2D8A]/5 border border-white/10 p-10">
             <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div>
+              <div data-reveal-child data-delay={0} className="reveal-init">
                 <div className="font-[var(--font-sora)] text-xl font-bold mb-2" style={{ color: NEON.blue }}>
                   Built for clarity first
                 </div>
@@ -611,7 +1065,7 @@ export default function LaunchClient() {
                   Every layout starts with the question: what is this visitor trying to decide?
                 </p>
               </div>
-              <div>
+              <div data-reveal-child data-delay={100} className="reveal-init">
                 <div className="font-[var(--font-sora)] text-xl font-bold mb-2" style={{ color: NEON.yellow }}>
                   Designed to reduce bounce
                 </div>
@@ -619,7 +1073,7 @@ export default function LaunchClient() {
                   Clean hierarchy, fast loads, and a single obvious next step on every page.
                 </p>
               </div>
-              <div>
+              <div data-reveal-child data-delay={200} className="reveal-init">
                 <div className="font-[var(--font-sora)] text-xl font-bold mb-2" style={{ color: NEON.magenta }}>
                   Engineered around intent
                 </div>
@@ -634,7 +1088,7 @@ export default function LaunchClient() {
         <NeonDivider />
 
         {/* Pricing */}
-        <section id="pricing" className="mx-auto max-w-6xl px-6">
+        <section id="pricing" className="mx-auto max-w-6xl px-6" data-reveal>
           <h2
             className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
             style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
@@ -642,19 +1096,19 @@ export default function LaunchClient() {
             Ready to launch?
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
+            <div data-reveal-child data-delay={0} className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
               <div className="font-[var(--font-sora)] text-3xl font-extrabold mb-2" style={{ color: NEON.yellow }}>
                 $99/mo
               </div>
               <div className="text-white/80">All templates included</div>
             </div>
-            <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
+            <div data-reveal-child data-delay={100} className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
               <div className="font-[var(--font-sora)] text-xl font-extrabold mb-2 text-white">
                 Done in minutes
               </div>
               <div className="text-white/80">Not weeks or months</div>
             </div>
-            <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
+            <div data-reveal-child data-delay={200} className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
               <div className="font-[var(--font-sora)] text-xl font-extrabold mb-2 text-white">
                 Zero risk
               </div>
@@ -666,7 +1120,7 @@ export default function LaunchClient() {
         <NeonDivider />
 
         {/* FAQ */}
-        <section id="faq" className="mx-auto max-w-3xl px-6">
+        <section id="faq" className="mx-auto max-w-3xl px-6" data-reveal>
           <h2
             className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
             style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
@@ -681,6 +1135,7 @@ export default function LaunchClient() {
                 a={item.a}
                 open={openFaq === i}
                 onToggle={() => setOpenFaq((cur) => (cur === i ? null : i))}
+                delay={i * 100}
               />
             ))}
           </div>
@@ -689,9 +1144,11 @@ export default function LaunchClient() {
         <NeonDivider />
 
         {/* Final CTA */}
-        <section className="mx-auto max-w-3xl px-6 pb-20">
+        <section className="mx-auto max-w-3xl px-6 pb-20" data-reveal>
           <div
-            className="rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-10 text-center"
+            data-reveal-child
+            data-delay={0}
+            className="reveal-init rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-10 text-center"
             style={{ boxShadow: `0 0 40px ${NEON.yellow}15` }}
           >
             <h2
@@ -734,10 +1191,12 @@ export default function LaunchClient() {
           return (
             <div
               key={t.id}
-              className="pointer-events-auto flex items-start gap-3 rounded-xl bg-[#0a0a0a]/90 backdrop-blur-md border px-4 py-3 max-w-sm shadow-lg"
+              className="pointer-events-auto relative flex items-start gap-3 rounded-xl bg-[#0a0a0a]/90 backdrop-blur-md border px-4 py-3 max-w-sm shadow-lg overflow-hidden"
               style={{
                 borderColor: `${meta.color}66`,
-                animation: 'slideInLeft 0.35s ease-out',
+                animation: t.departing
+                  ? 'toastExit 0.3s ease-in forwards'
+                  : 'toastEnter 0.45s cubic-bezier(0.34,1.56,0.64,1)',
               }}
             >
               <span
@@ -751,6 +1210,14 @@ export default function LaunchClient() {
                 <div className="font-semibold" style={{ color: meta.color }}>{meta.label}</div>
                 <div className="text-white/80 text-[13px] leading-snug">{t.text}</div>
               </div>
+              <div
+                aria-hidden
+                className="absolute bottom-0 left-0 h-[2px]"
+                style={{
+                  background: meta.color,
+                  animation: t.departing ? 'none' : 'toastProgress 5s linear forwards',
+                }}
+              />
             </div>
           );
         })}
@@ -793,18 +1260,13 @@ export default function LaunchClient() {
                 <p className="text-white/75 mb-6 text-sm">
                   Scratch to reveal a gift — one try, one chance, on the house.
                 </p>
-                <button
-                  type="button"
-                  onClick={onScratchReveal}
-                  className="w-full rounded-xl px-6 py-4 text-lg font-extrabold transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: `linear-gradient(135deg, ${NEON.magenta} 0%, ${NEON.yellow} 100%)`,
-                    color: '#0a0a0a',
-                    boxShadow: `0 0 32px ${NEON.magenta}55`,
-                  }}
-                >
-                  🎟️ Scratch Here
-                </button>
+                {scratchPrize && (
+                  <ScratchCard
+                    prize={scratchPrize}
+                    onRevealed={onScratchRevealed}
+                    reduced={reducedMotionRef.current}
+                  />
+                )}
               </>
             ) : (
               <>
@@ -828,11 +1290,10 @@ export default function LaunchClient() {
                 </div>
                 <a
                   href="/sign-in"
-                  className="block w-full rounded-xl px-6 py-4 text-lg font-extrabold"
+                  className="cta-glow-pulse block w-full rounded-xl px-6 py-4 text-lg font-extrabold"
                   style={{
                     background: NEON.yellow,
                     color: '#0a0a0a',
-                    boxShadow: `0 0 32px ${NEON.yellow}55`,
                   }}
                 >
                   Claim Your Prize
@@ -882,6 +1343,92 @@ export default function LaunchClient() {
         }
         .anim-fade-up {
           animation: slideUp 0.5s ease-out;
+        }
+
+        /* Scroll reveal base state */
+        .reveal-init {
+          opacity: 0;
+          transform: translateY(24px);
+          transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal-init.reveal-in {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @keyframes toastEnter {
+          0% {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          60% {
+            opacity: 1;
+            transform: translateX(4px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes toastExit {
+          0% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+        }
+        @keyframes toastProgress {
+          from {
+            width: 100%;
+          }
+          to {
+            width: 0%;
+          }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+          @keyframes blobFloat1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(5vw, 3vh) scale(1.1); }
+            50% { transform: translate(-3vw, 6vh) scale(0.9); }
+            75% { transform: translate(4vw, -2vh) scale(1.15); }
+          }
+          @keyframes blobFloat2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-6vw, 4vh) scale(0.85); }
+            66% { transform: translate(3vw, -5vh) scale(1.2); }
+          }
+          @keyframes blobFloat3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            20% { transform: translate(4vw, -4vh) scale(1.1); }
+            50% { transform: translate(-5vw, -2vh) scale(0.95); }
+            80% { transform: translate(2vw, 5vh) scale(1.15); }
+          }
+          .blob-1 { animation: blobFloat1 30s ease-in-out infinite; }
+          .blob-2 { animation: blobFloat2 40s ease-in-out infinite; }
+          .blob-3 { animation: blobFloat3 50s ease-in-out infinite; }
+
+          @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 24px rgba(255, 229, 52, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(255, 229, 52, 0.55), 0 0 80px rgba(255, 229, 52, 0.15); }
+          }
+          .cta-glow-pulse {
+            animation: glowPulse 2.5s ease-in-out infinite;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .reveal-init {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+          .cta-glow-pulse {
+            box-shadow: 0 0 24px rgba(255, 229, 52, 0.4);
+          }
         }
       `}</style>
     </div>
