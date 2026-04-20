@@ -25,7 +25,6 @@ export const gvlpConfig: PlatformConfig = {
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Game Access JS', href: '/dashboard/games', icon: 'Gamepad2' },
-        { label: 'Reports', href: '/dashboard/reports', icon: 'FileText' },
       ],
     },
     {

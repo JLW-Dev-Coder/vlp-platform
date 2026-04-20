@@ -49,7 +49,7 @@ GVLP passes `gvlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/dashboard` (Overview)
 `/dashboard/games` — Game Access JS workspace (tiles for Embed + Tokens + Library)
 `/dashboard/embed`, `/dashboard/tokens` — game embed + token pages (fronted by workspace)
-`/dashboard/reports`, `/dashboard/bidding`, `/dashboard/winning`,
+`/dashboard/bidding`, `/dashboard/winning`,
 `/dashboard/profile`, `/dashboard/usage`, `/dashboard/calendar` — stubs
 `/dashboard/account` (canonical path; redirects from `/dashboard/settings` via `public/_redirects`)
 `/dashboard/affiliate`, `/dashboard/support`, `/dashboard/upgrade`

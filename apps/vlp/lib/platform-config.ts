@@ -28,7 +28,6 @@ export const vlpConfig: PlatformConfig = {
         { label: 'Analytics', href: '/analytics', icon: 'BarChart3' },
         { label: 'Calendar', href: '/calendar', icon: 'Calendar' },
         { label: 'Inquiries', href: '/inquiries', icon: 'MessageSquare' },
-        { label: 'Reports', href: '/reports', icon: 'FileText' },
         { label: 'Tokens', href: '/tokens', icon: 'Coins' },
       ],
     },

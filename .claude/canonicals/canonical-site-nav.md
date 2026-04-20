@@ -206,7 +206,7 @@ components).
 | Taxpayer Intake | TMP | /dashboard/intake |
 | Messaging (Pro ↔ Taxpayer) | TMP, VLP | /dashboard/messages |
 | Parser | TTMP | /dashboard/parser |
-| Reports | ALL | /dashboard/reports |
+| Reports | TTMP | /dashboard/reports |
 | Tax Monitoring | TMP | /dashboard/monitoring |
 | Voting Analytics | WLVLP | /dashboard/voting |
 | White-Labeled Hosted Site | TCVLP, WLVLP | /dashboard/sites |
