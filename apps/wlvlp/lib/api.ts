@@ -61,9 +61,30 @@ export interface Bid {
 
 export interface ScratchTicket {
   ticket_id: string;
-  status: 'unscratched' | 'revealed';
-  prize?: string;
-  prize_code?: string;
+  status?: 'unscratched' | 'revealed';
+}
+
+export interface ScratchRevealResult {
+  ok: boolean;
+  prize_type: 'free_month' | 'discount_50' | 'discount_25' | 'credit_9' | 'free_ticket' | 'no_prize';
+  prize_value: string | null;
+  promo_code?: string;
+  promo_code_id?: string;
+  auto_apply?: boolean;
+  expires_at?: string;
+  new_ticket_id?: string;
+}
+
+export class ScratchError extends Error {
+  status: number;
+  code: string;
+  nextAvailableAt?: string;
+  constructor(status: number, code: string, message: string, nextAvailableAt?: string) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.nextAvailableAt = nextAvailableAt;
+  }
 }
 
 export interface BuyerDashboard {
@@ -179,8 +200,35 @@ export function createCheckout(
   });
 }
 
-export function createScratchTicket(): Promise<ScratchTicket> {
-  return apiFetch('/v1/wlvlp/scratch', { method: 'POST' });
+export async function createScratchTicket(): Promise<ScratchTicket> {
+  const res = await fetch(`${API_BASE}/v1/wlvlp/scratch`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.ok === false) {
+    const code = data?.error ?? `HTTP_${res.status}`;
+    throw new ScratchError(res.status, code, codeToMessage(code, res.status), data?.next_available_at);
+  }
+  return { ticket_id: data.ticket_id, status: 'unscratched' };
+}
+
+function codeToMessage(code: string, status: number): string {
+  switch (code) {
+    case 'daily_limit':
+      return 'You already claimed a ticket in the last 24 hours. Come back tomorrow for another.';
+    case 'TICKET_NOT_FOUND':
+      return 'That ticket could not be found. Try getting a new one.';
+    case 'TICKET_ALREADY_SCRATCHED':
+      return 'This ticket has already been revealed.';
+    case 'INTERNAL_ERROR':
+      return 'Something went wrong on our side. Please try again in a moment.';
+    default:
+      if (status === 401) return 'Your session expired. Please sign in again.';
+      if (status === 429) return 'Too many requests. Please wait a moment and try again.';
+      return `Request failed (${status}). Please try again.`;
+  }
 }
 
 export interface ScratchPrize {
@@ -203,8 +251,18 @@ export async function getScratchPrizes(account_id: string): Promise<ScratchPrize
   }
 }
 
-export function revealScratchTicket(ticket_id: string): Promise<ScratchTicket> {
-  return apiFetch(`/v1/wlvlp/scratch/${ticket_id}/reveal`, { method: 'POST' });
+export async function revealScratchTicket(ticket_id: string): Promise<ScratchRevealResult> {
+  const res = await fetch(`${API_BASE}/v1/wlvlp/scratch/${ticket_id}/reveal`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.ok === false) {
+    const code = data?.error ?? `HTTP_${res.status}`;
+    throw new ScratchError(res.status, code, codeToMessage(code, res.status));
+  }
+  return data as ScratchRevealResult;
 }
 
 export function getBuyerDashboard(account_id: string): Promise<BuyerDashboard> {

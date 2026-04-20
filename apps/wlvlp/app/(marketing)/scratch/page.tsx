@@ -2,16 +2,24 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
-import { createScratchTicket, revealScratchTicket, ScratchTicket } from '@/lib/api';
+import {
+  createScratchTicket,
+  revealScratchTicket,
+  ScratchError,
+  ScratchRevealResult,
+  ScratchTicket,
+} from '@/lib/api';
 
 
 const SCRATCH_OVERLAY_CLASS = 'absolute inset-0 bg-gradient-to-br from-[#2a2a3a] to-[#1a1a28] flex items-center justify-center z-10 transition-opacity rounded-2xl'; // canonical: layered scratch-overlay depth gradient — decorative dark hexes have no tokenable equivalent
 const SCRATCH_PRIZE_CLASS = 'absolute inset-0 flex items-center justify-center text-[4rem] z-0 bg-gradient-to-br from-[#0a0a18] to-[#12121f]'; // canonical: scratch prize layer depth gradient — decorative dark hexes have no tokenable equivalent
 
-const PRIZE_CONFIG: Record<string, { emoji: string; title: string; desc: string }> = {
+type PrizeKey = ScratchRevealResult['prize_type'];
+
+const PRIZE_CONFIG: Record<PrizeKey, { emoji: string; title: string; desc: string }> = {
   free_month: { emoji: '🎉', title: 'You won a free template!', desc: 'Claim any available template at no cost — includes 12 months of hosting.' },
-  '50_off': { emoji: '🎊', title: '$50 off your template!', desc: 'Use your discount code at checkout.' },
-  '25_off': { emoji: '🎁', title: '$25 off your template!', desc: 'Use your discount code at checkout.' },
+  discount_50: { emoji: '🎊', title: '50% off your first month!', desc: 'Use your discount code at checkout.' },
+  discount_25: { emoji: '🎁', title: '25% off your first month!', desc: 'Use your discount code at checkout.' },
   credit_9: { emoji: '💰', title: 'You won a $9 credit!', desc: 'Apply this credit toward any template purchase.' },
   free_ticket: { emoji: '🎟️', title: 'Try again!', desc: 'You won another scratch ticket.' },
   no_prize: { emoji: '😔', title: 'Better luck next time!', desc: 'Browse available templates and find your perfect site.' },
@@ -28,32 +36,56 @@ export default function ScratchPage() {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ScratchContent({ accountId }: { accountId: string }) {
   const [ticket, setTicket] = useState<ScratchTicket | null>(null);
+  const [reveal, setReveal] = useState<ScratchRevealResult | null>(null);
   const [scratched, setScratched] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [prize, setPrize] = useState<typeof PRIZE_CONFIG[string] | null>(null);
+  const [error, setError] = useState<{ code: string; message: string } | null>(null);
 
   async function handleGetTicket() {
+    setError(null);
     setLoading(true);
     try {
       const t = await createScratchTicket();
       setTicket(t);
+    } catch (e) {
+      if (e instanceof ScratchError) {
+        setError({ code: e.code, message: e.message });
+      } else {
+        setError({ code: 'UNKNOWN', message: 'Could not get your ticket. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }
   }
 
   async function handleReveal() {
-    if (!ticket || scratched) return;
-    setScratched(true);
+    if (!ticket || scratched || loading) return;
+    setError(null);
+    setLoading(true);
     try {
       const result = await revealScratchTicket(ticket.ticket_id);
-      const prizeKey = result.prize ?? 'no_prize';
-      setPrize(PRIZE_CONFIG[prizeKey] ?? PRIZE_CONFIG.no_prize);
-      setTicket(result);
-    } catch {
-      setPrize(PRIZE_CONFIG.no_prize);
+      setReveal(result);
+      setScratched(true);
+    } catch (e) {
+      if (e instanceof ScratchError) {
+        setError({ code: e.code, message: e.message });
+      } else {
+        setError({ code: 'UNKNOWN', message: 'Could not reveal your ticket. Please try again.' });
+      }
+    } finally {
+      setLoading(false);
     }
   }
+
+  function handleScratchAgain() {
+    if (!reveal?.new_ticket_id) return;
+    setError(null);
+    setTicket({ ticket_id: reveal.new_ticket_id, status: 'unscratched' });
+    setReveal(null);
+    setScratched(false);
+  }
+
+  const prize = reveal ? PRIZE_CONFIG[reveal.prize_type] ?? PRIZE_CONFIG.no_prize : null;
 
   return (
     <div className="flex flex-col flex-1">
@@ -62,10 +94,30 @@ function ScratchContent({ accountId }: { accountId: string }) {
           Scratch to Win
         </h1>
         <p className="text-white/55 text-base leading-relaxed max-w-[480px]">
-          One free ticket per account. Win a free template, discounts, or credits.
+          One free ticket per account per 24 hours. Win a free template, discounts, or credits.
         </p>
 
-        {!ticket && (
+        {error && (
+          <div
+            role="alert"
+            className="max-w-[480px] w-full px-5 py-4 rounded-lg border border-red-400/40 bg-red-500/[0.08] text-red-200 text-[0.92rem] leading-relaxed text-left"
+          >
+            <div className="font-semibold mb-1 text-red-100">Something went wrong</div>
+            <div>{error.message}</div>
+            {error.code === 'daily_limit' && (
+              <div className="mt-3">
+                <Link
+                  href="/"
+                  className="inline-block px-4 py-2 bg-brand-primary/15 border border-brand-primary/40 rounded-md text-brand-primary font-semibold text-[0.85rem] no-underline hover:bg-brand-primary/25"
+                >
+                  Browse Templates
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!ticket && !error && (
           <div className="flex flex-col items-center gap-6">
             <div className="text-[6rem] [filter:drop-shadow(0_0_30px_rgba(168,85,247,0.4))] motion-safe:animate-[float_3s_ease-in-out_infinite]">
               🎫
@@ -80,14 +132,27 @@ function ScratchContent({ accountId }: { accountId: string }) {
           </div>
         )}
 
+        {!ticket && error && (
+          <button
+            className="px-7 py-3 bg-brand-primary/10 border border-brand-primary/40 rounded-lg text-brand-primary font-semibold text-[0.9rem] transition-all hover:bg-brand-primary/20 hover:border-brand-primary"
+            onClick={handleGetTicket}
+            disabled={loading}
+          >
+            {loading ? 'Retrying…' : 'Try Again'}
+          </button>
+        )}
+
         {ticket && !scratched && (
           <div className="flex flex-col items-center gap-5">
             <p className="text-white/50 text-[0.9rem] motion-safe:animate-[pulse-subtle_2s_ease-in-out_infinite]">
-              Click the card to reveal your prize!
+              {loading ? 'Revealing…' : 'Click the card to reveal your prize!'}
             </p>
-            <div
-              className="relative w-[280px] h-[180px] rounded-[18px] cursor-pointer overflow-hidden border-2 border-brand-primary/40 shadow-brand transition-transform hover:scale-[1.02]"
+            <button
+              type="button"
+              className="relative w-[280px] h-[180px] rounded-[18px] cursor-pointer overflow-hidden border-2 border-brand-primary/40 shadow-brand transition-transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed p-0 bg-transparent"
               onClick={handleReveal}
+              disabled={loading}
+              aria-label="Reveal scratch ticket"
             >
               <div className={SCRATCH_OVERLAY_CLASS}>
                 <span className="font-sora text-[1.4rem] font-extrabold text-brand-primary/60 tracking-[4px] [text-shadow:0_0_20px_rgba(168,85,247,0.4)]">
@@ -97,29 +162,43 @@ function ScratchContent({ accountId }: { accountId: string }) {
               <div className={SCRATCH_PRIZE_CLASS}>
                 🎁
               </div>
-            </div>
+            </button>
           </div>
         )}
 
-        {scratched && prize && (
+        {scratched && prize && reveal && (
           <div className="flex flex-col items-center gap-4 motion-safe:animate-[scale-in_0.5s_ease_forwards]">
             <div className="text-[5rem] [filter:drop-shadow(0_0_20px_rgba(168,85,247,0.5))]">{prize.emoji}</div>
             <h2 className="font-sora text-[1.8rem] font-bold text-brand-primary tracking-tight [text-shadow:0_0_30px_rgba(168,85,247,0.5)]">
               {prize.title}
             </h2>
             <p className="text-white/65 text-base leading-relaxed max-w-[400px]">{prize.desc}</p>
-            {ticket?.prize_code && (
+            {reveal.promo_code && (
               <div className="px-6 py-3 bg-brand-primary/[0.08] border border-brand-primary/30 rounded-[10px] text-white/80 text-[0.9rem]">
-                Code: <strong className="text-brand-primary font-mono text-base tracking-wide">{ticket.prize_code}</strong>
+                Code: <strong className="text-brand-primary font-mono text-base tracking-wide">{reveal.promo_code}</strong>
               </div>
             )}
-            <div className="mt-2">
+            {reveal.expires_at && (
+              <p className="text-white/45 text-[0.8rem]">
+                Expires {new Date(reveal.expires_at).toLocaleDateString()}
+              </p>
+            )}
+            <div className="mt-2 flex gap-3 flex-wrap justify-center">
               <Link
                 href="/"
                 className="inline-block px-7 py-3 bg-brand-primary/10 border border-brand-primary/40 rounded-lg text-brand-primary font-semibold text-[0.9rem] no-underline transition-all hover:bg-brand-primary/20 hover:border-brand-primary"
               >
                 Browse Templates
               </Link>
+              {reveal.new_ticket_id && (
+                <button
+                  type="button"
+                  onClick={handleScratchAgain}
+                  className="inline-block px-7 py-3 bg-brand-primary text-white font-semibold text-[0.9rem] rounded-lg transition-all hover:-translate-y-0.5"
+                >
+                  Scratch Again
+                </button>
+              )}
             </div>
           </div>
         )}
