@@ -1,7 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ShoppingCart, Gavel, Ticket } from 'lucide-react';
 import { TEMPLATES } from '../../../lib/templates';
+import { FaqAccordion } from '../../../components/FaqAccordion';
 
 const POSTHOG_KEY = 'phc_o5nTrNkxc37W2G9PXFL8peXMjWzdjo5d2HSjE5XzggkY';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
@@ -103,7 +106,7 @@ const FAQS: Array<{ q: string; a: string }> = [
   },
   {
     q: 'How do payments work?',
-    a: 'Billing is a flat $99/mo. Connect Stripe in minutes to accept payments from your visitors — we never touch your revenue.',
+    a: 'The site is a one-time purchase — no subscription for the site itself. Hosting is included free for the first 12 months. Connect Stripe in minutes to accept payments from your visitors — we never touch your revenue.',
   },
   {
     q: 'What happens after I claim a site?',
@@ -262,24 +265,29 @@ function NeonDivider() {
   );
 }
 
+const CARD_ANIMS = ['anim-float', 'anim-dance', 'anim-sway', 'anim-wobble'] as const;
+const cardAnim = (i: number) => CARD_ANIMS[i % CARD_ANIMS.length];
+
 function FeatureCard({
   icon,
   title,
   body,
   accent,
   delay,
+  animCls,
 }: {
   icon: React.ReactNode;
   title: string;
   body: string;
   accent: string;
   delay: number;
+  animCls: string;
 }) {
   return (
     <div
       data-reveal-child
       data-delay={delay}
-      className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 hover:border-white/20 transition-colors"
+      className={`reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 hover:border-white/20 transition-colors ${animCls}`}
     >
       <div
         className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg"
@@ -289,52 +297,6 @@ function FeatureCard({
       </div>
       <h3 className="text-lg font-bold mb-2 text-white">{title}</h3>
       <p className="text-sm text-white/70 leading-relaxed">{body}</p>
-    </div>
-  );
-}
-
-function FaqItem({
-  q,
-  a,
-  open,
-  onToggle,
-  delay,
-}: {
-  q: string;
-  a: string;
-  open: boolean;
-  onToggle: () => void;
-  delay: number;
-}) {
-  return (
-    <div
-      data-reveal-child
-      data-delay={delay}
-      className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 overflow-hidden"
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
-        aria-expanded={open}
-      >
-        <span className="font-semibold text-white">{q}</span>
-        <span
-          className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold transition-transform"
-          style={{
-            background: `${NEON.blue}1A`,
-            border: `1px solid ${NEON.blue}55`,
-            color: NEON.blue,
-            transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
-          }}
-          aria-hidden
-        >
-          +
-        </span>
-      </button>
-      {open && (
-        <div className="px-5 pb-5 text-sm text-white/75 leading-relaxed">{a}</div>
-      )}
     </div>
   );
 }
@@ -552,7 +514,6 @@ export default function LaunchClient() {
   const [exitOpen, setExitOpen] = useState(false);
   const [scratchRevealed, setScratchRevealed] = useState(false);
   const [scratchPrize, setScratchPrize] = useState<string | null>(null);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const toastIdRef = useRef(1);
   const exitFiredRef = useRef(false);
   const templatesRef = useRef<TemplateLite[]>([]);
@@ -849,10 +810,7 @@ export default function LaunchClient() {
         <section className="mx-auto max-w-6xl px-6 pt-12 pb-4" data-reveal>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="anim-fade-up">
-              <h1
-                className="font-[var(--font-sora)] text-5xl md:text-6xl font-extrabold leading-[1.05] mb-6"
-                style={{ color: NEON.yellow, textShadow: `0 0 18px ${NEON.yellow}55` }}
-              >
+              <h1 className="font-[var(--font-sora)] text-5xl md:text-6xl font-extrabold leading-[1.05] mb-6 text-neon-yellow glow-yellow">
                 Stop Gambling on Your Website.
               </h1>
               <p className="text-lg md:text-xl text-white/80 mb-8 max-w-xl">
@@ -905,10 +863,7 @@ export default function LaunchClient() {
 
         {/* How It Works */}
         <section id="how" className="mx-auto max-w-6xl px-6" data-reveal>
-          <h2
-            className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
-            style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
-          >
+          <h2 className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12 text-neon-blue glow-blue">
             How It Works
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
@@ -921,7 +876,7 @@ export default function LaunchClient() {
                 key={s.n}
                 data-reveal-child
                 data-delay={i * 100}
-                className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 text-center"
+                className={`reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 text-center ${cardAnim(i)}`}
               >
                 <div
                   className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full font-[var(--font-sora)] text-xl font-extrabold"
@@ -943,15 +898,13 @@ export default function LaunchClient() {
 
         {/* Features */}
         <section id="features" className="mx-auto max-w-6xl px-6" data-reveal>
-          <h2
-            className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
-            style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
-          >
+          <h2 className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12 text-neon-blue glow-blue">
             What You Get
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               delay={0}
+              animCls={cardAnim(0)}
               accent={NEON.yellow}
               title="High-Converting Layout"
               body="Every template is designed around intent — built to turn visitors into paying customers."
@@ -963,6 +916,7 @@ export default function LaunchClient() {
             />
             <FeatureCard
               delay={100}
+              animCls={cardAnim(1)}
               accent={NEON.cyan}
               title="Premium Domain Hosting"
               body="Connect your own domain or get a fresh one. Cloudflare-powered DNS included."
@@ -976,6 +930,7 @@ export default function LaunchClient() {
             />
             <FeatureCard
               delay={200}
+              animCls={cardAnim(2)}
               accent={NEON.magenta}
               title="Cloudflare Security"
               body="DDoS protection, SSL, and global edge CDN on every site — no config required."
@@ -987,6 +942,7 @@ export default function LaunchClient() {
             />
             <FeatureCard
               delay={300}
+              animCls={cardAnim(3)}
               accent={NEON.blue}
               title="Mobile Optimized"
               body="Pixel-perfect on every device — phones, tablets, big screens, and everything in between."
@@ -999,6 +955,7 @@ export default function LaunchClient() {
             />
             <FeatureCard
               delay={400}
+              animCls={cardAnim(4)}
               accent={NEON.yellow}
               title="Easy Transfer Anytime"
               body="You own your content. Cancel anytime and export everything — no lock-in, ever."
@@ -1013,6 +970,7 @@ export default function LaunchClient() {
             />
             <FeatureCard
               delay={500}
+              animCls={cardAnim(5)}
               accent={NEON.cyan}
               title="Plug-and-Play Payments"
               body="Stripe built in. Accept payments from day one without touching a line of code."
@@ -1032,7 +990,7 @@ export default function LaunchClient() {
         <section className="mx-auto max-w-6xl px-6" data-reveal>
           <div className="rounded-2xl bg-gradient-to-r from-[#00D4FF]/5 to-[#FF2D8A]/5 border border-white/10 p-10">
             <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div data-reveal-child data-delay={0} className="reveal-init">
+              <div data-reveal-child data-delay={0} className={`reveal-init ${cardAnim(0)}`}>
                 <div className="font-[var(--font-sora)] text-xl font-bold mb-2" style={{ color: NEON.blue }}>
                   Built for clarity first
                 </div>
@@ -1040,7 +998,7 @@ export default function LaunchClient() {
                   Every layout starts with the question: what is this visitor trying to decide?
                 </p>
               </div>
-              <div data-reveal-child data-delay={100} className="reveal-init">
+              <div data-reveal-child data-delay={100} className={`reveal-init ${cardAnim(1)}`}>
                 <div className="font-[var(--font-sora)] text-xl font-bold mb-2" style={{ color: NEON.yellow }}>
                   Designed to reduce bounce
                 </div>
@@ -1048,7 +1006,7 @@ export default function LaunchClient() {
                   Clean hierarchy, fast loads, and a single obvious next step on every page.
                 </p>
               </div>
-              <div data-reveal-child data-delay={200} className="reveal-init">
+              <div data-reveal-child data-delay={200} className={`reveal-init ${cardAnim(2)}`}>
                 <div className="font-[var(--font-sora)] text-xl font-bold mb-2" style={{ color: NEON.magenta }}>
                   Engineered around intent
                 </div>
@@ -1062,33 +1020,68 @@ export default function LaunchClient() {
 
         <NeonDivider />
 
-        {/* Pricing */}
+        {/* Pricing — mirrors /pricing tiers */}
         <section id="pricing" className="mx-auto max-w-6xl px-6" data-reveal>
-          <h2
-            className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
-            style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
-          >
+          <h2 className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-4 text-neon-blue glow-blue">
             Ready to launch?
           </h2>
+          <p className="text-center text-white/70 mb-12">
+            Three ways to acquire a site. One-time payment — no subscription for the site itself.
+          </p>
           <div className="grid md:grid-cols-3 gap-6">
-            <div data-reveal-child data-delay={0} className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
-              <div className="font-[var(--font-sora)] text-3xl font-extrabold mb-2" style={{ color: NEON.yellow }}>
-                $99/mo
-              </div>
-              <div className="text-white/80">All templates included</div>
-            </div>
-            <div data-reveal-child data-delay={100} className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
-              <div className="font-[var(--font-sora)] text-xl font-extrabold mb-2 text-white">
-                Done in minutes
-              </div>
-              <div className="text-white/80">Not weeks or months</div>
-            </div>
-            <div data-reveal-child data-delay={200} className="reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6">
-              <div className="font-[var(--font-sora)] text-xl font-extrabold mb-2 text-white">
-                Zero risk
-              </div>
-              <div className="text-white/80">Cancel anytime, keep your data</div>
-            </div>
+            {[
+              {
+                icon: ShoppingCart,
+                title: 'Buy',
+                price: 'One-time payment',
+                body: 'Pick a template, pay list price, and own it outright. 12 months of hosting included.',
+                color: 'blue' as const,
+              },
+              {
+                icon: Gavel,
+                title: 'Bid',
+                price: 'Name your price',
+                body: 'Place a bid below list. You only pay if you win — no outbid, no charge.',
+                color: 'yellow' as const,
+              },
+              {
+                icon: Ticket,
+                title: 'Win',
+                price: 'Free',
+                body: 'Scratch a ticket and walk away with a free template, discount, or hosting credit.',
+                color: 'magenta' as const,
+              },
+            ].map((p, i) => {
+              const Icon = p.icon;
+              const accent = p.color === 'yellow' ? NEON.yellow : p.color === 'magenta' ? NEON.magenta : NEON.blue;
+              const textCls = p.color === 'yellow' ? 'text-neon-yellow' : p.color === 'magenta' ? 'text-neon-magenta' : 'text-neon-blue';
+              return (
+                <div
+                  key={p.title}
+                  data-reveal-child
+                  data-delay={i * 100}
+                  className={`reveal-init rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6 flex flex-col ${cardAnim(i)}`}
+                  style={{ borderColor: `${accent}44` }}
+                >
+                  <div
+                    className="inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4"
+                    style={{ background: `${accent}1A`, color: accent }}
+                  >
+                    <Icon size={22} />
+                  </div>
+                  <h3 className={`font-[var(--font-sora)] text-2xl font-bold mb-1 ${textCls}`}>{p.title}</h3>
+                  <div className={`font-bold mb-3 ${textCls}`}>{p.price}</div>
+                  <p className="text-white/70 text-sm leading-relaxed mb-6 flex-1">{p.body}</p>
+                  <Link
+                    href="/pricing"
+                    className={`inline-flex items-center justify-center rounded-lg px-4 py-2 font-bold transition-transform hover:-translate-y-0.5 border ${textCls}`}
+                    style={{ background: `${accent}14`, borderColor: `${accent}55` }}
+                  >
+                    See details →
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -1096,24 +1089,10 @@ export default function LaunchClient() {
 
         {/* FAQ */}
         <section id="faq" className="mx-auto max-w-3xl px-6" data-reveal>
-          <h2
-            className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12"
-            style={{ color: NEON.blue, textShadow: `0 0 20px ${NEON.blue}66` }}
-          >
+          <h2 className="font-[var(--font-sora)] text-4xl md:text-5xl font-extrabold text-center mb-12 text-neon-blue glow-blue">
             FAQ
           </h2>
-          <div className="space-y-3">
-            {FAQS.map((item, i) => (
-              <FaqItem
-                key={item.q}
-                q={item.q}
-                a={item.a}
-                open={openFaq === i}
-                onToggle={() => setOpenFaq((cur) => (cur === i ? null : i))}
-                delay={i * 100}
-              />
-            ))}
-          </div>
+          <FaqAccordion items={FAQS} />
         </section>
 
         <NeonDivider />
@@ -1126,10 +1105,7 @@ export default function LaunchClient() {
             className="reveal-init rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-10 text-center"
             style={{ boxShadow: `0 0 40px ${NEON.yellow}15` }}
           >
-            <h2
-              className="font-[var(--font-sora)] text-3xl md:text-4xl font-extrabold mb-4"
-              style={{ color: NEON.yellow, textShadow: `0 0 18px ${NEON.yellow}55` }}
-            >
+            <h2 className="font-[var(--font-sora)] text-3xl md:text-4xl font-extrabold mb-4 text-neon-yellow glow-yellow">
               Ready to claim your template?
             </h2>
             <p className="text-white/80 mb-6">

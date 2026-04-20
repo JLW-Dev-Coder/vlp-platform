@@ -1150,6 +1150,70 @@ async function sendEmail(to, subject, htmlBody, env) {
   }
 }
 
+// WLVLP welcome email (sent on /v1/wlvlp/leads first signup).
+// Self-contained HTML (inline styles, no external CSS) — Xavier brand voice.
+function generateWlvlpWelcomeEmail(name, email) {
+  const safeName = String(name).replace(/[<>&"]/g, '').slice(0, 80) || 'Friend'
+  const safeEmail = encodeURIComponent(email)
+  const base = 'https://websitelotto.virtuallaunch.pro'
+  const yellow = '#FFE534'
+  const ink = '#0a0a0a'
+  const card = 'background:#12121A;border:1px solid rgba(0,212,255,0.25);border-radius:12px;padding:20px;margin:0 0 16px 0;'
+  const btn = (label, href, bg, fg) =>
+    `<a href="${href}" style="display:inline-block;background:${bg};color:${fg};text-decoration:none;font-weight:800;padding:10px 18px;border-radius:8px;font-family:Arial,sans-serif;font-size:14px;">${label}</a>`
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome to Xavier's Tips</title></head>
+<body style="margin:0;padding:0;background:#07070A;color:#e6e6e6;font-family:Arial,Helvetica,sans-serif;line-height:1.55;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Scratch a card, grab design tips, and browse 260+ templates built to convert.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#07070A;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#0a0a0a;border:1px solid rgba(255,229,52,0.25);border-radius:16px;padding:28px;">
+        <tr><td>
+          <div style="font-family:Arial Black,Arial,sans-serif;font-size:22px;font-weight:900;color:${yellow};letter-spacing:0.5px;margin:0 0 4px 0;">Website Lotto</div>
+          <div style="font-size:12px;color:#9aa;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;">Xavier's Tips</div>
+          <h1 style="font-family:Arial Black,Arial,sans-serif;font-size:26px;color:#fff;margin:0 0 14px 0;">Hey ${safeName},</h1>
+          <p style="margin:0 0 22px 0;color:#cfd2d8;">Thanks for subscribing to Xavier's tips. Here's some value right away — no waiting.</p>
+
+          <div style="${card}">
+            <div style="font-size:18px;color:${yellow};font-weight:800;margin-bottom:6px;">🎟️ Scratch &amp; Win</div>
+            <p style="margin:0 0 14px 0;color:#cfd2d8;">Try your luck — you might land a discount on your first site.</p>
+            ${btn('Scratch Now →', `${base}/launch#email-form`, yellow, ink)}
+          </div>
+
+          <div style="${card}">
+            <div style="font-size:18px;color:#00D4FF;font-weight:800;margin-bottom:6px;">🎬 Free Video Tips</div>
+            <p style="margin:0 0 14px 0;color:#cfd2d8;">These short videos break down what makes websites actually convert. No fluff — just what works.</p>
+            ${btn('Watch Design Tips →', `${base}/design-tips`, yellow, ink)}
+          </div>
+
+          <div style="${card}">
+            <div style="font-size:18px;color:#00F0D0;font-weight:800;margin-bottom:6px;">🔍 Browse Templates</div>
+            <p style="margin:0 0 14px 0;color:#cfd2d8;">See 260+ high-converting layouts you can claim and customize in minutes.</p>
+            ${btn('Browse Templates →', `${base}/templates`, yellow, ink)}
+          </div>
+
+          <div style="${card}">
+            <div style="font-size:18px;color:#FF2D8A;font-weight:800;margin-bottom:6px;">🎯 Get Matched</div>
+            <p style="margin:0 0 14px 0;color:#cfd2d8;">Not sure which template fits your business? Xavier will help you pick.</p>
+            ${btn('Get Started →', `${base}/get-started`, yellow, ink)}
+          </div>
+
+          <p style="margin:24px 0 6px 0;color:#cfd2d8;">Stay tuned — more tips landing in a week or so.</p>
+          <p style="margin:0 0 24px 0;color:#fff;font-weight:700;">Xavier<br><span style="color:#9aa;font-weight:400;">Website Lotto | Virtual Launch Pro</span></p>
+
+          <hr style="border:0;border-top:1px solid rgba(255,255,255,0.08);margin:24px 0;">
+          <p style="font-size:12px;color:#777;margin:0 0 6px 0;">Virtual Launch Pro · Delivered to ${email}</p>
+          <p style="font-size:12px;color:#777;margin:0;">
+            <!-- TODO: wire unsubscribe endpoint -->
+            <a href="${base}/unsubscribe?email=${safeEmail}" style="color:#9aa;">Unsubscribe</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`
+}
+
 // ---------------------------------------------------------------------------
 // TOTP helpers (RFC 6238, HMAC-SHA1, 30-second step, 6-digit code)
 // ---------------------------------------------------------------------------
@@ -16525,6 +16589,27 @@ TTMP Support Team
              created_at = excluded.created_at,
              marketing_opt_in = excluded.marketing_opt_in`
         ).bind(id, name, email, source, createdAt, marketingOptIn).run();
+
+        // Best-effort welcome email. Only send on first signup (not duplicates).
+        if (!existing) {
+          try {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: 'Xavier <xavier@websitelotto.virtuallaunch.pro>',
+                to: [email],
+                subject: "Welcome to Xavier's Tips — Let's Get You a Site That Converts",
+                html: generateWlvlpWelcomeEmail(name || 'Friend', email),
+              }),
+            });
+          } catch (emailErr) {
+            console.error('[wlvlp/leads] welcome email failed:', emailErr);
+          }
+        }
 
         if (existing) {
           return json({ success: true, duplicate: true, id }, 200, request);
