@@ -16478,6 +16478,63 @@ TTMP Support Team
     },
   },
 
+  // POST /v1/wlvlp/leads
+  // Public email capture endpoint for the /launch landing page. Upserts leads
+  // into D1 (wlvlp_leads) with UNIQUE(email, source) to dedupe repeat submits.
+  {
+    method: 'POST', pattern: '/v1/wlvlp/leads',
+    handler: async (_method, _pattern, _params, request, env) => {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return json({ ok: false, error: 'invalid_json' }, 400, request);
+      }
+
+      if (!body || typeof body !== 'object') {
+        return json({ ok: false, error: 'invalid_payload' }, 400, request);
+      }
+
+      const name = typeof body.name === 'string' ? body.name.trim().slice(0, 200) : '';
+      const email = typeof body.email === 'string' ? body.email.trim().toLowerCase().slice(0, 320) : '';
+      const source = typeof body.source === 'string' && body.source.trim()
+        ? body.source.trim().slice(0, 100)
+        : 'launch';
+
+      if (!name) {
+        return json({ ok: false, error: 'invalid_payload', field: 'name' }, 400, request);
+      }
+      if (!email || !email.includes('@')) {
+        return json({ ok: false, error: 'invalid_payload', field: 'email' }, 400, request);
+      }
+
+      try {
+        const existing = await env.DB.prepare(
+          'SELECT id FROM wlvlp_leads WHERE email = ? AND source = ?'
+        ).bind(email, source).first();
+
+        const id = existing?.id || crypto.randomUUID();
+        const createdAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `INSERT INTO wlvlp_leads (id, name, email, source, created_at)
+           VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT(email, source) DO UPDATE SET
+             name = excluded.name,
+             created_at = excluded.created_at`
+        ).bind(id, name, email, source, createdAt).run();
+
+        if (existing) {
+          return json({ success: true, duplicate: true, id }, 200, request);
+        }
+        return json({ success: true, id }, 201, request);
+      } catch (e) {
+        console.error('WLVLP leads insert error:', e);
+        return json({ ok: false, error: 'internal_error' }, 500, request);
+      }
+    },
+  },
+
   // POST /v1/wlvlp/site-requests
   // Public submission from WLVLP SCALE asset pages. Writes receipt + canonical
   // request JSON to R2 with status: "pending". A daily cron at 06:00 UTC
