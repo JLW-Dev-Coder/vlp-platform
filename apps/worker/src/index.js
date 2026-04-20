@@ -16500,6 +16500,7 @@ TTMP Support Team
       const source = typeof body.source === 'string' && body.source.trim()
         ? body.source.trim().slice(0, 100)
         : 'launch';
+      const marketingOptIn = body.marketing_opt_in === true ? 1 : 0;
 
       if (!name) {
         return json({ ok: false, error: 'invalid_payload', field: 'name' }, 400, request);
@@ -16517,12 +16518,13 @@ TTMP Support Team
         const createdAt = new Date().toISOString();
 
         await env.DB.prepare(
-          `INSERT INTO wlvlp_leads (id, name, email, source, created_at)
-           VALUES (?, ?, ?, ?, ?)
+          `INSERT INTO wlvlp_leads (id, name, email, source, created_at, marketing_opt_in)
+           VALUES (?, ?, ?, ?, ?, ?)
            ON CONFLICT(email, source) DO UPDATE SET
              name = excluded.name,
-             created_at = excluded.created_at`
-        ).bind(id, name, email, source, createdAt).run();
+             created_at = excluded.created_at,
+             marketing_opt_in = excluded.marketing_opt_in`
+        ).bind(id, name, email, source, createdAt, marketingOptIn).run();
 
         if (existing) {
           return json({ success: true, duplicate: true, id }, 200, request);
@@ -21297,7 +21299,7 @@ async function handleWlvlpDripCron(env) {
   const stats = { leads_checked: 0, sent: 0, skipped_complete: 0, skipped_not_due: 0, errors: [], dry_run: dryRun };
 
   const leadsRes = await env.DB.prepare(
-    'SELECT id, name, email, created_at FROM wlvlp_leads'
+    'SELECT id, name, email, created_at FROM wlvlp_leads WHERE marketing_opt_in = 1'
   ).all();
   const leads = leadsRes.results || [];
   stats.leads_checked = leads.length;

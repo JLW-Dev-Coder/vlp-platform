@@ -122,6 +122,7 @@ type EmailFormProps = {
 function EmailCaptureForm({ source, showName }: EmailFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [optIn, setOptIn] = useState(false);
   const [state, setState] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -142,6 +143,7 @@ function EmailCaptureForm({ source, showName }: EmailFormProps) {
           name: showName ? (name.trim() || 'Friend') : 'Friend',
           email: email.trim(),
           source,
+          marketing_opt_in: optIn,
           timestamp: new Date().toISOString(),
         }),
       });
@@ -197,6 +199,17 @@ function EmailCaptureForm({ source, showName }: EmailFormProps) {
         onChange={(e) => setEmail(e.target.value)}
         className="w-full rounded-lg bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-[#00D4FF]/60 transition-colors"
       />
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={optIn}
+          onChange={(e) => setOptIn(e.target.checked)}
+          className="mt-1 h-4 w-4 shrink-0 rounded border border-white/20 bg-white/5 accent-[#FFE534]"
+        />
+        <span className="text-xs text-gray-400">
+          Send me tips on building a high-converting website + exclusive launch offers
+        </span>
+      </label>
       <button
         type="submit"
         disabled={state === 'submitting'}
