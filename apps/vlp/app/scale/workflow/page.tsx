@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { renderMarkdown } from '@/components/scale/MarkdownRenderer'
 import UploadTab from '@/components/scale/UploadTab'
-import CampaignPostsTab from '../components/CampaignPostsTab'
+import CampaignTab from '../components/CampaignTab'
 import DailyWorkflowPlanner from '../components/DailyWorkflowPlanner'
 import OutreachTab from '../components/OutreachTab'
 import SocialTab from '../components/SocialTab'
@@ -68,7 +68,7 @@ type Tab = 'planner' | 'upload' | 'posts' | 'outreach' | 'social' | 'workflow'
 const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
   planner: 'Daily workflow planner — what to do today across email, social, content, and bookings',
   upload: 'Clay CSV upload and email pipeline monitor',
-  posts: '10-day campaign generator — Claude-authored LinkedIn + Facebook copy, auto-created in ClickUp',
+  posts: 'YouTube video scripts, community posts, or 10-day LinkedIn/FB campaign — Claude-authored, optional ClickUp tasks',
   outreach: 'LinkedIn cold connections from the prospect list with canned messages',
   social: (
     <>
@@ -111,7 +111,7 @@ export default function WorkflowPage() {
 
       {tab === 'planner' && <DailyWorkflowPlanner />}
       {tab === 'upload' && <UploadTab />}
-      {tab === 'posts' && <CampaignPostsTab />}
+      {tab === 'posts' && <CampaignTab />}
       {tab === 'outreach' && <OutreachTab />}
       {tab === 'social' && <SocialTab />}
       {tab === 'workflow' && <WorkflowContent />}
