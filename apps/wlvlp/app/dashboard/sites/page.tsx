@@ -3,7 +3,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAppShell } from '@vlp/member-ui';
 import { getMySites, createHostingRenewalCheckout, PurchasedSite } from '@/lib/api';
-import styles from './page.module.css';
+
+const MAIN = 'flex-1 max-w-[1200px] w-full mx-auto pt-10 px-6 pb-15';
+const TITLE = 'font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]';
+const SUBTITLE = 'text-white/55 text-[0.95rem] m-0';
+const STATE = 'flex justify-center py-20';
+const ERROR_BOX = 'bg-[rgba(239,68,68,0.06)] border border-[rgba(239,68,68,0.25)] rounded-xl p-5';
+const ERROR_TITLE = 'text-[var(--color-error)] font-bold m-0 mb-1';
+const ERROR_MSG = 'text-white/60 text-[0.88rem] m-0';
+const EMPTY_BOX = 'text-center py-20 px-6 bg-white/[0.02] border border-white/[0.07] rounded-2xl';
+const BROWSE_BTN = 'inline-block px-7 py-3 bg-brand-primary text-white font-bold text-[0.9rem] rounded-lg no-underline transition-all shadow-brand hover:-translate-y-0.5';
 
 export default function MySitesPage() {
   const { session } = useAppShell();
@@ -21,31 +30,31 @@ export default function MySitesPage() {
   }, [accountId]);
 
   return (
-    <main className={styles.main}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>My Sites</h1>
-        <p className={styles.subtitle}>Templates you&apos;ve claimed and are hosting with Website Lotto.</p>
+    <main className={MAIN}>
+      <header className="mb-7">
+        <h1 className={TITLE}>My Sites</h1>
+        <p className={SUBTITLE}>Templates you&apos;ve claimed and are hosting with Website Lotto.</p>
       </header>
 
-      {loading && <div className={styles.state}><span className="spinner" /></div>}
+      {loading && <div className={STATE}><span className="spinner" /></div>}
 
       {!loading && error && (
-        <div className={styles.errorBox}>
-          <p className={styles.errorTitle}>Couldn&apos;t load your sites</p>
-          <p className={styles.errorMsg}>{error}</p>
+        <div className={ERROR_BOX}>
+          <p className={ERROR_TITLE}>Couldn&apos;t load your sites</p>
+          <p className={ERROR_MSG}>{error}</p>
         </div>
       )}
 
       {!loading && !error && sites && sites.length === 0 && (
-        <div className={styles.emptyBox}>
-          <h2 className={styles.emptyTitle}>No sites yet</h2>
-          <p className={styles.emptyMsg}>Browse the marketplace to claim your first template.</p>
-          <Link href="/" className={styles.browseBtn}>Browse Templates</Link>
+        <div className={EMPTY_BOX}>
+          <h2 className="font-sora text-2xl font-bold text-white m-0 mb-2">No sites yet</h2>
+          <p className="text-white/50 m-0 mb-5">Browse the marketplace to claim your first template.</p>
+          <Link href="/" className={BROWSE_BTN}>Browse Templates</Link>
         </div>
       )}
 
       {!loading && !error && sites && sites.length > 0 && (
-        <div className={styles.grid}>
+        <div className="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
           {sites.map((s) => (
             <SiteCard key={s.slug} site={s} />
           ))}
@@ -79,10 +88,10 @@ function SiteCard({ site }: { site: PurchasedSite }) {
   const isExpiringSoon =
     !isExpired && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 30;
 
-  const statusClass =
-    site.hosting_status === 'active' ? styles.statusActive
-    : site.hosting_status === 'expired' ? styles.statusExpired
-    : styles.statusPending;
+  const statusBadge =
+    site.hosting_status === 'active' ? 'bg-[rgba(34,197,94,0.12)] text-[var(--color-success)] border border-[rgba(34,197,94,0.3)]'
+    : site.hosting_status === 'expired' ? 'bg-[rgba(239,68,68,0.1)] text-[var(--color-error)] border border-[rgba(239,68,68,0.3)]'
+    : 'bg-brand-primary/10 text-brand-primary border border-brand-primary/30';
 
   async function handleRenew() {
     setRenewing(true);
@@ -102,57 +111,62 @@ function SiteCard({ site }: { site: PurchasedSite }) {
   }
 
   return (
-    <div className={styles.card}>
-      <div className={styles.cardHead}>
-        <h3 className={styles.cardTitle}>{site.title}</h3>
-        <span className={`${styles.statusBadge} ${statusClass}`}>
+    <div className="bg-white/[0.02] border border-white/[0.07] rounded-[14px] p-[22px] flex flex-col gap-3.5 transition-all hover:border-brand-primary/30 hover:-translate-y-0.5">
+      <div className="flex items-start justify-between gap-2.5">
+        <h3 className="font-sora text-[1.05rem] font-bold text-white m-0 leading-tight">{site.title}</h3>
+        <span className={`px-2.5 py-[3px] rounded-full text-[0.72rem] font-bold uppercase tracking-wider flex-shrink-0 whitespace-nowrap ${statusBadge}`}>
           {site.hosting_status === 'active' ? 'Active'
             : site.hosting_status === 'expired' ? 'Expired'
             : 'Pending'}
         </span>
       </div>
-      {site.category && <div className={styles.cardCategory}>{site.category}</div>}
+      {site.category && (
+        <div className="text-[0.78rem] font-semibold text-white/45 uppercase tracking-wider -mt-2">{site.category}</div>
+      )}
 
       {isExpired && (
-        <div className={styles.alertExpired}>
+        <div className="bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.35)] text-[var(--color-error)] rounded-lg px-3 py-2.5 text-[0.82rem] font-semibold">
           Hosting expired — renew to keep your site live
         </div>
       )}
       {isExpiringSoon && expires && (
-        <div className={styles.alertWarning}>
+        <div className="bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.35)] text-[var(--color-warning)] rounded-lg px-3 py-2.5 text-[0.82rem] font-semibold">
           Hosting expires {expires}
         </div>
       )}
 
-      <dl className={styles.meta}>
-        <div className={styles.metaRow}>
-          <dt>Purchased</dt>
-          <dd>{purchased}</dd>
+      <dl className="m-0 flex flex-col gap-1.5">
+        <div className="flex justify-between text-[0.83rem]">
+          <dt className="text-white/45 m-0">Purchased</dt>
+          <dd className="text-white/85 m-0 font-medium">{purchased}</dd>
         </div>
         {expires && (
-          <div className={styles.metaRow}>
-            <dt>{isExpired ? 'Expired on' : 'Renews on'}</dt>
-            <dd>{expires}</dd>
+          <div className="flex justify-between text-[0.83rem]">
+            <dt className="text-white/45 m-0">{isExpired ? 'Expired on' : 'Renews on'}</dt>
+            <dd className="text-white/85 m-0 font-medium">{expires}</dd>
           </div>
         )}
       </dl>
 
       {renewError && (
-        <div className={styles.errorBox}>
-          <p className={styles.errorMsg}>{renewError}</p>
+        <div className={ERROR_BOX}>
+          <p className={ERROR_MSG}>{renewError}</p>
         </div>
       )}
 
-      <div className={styles.actions}>
+      <div className="flex gap-2.5 mt-1">
         <a
           href={site.site_url}
           target="_blank"
           rel="noopener noreferrer"
-          className={styles.viewBtn}
+          className="flex-1 text-center px-3.5 py-2 bg-brand-primary/10 border border-brand-primary/35 rounded-lg text-brand-primary font-semibold text-[0.85rem] no-underline transition-all hover:bg-brand-primary/20 hover:border-brand-primary"
         >
           View Site ↗
         </a>
-        <Link href={`/dashboard/sites/${site.slug}/edit`} className={styles.editBtn}>
+        <Link
+          href={`/dashboard/sites/${site.slug}/edit`}
+          className="flex-1 text-center px-3.5 py-2 bg-brand-primary/10 border border-brand-primary/35 rounded-lg text-brand-primary font-semibold text-[0.85rem] no-underline transition-all hover:bg-brand-primary/20 hover:border-brand-primary"
+        >
           Edit Site
         </Link>
       </div>
@@ -160,7 +174,7 @@ function SiteCard({ site }: { site: PurchasedSite }) {
       {(isExpired || isExpiringSoon) && (
         <button
           type="button"
-          className={styles.renewBtn}
+          className="w-full px-3.5 py-2.5 bg-brand-primary text-white font-bold text-[0.88rem] border-0 rounded-lg cursor-pointer transition-all shadow-brand hover:enabled:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={handleRenew}
           disabled={renewing}
         >

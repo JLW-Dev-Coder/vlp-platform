@@ -79,27 +79,17 @@ npx turbo build --filter=wlvlp
 
 ## Theming Divergences
 
-The following local tokens exist in `app/globals.css` and are NOT part of the shared
-canonical token set. They power CSS Module marketing pages scheduled for Tier 3
-migration (WLVLP-CANON MarketingHeader/Footer adoption).
+WLVLP has been migrated to canonical tokens (Tier 3D, 2026-04-19). All `--neon-*`,
+`--void`, and `--charcoal` legacy variables have been removed. CSS Modules have been
+deleted; styling is now Tailwind utilities + shared canonical tokens throughout.
 
-| Variable | Value | Used By | Canonical Equivalent (post-migration) |
-|----------|-------|---------|---------------------------------------|
-| `--void` | `#07070A` | `app/page.module.css`, `app/asset/[slug]/page.module.css`, body gradient | `--surface-bg` |
-| `--charcoal` | `#12121A` | `app/page.module.css` (mobile panel), body gradient | `--surface-elevated` |
-| `--neon-blue` | `#00D4FF` | `app/page.module.css`, `app/asset/[slug]/page.module.css` (logo, hover, accents) | `--brand-primary` |
-| `--neon-yellow` | `#FFE534` | `app/page.module.css`, `app/asset/[slug]/page.module.css` | TBD (accent token) |
-| `--neon-magenta` | `#FF2D8A` | `app/page.module.css` (gradients only) | TBD (accent token) |
-| `--neon-cyan` | `#00F0D0` | `app/page.module.css` (marquee gradient only) | TBD (accent token) |
+The body background is now the shared flat `--surface-bg` (the previous three-stop
+neon gradient was a marketing aesthetic with no canonical equivalent).
 
-**Body background:** `app/globals.css` applies a custom three-stop gradient
-(`--void` → `#0D0D15` → `--charcoal`) rather than the flat shared `--surface-bg`.
-The middle stop `#0D0D15` has no token alias — it's a visual-only blend step.
-This divergence is intentional for marketing pages and will be revisited during Tier 3.
+The local `--color-success`, `--color-warning`, `--color-error`, `--color-info`
+variables in `app/globals.css` mirror canonical-style.md §2.5 semantic tokens. They
+remain local pending the shared-layer addition tracked as cleanup §13 item 7.
 
-**`--text-muted` note:** WLVLP previously defined a local `--text-muted: #888888`.
-This local has been removed — references now resolve to the shared
-`rgba(255, 255, 255, 0.66)` value, which is authoritative per `canonical-style.md` §2.4.
-
-These divergences will be removed when WLVLP marketing pages migrate from CSS Modules
-to Tailwind + shared tokens (Tier 3 scope).
+Two `@keyframes` definitions remain in `app/globals.css` (`marquee`, `float`) —
+referenced inline via Tailwind arbitrary `animate-[marquee_3s_linear_infinite]`
+syntax. The shared `@vlp/member-ui` preset doesn't include these.

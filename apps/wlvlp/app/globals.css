@@ -20,15 +20,12 @@
     --brand-glow: rgba(168, 85, 247, 0.40);
     --brand-gradient-to: rgba(168, 85, 247, 0.15);
 
-    /* WLVLP legacy marketing tokens — see CLAUDE.md "Theming Divergences".
-       These power CSS Module marketing pages (page.module.css, asset/[slug]/page.module.css)
-       scheduled for Tier 3 migration to shared tokens + Tailwind. */
-    --void: #07070A;
-    --charcoal: #12121A;
-    --neon-blue: #00D4FF;
-    --neon-yellow: #FFE534;
-    --neon-magenta: #FF2D8A;
-    --neon-cyan: #00F0D0;
+    /* Canonical semantic colors (canonical-style.md §2.5).
+       Provided locally pending shared-layer addition (cleanup §13 item 7). */
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-info: #3b82f6;
   }
 }
 
@@ -38,9 +35,7 @@
 html { scroll-behavior: smooth; height: 100%; }
 
 body {
-  /* Custom three-stop gradient — documented divergence (see CLAUDE.md Theming Divergences).
-     Shared --surface-bg is a flat color; WLVLP marketing requires this gradient. */
-  background: linear-gradient(180deg, var(--void) 0%, #0D0D15 40%, var(--charcoal) 100%);
+  background: var(--surface-bg);
   color: var(--text-primary);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
   min-height: 100vh;
@@ -65,3 +60,18 @@ body {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── WLVLP marketing animations ───────────────────────────────────────────
+   Marquee strip and floating ticket are animation effects that have no
+   tokenable color/size; they're used inline via Tailwind arbitrary
+   `animate-[marquee_3s_linear_infinite]` syntax. Defined here because the
+   shared @vlp/member-ui preset doesn't include them. */
+@keyframes marquee {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}

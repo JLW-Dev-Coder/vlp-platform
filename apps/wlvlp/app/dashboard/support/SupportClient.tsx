@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { KPICard, DataTable, HeroCard, StatusBadge, useAppShell } from '@vlp/member-ui';
 import { getSupportTicketsByAccount, type SupportTicketRow } from '@/lib/api';
+import { wlvlpConfig } from '@/lib/platform-config';
 
 type LoadState =
   | { status: 'loading' }
@@ -174,7 +175,7 @@ export default function SupportClient() {
         )}
       </div>
 
-      <HeroCard brandColor="#a855f7">
+      <HeroCard brandColor={wlvlpConfig.brandColor}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-primary/20">

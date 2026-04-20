@@ -21,6 +21,7 @@ import {
   type Affiliate,
   type AffiliateEvent,
 } from '@/lib/api';
+import { wlvlpConfig } from '@/lib/platform-config';
 
 type LoadState =
   | { status: 'loading' }
@@ -130,7 +131,7 @@ export default function AffiliateClient() {
         </p>
       </div>
 
-      <HeroCard brandColor="#a855f7">
+      <HeroCard brandColor={wlvlpConfig.brandColor}>
         <div className="space-y-5">
           <div className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-brand-primary" />

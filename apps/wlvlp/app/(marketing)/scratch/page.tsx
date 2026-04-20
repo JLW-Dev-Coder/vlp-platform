@@ -3,7 +3,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import { createScratchTicket, revealScratchTicket, ScratchTicket } from '@/lib/api';
-import styles from './page.module.css';
+
+const SCRATCH_OVERLAY_CLASS = 'absolute inset-0 bg-gradient-to-br from-[#2a2a3a] to-[#1a1a28] flex items-center justify-center z-10 transition-opacity rounded-2xl'; // canonical: layered scratch-overlay depth gradient — decorative dark hexes have no tokenable equivalent
+const SCRATCH_PRIZE_CLASS = 'absolute inset-0 flex items-center justify-center text-[4rem] z-0 bg-gradient-to-br from-[#0a0a18] to-[#12121f]'; // canonical: scratch prize layer depth gradient — decorative dark hexes have no tokenable equivalent
 
 const PRIZE_CONFIG: Record<string, { emoji: string; title: string; desc: string }> = {
   free_month: { emoji: '🎉', title: 'You won a free template!', desc: 'Claim any available template at no cost — includes 12 months of hosting.' },
@@ -53,51 +55,87 @@ function ScratchContent({ accountId }: { accountId: string }) {
   }
 
   return (
-    <div className={styles.page}>
-      <nav className={styles.nav}>
-        <div className={styles.navInner}>
-          <Link href="/" className={styles.navLogo}>Website Lotto</Link>
-          <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
+    <div className="min-h-screen flex flex-col">
+      <nav className="sticky top-0 z-50 bg-black/85 backdrop-blur-md border-b border-white/[0.06]">
+        <div className="max-w-[1280px] mx-auto px-6 h-[60px] flex items-center justify-between">
+          <Link
+            href="/"
+            className="font-sora font-extrabold text-[1.2rem] text-brand-primary no-underline [text-shadow:0_0_20px_rgba(168,85,247,0.5)]"
+          >
+            Website Lotto
+          </Link>
+          <Link
+            href="/dashboard"
+            className="text-white/65 no-underline text-[0.88rem] font-medium transition-colors hover:text-brand-primary"
+          >
+            Dashboard
+          </Link>
         </div>
       </nav>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>Scratch to Win</h1>
-        <p className={styles.subtitle}>One free ticket per account. Win a free template, discounts, or credits.</p>
+      <main className="flex-1 flex flex-col items-center justify-center py-[60px] px-6 gap-6 text-center">
+        <h1 className="font-sora text-[clamp(2rem,5vw,3rem)] font-extrabold text-white tracking-tight [text-shadow:0_0_40px_rgba(168,85,247,0.3)]">
+          Scratch to Win
+        </h1>
+        <p className="text-white/55 text-base leading-relaxed max-w-[480px]">
+          One free ticket per account. Win a free template, discounts, or credits.
+        </p>
 
         {!ticket && (
-          <div className={styles.getTicket}>
-            <div className={styles.ticketPlaceholder}>🎫</div>
-            <button className={styles.getBtn} onClick={handleGetTicket} disabled={loading}>
+          <div className="flex flex-col items-center gap-6">
+            <div className="text-[6rem] [filter:drop-shadow(0_0_30px_rgba(168,85,247,0.4))] motion-safe:animate-[float_3s_ease-in-out_infinite]">
+              🎫
+            </div>
+            <button
+              className="px-9 py-[14px] bg-brand-primary text-white font-bold text-base rounded-[10px] border-0 cursor-pointer transition-all shadow-brand hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_0_44px_rgba(168,85,247,0.6)] disabled:opacity-60 disabled:cursor-not-allowed"
+              onClick={handleGetTicket}
+              disabled={loading}
+            >
               {loading ? 'Getting your ticket…' : 'Get Your Free Ticket'}
             </button>
           </div>
         )}
 
         {ticket && !scratched && (
-          <div className={styles.scratchArea}>
-            <p className={styles.scratchHint}>Click the card to reveal your prize!</p>
-            <div className={styles.scratchCard} onClick={handleReveal}>
-              <div className={styles.scratchOverlay}>
-                <span className={styles.scratchOverlayText}>SCRATCH</span>
+          <div className="flex flex-col items-center gap-5">
+            <p className="text-white/50 text-[0.9rem] motion-safe:animate-[pulse-subtle_2s_ease-in-out_infinite]">
+              Click the card to reveal your prize!
+            </p>
+            <div
+              className="relative w-[280px] h-[180px] rounded-[18px] cursor-pointer overflow-hidden border-2 border-brand-primary/40 shadow-brand transition-transform hover:scale-[1.02]"
+              onClick={handleReveal}
+            >
+              <div className={SCRATCH_OVERLAY_CLASS}>
+                <span className="font-sora text-[1.4rem] font-extrabold text-brand-primary/60 tracking-[4px] [text-shadow:0_0_20px_rgba(168,85,247,0.4)]">
+                  SCRATCH
+                </span>
               </div>
-              <div className={styles.scratchPrize}>🎁</div>
+              <div className={SCRATCH_PRIZE_CLASS}>
+                🎁
+              </div>
             </div>
           </div>
         )}
 
         {scratched && prize && (
-          <div className={styles.prizeReveal}>
-            <div className={styles.prizeEmoji}>{prize.emoji}</div>
-            <h2 className={styles.prizeTitle}>{prize.title}</h2>
-            <p className={styles.prizeDesc}>{prize.desc}</p>
+          <div className="flex flex-col items-center gap-4 motion-safe:animate-[scale-in_0.5s_ease_forwards]">
+            <div className="text-[5rem] [filter:drop-shadow(0_0_20px_rgba(168,85,247,0.5))]">{prize.emoji}</div>
+            <h2 className="font-sora text-[1.8rem] font-bold text-brand-primary tracking-tight [text-shadow:0_0_30px_rgba(168,85,247,0.5)]">
+              {prize.title}
+            </h2>
+            <p className="text-white/65 text-base leading-relaxed max-w-[400px]">{prize.desc}</p>
             {ticket?.prize_code && (
-              <div className={styles.prizeCode}>
-                Code: <strong>{ticket.prize_code}</strong>
+              <div className="px-6 py-3 bg-brand-primary/[0.08] border border-brand-primary/30 rounded-[10px] text-white/80 text-[0.9rem]">
+                Code: <strong className="text-brand-primary font-mono text-base tracking-wide">{ticket.prize_code}</strong>
               </div>
             )}
-            <div className={styles.postReveal}>
-              <Link href="/" className={styles.browseBtn}>Browse Templates</Link>
+            <div className="mt-2">
+              <Link
+                href="/"
+                className="inline-block px-7 py-3 bg-brand-primary/10 border border-brand-primary/40 rounded-lg text-brand-primary font-semibold text-[0.9rem] no-underline transition-all hover:bg-brand-primary/20 hover:border-brand-primary"
+              >
+                Browse Templates
+              </Link>
             </div>
           </div>
         )}
