@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { generatePageMeta } from '@vlp/member-ui'
 import { Mail, Phone, MapPin, Calendar } from 'lucide-react'
+import CalBookingButton from '@/components/CalBookingButton'
 
 export const metadata = generatePageMeta({
   title: 'Contact - Website Lotto',
@@ -11,9 +12,6 @@ export const metadata = generatePageMeta({
 })
 
 export default function ContactPage() {
-  const calLink =
-    'https://cal.com/tax-monitor-pro/wlvlp-intro'
-
   return (
     <div>
       {/* Hero */}
@@ -64,12 +62,7 @@ export default function ContactPage() {
               <span className="text-brand-primary font-semibold">619-800-5457</span>
             </a>
 
-            <a
-              href={calLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-xl border border-default bg-surface-card p-6 hover:border-hover transition-colors"
-            >
+            <CalBookingButton className="block text-left rounded-xl border border-default bg-surface-card p-6 hover:border-hover transition-colors w-full cursor-pointer">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-brand-light text-brand-primary mb-4">
                 <Calendar size={22} />
               </div>
@@ -79,7 +72,7 @@ export default function ContactPage() {
                 video.
               </p>
               <span className="text-brand-primary font-semibold">Schedule on Cal.com →</span>
-            </a>
+            </CalBookingButton>
           </div>
         </div>
       </section>

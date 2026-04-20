@@ -651,6 +651,52 @@ Mount in each app's `(marketing)/layout.tsx`, alongside `<CookieConsent />`. Pos
 
 **Adoption:** see Shared Component Rollout table in `canonical-feature-matrix.md`.
 
+### 11.2 CalBookingButton
+
+Element-click Cal.com embed for booking CTAs. Loads the Cal embed script
+dynamically on mount and opens the calendar popup on click — never an inline
+iframe, never a static `https://cal.com/...` link. Per-namespace init runs
+once per page lifetime (idempotent).
+
+```tsx
+<CalBookingButton
+  calLink="tax-monitor-pro/wlvlp-intro"
+  namespace="wlvlp-intro"
+  className="rounded-lg bg-brand-primary px-6 py-3 font-semibold text-brand-text-on-primary"
+>
+  Book a Call
+</CalBookingButton>
+```
+
+**Props:**
+- `calLink` — Cal.com event path (e.g., `tax-monitor-pro/wlvlp-intro`). Defaults to `PlatformConfig.calIntroSlug`.
+- `namespace` — Cal namespace identifier (e.g., `wlvlp-intro`). Defaults to `PlatformConfig.calIntroNamespace`.
+- `brandColor` — Override for the dark-theme `cal-brand` CSS var. Defaults to `PlatformConfig.brandColor`. Light-theme `cal-brand` is fixed at `#292929` per canonical-cal-events.md §4.
+- `className` — Tailwind classes for the trigger element (style as any other button).
+- `children` — Button label / contents.
+
+**Data attributes applied to the trigger element** (Cal.com requirement):
+- `data-cal-link`
+- `data-cal-namespace`
+- `data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'`
+
+**Script handling:** loads `https://app.cal.com/embed/embed.js` exactly once
+per page via the official Cal.com loader snippet. Multiple `CalBookingButton`
+instances on the same page share the loader and run `Cal("init", namespace, …)`
+once per unique namespace.
+
+**Required CTA pattern:** all apps with booking CTAs MUST use this pattern
+instead of static `https://cal.com/...` links or inline iframes. Element-click
+(popup on click) is the canonical interaction. The slug and namespace MUST
+come from `PlatformConfig` (per canonical-cal-events.md §3) — never hardcoded
+in component code.
+
+**Current implementation:** local at `apps/wlvlp/components/CalBookingButton.tsx`.
+Candidate for promotion to `@vlp/member-ui` once a second app adopts the
+pattern; existing inline Cal embeds (TMP, TCVLP, VLP, TTMP, etc., per
+canonical-cal-events.md §6) should migrate to the shared component when that
+extraction lands.
+
 ---
 
 ## 12. Analytics
@@ -726,5 +772,6 @@ When this file conflicts with the blueprint, the blueprint wins. When this file 
 | 2026-04-16 | Modal/Popover/Tooltip tokens updated to `surface-popover` + `surface-overlay` | Old spec referenced `bg-surface-elevated` for floating containers — a 6% alpha token that produces transparent panels over page content. New tokens added to canonical-style.md §2.2 solve the class of bug. |
 | 2026-04-18 | Added §11 LeadChatbot component entry | Ships on TTMP; opt-in per app via PlatformConfig.chatbot. Documents Phase 2 aiEnabled scaffold as deliberately inert in v1. |
 | 2026-04-18 | Added §12 Analytics → PostHogPageview | PostHog wired as shared analytics provider behind cookie consent (TTMP first adopter). SDK lazy-loads only for opted-in users. Self-check renumbered from §12 → §13; subsequent sections renumbered accordingly. |
+| 2026-04-19 | Added §11.2 CalBookingButton as canonical booking pattern | Owner directive (WLVLP-FIX-002): all booking links must use Cal.com element-click popup embed, not static `https://cal.com/...` links or inline iframes. Slug/namespace must come from `PlatformConfig` (canonical-cal-events.md §3). First implementation lives at `apps/wlvlp/components/CalBookingButton.tsx`; existing pre-canonical inline Cal embeds enumerated in canonical-cal-events.md §6 should migrate as those apps are touched. |
 
 Append-only. Do not rewrite prior entries.

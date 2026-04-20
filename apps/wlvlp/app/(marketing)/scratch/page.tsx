@@ -4,6 +4,7 @@ import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import { createScratchTicket, revealScratchTicket, ScratchTicket } from '@/lib/api';
 
+
 const SCRATCH_OVERLAY_CLASS = 'absolute inset-0 bg-gradient-to-br from-[#2a2a3a] to-[#1a1a28] flex items-center justify-center z-10 transition-opacity rounded-2xl'; // canonical: layered scratch-overlay depth gradient — decorative dark hexes have no tokenable equivalent
 const SCRATCH_PRIZE_CLASS = 'absolute inset-0 flex items-center justify-center text-[4rem] z-0 bg-gradient-to-br from-[#0a0a18] to-[#12121f]'; // canonical: scratch prize layer depth gradient — decorative dark hexes have no tokenable equivalent
 
@@ -55,25 +56,8 @@ function ScratchContent({ accountId }: { accountId: string }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <nav className="sticky top-0 z-50 bg-black/85 backdrop-blur-md border-b border-white/[0.06]">
-        <div className="max-w-[1280px] mx-auto px-6 h-[60px] flex items-center justify-between">
-          <Link
-            href="/"
-            className="font-sora font-extrabold text-[1.2rem] text-brand-primary no-underline [text-shadow:0_0_20px_rgba(168,85,247,0.5)]"
-          >
-            Website Lotto
-          </Link>
-          <Link
-            href="/dashboard"
-            className="text-white/65 no-underline text-[0.88rem] font-medium transition-colors hover:text-brand-primary"
-          >
-            Dashboard
-          </Link>
-        </div>
-      </nav>
-
-      <main className="flex-1 flex flex-col items-center justify-center py-[60px] px-6 gap-6 text-center">
+    <div className="flex flex-col flex-1">
+      <div className="flex-1 flex flex-col items-center justify-center py-[60px] px-6 gap-6 text-center">
         <h1 className="font-sora text-[clamp(2rem,5vw,3rem)] font-extrabold text-white tracking-tight [text-shadow:0_0_40px_rgba(168,85,247,0.3)]">
           Scratch to Win
         </h1>
@@ -139,7 +123,7 @@ function ScratchContent({ accountId }: { accountId: string }) {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }
