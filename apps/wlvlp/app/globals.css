@@ -424,3 +424,41 @@ header.sticky {
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(0, 212, 255, 0.15);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LOAD MORE — neon down arrow + card fade-in (homepage template grid)
+   ══════════════════════════════════════════════════════════════════════════ */
+@keyframes bounceSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(255, 229, 52, 0.2); }
+  50% { box-shadow: 0 0 32px rgba(255, 229, 52, 0.45), 0 0 64px rgba(255, 229, 52, 0.1); }
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-bounce-slow {
+    animation: bounceSlow 2s ease-in-out infinite;
+  }
+  .cta-glow-pulse {
+    animation: glowPulse 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bounce-slow,
+  .cta-glow-pulse {
+    animation: none !important;
+  }
+  /* Disable the inline cardFadeIn animation applied via style prop */
+  .group.glass-card {
+    animation: none !important;
+  }
+}

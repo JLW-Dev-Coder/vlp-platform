@@ -1,4 +1,5 @@
 'use client';
+import type { CSSProperties } from 'react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -34,6 +35,8 @@ export default function HomePage() {
 
   const [searchRaw, setSearchRaw] = useState('');
   const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(24);
+  const prevVisibleCount = useRef(24);
 
   useEffect(() => {
     loadTemplates();
@@ -77,6 +80,13 @@ export default function HomePage() {
         return 0;
       });
   }, [templates, filter, search, sort]);
+
+  useEffect(() => {
+    prevVisibleCount.current = 24;
+    setVisibleCount(24);
+  }, [filter, search, sort]);
+
+  const visibleTemplates = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
   const featured = useMemo(() => {
     return [...templates]
@@ -299,11 +309,62 @@ export default function HomePage() {
               </button>
             </div>
           ) : (
-            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map(t => (
-                <TemplateCard key={t.slug} t={t} onVote={handleVote} />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {visibleTemplates.map((t, i) => (
+                  <TemplateCard
+                    key={t.slug}
+                    t={t}
+                    onVote={handleVote}
+                    fadeIn={i >= prevVisibleCount.current}
+                    fadeDelayMs={(i - prevVisibleCount.current) * 30}
+                  />
+                ))}
+              </div>
+              {visibleCount < filtered.length && (
+                <div className="flex flex-col items-center gap-3 py-12">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      prevVisibleCount.current = visibleCount;
+                      setVisibleCount(prev => Math.min(prev + 24, filtered.length));
+                    }}
+                    className="group flex flex-col items-center gap-2 text-center transition-transform hover:scale-105 active:scale-95"
+                  >
+                    <span className="text-sm font-semibold text-neon-yellow tracking-wide uppercase">
+                      Load More Templates
+                    </span>
+                    <span className="text-xs text-white/50">
+                      Showing {visibleTemplates.length} of {filtered.length}
+                    </span>
+                    <div className="mt-2 flex h-12 w-12 items-center justify-center rounded-full border border-neon-yellow/40 bg-neon-yellow/10 cta-glow-pulse">
+                      <svg
+                        width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" strokeWidth="2.5"
+                        strokeLinecap="round" strokeLinejoin="round"
+                        className="text-neon-yellow animate-bounce-slow"
+                        aria-hidden
+                      >
+                        <path d="M12 5v14" />
+                        <path d="m19 12-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </button>
+                  {visibleCount >= 96 && visibleCount < filtered.length && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        prevVisibleCount.current = visibleCount;
+                        setVisibleCount(filtered.length);
+                      }}
+                      className="mt-2 text-xs text-white/40 hover:text-white/70 underline underline-offset-2 transition-colors"
+                    >
+                      Show all {filtered.length} templates
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
@@ -506,14 +567,17 @@ function PricingBox({ price, suffix, label, badge, features, boldLast, ctaText, 
   );
 }
 
-function TemplateCard({ t, onVote }: { t: Template; onVote: (slug: string) => void }) {
+function TemplateCard({ t, onVote, fadeIn, fadeDelayMs }: { t: Template; onVote: (slug: string) => void; fadeIn?: boolean; fadeDelayMs?: number }) {
   const status = normalizedStatus(t.status);
   const voteCount = t.vote_count ?? 0;
   const bidCount = t.bid_count ?? 0;
   const highBid = t.high_bid ?? t.current_bid ?? null;
+  const fadeStyle: CSSProperties | undefined = fadeIn
+    ? { animation: `cardFadeIn 0.4s ease-out ${Math.max(0, fadeDelayMs ?? 0)}ms both` }
+    : undefined;
 
   return (
-    <div className="group glass-card card-glow rounded-[14px] overflow-hidden flex flex-col hover:border-neon-blue/50">
+    <div style={fadeStyle} className="group glass-card card-glow rounded-[14px] overflow-hidden flex flex-col hover:border-neon-blue/50">
       <Link
         href={`/sites/${t.slug}`}
         className="block aspect-[16/9] bg-gradient-to-br from-[rgba(0,212,255,0.06)] to-[rgba(255,45,138,0.04)] overflow-hidden relative no-underline"
