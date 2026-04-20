@@ -89,6 +89,7 @@ export const wlvlpConfig: PlatformConfig = {
         { label: 'Template Gallery', href: '/' },
       ],
       toolsExtras: [
+        { label: 'Get Started', href: '/get-started' },
         { label: 'Template Gallery', href: '/' },
         { label: 'Before/After Preview', href: '/before-after' },
         { label: 'Design Tips', href: '/design-tips' },
