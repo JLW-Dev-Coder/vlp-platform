@@ -239,7 +239,7 @@ export const TEMPLATES: TemplateEntry[] = [
   { slug: 'lantern-alley-scroll', title: 'Lantern Alley Scroll', category: 'other' },
   { slug: 'legacy-bridge-estate-advisory', title: 'Legacy Bridge Estate Advisory', category: 'other' },
   { slug: 'lightbox-window', title: 'Lightbox Window', category: 'other' },
-  { slug: 'living-texture-Lab', title: 'Living Texture Lab', category: 'other' },
+  { slug: 'living-texture-lab', title: 'Living Texture Lab', category: 'other' },
   { slug: 'map-room-explorer', title: 'Map Room Explorer', category: 'other' },
   { slug: 'mini-vow-planner', title: 'Mini Vow Planner', category: 'other' },
   { slug: 'mirror-corridor-reveal', title: 'Mirror Corridor Reveal', category: 'other' },
