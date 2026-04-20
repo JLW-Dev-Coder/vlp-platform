@@ -189,10 +189,9 @@ export async function getTemplatesWithFallback(): Promise<Template[]> {
       };
     });
 
-    // Include any live rows not represented in the catalog
-    const catalogSlugs = new Set(catalogTemplates.map(t => t.slug));
-    for (const t of liveList) if (!catalogSlugs.has(t.slug)) merged.push(t);
-
+    // D1-only rows not in catalog are intentionally dropped.
+    // The catalog is the sole authority for which templates appear in the gallery.
+    // D1 can override status/votes/bids for catalog slugs, but cannot add new ones.
     return merged;
   } catch {
     return catalogTemplates;
