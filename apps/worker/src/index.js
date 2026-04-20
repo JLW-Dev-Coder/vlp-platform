@@ -17331,6 +17331,12 @@ TTMP Support Team
           }
         }
 
+        // Stripe rejects allow_promotion_codes + discounts on the same session.
+        // Only surface the promo code field when no scratch-ticket promo was auto-applied.
+        if (!sessionPayload.discounts) {
+          sessionPayload.allow_promotion_codes = true;
+        }
+
         const checkout_session = await stripePost('/checkout/sessions', sessionPayload, env, vlpSecretKey);
 
         return json({ ok: true, session_url: checkout_session.url }, 200, request);
