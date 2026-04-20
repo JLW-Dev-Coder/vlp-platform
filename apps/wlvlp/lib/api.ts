@@ -521,6 +521,108 @@ export function getCustomSiteUrl(slug: string): string {
   return `${API_BASE}/v1/wlvlp/custom-sites/${slug}`;
 }
 
+export interface UserBid {
+  template_slug: string;
+  template_title: string;
+  amount: number;
+  created_at: string;
+  is_winning: boolean;
+  auction_ends_at?: string | null;
+  template_status: Template['status'];
+}
+
+async function fetchTemplatesByStatus(status?: string): Promise<Template[]> {
+  try {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+    const data = await apiFetch<{ ok?: boolean; templates?: Template[] } | Template[]>(
+      `/v1/wlvlp/templates${qs}`
+    );
+    if (Array.isArray(data)) return data;
+    return data?.templates ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export function getActiveAuctionTemplates(): Promise<Template[]> {
+  return fetchTemplatesByStatus('auction');
+}
+
+export function getAvailableTemplates(): Promise<Template[]> {
+  return fetchTemplatesByStatus('available');
+}
+
+interface RawBid {
+  bid_id?: string;
+  account_id: string;
+  amount: number;
+  created_at: string;
+}
+
+async function fetchRawBids(slug: string): Promise<RawBid[]> {
+  try {
+    const data = await apiFetch<{ ok?: boolean; bids?: RawBid[] } | RawBid[]>(
+      `/v1/wlvlp/templates/${encodeURIComponent(slug)}/bids`
+    );
+    if (Array.isArray(data)) return data;
+    return data?.bids ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// The Worker masks account_id on /templates/:slug/bids (first 4 chars + '****').
+// We derive the user's bid activity by matching that prefix across active
+// auction templates. No user-scoped bid route exists in the Worker yet.
+export async function getMyBids(accountId: string): Promise<UserBid[]> {
+  if (!accountId) return [];
+  const maskedPrefix = accountId.substring(0, 4) + '****';
+  const templates = await getActiveAuctionTemplates();
+  const results: UserBid[] = [];
+  for (const t of templates) {
+    const bids = await fetchRawBids(t.slug);
+    if (!bids.length) continue;
+    const mine = bids.filter((b) => b.account_id === maskedPrefix);
+    if (!mine.length) continue;
+    const topMine = mine.reduce<RawBid>((acc, b) => (b.amount > acc.amount ? b : acc), mine[0]);
+    const highest = bids.reduce((a, b) => Math.max(a, b.amount), 0);
+    results.push({
+      template_slug: t.slug,
+      template_title: t.title,
+      amount: topMine.amount,
+      created_at: topMine.created_at,
+      is_winning: topMine.amount >= highest,
+      auction_ends_at: t.auction_ends_at ?? null,
+      template_status: t.status,
+    });
+  }
+  return results;
+}
+
+export interface NotificationRow {
+  notification_id: string;
+  account_id: string;
+  title: string;
+  message: string;
+  severity: string;
+  read: number | boolean;
+  created_at: string;
+}
+
+export async function getNotifications(
+  accountId: string,
+  limit = 20
+): Promise<NotificationRow[]> {
+  try {
+    const data = await apiFetch<{ ok: boolean; notifications: NotificationRow[] }>(
+      `/v1/notifications/in-app?accountId=${encodeURIComponent(accountId)}&limit=${limit}`
+    );
+    return data.notifications ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getAssetPage(slug: string): Promise<AssetPageData | null> {
   try {
     const res = await fetch(`${API_BASE}/v1/wlvlp/asset-pages/${slug}`, {
