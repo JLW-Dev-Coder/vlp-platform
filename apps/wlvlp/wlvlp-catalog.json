@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-08T04:46:13.127Z",
-  "total_sites": 223,
+  "generated": "2026-04-20T21:17:36.009Z",
+  "total_sites": 261,
   "structure": "public/sites/{slug}/index.html",
   "categories": [
     "Beauty and Fashion",
@@ -2141,6 +2141,506 @@
       "canva_thread": "https://www.canva.com/ai/code/thread/b7b383d9-6e2d-4c3f-828c-c2416721fb01",
       "categories": [
         "Lifestyle and Hobby"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "ai-concierge-setup",
+      "title": "Ai Concierge Setup",
+      "canva_thread": "https://www.canva.com/ai/code/thread/b388f947-0160-4eef-8a65-915f1e06c9d6",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "atlas-flip-co",
+      "title": "Atlas Flip Co",
+      "canva_thread": "https://www.canva.com/ai/code/thread/0d9216f0-03ed-4ab9-baaa-b22aae77f2ce",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "aurora-glass-panels",
+      "title": "Aurora Glass Panels",
+      "canva_thread": "https://www.canva.com/ai/code/thread/ba304952-d3d0-48ad-86a4-be254b176908",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "case-film-studio",
+      "title": "Case Film Studio",
+      "canva_thread": "https://www.canva.com/ai/code/thread/bdfbaa42-fa38-4c4e-8994-3b59eb76a500",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "charge-nest-installers",
+      "title": "Charge Nest Installers",
+      "canva_thread": "https://www.canva.com/ai/code/thread/a34f4865-8f9b-49f7-b7d6-f8829f722446",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "contrast-club-wellness",
+      "title": "Contrast Club Wellness",
+      "canva_thread": "https://www.canva.com/ai/code/thread/88215086-cd2a-46fb-9df9-d631427825fc",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "cross-border-tax-partners",
+      "title": "Cross Border Tax Partners",
+      "canva_thread": "https://www.canva.com/ai/code/thread/5d95d4a7-9729-453c-971b-6b79390ead24",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "curio-cabinet-catalog",
+      "title": "Curio Cabinet Catalog",
+      "canva_thread": "https://www.canva.com/ai/code/thread/3a65ea49-0200-45d2-8412-bb38b99aa956",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "cutaway-living",
+      "title": "Cutaway Living",
+      "canva_thread": "https://www.canva.com/ai/code/thread/87b3c230-ed19-4eb6-bfba-96e0a8494de9",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "cutout-city-studio",
+      "title": "Cutout City Studio",
+      "canva_thread": "https://www.canva.com/ai/code/thread/385c75bf-8d39-4e12-bfd7-dc9895fd27a3",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "detail-zoom-atelier",
+      "title": "Detail Zoom Atelier",
+      "canva_thread": "https://www.canva.com/ai/code/thread/f490e60c-05c0-4273-8d4d-d8288e5f13a6",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "draft-to-done-showcase",
+      "title": "Draft To Done Showcase",
+      "canva_thread": "https://www.canva.com/ai/code/thread/48ef8bba-ecfd-440c-9e6e-c1514f6ab1fa",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "exhibit-drop-gallery",
+      "title": "Exhibit Drop Gallery",
+      "canva_thread": "https://www.canva.com/ai/code/thread/d24b4830-04ce-473d-aef3-0a43d7200293",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "flow-grid-automation",
+      "title": "Flow Grid Automation",
+      "canva_thread": "https://www.canva.com/ai/code/thread/edea2de5-267b-4653-886d-497cc8ff90e5",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "folded-poster-studio",
+      "title": "Folded Poster Studio",
+      "canva_thread": "https://www.canva.com/ai/code/thread/b9c73224-ed3c-4062-941c-b7f2a4ff2a96",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "forecast-frame-studio",
+      "title": "Forecast Frame Studio",
+      "canva_thread": "https://www.canva.com/ai/code/thread/78a6215a-dfca-4c6e-ac3f-3d36181c0710",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "gallery-shift-studio",
+      "title": "Gallery Shift Studio",
+      "canva_thread": "https://www.canva.com/ai/code/thread/375b0447-254a-430a-86f2-2c1916df1918",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "glass-elevator-one-pager",
+      "title": "Glass Elevator One Pager",
+      "canva_thread": "https://www.canva.com/ai/code/thread/7eeebe68-8de4-445a-8f13-8ebe393e2a05",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "index-orbit-hub",
+      "title": "Index Orbit Hub",
+      "canva_thread": "https://www.canva.com/ai/code/thread/ef24942c-8395-4562-98db-cd77719445cb",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "ink-paper-editorial",
+      "title": "Ink Paper Editorial",
+      "canva_thread": "https://www.canva.com/ai/code/thread/a03b46ca-db3a-4924-b488-bc6fe84403fb",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "insight-forge-ai-analytics",
+      "title": "Insight Forge Ai Analytics",
+      "canva_thread": "https://www.canva.com/ai/code/thread/6828861f-6802-4dd0-a82c-47ea583d9525",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "lantern-alley-scroll",
+      "title": "Lantern Alley Scroll",
+      "canva_thread": "https://www.canva.com/ai/code/thread/d4d93958-9f81-47de-bc89-a9e61459c386",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "legacy-bridge-estate-advisory",
+      "title": "Legacy Bridge Estate Advisory",
+      "canva_thread": "https://www.canva.com/ai/code/thread/d46c11c1-b4b7-4e7a-aa7f-90410776675b",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "lightbox-window",
+      "title": "Lightbox Window",
+      "canva_thread": "https://www.canva.com/ai/code/thread/20f9a979-36b8-4396-817b-022c88c9c9e4",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "living-texture-Lab",
+      "title": "Living Texture Lab",
+      "canva_thread": "https://www.canva.com/ai/code/thread/4e924c54-9d62-4575-bda4-c25b960136cc",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "map-room-explorer",
+      "title": "Map Room Explorer",
+      "canva_thread": "https://www.canva.com/ai/code/thread/c7f91802-98ec-4caf-a50f-60dc8d8b7080",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "mini-vow-planner",
+      "title": "Mini Vow Planner",
+      "canva_thread": "https://www.canva.com/ai/code/thread/32ebc328-7e39-4ecf-b216-6b533445c2c3",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "mirror-corridor-reveal",
+      "title": "Mirror Corridor Reveal",
+      "canva_thread": "https://www.canva.com/ai/code/thread/dae7ac9c-2582-4a3b-844d-fecd3bccb7ec",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "neon-blueprint-grid",
+      "title": "Neon Blueprint Grid",
+      "canva_thread": "https://www.canva.com/ai/code/thread/c833a485-e80a-44ec-bc84-5f85122e3b25",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "neon-street-lookbook",
+      "title": "Neon Street Lookbook",
+      "canva_thread": "https://www.canva.com/ai/code/thread/b6b4c8ff-dc20-4c5e-aa45-b5dc11a1f635",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "night-market-cards",
+      "title": "Night Market Cards",
+      "canva_thread": "https://www.canva.com/ai/code/thread/34278bf4-66e9-4d7f-843e-070184042e10",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "night-train-narrative",
+      "title": "Night Train Narrative",
+      "canva_thread": "https://www.canva.com/ai/code/thread/95f51137-27eb-43cb-afc7-830a4f10f56d",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "orbit-ring-catalog",
+      "title": "Orbit Ring Catalog",
+      "canva_thread": "https://www.canva.com/ai/code/thread/d6937643-6b13-42be-aa96-8cd9effc476f",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "paper-theatre-scroll",
+      "title": "Paper Theatre Scroll",
+      "canva_thread": "https://www.canva.com/ai/code/thread/911c2a3d-d282-4de2-93bc-a97b9367f641",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "portal-look-beauty",
+      "title": "Portal Look Beauty",
+      "canva_thread": "https://www.canva.com/ai/code/thread/88abd25d-3e76-4e4f-8404-aeeb2f5a9863",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "poster-pulse-wall",
+      "title": "Poster Pulse Wall",
+      "canva_thread": "https://www.canva.com/ai/code/thread/cf954328-740a-4397-99f1-bc09d0b8bff6",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "prism-catalog",
+      "title": "Prism Catalog",
+      "canva_thread": "https://www.canva.com/ai/code/thread/199bb1e0-d2f1-4fb1-a792-b9699ddd461d",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "quiet-authority-studio",
+      "title": "Quiet Authority Studio",
+      "canva_thread": "https://www.canva.com/ai/code/thread/ef27afcf-52b0-409d-b996-737dfd75186c",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "reel-ready-videos",
+      "title": "Reel Ready Videos",
+      "canva_thread": "https://www.canva.com/ai/code/thread/f00fd6fd-811f-47f5-8078-cfae5681016e",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "rooftop-terrace-scroll",
+      "title": "Rooftop Terrace Scroll",
+      "canva_thread": "https://www.canva.com/ai/code/thread/bc529512-e669-4b33-bd7d-db15667b32ee",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "side-scroll-chapters",
+      "title": "Side Scroll Chapters",
+      "canva_thread": "https://www.canva.com/ai/code/thread/604fbae7-2a38-4629-80f1-8c5790e834a6",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "skyline-time-code",
+      "title": "Skyline Time Code",
+      "canva_thread": "https://www.canva.com/ai/code/thread/6816e90c-dda0-401c-91ad-521bdca980af",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "split-scene-studio",
+      "title": "Split Scene Studio",
+      "canva_thread": "https://www.canva.com/ai/code/thread/b3675e79-9760-4d95-8951-21c5fb7b0585",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "stack-stage-one-pager",
+      "title": "Stack Stage One Pager",
+      "canva_thread": "https://www.canva.com/ai/code/thread/e5175fcc-2593-433d-a7d0-b14a46ab91ff",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "studio-desk-story",
+      "title": "Studio Desk Story",
+      "canva_thread": "https://www.canva.com/ai/code/thread/e086fccc-cd84-42de-bb5c-67d324e10d77",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "sunroom-bloom",
+      "title": "Sunroom Bloom",
+      "canva_thread": "https://www.canva.com/ai/code/thread/4c569327-d671-4b8c-871a-e8d5a6f17ac6",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "texture-orchestra-atelier",
+      "title": "Texture Orchestra Atelier",
+      "canva_thread": "https://www.canva.com/ai/code/thread/f8b6a671-2d40-4b85-8254-a614665d64ac",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "timeline-kinetic",
+      "title": "Timeline Kinetic",
+      "canva_thread": "https://www.canva.com/ai/code/thread/2b8c000e-4bad-41a5-ae3a-10c7f7c12fbc",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "vault-door-drop",
+      "title": "Vault Door Drop",
+      "canva_thread": "https://www.canva.com/ai/code/thread/cc4931aa-952a-4cbc-90c0-09986fe52cd8",
+      "categories": [
+        "Uncategorized"
+      ],
+      "status": "available",
+      "price": null
+    },
+    {
+      "slug": "waterline-drift",
+      "title": "Waterline Drift",
+      "canva_thread": "https://www.canva.com/ai/code/thread/15280f55-153d-4828-851f-157e6f14b7d3",
+      "categories": [
+        "Uncategorized"
       ],
       "status": "available",
       "price": null
