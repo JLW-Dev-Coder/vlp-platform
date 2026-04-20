@@ -1,6 +1,20 @@
 import catalog from '@/wlvlp-catalog.json';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.virtuallaunch.pro';
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.virtuallaunch.pro';
+const SITE_ORIGIN = 'https://websitelotto.virtuallaunch.pro';
+
+export async function requestMagicLink(email: string, redirectPath: string): Promise<{ ok: boolean }> {
+  const redirectUri = redirectPath.startsWith('http') ? redirectPath : `${SITE_ORIGIN}${redirectPath}`;
+  return apiFetch('/v1/auth/magic-link/request', {
+    method: 'POST',
+    body: JSON.stringify({ email, redirectUri }),
+  });
+}
+
+export function googleAuthUrl(redirectPath: string): string {
+  const returnTo = redirectPath.startsWith('http') ? redirectPath : `${SITE_ORIGIN}${redirectPath}`;
+  return `${API_BASE}/v1/auth/google/start?return_to=${encodeURIComponent(returnTo)}`;
+}
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

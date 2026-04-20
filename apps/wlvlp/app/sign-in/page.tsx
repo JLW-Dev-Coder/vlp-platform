@@ -2,6 +2,7 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { requestMagicLink, googleAuthUrl } from '@/lib/api';
 
 const PAGE = 'min-h-screen flex items-center justify-center p-6';
 const CARD = 'w-full max-w-[420px] bg-white/[0.03] border border-white/[0.09] rounded-[20px] py-10 px-9 flex flex-col gap-5';
@@ -21,12 +22,7 @@ function SignInForm() {
     e.preventDefault();
     setStatus('loading');
     try {
-      const res = await fetch('/api/auth/magic-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, redirect }),
-      });
-      if (!res.ok) throw new Error('Failed to send link');
+      await requestMagicLink(email, redirect);
       setStatus('sent');
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Unknown error');
@@ -82,7 +78,7 @@ function SignInForm() {
         </div>
 
         <a
-          href={`/api/auth/google?redirect=${encodeURIComponent(redirect)}`}
+          href={googleAuthUrl(redirect)}
           className="flex items-center justify-center gap-2.5 w-full px-6 py-3 bg-white/[0.04] border border-white/[0.12] rounded-[10px] text-white/85 text-[0.9rem] font-medium no-underline cursor-pointer transition-all hover:bg-white/[0.08] hover:border-white/20"
         >
           <GoogleLogo />
