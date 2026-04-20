@@ -16736,12 +16736,20 @@ TTMP Support Team
         const templatesResult = await env.DB.prepare(query).bind(...bindings).all();
         const templates = templatesResult.results || [];
 
-        // Get active bid counts for each template
+        // Aggregate active-bid stats per slug in one query
+        const statsResult = await env.DB.prepare(
+          "SELECT slug, COUNT(*) as bid_count, MAX(amount) as high_bid FROM wlvlp_bids WHERE status = 'active' GROUP BY slug"
+        ).all();
+        const stats = {};
+        for (const row of statsResult.results || []) {
+          stats[row.slug] = { bid_count: row.bid_count || 0, high_bid: row.high_bid || 0 };
+        }
+
         for (const template of templates) {
-          const bidCountResult = await env.DB.prepare(
-            "SELECT COUNT(*) as bid_count FROM wlvlp_bids WHERE slug = ? AND status = 'active'"
-          ).bind(template.slug).first();
-          template.active_bid_count = bidCountResult?.bid_count || 0;
+          const s = stats[template.slug] || { bid_count: 0, high_bid: 0 };
+          template.bid_count = s.bid_count;
+          template.active_bid_count = s.bid_count; // legacy alias
+          template.high_bid = s.high_bid || null;
         }
 
         return json({
@@ -16950,16 +16958,23 @@ TTMP Support Team
     handler: async (_method, _pattern, params, request, env) => {
       const { slug } = params;
 
+      // Optional session — authenticated callers see their own bids unmasked
+      const session = await getSessionFromRequest(request, env);
+      const callerId = session?.account_id || null;
+
       try {
         const bidsResult = await env.DB.prepare(
-          "SELECT bid_id, account_id, amount, created_at FROM wlvlp_bids WHERE slug = ? ORDER BY amount DESC"
+          "SELECT bid_id, account_id, amount, status, created_at FROM wlvlp_bids WHERE slug = ? ORDER BY amount DESC"
         ).bind(slug).all();
 
-        const bids = (bidsResult.results || []).map(bid => ({
-          ...bid,
-          // Mask account_id for privacy
-          account_id: bid.account_id.substring(0, 4) + '****'
-        }));
+        const bids = (bidsResult.results || []).map(bid => {
+          const isOwn = callerId && bid.account_id === callerId;
+          return {
+            ...bid,
+            is_own: !!isOwn,
+            account_id: isOwn ? bid.account_id : bid.account_id.substring(0, 4) + '****',
+          };
+        });
 
         return json({
           ok: true,
@@ -16968,6 +16983,104 @@ TTMP Support Team
       } catch (e) {
         console.error('WLVLP bids list error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/wlvlp/bids/by-account/:account_id
+  {
+    method: 'GET', pattern: '/v1/wlvlp/bids/by-account/:account_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const { account_id } = params;
+      if (account_id !== session.account_id) {
+        return json({ ok: false, error: 'UNAUTHORIZED' }, 403, request);
+      }
+
+      try {
+        const bidsResult = await env.DB.prepare(
+          `SELECT b.bid_id, b.slug, b.amount, b.status, b.created_at,
+                  t.title AS template_title, t.status AS template_status,
+                  t.auction_ends_at
+           FROM wlvlp_bids b
+           LEFT JOIN wlvlp_templates t ON t.slug = b.slug
+           WHERE b.account_id = ?
+           ORDER BY b.created_at DESC`
+        ).bind(account_id).all();
+
+        const rows = bidsResult.results || [];
+
+        // Resolve current high bid per slug to compute is_winning
+        const slugs = [...new Set(rows.map(r => r.slug))];
+        const highs = {};
+        if (slugs.length) {
+          const placeholders = slugs.map(() => '?').join(',');
+          const hiResult = await env.DB.prepare(
+            `SELECT slug, MAX(amount) AS high FROM wlvlp_bids WHERE status = 'active' AND slug IN (${placeholders}) GROUP BY slug`
+          ).bind(...slugs).all();
+          for (const r of hiResult.results || []) highs[r.slug] = r.high || 0;
+        }
+
+        const bids = rows.map(r => ({
+          bid_id: r.bid_id,
+          template_slug: r.slug,
+          template_title: r.template_title || r.slug,
+          template_status: r.template_status || null,
+          amount: r.amount,
+          status: r.status,
+          created_at: r.created_at,
+          auction_ends_at: r.auction_ends_at || null,
+          is_winning: (highs[r.slug] || 0) === r.amount,
+        }));
+
+        return json({ ok: true, bids }, 200, request);
+      } catch (e) {
+        console.error('WLVLP bids by-account error:', e?.message);
+        return json({ ok: true, bids: [] }, 200, request);
+      }
+    },
+  },
+
+  // GET /v1/wlvlp/votes/by-account/:account_id
+  {
+    method: 'GET', pattern: '/v1/wlvlp/votes/by-account/:account_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const { account_id } = params;
+      if (account_id !== session.account_id) {
+        return json({ ok: false, error: 'UNAUTHORIZED' }, 403, request);
+      }
+
+      try {
+        const votesResult = await env.DB.prepare(
+          `SELECT v.id, v.template_slug, v.voted_at,
+                  t.title AS template_title, t.status AS template_status,
+                  t.category AS template_category, t.thumbnail_url, t.vote_count
+           FROM wlvlp_votes v
+           LEFT JOIN wlvlp_templates t ON t.slug = v.template_slug
+           WHERE v.account_id = ?
+           ORDER BY v.voted_at DESC`
+        ).bind(account_id).all();
+
+        const votes = (votesResult.results || []).map(r => ({
+          id: r.id,
+          template_slug: r.template_slug,
+          template_title: r.template_title || r.template_slug,
+          template_status: r.template_status || null,
+          template_category: r.template_category || null,
+          thumbnail_url: r.thumbnail_url || null,
+          vote_count: r.vote_count || 0,
+          created_at: r.voted_at,
+        }));
+
+        return json({ ok: true, votes }, 200, request);
+      } catch (e) {
+        console.error('WLVLP votes by-account error:', e?.message);
+        return json({ ok: true, votes: [] }, 200, request);
       }
     },
   },

@@ -51,6 +51,8 @@ export interface Template {
   current_bid?: number;
   auction_ends_at?: string;
   price_monthly: number;
+  bid_count?: number;
+  high_bid?: number | null;
 }
 
 export interface Bid {
@@ -110,9 +112,13 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
-export function getTemplates(params?: Record<string, string>): Promise<Template[]> {
+export async function getTemplates(params?: Record<string, string>): Promise<Template[]> {
   const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  return apiFetch(`/v1/wlvlp/templates${qs}`);
+  const data = await apiFetch<{ ok?: boolean; templates?: Template[] } | Template[]>(
+    `/v1/wlvlp/templates${qs}`
+  );
+  if (Array.isArray(data)) return data;
+  return data?.templates ?? [];
 }
 
 interface CatalogSite {
@@ -155,13 +161,41 @@ export function getTemplatesFromCatalog(): Template[] {
     });
 }
 
+// Merge the static catalog (the full 222-site inventory) with live D1 stats
+// so every template renders with correct status, vote_count, bid_count, high_bid.
+// The Worker only seeds a subset of templates in D1; the catalog covers the rest.
 export async function getTemplatesWithFallback(): Promise<Template[]> {
+  const catalogTemplates = getTemplatesFromCatalog();
   try {
-    const list = await getTemplates();
-    if (Array.isArray(list) && list.length > 0) return list;
-    return getTemplatesFromCatalog();
+    const liveList = await getTemplates();
+    if (!Array.isArray(liveList) || liveList.length === 0) return catalogTemplates;
+
+    const liveBySlug = new Map<string, Template>();
+    for (const t of liveList) liveBySlug.set(t.slug, t);
+
+    // Merge: catalog provides the base row, live data overrides stats + status
+    const merged = catalogTemplates.map(t => {
+      const live = liveBySlug.get(t.slug);
+      if (!live) return t;
+      return {
+        ...t,
+        status: live.status ?? t.status,
+        vote_count: live.vote_count ?? t.vote_count,
+        bid_count: live.bid_count ?? 0,
+        high_bid: live.high_bid ?? null,
+        current_bid: live.current_bid ?? live.high_bid ?? undefined,
+        auction_ends_at: live.auction_ends_at ?? t.auction_ends_at,
+        thumbnail_url: live.thumbnail_url ?? t.thumbnail_url,
+      };
+    });
+
+    // Include any live rows not represented in the catalog
+    const catalogSlugs = new Set(catalogTemplates.map(t => t.slug));
+    for (const t of liveList) if (!catalogSlugs.has(t.slug)) merged.push(t);
+
+    return merged;
   } catch {
-    return getTemplatesFromCatalog();
+    return catalogTemplates;
   }
 }
 
@@ -533,12 +567,8 @@ export interface UserBid {
 
 async function fetchTemplatesByStatus(status?: string): Promise<Template[]> {
   try {
-    const qs = status ? `?status=${encodeURIComponent(status)}` : '';
-    const data = await apiFetch<{ ok?: boolean; templates?: Template[] } | Template[]>(
-      `/v1/wlvlp/templates${qs}`
-    );
-    if (Array.isArray(data)) return data;
-    return data?.templates ?? [];
+    const params = status ? { status } : undefined;
+    return await getTemplates(params);
   } catch {
     return [];
   }
@@ -552,51 +582,59 @@ export function getAvailableTemplates(): Promise<Template[]> {
   return fetchTemplatesByStatus('available');
 }
 
-interface RawBid {
-  bid_id?: string;
-  account_id: string;
+interface BidByAccountRow {
+  bid_id: string;
+  template_slug: string;
+  template_title: string;
+  template_status: Template['status'] | null;
   amount: number;
+  status: string;
   created_at: string;
+  auction_ends_at: string | null;
+  is_winning: boolean;
 }
 
-async function fetchRawBids(slug: string): Promise<RawBid[]> {
+export async function getMyBids(accountId: string): Promise<UserBid[]> {
+  if (!accountId) return [];
   try {
-    const data = await apiFetch<{ ok?: boolean; bids?: RawBid[] } | RawBid[]>(
-      `/v1/wlvlp/templates/${encodeURIComponent(slug)}/bids`
+    const data = await apiFetch<{ ok?: boolean; bids?: BidByAccountRow[] }>(
+      `/v1/wlvlp/bids/by-account/${encodeURIComponent(accountId)}`
     );
-    if (Array.isArray(data)) return data;
-    return data?.bids ?? [];
+    const rows = data?.bids ?? [];
+    return rows.map(r => ({
+      template_slug: r.template_slug,
+      template_title: r.template_title,
+      amount: r.amount,
+      created_at: r.created_at,
+      is_winning: r.is_winning,
+      auction_ends_at: r.auction_ends_at,
+      template_status: (r.template_status ?? 'auction') as Template['status'],
+    }));
   } catch {
     return [];
   }
 }
 
-// The Worker masks account_id on /templates/:slug/bids (first 4 chars + '****').
-// We derive the user's bid activity by matching that prefix across active
-// auction templates. No user-scoped bid route exists in the Worker yet.
-export async function getMyBids(accountId: string): Promise<UserBid[]> {
+export interface UserVote {
+  template_slug: string;
+  template_title: string;
+  template_status: Template['status'] | null;
+  template_category: string | null;
+  thumbnail_url: string | null;
+  vote_count: number;
+  created_at: string;
+}
+
+export async function getMyVotes(accountId: string): Promise<UserVote[]> {
   if (!accountId) return [];
-  const maskedPrefix = accountId.substring(0, 4) + '****';
-  const templates = await getActiveAuctionTemplates();
-  const results: UserBid[] = [];
-  for (const t of templates) {
-    const bids = await fetchRawBids(t.slug);
-    if (!bids.length) continue;
-    const mine = bids.filter((b) => b.account_id === maskedPrefix);
-    if (!mine.length) continue;
-    const topMine = mine.reduce<RawBid>((acc, b) => (b.amount > acc.amount ? b : acc), mine[0]);
-    const highest = bids.reduce((a, b) => Math.max(a, b.amount), 0);
-    results.push({
-      template_slug: t.slug,
-      template_title: t.title,
-      amount: topMine.amount,
-      created_at: topMine.created_at,
-      is_winning: topMine.amount >= highest,
-      auction_ends_at: t.auction_ends_at ?? null,
-      template_status: t.status,
-    });
+  try {
+    const data = await apiFetch<{ ok?: boolean; votes?: UserVote[] }>(
+      `/v1/wlvlp/votes/by-account/${encodeURIComponent(accountId)}`
+    );
+    return data?.votes ?? [];
+  } catch {
+    return [];
   }
-  return results;
 }
 
 export interface NotificationRow {

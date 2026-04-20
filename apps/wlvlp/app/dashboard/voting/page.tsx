@@ -2,31 +2,42 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ThumbsUp, Inbox, AlertCircle } from 'lucide-react';
+import { ThumbsUp, Inbox, AlertCircle, Heart } from 'lucide-react';
+import { useAppShell } from '@vlp/member-ui';
 import {
   getTemplatesWithFallback,
   voteTemplate,
+  getMyVotes,
   type Template,
+  type UserVote,
 } from '@/lib/api';
 
 export default function VotingPage() {
+  const { session } = useAppShell();
+  const accountId = session.account_id;
   const [templates, setTemplates] = useState<Template[] | null>(null);
+  const [myVotes, setMyVotes] = useState<UserVote[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [voting, setVoting] = useState<string | null>(null);
   const [voteError, setVoteError] = useState('');
 
   useEffect(() => {
-    load();
-  }, []);
+    if (!accountId) return;
+    load(accountId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId]);
 
-  function load() {
+  function load(id: string) {
     setLoading(true);
     setError('');
-    getTemplatesWithFallback()
-      .then(setTemplates)
+    Promise.all([getTemplatesWithFallback(), getMyVotes(id)])
+      .then(([list, votes]) => {
+        setTemplates(list);
+        setMyVotes(votes);
+      })
       .catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : 'Failed to load templates')
+        setError(e instanceof Error ? e.message : 'Failed to load voting data')
       )
       .finally(() => setLoading(false));
   }
@@ -41,6 +52,10 @@ export default function VotingPage() {
           t.slug === slug ? { ...t, vote_count: res.vote_count ?? t.vote_count } : t
         ) ?? null
       );
+      if (accountId) {
+        const votes = await getMyVotes(accountId);
+        setMyVotes(votes);
+      }
     } catch (e: unknown) {
       setVoteError(e instanceof Error ? e.message : 'Vote failed');
     } finally {
@@ -48,6 +63,7 @@ export default function VotingPage() {
     }
   }
 
+  const votedSlugs = new Set((myVotes ?? []).map(v => v.template_slug));
   const top = (templates ?? [])
     .filter((t) => t.status === 'available' || t.status === 'auction')
     .sort((a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0))
@@ -75,7 +91,7 @@ export default function VotingPage() {
             <p className="mt-1 text-amber-200/70">{error}</p>
             <button
               type="button"
-              onClick={load}
+              onClick={() => accountId && load(accountId)}
               className="mt-3 inline-flex rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 hover:bg-amber-400/20"
             >
               Try Again
@@ -87,6 +103,37 @@ export default function VotingPage() {
       {voteError && !error && (
         <div className="rounded-lg border border-rose-500/30 bg-rose-500/5 px-4 py-2.5 text-sm text-rose-300">
           {voteError}
+        </div>
+      )}
+
+      {!loading && !error && myVotes && myVotes.length > 0 && (
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <Heart className="h-4 w-4 text-brand-primary" />
+            <h2 className="text-xs uppercase tracking-widest text-white/40">
+              Your Votes ({myVotes.length})
+            </h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {myVotes.map((v) => (
+              <Link
+                key={v.template_slug}
+                href={`/sites/${v.template_slug}`}
+                className="flex items-center justify-between gap-3 rounded-xl border border-brand-primary/20 bg-brand-primary/5 p-4 text-sm text-white/85 transition hover:border-brand-primary/40 hover:bg-brand-primary/10"
+              >
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{v.template_title}</div>
+                  <div className="mt-0.5 text-xs text-white/40">
+                    Voted {new Date(v.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1 text-xs text-brand-primary">
+                  <ThumbsUp className="h-3 w-3" />
+                  <span>{v.vote_count}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 
@@ -124,39 +171,42 @@ export default function VotingPage() {
             </Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {top.map((t) => (
-              <div
-                key={t.slug}
-                className="flex flex-col gap-3 rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <Link
-                    href={`/sites/${t.slug}`}
-                    className="text-sm font-semibold text-white hover:text-brand-primary"
-                  >
-                    {t.title}
-                  </Link>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/60">
-                    {t.status}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-xs text-white/50">
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                    <span>{t.vote_count ?? 0} votes</span>
+            {top.map((t) => {
+              const voted = votedSlugs.has(t.slug);
+              return (
+                <div
+                  key={t.slug}
+                  className="flex flex-col gap-3 rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      href={`/sites/${t.slug}`}
+                      className="text-sm font-semibold text-white hover:text-brand-primary"
+                    >
+                      {t.title}
+                    </Link>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/60">
+                      {t.status}
+                    </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleVote(t.slug)}
-                    disabled={voting === t.slug}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-brand-primary/10 border border-brand-primary/30 px-3 py-1.5 text-xs font-medium text-brand-primary hover:bg-brand-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <ThumbsUp className="h-3 w-3" />
-                    {voting === t.slug ? 'Voting…' : 'Vote'}
-                  </button>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-xs text-white/50">
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                      <span>{t.vote_count ?? 0} votes</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleVote(t.slug)}
+                      disabled={voting === t.slug || voted}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-primary/10 border border-brand-primary/30 px-3 py-1.5 text-xs font-medium text-brand-primary hover:bg-brand-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <ThumbsUp className="h-3 w-3" />
+                      {voting === t.slug ? 'Voting…' : voted ? 'Voted' : 'Vote'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

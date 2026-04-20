@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,11 @@ const NEON_LINE = 'h-px bg-gradient-to-r from-transparent via-brand-primary/30 t
 const BTN_PRIMARY = 'inline-block px-8 py-3.5 bg-brand-primary text-white font-bold text-[0.95rem] rounded-lg no-underline border-0 cursor-pointer transition-all shadow-brand hover:-translate-y-0.5 hover:shadow-[0_0_40px_rgba(168,85,247,0.55)]';
 const BTN_SECONDARY = 'inline-block px-8 py-3.5 bg-transparent text-brand-primary font-semibold text-[0.95rem] rounded-lg no-underline border border-brand-primary/50 cursor-pointer transition-all hover:-translate-y-0.5 hover:border-brand-primary hover:shadow-[0_0_24px_rgba(168,85,247,0.25)]';
 
+function normalizedStatus(status: Template['status'] | undefined | null): 'available' | 'auction' | 'sold' {
+  if (status === 'sold' || status === 'auction' || status === 'available') return status;
+  return 'available';
+}
+
 function statusClasses(status: string) {
   if (status === 'available') return 'bg-[rgba(34,197,94,0.12)] text-[var(--color-success)] border border-[rgba(34,197,94,0.3)]';
   if (status === 'auction') return 'bg-brand-primary/10 text-brand-primary border border-brand-primary/30';
@@ -27,27 +32,61 @@ export default function HomePage() {
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState<'votes' | 'newest' | 'price'>('votes');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [session, setSession] = useState<{ account_id: string } | null>(null);
 
+  const [searchRaw, setSearchRaw] = useState('');
+  const [search, setSearch] = useState('');
+
   useEffect(() => {
-    getTemplatesWithFallback()
-      .then(setTemplates)
-      .catch(() => setTemplates([]))
-      .finally(() => setLoading(false));
+    loadTemplates();
     getSession().then(setSession).catch(() => {});
   }, []);
 
-  const filtered = templates
-    .filter(t => {
-      if (filter === 'All') return true;
-      if (filter === 'Available') return t.status === 'available';
-      return t.category === filter;
-    })
-    .sort((a, b) => {
-      if (sort === 'votes') return b.vote_count - a.vote_count;
-      if (sort === 'price') return a.price_monthly - b.price_monthly;
-      return 0;
-    });
+  function loadTemplates() {
+    setLoading(true);
+    setLoadError(false);
+    getTemplatesWithFallback()
+      .then(list => setTemplates(list))
+      .catch(() => {
+        setTemplates([]);
+        setLoadError(true);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchRaw.trim().toLowerCase()), 200);
+    return () => clearTimeout(t);
+  }, [searchRaw]);
+
+  const filtered = useMemo(() => {
+    return templates
+      .filter(t => {
+        if (filter === 'All') return true;
+        if (filter === 'Available') return normalizedStatus(t.status) === 'available';
+        return t.category === filter;
+      })
+      .filter(t => {
+        if (!search) return true;
+        return (
+          t.title.toLowerCase().includes(search) ||
+          (t.category || '').toLowerCase().includes(search)
+        );
+      })
+      .sort((a, b) => {
+        if (sort === 'votes') return (b.vote_count ?? 0) - (a.vote_count ?? 0);
+        if (sort === 'price') return getPriceForSlug(a.slug) - getPriceForSlug(b.slug);
+        return 0;
+      });
+  }, [templates, filter, search, sort]);
+
+  const featured = useMemo(() => {
+    return [...templates]
+      .filter(t => normalizedStatus(t.status) !== 'sold')
+      .sort((a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0))
+      .slice(0, 8);
+  }, [templates]);
 
   async function handleVote(slug: string) {
     if (!session) {
@@ -134,6 +173,23 @@ export default function HomePage() {
         <div className={SECTION_INNER}>
           <h2 className={SECTION_TITLE}>Template Library</h2>
 
+          {featured.length > 0 && (
+            <FeaturedCarousel templates={featured} onVote={handleVote} />
+          )}
+
+          <div className="mb-4">
+            <label className="relative block">
+              <span className="sr-only">Search templates</span>
+              <input
+                type="search"
+                value={searchRaw}
+                onChange={e => setSearchRaw(e.target.value)}
+                placeholder="Search templates by name or category…"
+                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[0.9rem] text-white placeholder:text-white/35 outline-none transition-colors focus:border-brand-primary/60 focus:bg-white/[0.05]"
+              />
+            </label>
+          </div>
+
           <div className="flex flex-wrap gap-2 mb-4">
             {CATEGORIES.map(cat => {
               const active = filter === cat;
@@ -153,94 +209,73 @@ export default function HomePage() {
             })}
           </div>
 
-          <div className="flex items-center gap-2 mb-8 text-white/50 text-[0.85rem]">
-            <span>Sort:</span>
-            {(['votes', 'newest', 'price'] as const).map(s => {
-              const active = sort === s;
-              return (
-                <button
-                  key={s}
-                  className={`px-3.5 py-[5px] rounded-md text-[0.82rem] cursor-pointer transition-all border ${
-                    active
-                      ? 'bg-brand-primary/10 border-brand-primary/50 text-brand-primary'
-                      : 'border-white/10 bg-transparent text-white/55 hover:border-brand-primary/40 hover:text-brand-primary'
-                  }`}
-                  onClick={() => setSort(s)}
-                >
-                  {s === 'votes' ? 'Most Voted' : s === 'newest' ? 'Newest' : 'Price'}
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between gap-4 mb-8 text-white/50 text-[0.85rem] flex-wrap">
+            <div className="flex items-center gap-2">
+              <span>Sort:</span>
+              {(['votes', 'newest', 'price'] as const).map(s => {
+                const active = sort === s;
+                return (
+                  <button
+                    key={s}
+                    className={`px-3.5 py-[5px] rounded-md text-[0.82rem] cursor-pointer transition-all border ${
+                      active
+                        ? 'bg-brand-primary/10 border-brand-primary/50 text-brand-primary'
+                        : 'border-white/10 bg-transparent text-white/55 hover:border-brand-primary/40 hover:text-brand-primary'
+                    }`}
+                    onClick={() => setSort(s)}
+                  >
+                    {s === 'votes' ? 'Most Voted' : s === 'newest' ? 'Newest' : 'Price'}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="text-[0.8rem] text-white/40">
+              {loading ? '' : `${filtered.length} template${filtered.length === 1 ? '' : 's'}`}
+            </div>
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-20"><span className="spinner" /></div>
+            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="animate-pulse rounded-[14px] border border-white/[0.08] bg-white/[0.02] overflow-hidden"
+                >
+                  <div className="aspect-[16/9] bg-white/[0.04]" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-3 w-16 rounded bg-white/[0.06]" />
+                    <div className="h-4 w-3/4 rounded bg-white/[0.06]" />
+                    <div className="h-3 w-1/2 rounded bg-white/[0.06]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : loadError ? (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-8 text-center">
+              <p className="text-amber-200 font-medium">Couldn&apos;t load templates. Try refreshing.</p>
+              <button
+                type="button"
+                onClick={loadTemplates}
+                className="mt-4 inline-flex rounded-lg border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-100 hover:bg-amber-400/20"
+              >
+                Try again
+              </button>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-10 text-center">
+              <p className="text-white/70">No templates match your search.</p>
+              <button
+                type="button"
+                onClick={() => { setSearchRaw(''); setFilter('All'); }}
+                className="mt-4 inline-flex rounded-lg border border-brand-primary/40 bg-brand-primary/10 px-4 py-2 text-sm font-medium text-brand-primary hover:bg-brand-primary/20"
+              >
+                Clear filters
+              </button>
+            </div>
           ) : (
             <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filtered.map(t => (
-                <div
-                  key={t.slug}
-                  className="group bg-white/[0.02] border border-white/[0.08] rounded-[14px] overflow-hidden transition-all flex flex-col hover:border-brand-primary/25 hover:-translate-y-[3px] hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-                >
-                  <Link href={`/sites/${t.slug}`} className="block aspect-[16/9] bg-white/[0.04] overflow-hidden relative no-underline">
-                    {t.thumbnail_url ? (
-                      <Image
-                        src={t.thumbnail_url}
-                        alt={t.title}
-                        fill
-                        unoptimized
-                        sizes="(max-width: 540px) 100vw, (max-width: 860px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      />
-                    ) : (
-                      <span className="absolute inset-0 flex items-center justify-center text-[2.5rem]">🌐</span>
-                    )}
-                  </Link>
-                  <div className="p-4 flex flex-col gap-1.5 flex-1">
-                    <div className={`inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-semibold tracking-wide w-fit ${statusClasses(t.status)}`}>
-                      {t.status === 'available' ? 'Available' : t.status === 'auction' ? 'Auction' : 'Sold'}
-                    </div>
-                    <div className="font-sora text-[0.9rem] font-semibold text-white leading-snug">{t.title}</div>
-                    <div className="text-[0.75rem] text-white/40 uppercase tracking-wider">{t.category}</div>
-                    <div className="font-sora text-[1.1rem] font-extrabold text-brand-primary [text-shadow:0_0_12px_rgba(168,85,247,0.35)] mt-1">
-                      ${getPriceForSlug(t.slug)}
-                    </div>
-                    {t.status === 'auction' && t.current_bid && (
-                      <div className="text-[0.8rem] text-brand-primary font-medium">Bid: ${t.current_bid}</div>
-                    )}
-                    <div className="text-[0.78rem] text-white/40">▲ {t.vote_count} votes</div>
-                    <div className="flex gap-1.5 flex-wrap mt-auto pt-2">
-                      {t.status === 'sold' ? (
-                        <span className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold text-white/[0.35] bg-white/[0.04] border border-white/[0.08]">
-                          Sold
-                        </span>
-                      ) : (
-                        <>
-                          {t.status === 'available' && (
-                            <Link
-                              href={`/sites/${t.slug}`}
-                              className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold no-underline border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
-                            >
-                              Buy Now — ${getPriceForSlug(t.slug)}
-                            </Link>
-                          )}
-                          <Link
-                            href={`/sites/${t.slug}`}
-                            className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold no-underline border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
-                          >
-                            {t.status === 'auction' ? `Bid $${t.current_bid ?? ''}` : 'Place Bid'}
-                          </Link>
-                          <button
-                            className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
-                            onClick={() => handleVote(t.slug)}
-                          >
-                            Vote
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <TemplateCard key={t.slug} t={t} onVote={handleVote} />
               ))}
             </div>
           )}
@@ -409,6 +444,210 @@ function PricingBox({ price, suffix, label, badge, features, boldLast, ctaText, 
         )}
       </ul>
       <a href="#sites" className={ctaPrimary ? BTN_PRIMARY : BTN_SECONDARY}>{ctaText}</a>
+    </div>
+  );
+}
+
+function TemplateCard({ t, onVote }: { t: Template; onVote: (slug: string) => void }) {
+  const status = normalizedStatus(t.status);
+  const voteCount = t.vote_count ?? 0;
+  const bidCount = t.bid_count ?? 0;
+  const highBid = t.high_bid ?? t.current_bid ?? null;
+
+  return (
+    <div className="group bg-white/[0.02] border border-white/[0.08] rounded-[14px] overflow-hidden transition-all flex flex-col hover:border-brand-primary/25 hover:-translate-y-[3px] hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+      <Link
+        href={`/sites/${t.slug}`}
+        className="block aspect-[16/9] bg-white/[0.04] overflow-hidden relative no-underline"
+      >
+        {t.thumbnail_url ? (
+          <Image
+            src={t.thumbnail_url}
+            alt={t.title}
+            fill
+            unoptimized
+            sizes="(max-width: 540px) 100vw, (max-width: 860px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center text-[2.5rem]">🌐</span>
+        )}
+        {status === 'sold' && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <span className="rounded-full border border-white/20 bg-black/60 px-4 py-1.5 text-[0.75rem] font-bold uppercase tracking-widest text-white/80">
+              Sold
+            </span>
+          </div>
+        )}
+      </Link>
+      <div className="p-4 flex flex-col gap-1.5 flex-1">
+        <div className={`inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-semibold tracking-wide w-fit ${statusClasses(status)}`}>
+          {status === 'available' ? 'Available' : status === 'auction' ? 'Auction' : 'Sold'}
+        </div>
+        <div className="font-sora text-[0.9rem] font-semibold text-white leading-snug">{t.title}</div>
+        <div className="text-[0.75rem] text-white/40 uppercase tracking-wider">{t.category}</div>
+        <div className="font-sora text-[1.1rem] font-extrabold text-brand-primary [text-shadow:0_0_12px_rgba(168,85,247,0.35)] mt-1">
+          ${getPriceForSlug(t.slug)}
+        </div>
+        {status === 'auction' && highBid != null && (
+          <div className="text-[0.8rem] text-brand-primary font-medium">High bid: ${highBid}</div>
+        )}
+        <div className="flex items-center gap-3 text-[0.72rem] text-white/50">
+          <span className="inline-flex items-center gap-1">
+            <span className="text-brand-primary">♥</span>
+            {voteCount} vote{voteCount === 1 ? '' : 's'}
+          </span>
+          {bidCount > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <span>⚖</span>
+              {bidCount} bid{bidCount === 1 ? '' : 's'}
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1.5 flex-wrap mt-auto pt-2">
+          {status === 'sold' ? (
+            <span className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold text-white/[0.35] bg-white/[0.04] border border-white/[0.08]">
+              Sold
+            </span>
+          ) : (
+            <>
+              {status === 'available' && (
+                <Link
+                  href={`/sites/${t.slug}`}
+                  className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold no-underline border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
+                >
+                  Buy Now — ${getPriceForSlug(t.slug)}
+                </Link>
+              )}
+              <Link
+                href={`/sites/${t.slug}`}
+                className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold no-underline border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
+              >
+                {status === 'auction' ? `Bid${highBid ? ` $${highBid}` : ''}` : 'Place Bid'}
+              </Link>
+              <button
+                className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
+                onClick={() => onVote(t.slug)}
+              >
+                Vote
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeaturedCarousel({
+  templates,
+  onVote,
+}: {
+  templates: Template[];
+  onVote: (slug: string) => void;
+}) {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (paused || templates.length <= 1) return;
+    const id = setInterval(() => {
+      setIndex(i => (i + 1) % templates.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [paused, templates.length]);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const child = el.children[index] as HTMLElement | undefined;
+    if (child) el.scrollTo({ left: child.offsetLeft - el.offsetLeft, behavior: 'smooth' });
+  }, [index]);
+
+  if (!templates.length) return null;
+
+  return (
+    <div
+      className="mb-10"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-xs uppercase tracking-widest text-white/40">Featured — most voted</p>
+        <div className="flex items-center gap-1.5">
+          {templates.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all ${
+                i === index ? 'w-6 bg-brand-primary' : 'w-1.5 bg-white/20 hover:bg-white/40'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+      <div
+        ref={scrollerRef}
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden motion-safe:scroll-smooth"
+      >
+        {templates.map(t => {
+          const status = normalizedStatus(t.status);
+          const bidCount = t.bid_count ?? 0;
+          const highBid = t.high_bid ?? t.current_bid ?? null;
+          return (
+            <div
+              key={t.slug}
+              className="relative snap-start shrink-0 w-[min(420px,calc(100vw-3rem))] rounded-2xl overflow-hidden border border-brand-primary/20 bg-gradient-to-br from-brand-primary/[0.08] to-white/[0.02]"
+            >
+              <Link href={`/sites/${t.slug}`} className="block aspect-[16/9] relative bg-white/[0.04]">
+                {t.thumbnail_url ? (
+                  <Image
+                    src={t.thumbnail_url}
+                    alt={t.title}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 860px) 100vw, 420px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-[3.5rem]">🌐</span>
+                )}
+              </Link>
+              <div className="p-5 flex flex-col gap-2">
+                <div className={`inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-semibold w-fit ${statusClasses(status)}`}>
+                  {status === 'available' ? 'Available' : status === 'auction' ? 'Auction' : 'Sold'}
+                </div>
+                <div className="font-sora text-lg font-semibold text-white">{t.title}</div>
+                <div className="flex items-center gap-4 text-[0.8rem] text-white/50">
+                  <span>♥ {t.vote_count ?? 0}</span>
+                  {bidCount > 0 && <span>⚖ {bidCount}</span>}
+                  {highBid != null && <span className="text-brand-primary">High bid: ${highBid}</span>}
+                </div>
+                <div className="flex gap-2 mt-1">
+                  <Link
+                    href={`/sites/${t.slug}`}
+                    className="inline-block px-3 py-1.5 rounded-md text-[0.8rem] font-semibold no-underline bg-brand-primary text-white hover:bg-brand-primary/90"
+                  >
+                    View
+                  </Link>
+                  {status !== 'sold' && (
+                    <button
+                      type="button"
+                      onClick={() => onVote(t.slug)}
+                      className="inline-block px-3 py-1.5 rounded-md text-[0.8rem] font-semibold border border-brand-primary/40 text-brand-primary bg-brand-primary/[0.06] hover:bg-brand-primary/[0.14]"
+                    >
+                      Vote
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
