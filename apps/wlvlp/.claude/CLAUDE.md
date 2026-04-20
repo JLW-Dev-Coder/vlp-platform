@@ -9,7 +9,7 @@ See monorepo root `.claude/CLAUDE.md` for shared context, canonical docs, and ar
 - **Name:** Website Lotto
 - **Abbrev:** WLVLP
 - **Domain:** websitelotto.virtuallaunch.pro
-- **Brand Color:** #a855f7 (purple)
+- **Brand Color:** #00D4FF (neon blue) — see Theming Divergences for extended palette
 - **Adapter:** static export (`output: 'export'`, `trailingSlash: true`) → Cloudflare Pages
 - **Fonts:** next/font/google (Sora, DM Sans, IBM Plex Mono)
 
@@ -79,17 +79,65 @@ npx turbo build --filter=wlvlp
 
 ## Theming Divergences
 
-WLVLP has been migrated to canonical tokens (Tier 3D, 2026-04-19). All `--neon-*`,
-`--void`, and `--charcoal` legacy variables have been removed. CSS Modules have been
-deleted; styling is now Tailwind utilities + shared canonical tokens throughout.
+WLVLP uses an extended multi-color neon palette (Owner decision, 2026-04-19).
+This is an intentional brand divergence from the single-brand-primary pattern,
+restored after earlier canonicalization (Tier 3D) flattened the Vegas/lotto aesthetic.
 
-The body background is now the shared flat `--surface-bg` (the previous three-stop
-neon gradient was a marketing aesthetic with no canonical equivalent).
+### brand.primary change
+
+Changed from `#a855f7` (purple) to `#00D4FF` (neon blue) to match the Vegas/lotto
+design direction. Purple remains available as a secondary accent via `neon.purple`.
+The 6 required canonical brand tokens (`brand.primary`, `brand.hover`, `brand.dark`,
+`brand.light`, `brand.glow`, `brand.text-on-primary`) plus `brand.gradient-to` are
+all present in `tailwind.config.ts`, harmonized to the neon blue primary.
+
+### Extended neon palette (in tailwind.config.ts)
+
+| Token | Value | Purpose |
+|-------|-------|---------|
+| neon.blue | #00D4FF | Primary action, headlines, borders |
+| neon.yellow | #FFE534 | Secondary action, pricing CTA, badges |
+| neon.magenta | #FF2D8A | Accent, decorative, tertiary CTAs |
+| neon.cyan | #00F0D0 | Subtle accent, cyan badges |
+| neon.purple | #a855f7 | Legacy WLVLP purple — retained as secondary |
+| void | #07070A | Deep background |
+| charcoal | #12121A | Surface background |
+| glass | rgba(255,255,255,0.04) | Glass-morphism cards |
+| glassBorder | rgba(255,255,255,0.08) | Glass-morphism borders |
+
+### Additional CSS utilities (in globals.css)
+
+Neon glow text shadows (`.glow-blue`, `.glow-yellow`, `.glow-magenta`, `.glow-cyan`),
+button glow box-shadows (`.btn-glow-*`), glass-morphism card base (`.glass-card`,
+`.card-glow`), neon-border pulse animations (`.neon-border`, `.neon-border-yellow`,
+`.neon-border-magenta`, `.neon-border-cyan`), bokeh orb floating (`.bokeh`), Vegas
+marquee strip (`.marquee-strip`), neon line dividers (`.neon-line`), light beam
+(`.light-beam`), lotto balls (`.lotto-ball`), category pill active state
+(`.category-filter-active`), and card motion classes (`.anim-float`, `.anim-dance`,
+`.anim-wobble`, `.anim-sway`, `.anim-pulse-scale`, `.anim-icon-bounce`,
+`.anim-fade-up`).
+
+All keyframed animations are wrapped in
+`@media (prefers-reduced-motion: no-preference)` to respect user accessibility.
+
+### Body background
+
+The body uses a three-stop dark void gradient
+(`#07070A 0% → #0D0D15 40% → #12121A 100%`) — the signature Vegas/lotto surface,
+not the shared flat `--surface-bg`.
+
+### MarketingHeader/Footer overrides
+
+The shared `MarketingHeader` receives `brandColor` from the platform config (now
+neon blue). A CSS override in `app/globals.css` styles the sticky header with
+`rgba(7,7,10,0.7)` background + `backdrop-filter: blur(8px)` + a neon-blue
+bottom border to match the Canva reference navigation. The shared component is
+NOT modified.
+
+### Semantic tokens
 
 The local `--color-success`, `--color-warning`, `--color-error`, `--color-info`
-variables in `app/globals.css` mirror canonical-style.md §2.5 semantic tokens. They
-remain local pending the shared-layer addition tracked as cleanup §13 item 7.
+variables in `app/globals.css` mirror canonical-style.md §2.5 semantic tokens.
+They remain local pending the shared-layer addition tracked as cleanup §13 item 7.
 
-Two `@keyframes` definitions remain in `app/globals.css` (`marquee`, `float`) —
-referenced inline via Tailwind arbitrary `animate-[marquee_3s_linear_infinite]`
-syntax. The shared `@vlp/member-ui` preset doesn't include these.
+This palette is by Owner directive and is not drift.

@@ -88,12 +88,17 @@ function ScratchContent({ accountId }: { accountId: string }) {
   const prize = reveal ? PRIZE_CONFIG[reveal.prize_type] ?? PRIZE_CONFIG.no_prize : null;
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 flex flex-col items-center justify-center py-[60px] px-6 gap-6 text-center">
-        <h1 className="font-sora text-[clamp(2rem,5vw,3rem)] font-extrabold text-white tracking-tight [text-shadow:0_0_40px_rgba(168,85,247,0.3)]">
+    <div className="flex flex-col flex-1 relative overflow-hidden">
+      {/* Bokeh orbs */}
+      <div className="bokeh hidden md:block" style={{ top: '12%', left: '10%', width: '280px', height: '280px', background: 'radial-gradient(circle, #FFE534, transparent 70%)' }} />
+      <div className="bokeh hidden md:block" style={{ top: '45%', left: '75%', width: '280px', height: '280px', background: 'radial-gradient(circle, #FF2D8A, transparent 70%)', animationDelay: '2s' }} />
+      <div className="bokeh hidden md:block" style={{ top: '70%', left: '20%', width: '220px', height: '220px', background: 'radial-gradient(circle, #00D4FF, transparent 70%)', animationDelay: '4s' }} />
+
+      <div className="flex-1 flex flex-col items-center justify-center py-[60px] px-6 gap-6 text-center relative z-10">
+        <h1 className="font-sora text-[clamp(2rem,5vw,3rem)] font-extrabold text-neon-yellow tracking-tight glow-yellow">
           Scratch to Win
         </h1>
-        <p className="text-white/55 text-base leading-relaxed max-w-[480px]">
+        <p className="text-white/65 text-base leading-relaxed max-w-[480px]">
           One free ticket per account per 24 hours. Win a free template, discounts, or credits.
         </p>
 
@@ -108,7 +113,7 @@ function ScratchContent({ accountId }: { accountId: string }) {
               <div className="mt-3">
                 <Link
                   href="/"
-                  className="inline-block px-4 py-2 bg-brand-primary/15 border border-brand-primary/40 rounded-md text-brand-primary font-semibold text-[0.85rem] no-underline hover:bg-brand-primary/25"
+                  className="inline-block px-4 py-2 bg-[rgba(0,212,255,0.12)] neon-border rounded-md text-neon-blue font-bold text-[0.85rem] no-underline hover:-translate-y-0.5 transition-transform"
                 >
                   Browse Templates
                 </Link>
@@ -119,11 +124,11 @@ function ScratchContent({ accountId }: { accountId: string }) {
 
         {!ticket && !error && (
           <div className="flex flex-col items-center gap-6">
-            <div className="text-[6rem] [filter:drop-shadow(0_0_30px_rgba(168,85,247,0.4))] motion-safe:animate-[float_3s_ease-in-out_infinite]">
+            <div className="text-[6rem] [filter:drop-shadow(0_0_40px_rgba(255,229,52,0.7))] motion-safe:animate-[float_3s_ease-in-out_infinite]">
               🎫
             </div>
             <button
-              className="px-9 py-[14px] bg-brand-primary text-white font-bold text-base rounded-[10px] border-0 cursor-pointer transition-all shadow-brand hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_0_44px_rgba(168,85,247,0.6)] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-9 py-[14px] bg-neon-yellow text-[#07070A] font-extrabold text-base rounded-[10px] border-0 cursor-pointer transition-all btn-glow-yellow hover:enabled:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={handleGetTicket}
               disabled={loading}
             >
@@ -134,7 +139,7 @@ function ScratchContent({ accountId }: { accountId: string }) {
 
         {!ticket && error && (
           <button
-            className="px-7 py-3 bg-brand-primary/10 border border-brand-primary/40 rounded-lg text-brand-primary font-semibold text-[0.9rem] transition-all hover:bg-brand-primary/20 hover:border-brand-primary"
+            className="px-7 py-3 bg-[rgba(0,212,255,0.08)] neon-border rounded-lg text-neon-blue font-bold text-[0.9rem] transition-all hover:-translate-y-0.5"
             onClick={handleGetTicket}
             disabled={loading}
           >
@@ -144,18 +149,18 @@ function ScratchContent({ accountId }: { accountId: string }) {
 
         {ticket && !scratched && (
           <div className="flex flex-col items-center gap-5">
-            <p className="text-white/50 text-[0.9rem] motion-safe:animate-[pulse-subtle_2s_ease-in-out_infinite]">
+            <p className="text-neon-yellow text-[0.9rem] font-bold motion-safe:animate-[pulse-subtle_2s_ease-in-out_infinite]">
               {loading ? 'Revealing…' : 'Click the card to reveal your prize!'}
             </p>
             <button
               type="button"
-              className="relative w-[280px] h-[180px] rounded-[18px] cursor-pointer overflow-hidden border-2 border-brand-primary/40 shadow-brand transition-transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed p-0 bg-transparent"
+              className="relative w-[280px] h-[180px] rounded-[18px] cursor-pointer overflow-hidden neon-border-yellow transition-transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed p-0 bg-transparent"
               onClick={handleReveal}
               disabled={loading}
               aria-label="Reveal scratch ticket"
             >
               <div className={SCRATCH_OVERLAY_CLASS}>
-                <span className="font-sora text-[1.4rem] font-extrabold text-brand-primary/60 tracking-[4px] [text-shadow:0_0_20px_rgba(168,85,247,0.4)]">
+                <span className="font-sora text-[1.4rem] font-extrabold text-neon-yellow tracking-[4px] glow-yellow">
                   SCRATCH
                 </span>
               </div>
@@ -168,14 +173,14 @@ function ScratchContent({ accountId }: { accountId: string }) {
 
         {scratched && prize && reveal && (
           <div className="flex flex-col items-center gap-4 motion-safe:animate-[scale-in_0.5s_ease_forwards]">
-            <div className="text-[5rem] [filter:drop-shadow(0_0_20px_rgba(168,85,247,0.5))]">{prize.emoji}</div>
-            <h2 className="font-sora text-[1.8rem] font-bold text-brand-primary tracking-tight [text-shadow:0_0_30px_rgba(168,85,247,0.5)]">
+            <div className="text-[5rem] [filter:drop-shadow(0_0_30px_rgba(255,229,52,0.7))]">{prize.emoji}</div>
+            <h2 className="font-sora text-[1.8rem] font-bold text-neon-yellow tracking-tight glow-yellow">
               {prize.title}
             </h2>
-            <p className="text-white/65 text-base leading-relaxed max-w-[400px]">{prize.desc}</p>
+            <p className="text-white/70 text-base leading-relaxed max-w-[400px]">{prize.desc}</p>
             {reveal.promo_code && (
-              <div className="px-6 py-3 bg-brand-primary/[0.08] border border-brand-primary/30 rounded-[10px] text-white/80 text-[0.9rem]">
-                Code: <strong className="text-brand-primary font-mono text-base tracking-wide">{reveal.promo_code}</strong>
+              <div className="px-6 py-3 bg-[rgba(0,212,255,0.08)] neon-border rounded-[10px] text-white/85 text-[0.9rem]">
+                Code: <strong className="text-neon-blue font-mono text-base tracking-wide">{reveal.promo_code}</strong>
               </div>
             )}
             {reveal.expires_at && (
@@ -186,7 +191,7 @@ function ScratchContent({ accountId }: { accountId: string }) {
             <div className="mt-2 flex gap-3 flex-wrap justify-center">
               <Link
                 href="/"
-                className="inline-block px-7 py-3 bg-brand-primary/10 border border-brand-primary/40 rounded-lg text-brand-primary font-semibold text-[0.9rem] no-underline transition-all hover:bg-brand-primary/20 hover:border-brand-primary"
+                className="inline-block px-7 py-3 bg-[rgba(0,212,255,0.08)] neon-border rounded-lg text-neon-blue font-bold text-[0.9rem] no-underline transition-all hover:-translate-y-0.5"
               >
                 Browse Templates
               </Link>
@@ -194,7 +199,7 @@ function ScratchContent({ accountId }: { accountId: string }) {
                 <button
                   type="button"
                   onClick={handleScratchAgain}
-                  className="inline-block px-7 py-3 bg-brand-primary text-white font-semibold text-[0.9rem] rounded-lg transition-all hover:-translate-y-0.5"
+                  className="inline-block px-7 py-3 bg-neon-yellow text-[#07070A] font-extrabold text-[0.9rem] rounded-lg transition-all btn-glow-yellow hover:-translate-y-0.5"
                 >
                   Scratch Again
                 </button>

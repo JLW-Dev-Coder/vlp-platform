@@ -3,7 +3,7 @@ import type { PlatformConfig } from '@vlp/member-ui'
 export const wlvlpConfig: PlatformConfig = {
   brandName: 'Website Lotto',
   brandAbbrev: 'WLVLP',
-  brandColor: '#a855f7',
+  brandColor: '#00D4FF',
   brandSubtitle: 'Template Marketplace',
   logoText: 'WL',
   apiBaseUrl: 'https://api.virtuallaunch.pro',

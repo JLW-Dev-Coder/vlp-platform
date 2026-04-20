@@ -35,7 +35,7 @@ Every platform that previously lived in its own repo is migrated here.
 | Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | `@cloudflare/next-on-pages` | `#3b82f6` (blue) |
 | Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | static export | `#22c55e` (green) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | static export | `#eab308` (yellow) |
-| Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | static export | `#a855f7` (purple) |
+| Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | static export | `#00D4FF` (neon blue) |
 | VLP Worker | — | api.virtuallaunch.pro | `apps/worker` | Cloudflare Worker | — |
 
 **Authoritative source:** each app's `tailwind.config.ts` at `theme.extend.colors.brand.500`. If this table and the Tailwind config diverge, the Tailwind config wins. Update this table whenever a platform's brand color changes.

@@ -25,7 +25,7 @@ Last updated: 2026-04-13
 | Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@cloudflare/next-on-pages` | CF Pages | `npm run pages:build` | `.vercel/output/static` | `#3b82f6` (blue) |
 | Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#ef4444` (red) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#eab308` (yellow) |
-| Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#a855f7` (purple) |
+| Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#00D4FF` (neon blue) |
 | VLP Worker | Worker | api.virtuallaunch.pro | `apps/worker` | Vanilla JS | N/A | Cloudflare Worker | CF Workers | `npx wrangler deploy` | bundled | N/A |
 
 ---

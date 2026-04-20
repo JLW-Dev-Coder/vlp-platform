@@ -15,6 +15,7 @@ const PATHS = [
     icon: ShoppingCart,
     title: 'Buy',
     price: 'One-time payment',
+    color: 'blue' as const,
     body:
       'Pick a template, pay list price, and own it outright. Pricing varies by template and niche — see each listing in the catalog for the current price. Twelve months of hosting included.',
     cta: { label: 'Browse Templates', href: '/' },
@@ -23,6 +24,7 @@ const PATHS = [
     icon: Gavel,
     title: 'Bid',
     price: 'Name your price',
+    color: 'yellow' as const,
     body:
       'Place a bid below list price on any auction-eligible template. If no one outbids you by close, the site is yours at your number. Payment captures automatically — you only pay if you win.',
     cta: { label: 'See Available Auctions', href: '/' },
@@ -31,6 +33,7 @@ const PATHS = [
     icon: Ticket,
     title: 'Win',
     price: 'Free',
+    color: 'magenta' as const,
     body:
       'Try a scratch ticket and walk away with a free template, discount, or hosting credit. No payment required to scratch — just sign in and reveal.',
     cta: { label: 'Try a Free Scratch Ticket', href: '/scratch' },
@@ -74,53 +77,80 @@ const FAQS = [
   },
 ]
 
+const BORDERS = {
+  blue: 'neon-border',
+  yellow: 'neon-border-yellow',
+  magenta: 'neon-border-magenta',
+}
+const TEXTS = {
+  blue: 'text-neon-blue',
+  yellow: 'text-neon-yellow',
+  magenta: 'text-neon-magenta',
+}
+const BGS = {
+  blue: 'bg-[rgba(0,212,255,0.1)]',
+  yellow: 'bg-[rgba(255,229,52,0.1)]',
+  magenta: 'bg-[rgba(255,45,138,0.1)]',
+}
+
 export default function PricingPage() {
   return (
     <div>
-      {/* Hero */}
-      <section className="border-b border-subtle">
-        <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-20 md:py-28 text-center">
-          <div className="inline-block rounded-full border border-brand-primary bg-brand-light px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-primary mb-6">
+      {/* Hero with bokeh */}
+      <section className="relative overflow-hidden">
+        <div className="bokeh hidden md:block" style={{ top: '10%', left: '10%', width: '260px', height: '260px', background: 'radial-gradient(circle, #FFE534, transparent 70%)' }} />
+        <div className="bokeh hidden md:block" style={{ top: '50%', left: '80%', width: '260px', height: '260px', background: 'radial-gradient(circle, #00D4FF, transparent 70%)', animationDelay: '3s' }} />
+        <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-20 md:py-28 text-center relative z-10">
+          <div className="inline-block rounded-full neon-border-yellow px-3 py-1 text-xs font-bold uppercase tracking-wider text-neon-yellow mb-6">
             Pricing
           </div>
-          <h1 className="font-sora text-4xl md:text-6xl font-extrabold tracking-tight text-text-primary mb-5">
+          <h1 className="font-sora text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-5 glow-yellow">
             Get a professional website
             <br />
-            at your price
+            <span className="text-neon-blue glow-blue">at your price</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-lg text-text-muted leading-relaxed">
+          <p className="max-w-2xl mx-auto text-lg text-white/70 leading-relaxed">
             One-time payment. No subscription required for the site itself. Twelve months of hosting
             included. Three different ways to acquire a template — pick the one that fits.
           </p>
         </div>
       </section>
 
-      {/* Three paths */}
-      <section className="border-b border-subtle bg-surface-card">
+      <div className="neon-line" />
+
+      {/* Three paths — signature yellow wobble card for "Bid" */}
+      <section>
         <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-16 md:py-20">
           <div className="text-center mb-10">
-            <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary mb-3">
+            <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-3 glow-blue">
               Three ways to acquire a site
             </h2>
-            <p className="text-text-muted text-lg">Buy outright, bid below list, or win one free.</p>
+            <p className="text-white/65 text-lg">Buy outright, bid below list, or win one free.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {PATHS.map((p) => {
               const Icon = p.icon
+              const animCls = p.color === 'yellow' ? 'anim-wobble' : p.color === 'blue' ? 'anim-float' : 'anim-sway'
               return (
                 <div
                   key={p.title}
-                  className="rounded-xl border border-default bg-surface-bg p-6 flex flex-col"
+                  className={`glass-card rounded-xl p-6 flex flex-col ${BORDERS[p.color]} ${animCls}`}
                 >
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-brand-light text-brand-primary mb-4">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${BGS[p.color]} ${TEXTS[p.color]} mb-4 anim-icon-bounce`}>
                     <Icon size={22} />
                   </div>
-                  <h3 className="font-sora text-2xl font-bold text-text-primary mb-1">{p.title}</h3>
-                  <div className="text-brand-primary font-semibold mb-3">{p.price}</div>
-                  <p className="text-text-muted leading-relaxed mb-6 flex-1">{p.body}</p>
+                  <h3 className={`font-sora text-2xl font-bold mb-1 ${TEXTS[p.color]}`}>{p.title}</h3>
+                  <div className={`font-bold mb-3 ${TEXTS[p.color]}`}>{p.price}</div>
+                  <p className="text-white/65 leading-relaxed mb-6 flex-1">{p.body}</p>
                   <Link
                     href={p.cta.href}
-                    className="inline-flex items-center justify-center rounded-lg border border-default bg-surface-card px-4 py-2 font-semibold text-text-primary hover:border-hover transition-colors"
+                    className={`inline-flex items-center justify-center rounded-lg px-4 py-2 font-bold transition-all hover:-translate-y-0.5 ${
+                      p.color === 'yellow'
+                        ? 'bg-neon-yellow text-[#07070A] btn-glow-yellow'
+                        : p.color === 'blue'
+                        ? 'bg-[rgba(0,212,255,0.08)] neon-border text-neon-blue'
+                        : 'bg-[rgba(255,45,138,0.08)] neon-border-magenta text-neon-magenta'
+                    }`}
                   >
                     {p.cta.label}
                   </Link>
@@ -131,38 +161,45 @@ export default function PricingPage() {
         </div>
       </section>
 
+      <div className="neon-line" />
+
       {/* Hosting */}
-      <section className="border-b border-subtle">
+      <section>
         <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-16 md:py-20">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-brand-light text-brand-primary mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[rgba(0,240,208,0.1)] text-neon-cyan mb-4 anim-icon-bounce">
               <Globe size={22} />
             </div>
-            <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary mb-3">
+            <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-3 glow-cyan">
               Hosting after year one
             </h2>
-            <p className="text-text-muted text-lg max-w-xl mx-auto">
+            <p className="text-white/65 text-lg max-w-xl mx-auto">
               Twelve months of hosting come bundled with every template. After that, keep the site
               live with one of two plans.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {HOSTING.map((h) => (
-              <div key={h.title} className="rounded-xl border border-default bg-surface-card p-6">
-                <h3 className="font-sora text-xl font-bold text-text-primary mb-1">{h.title}</h3>
-                <div className="text-brand-primary font-semibold mb-3">{h.price}</div>
-                <p className="text-text-muted leading-relaxed">{h.body}</p>
+            {HOSTING.map((h, i) => (
+              <div
+                key={h.title}
+                className={`glass-card rounded-xl p-6 ${i === 0 ? 'neon-border-cyan' : 'neon-border'} ${i === 0 ? 'anim-float' : 'anim-sway'}`}
+              >
+                <h3 className={`font-sora text-xl font-bold mb-1 ${i === 0 ? 'text-neon-cyan' : 'text-neon-blue'}`}>{h.title}</h3>
+                <div className={`font-bold mb-3 ${i === 0 ? 'text-neon-cyan' : 'text-neon-blue'}`}>{h.price}</div>
+                <p className="text-white/65 leading-relaxed">{h.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      <div className="neon-line" />
+
       {/* FAQ */}
-      <section className="border-b border-subtle bg-surface-card">
+      <section>
         <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-16 md:py-20">
           <div className="text-center mb-10">
-            <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary mb-3">
+            <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-3 glow-magenta">
               Pricing FAQ
             </h2>
           </div>
@@ -170,37 +207,39 @@ export default function PricingPage() {
             {FAQS.map((f) => (
               <details
                 key={f.q}
-                className="rounded-lg border border-default bg-surface-bg p-5 group"
+                className="glass-card rounded-lg p-5 group neon-border open:shadow-[0_0_40px_rgba(0,212,255,0.3)]"
               >
-                <summary className="font-semibold text-text-primary cursor-pointer list-none flex justify-between items-center">
+                <summary className="font-bold text-white cursor-pointer list-none flex justify-between items-center">
                   <span>{f.q}</span>
-                  <span className="text-brand-primary text-xl group-open:rotate-45 transition-transform">
+                  <span className="text-neon-blue text-xl group-open:rotate-45 transition-transform">
                     +
                   </span>
                 </summary>
-                <p className="mt-3 text-text-muted leading-relaxed">{f.a}</p>
+                <p className="mt-3 text-white/70 leading-relaxed">{f.a}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
+      <div className="neon-line" />
+
       {/* CTA */}
       <section>
         <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-16 md:py-20 text-center">
-          <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary mb-4">
+          <h2 className="font-sora text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-4 glow-yellow">
             Pick your path
           </h2>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center rounded-lg bg-brand-primary px-6 py-3 font-semibold text-brand-text-on-primary hover:bg-brand-hover transition-colors"
+              className="inline-flex items-center rounded-lg bg-neon-yellow px-6 py-3 font-extrabold text-[#07070A] btn-glow-yellow hover:-translate-y-0.5 transition-transform"
             >
               Browse Templates
             </Link>
             <Link
               href="/scratch"
-              className="inline-flex items-center rounded-lg border border-default bg-surface-card px-6 py-3 font-semibold text-text-primary hover:border-hover transition-colors"
+              className="inline-flex items-center rounded-lg bg-[rgba(0,212,255,0.06)] neon-border px-6 py-3 font-bold text-neon-blue"
             >
               Try a Free Scratch Ticket
             </Link>

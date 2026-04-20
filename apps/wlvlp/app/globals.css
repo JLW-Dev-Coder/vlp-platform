@@ -7,18 +7,29 @@
 @layer base {
   :root {
     /* WLVLP brand overrides for member-ui shared tokens */
-    --member-accent: rgba(168, 85, 247, 0.1);
-    --member-accent-strong: rgba(168, 85, 247, 0.2);
-    --member-hero-bg: #2e1065;
-    --member-hero-bg-end: #1a0533;
+    --member-accent: rgba(0, 212, 255, 0.1);
+    --member-accent-strong: rgba(0, 212, 255, 0.2);
+    --member-hero-bg: #12121A;
+    --member-hero-bg-end: #07070A;
 
     /* Brand tokens exposed as CSS variables (mirror tailwind.config brand.*) */
-    --brand-primary: #a855f7;
-    --brand-hover: #af63f8;
-    --brand-dark: #8f48d2;
-    --brand-light: rgba(168, 85, 247, 0.15);
-    --brand-glow: rgba(168, 85, 247, 0.40);
-    --brand-gradient-to: rgba(168, 85, 247, 0.15);
+    --brand-primary: #00D4FF;
+    --brand-hover: #33DEFF;
+    --brand-dark: #00A8CC;
+    --brand-light: rgba(0, 212, 255, 0.15);
+    --brand-glow: rgba(0, 212, 255, 0.40);
+    --brand-gradient-to: rgba(255, 45, 138, 0.25);
+
+    /* WLVLP extended neon palette */
+    --neon-blue: #00D4FF;
+    --neon-yellow: #FFE534;
+    --neon-magenta: #FF2D8A;
+    --neon-cyan: #00F0D0;
+    --neon-purple: #a855f7;
+    --void: #07070A;
+    --charcoal: #12121A;
+    --glass: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.08);
 
     /* Canonical semantic colors (canonical-style.md §2.5).
        Provided locally pending shared-layer addition (cleanup §13 item 7). */
@@ -34,8 +45,9 @@
 
 html { scroll-behavior: smooth; height: 100%; }
 
+/* Vegas/lotto dark void gradient — WLVLP signature background */
 body {
-  background: var(--surface-bg);
+  background: linear-gradient(180deg, #07070A 0%, #0D0D15 40%, #12121A 100%);
   color: var(--text-primary);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
   min-height: 100vh;
@@ -61,17 +73,354 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── WLVLP marketing animations ───────────────────────────────────────────
-   Marquee strip and floating ticket are animation effects that have no
-   tokenable color/size; they're used inline via Tailwind arbitrary
-   `animate-[marquee_3s_linear_infinite]` syntax. Defined here because the
-   shared @vlp/member-ui preset doesn't include them. */
+/* ══════════════════════════════════════════════════════════════════════════
+   WLVLP NEON / VEGAS AESTHETIC
+   Intentional brand divergence (Owner directive). See Theming Divergences
+   in apps/wlvlp/.claude/CLAUDE.md. All animations wrapped in
+   prefers-reduced-motion: no-preference to respect user accessibility.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Neon glow text shadows ──────────────────────────────────────────────── */
+.glow-blue {
+  text-shadow:
+    0 0 30px rgba(0, 212, 255, 0.8),
+    0 0 60px rgba(0, 212, 255, 0.5),
+    0 0 100px rgba(0, 212, 255, 0.2);
+}
+.glow-yellow {
+  text-shadow:
+    0 0 30px rgba(255, 229, 52, 0.9),
+    0 0 60px rgba(255, 229, 52, 0.6),
+    0 0 100px rgba(255, 229, 52, 0.2);
+}
+.glow-magenta {
+  text-shadow:
+    0 0 30px rgba(255, 45, 138, 0.8),
+    0 0 60px rgba(255, 45, 138, 0.5),
+    0 0 100px rgba(255, 45, 138, 0.2);
+}
+.glow-cyan {
+  text-shadow:
+    0 0 30px rgba(0, 240, 208, 0.8),
+    0 0 60px rgba(0, 240, 208, 0.4);
+}
+
+/* ── Button glow box-shadows ─────────────────────────────────────────────── */
+.btn-glow-blue {
+  box-shadow:
+    0 0 30px rgba(0, 212, 255, 0.6),
+    0 0 60px rgba(0, 212, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.btn-glow-yellow {
+  box-shadow:
+    0 0 30px rgba(255, 229, 52, 0.6),
+    0 0 60px rgba(255, 229, 52, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.btn-glow-magenta {
+  box-shadow:
+    0 0 30px rgba(255, 45, 138, 0.5),
+    0 0 60px rgba(255, 45, 138, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ── Glass card base ─────────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.card-glow {
+  box-shadow:
+    0 0 40px rgba(0, 212, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+.card-glow:hover {
+  box-shadow:
+    0 0 60px rgba(0, 212, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+/* ── Neon borders (pulsing) ──────────────────────────────────────────────── */
+.neon-border {
+  border: 2px solid rgba(0, 212, 255, 0.4);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+.neon-border-yellow {
+  border: 2px solid rgba(255, 229, 52, 0.5);
+  box-shadow: 0 0 10px rgba(255, 229, 52, 0.3);
+}
+.neon-border-magenta {
+  border: 2px solid rgba(255, 45, 138, 0.4);
+  box-shadow: 0 0 10px rgba(255, 45, 138, 0.3);
+}
+.neon-border-cyan {
+  border: 2px solid rgba(0, 240, 208, 0.4);
+  box-shadow: 0 0 10px rgba(0, 240, 208, 0.3);
+}
+
+/* ── Neon line divider ───────────────────────────────────────────────────── */
+.neon-line {
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(0, 212, 255, 0.8),
+    rgba(255, 45, 138, 0.6),
+    rgba(0, 212, 255, 0.8),
+    transparent);
+  box-shadow:
+    0 0 30px rgba(0, 212, 255, 0.6),
+    0 0 60px rgba(255, 45, 138, 0.4);
+}
+
+/* ── Bokeh orbs ──────────────────────────────────────────────────────────── */
+.bokeh {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* ── Marquee strip (Vegas color dots) ────────────────────────────────────── */
+.marquee-strip {
+  background: repeating-linear-gradient(90deg,
+    rgba(255, 229, 52, 1) 0px, rgba(255, 229, 52, 1) 4px,
+    rgba(255, 45, 138, 1) 4px, rgba(255, 45, 138, 1) 8px,
+    rgba(0, 212, 255, 1) 8px, rgba(0, 212, 255, 1) 12px,
+    transparent 12px, transparent 24px);
+  height: 3px;
+  opacity: 0.8;
+  box-shadow:
+    0 0 20px rgba(255, 229, 52, 0.6),
+    0 0 15px rgba(255, 45, 138, 0.4);
+}
+
+/* ── Light beam behind hero ──────────────────────────────────────────────── */
+.light-beam {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(ellipse at center,
+    rgba(0, 212, 255, 0.15) 0%,
+    rgba(255, 45, 138, 0.08) 40%,
+    transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Lotto balls (hero decoration) ───────────────────────────────────────── */
+.lotto-ball {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-weight: 800;
+  color: #07070A;
+  pointer-events: none;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.2));
+  box-shadow:
+    inset -6px -6px 14px rgba(0, 0, 0, 0.35),
+    inset 4px 4px 10px rgba(255, 255, 255, 0.6),
+    0 0 30px currentColor;
+}
+
+/* ── Category pill (Canva reference) ─────────────────────────────────────── */
+.category-filter-active {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: rgba(0, 212, 255, 0.7);
+  color: var(--neon-blue);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ANIMATIONS — all wrapped in prefers-reduced-motion: no-preference
+   ══════════════════════════════════════════════════════════════════════════ */
+
 @keyframes marquee {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 200% 0%; }
+  0% { background-position: 0 0; }
+  100% { background-position: 24px 0; }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-12px); }
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  }
+  50% {
+    border-color: rgba(0, 212, 255, 0.8);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+  }
+}
+
+@keyframes neonPulseYellow {
+  0%, 100% {
+    border-color: rgba(255, 229, 52, 0.4);
+    box-shadow: 0 0 10px rgba(255, 229, 52, 0.3);
+  }
+  50% {
+    border-color: rgba(255, 229, 52, 1);
+    box-shadow: 0 0 30px rgba(255, 229, 52, 0.8);
+  }
+}
+
+@keyframes neonPulseMagenta {
+  0%, 100% {
+    border-color: rgba(255, 45, 138, 0.3);
+    box-shadow: 0 0 10px rgba(255, 45, 138, 0.3);
+  }
+  50% {
+    border-color: rgba(255, 45, 138, 0.9);
+    box-shadow: 0 0 30px rgba(255, 45, 138, 0.7);
+  }
+}
+
+@keyframes floatOrb {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-40px) scale(1.15); }
+}
+
+@keyframes pulseOrb {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.25; }
+}
+
+@keyframes lineShimmer {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes beamPulse {
+  0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+}
+
+@keyframes ballBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(10deg); }
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes cardDance {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(3px, -4px) rotate(0.5deg); }
+  50% { transform: translate(-2px, -6px) rotate(-0.5deg); }
+  75% { transform: translate(4px, -2px) rotate(0.3deg); }
+}
+
+@keyframes cardWobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(0.8deg); }
+  75% { transform: rotate(-0.8deg); }
+}
+
+@keyframes cardSway {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+
+@keyframes pulseScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Apply animations only when user allows motion */
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-strip {
+    animation: marquee 1s linear infinite;
+  }
+  .neon-border {
+    animation: neonPulse 2s ease-in-out infinite;
+  }
+  .neon-border-yellow {
+    animation: neonPulseYellow 2s ease-in-out infinite;
+  }
+  .neon-border-magenta {
+    animation: neonPulseMagenta 2.4s ease-in-out infinite;
+  }
+  .neon-line {
+    animation: lineShimmer 3s ease-in-out infinite;
+  }
+  .bokeh {
+    animation: floatOrb 12s ease-in-out infinite, pulseOrb 3s ease-in-out infinite;
+  }
+  .light-beam {
+    animation: beamPulse 4s ease-in-out infinite;
+  }
+  .lotto-ball {
+    animation: ballBounce 5s ease-in-out infinite;
+  }
+  .anim-float {
+    animation: cardFloat 6s ease-in-out infinite;
+  }
+  .anim-dance {
+    animation: cardDance 7s ease-in-out infinite;
+  }
+  .anim-wobble {
+    animation: cardWobble 4s ease-in-out infinite;
+  }
+  .anim-sway {
+    animation: cardSway 5s ease-in-out infinite;
+  }
+  .anim-pulse-scale {
+    animation: pulseScale 3s ease-in-out infinite;
+  }
+  .anim-icon-bounce {
+    animation: iconBounce 2.5s ease-in-out infinite;
+  }
+  .anim-fade-up {
+    animation: fadeUp 0.8s ease forwards;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SHARED MARKETINGHEADER/FOOTER OVERRIDES
+   MarketingHeader uses `bg-surface-bg/80 backdrop-blur`. On the dark void
+   background we want a more transparent glass look matching the Canva nav.
+   These are CSS overrides — the shared component is NOT modified.
+   ══════════════════════════════════════════════════════════════════════════ */
+header.sticky {
+  background: rgba(7, 7, 10, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.15);
 }

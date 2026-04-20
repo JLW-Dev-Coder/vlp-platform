@@ -8,12 +8,9 @@ import { getPriceForSlug } from '@/lib/pricing';
 
 const CATEGORIES = ['All', 'Available', 'health', 'finance', 'legal', 'food/bev', 'creative', 'services', 'other'];
 
-const SECTION = 'py-20 px-6';
-const SECTION_INNER = 'max-w-[1280px] mx-auto';
+const SECTION = 'relative py-20 px-6';
+const SECTION_INNER = 'max-w-[1280px] mx-auto relative z-10';
 const SECTION_TITLE = 'font-sora text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-center mb-12 text-white -tracking-[0.5px]';
-const NEON_LINE = 'h-px bg-gradient-to-r from-transparent via-brand-primary/30 to-transparent';
-const BTN_PRIMARY = 'inline-block px-8 py-3.5 bg-brand-primary text-white font-bold text-[0.95rem] rounded-lg no-underline border-0 cursor-pointer transition-all shadow-brand hover:-translate-y-0.5 hover:shadow-[0_0_40px_rgba(168,85,247,0.55)]';
-const BTN_SECONDARY = 'inline-block px-8 py-3.5 bg-transparent text-brand-primary font-semibold text-[0.95rem] rounded-lg no-underline border border-brand-primary/50 cursor-pointer transition-all hover:-translate-y-0.5 hover:border-brand-primary hover:shadow-[0_0_24px_rgba(168,85,247,0.25)]';
 
 function normalizedStatus(status: Template['status'] | undefined | null): 'available' | 'auction' | 'sold' {
   if (status === 'sold' || status === 'auction' || status === 'available') return status;
@@ -22,7 +19,7 @@ function normalizedStatus(status: Template['status'] | undefined | null): 'avail
 
 function statusClasses(status: string) {
   if (status === 'available') return 'bg-[rgba(34,197,94,0.12)] text-[var(--color-success)] border border-[rgba(34,197,94,0.3)]';
-  if (status === 'auction') return 'bg-brand-primary/10 text-brand-primary border border-brand-primary/30';
+  if (status === 'auction') return 'bg-[rgba(255,229,52,0.12)] text-neon-yellow border border-[rgba(255,229,52,0.4)]';
   return 'bg-white/[0.06] text-white/40 border border-white/10';
 }
 
@@ -101,77 +98,106 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="h-[3px] bg-[linear-gradient(90deg,var(--brand-primary),var(--brand-hover),var(--brand-dark),var(--brand-primary))] bg-[length:200%_100%] motion-safe:animate-[marquee_3s_linear_infinite]" />
-
-      {/* HERO */}
+      {/* HERO — Vegas/lotto neon aesthetic */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden py-20 px-6" id="hero">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(168,85,247,0.15) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168,85,247,0.1) 0%, transparent 50%), radial-gradient(ellipse 50% 30% at 20% 70%, rgba(168,85,247,0.08) 0%, transparent 50%)',
-          }}
-        />
-        <div className="relative text-center max-w-[800px]">
-          <h1 className="font-sora text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[1.05] text-white [text-shadow:0_0_60px_rgba(168,85,247,0.4),0_0_120px_rgba(168,85,247,0.2)] mb-4 -tracking-[2px]">
+        {/* Bokeh floating orbs (multi-color) */}
+        <div className="bokeh hidden md:block" style={{ top: '10%', left: '8%', width: '280px', height: '280px', background: 'radial-gradient(circle, #00D4FF, transparent 70%)', animationDelay: '0s' }} />
+        <div className="bokeh hidden md:block" style={{ top: '55%', left: '70%', width: '320px', height: '320px', background: 'radial-gradient(circle, #FF2D8A, transparent 70%)', animationDelay: '2s' }} />
+        <div className="bokeh hidden md:block" style={{ top: '70%', left: '15%', width: '220px', height: '220px', background: 'radial-gradient(circle, #FFE534, transparent 70%)', animationDelay: '4s' }} />
+        <div className="bokeh hidden md:block" style={{ top: '5%', left: '75%', width: '240px', height: '240px', background: 'radial-gradient(circle, #00F0D0, transparent 70%)', animationDelay: '6s' }} />
+
+        {/* Light beam behind headline */}
+        <div className="light-beam" aria-hidden="true" />
+
+        {/* Lotto ball orbs (decorative, hidden on mobile) */}
+        <span className="lotto-ball hidden md:flex" style={{ top: '18%', left: '12%', width: '48px', height: '48px', fontSize: '1rem', color: '#00D4FF', animationDelay: '0s' }} aria-hidden="true">7</span>
+        <span className="lotto-ball hidden md:flex" style={{ top: '72%', left: '8%', width: '56px', height: '56px', fontSize: '1.1rem', color: '#FFE534', animationDelay: '0.6s' }} aria-hidden="true">21</span>
+        <span className="lotto-ball hidden md:flex" style={{ top: '24%', left: '82%', width: '52px', height: '52px', fontSize: '1.05rem', color: '#FF2D8A', animationDelay: '1.2s' }} aria-hidden="true">13</span>
+        <span className="lotto-ball hidden md:flex" style={{ top: '65%', left: '85%', width: '44px', height: '44px', fontSize: '0.95rem', color: '#00F0D0', animationDelay: '1.8s' }} aria-hidden="true">3</span>
+        <span className="lotto-ball hidden md:flex" style={{ top: '45%', left: '6%', width: '40px', height: '40px', fontSize: '0.9rem', color: '#a855f7', animationDelay: '2.4s' }} aria-hidden="true">42</span>
+        <span className="lotto-ball hidden md:flex" style={{ top: '12%', left: '50%', width: '38px', height: '38px', fontSize: '0.85rem', color: '#00D4FF', animationDelay: '3s' }} aria-hidden="true">9</span>
+        <span className="lotto-ball hidden md:flex" style={{ top: '80%', left: '55%', width: '42px', height: '42px', fontSize: '0.9rem', color: '#FFE534', animationDelay: '3.6s' }} aria-hidden="true">17</span>
+
+        <div className="relative z-10 text-center max-w-[820px]">
+          <h1 className="font-sora text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[1.05] text-white glow-blue mb-4 -tracking-[2px]">
             Website Lotto
           </h1>
-          <p className="font-sora text-[clamp(1.2rem,3vw,1.8rem)] font-semibold text-brand-primary [text-shadow:0_0_30px_rgba(168,85,247,0.5)] mb-5">
-            Own your website. One payment. No subscriptions.
+          <p className="font-sora text-[clamp(1.2rem,3vw,1.8rem)] font-semibold text-neon-yellow glow-yellow mb-5">
+            Don&apos;t gamble on your website design.
           </p>
-          <p className="text-[1.05rem] text-white/65 leading-[1.7] max-w-[600px] mx-auto mb-8">
+          <p className="text-[1.05rem] text-white/70 leading-[1.7] max-w-[600px] mx-auto mb-8">
             Browse 210+ professional websites and buy the one that fits your business. One-time payment, 12 months hosting included, Cloudflare-backed security. Plug in your Stripe link and start selling in minutes.
           </p>
-          <div className="flex flex-wrap gap-2.5 justify-center mb-8">
-            {['From $249 one-time', '12 mo hosting included', 'Cloudflare-backed'].map(b => (
-              <span
-                key={b}
-                className="px-4 py-1.5 border border-brand-primary/35 rounded-full text-[0.82rem] font-medium text-brand-primary bg-brand-primary/[0.06] tracking-wide"
-              >
-                {b}
-              </span>
-            ))}
+          <div className="flex flex-wrap gap-3 justify-center mb-8">
+            <span className="px-4 py-1.5 rounded-full text-[0.82rem] font-bold text-neon-blue bg-[rgba(0,212,255,0.08)] neon-border">
+              $99/mo after year 1
+            </span>
+            <span className="px-4 py-1.5 rounded-full text-[0.82rem] font-bold text-neon-yellow bg-[rgba(255,229,52,0.08)] neon-border-yellow">
+              Easy to transfer
+            </span>
+            <span className="px-4 py-1.5 rounded-full text-[0.82rem] font-bold text-neon-cyan bg-[rgba(0,240,208,0.08)] neon-border-cyan">
+              Cloudflare-backed security
+            </span>
           </div>
           <div className="flex flex-wrap gap-3.5 justify-center">
-            <a href="#sites" className={BTN_PRIMARY}>See Templates</a>
-            <Link href="/scratch" className={BTN_SECONDARY}>Get Free Scratch Ticket</Link>
+            <a
+              href="#sites"
+              className="inline-block px-8 py-3.5 bg-neon-yellow text-[#07070A] font-extrabold text-[0.95rem] rounded-lg no-underline cursor-pointer transition-all btn-glow-yellow hover:-translate-y-0.5"
+            >
+              See templates →
+            </a>
+            <Link
+              href="#how"
+              className="inline-block px-8 py-3.5 bg-[rgba(0,212,255,0.06)] text-neon-blue font-bold text-[0.95rem] rounded-lg no-underline cursor-pointer transition-all neon-border hover:-translate-y-0.5"
+            >
+              How it works
+            </Link>
           </div>
         </div>
       </section>
 
-      <div className={NEON_LINE} />
+      <div className="neon-line" />
 
       {/* HOW IT WORKS */}
       <section className={SECTION} id="how">
         <div className={SECTION_INNER}>
-          <h2 className={SECTION_TITLE}>How It Works</h2>
+          <h2 className={SECTION_TITLE}>
+            <span className="glow-blue">How It Works</span>
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { n: '1', t: 'Pick a site', d: 'Browse 210+ templates and choose one that fits your business.' },
-              { n: '2', t: 'Connect payments', d: 'Plug in your Stripe account or payment link. Done.' },
-              { n: '3', t: 'Launch & sell', d: 'Your site is live on a branded subdomain. Start making money.' },
-            ].map(s => (
-              <div
-                key={s.n}
-                className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8 transition-all hover:border-brand-primary/30 hover:-translate-y-1"
-              >
-                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-brand-primary/[0.12] border border-brand-primary/35 text-brand-primary font-bold text-[0.95rem] mb-4">
-                  {s.n}
-                </span>
-                <h3 className="font-sora text-[1.1rem] font-semibold mb-2.5 text-white">{s.t}</h3>
-                <p className="text-white/60 text-[0.92rem] leading-relaxed">{s.d}</p>
-              </div>
-            ))}
+              { n: '1', t: 'Pick a site', d: 'Browse 210+ templates and choose one that fits your business.', color: 'blue' },
+              { n: '2', t: 'Connect payments', d: 'Plug in your Stripe account or payment link. Done.', color: 'yellow' },
+              { n: '3', t: 'Launch & sell', d: 'Your site is live on a branded subdomain. Start making money.', color: 'magenta' },
+            ].map((s, i) => {
+              const borderCls = s.color === 'blue' ? 'neon-border' : s.color === 'yellow' ? 'neon-border-yellow' : 'neon-border-magenta';
+              const animCls = i === 0 ? 'anim-float' : i === 1 ? 'anim-dance' : 'anim-sway';
+              const textCls = s.color === 'blue' ? 'text-neon-blue' : s.color === 'yellow' ? 'text-neon-yellow' : 'text-neon-magenta';
+              return (
+                <div
+                  key={s.n}
+                  className={`glass-card rounded-2xl p-8 transition-transform ${borderCls} ${animCls}`}
+                >
+                  <span className={`inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/[0.05] border ${textCls} font-extrabold text-lg mb-4`}>
+                    {s.n}
+                  </span>
+                  <h3 className={`font-sora text-[1.15rem] font-bold mb-2.5 ${textCls}`}>{s.t}</h3>
+                  <p className="text-white/65 text-[0.92rem] leading-relaxed">{s.d}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      <div className={NEON_LINE} />
+      <div className="neon-line" />
 
       {/* TEMPLATE GALLERY */}
       <section className={SECTION} id="sites">
         <div className={SECTION_INNER}>
-          <h2 className={SECTION_TITLE}>Template Library</h2>
+          <h2 className={SECTION_TITLE}>
+            <span className="glow-yellow text-neon-yellow">Template Library</span>
+          </h2>
 
           {featured.length > 0 && (
             <FeaturedCarousel templates={featured} onVote={handleVote} />
@@ -185,7 +211,7 @@ export default function HomePage() {
                 value={searchRaw}
                 onChange={e => setSearchRaw(e.target.value)}
                 placeholder="Search templates by name or category…"
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[0.9rem] text-white placeholder:text-white/35 outline-none transition-colors focus:border-brand-primary/60 focus:bg-white/[0.05]"
+                className="w-full rounded-xl border border-glassBorder bg-glass px-4 py-3 text-[0.9rem] text-white placeholder:text-white/35 outline-none transition-colors focus:border-neon-blue/70 focus:shadow-[0_0_20px_rgba(0,212,255,0.25)]"
               />
             </label>
           </div>
@@ -198,8 +224,8 @@ export default function HomePage() {
                   key={cat}
                   className={`px-4 py-[7px] rounded-full text-[0.85rem] cursor-pointer transition-all border ${
                     active
-                      ? 'bg-brand-primary/10 border-brand-primary/60 text-brand-primary'
-                      : 'border-white/[0.12] bg-transparent text-white/60 hover:border-brand-primary/40 hover:text-brand-primary'
+                      ? 'category-filter-active'
+                      : 'border-white/[0.12] bg-transparent text-white/60 hover:border-neon-blue/50 hover:text-neon-blue'
                   }`}
                   onClick={() => setFilter(cat)}
                 >
@@ -219,8 +245,8 @@ export default function HomePage() {
                     key={s}
                     className={`px-3.5 py-[5px] rounded-md text-[0.82rem] cursor-pointer transition-all border ${
                       active
-                        ? 'bg-brand-primary/10 border-brand-primary/50 text-brand-primary'
-                        : 'border-white/10 bg-transparent text-white/55 hover:border-brand-primary/40 hover:text-brand-primary'
+                        ? 'bg-[rgba(0,212,255,0.12)] border-neon-blue/60 text-neon-blue'
+                        : 'border-white/10 bg-transparent text-white/55 hover:border-neon-blue/40 hover:text-neon-blue'
                     }`}
                     onClick={() => setSort(s)}
                   >
@@ -239,7 +265,7 @@ export default function HomePage() {
               {Array.from({ length: 12 }).map((_, i) => (
                 <div
                   key={i}
-                  className="animate-pulse rounded-[14px] border border-white/[0.08] bg-white/[0.02] overflow-hidden"
+                  className="animate-pulse rounded-[14px] border border-glassBorder bg-glass overflow-hidden"
                 >
                   <div className="aspect-[16/9] bg-white/[0.04]" />
                   <div className="p-4 space-y-2">
@@ -262,12 +288,12 @@ export default function HomePage() {
               </button>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-10 text-center">
+            <div className="rounded-xl border border-glassBorder bg-glass p-10 text-center">
               <p className="text-white/70">No templates match your search.</p>
               <button
                 type="button"
                 onClick={() => { setSearchRaw(''); setFilter('All'); }}
-                className="mt-4 inline-flex rounded-lg border border-brand-primary/40 bg-brand-primary/10 px-4 py-2 text-sm font-medium text-brand-primary hover:bg-brand-primary/20"
+                className="mt-4 inline-flex rounded-lg border border-neon-blue/40 bg-[rgba(0,212,255,0.08)] px-4 py-2 text-sm font-medium text-neon-blue hover:bg-[rgba(0,212,255,0.16)]"
               >
                 Clear filters
               </button>
@@ -282,40 +308,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className={NEON_LINE} />
+      <div className="neon-line" />
 
       {/* FEATURES */}
       <section className={SECTION} id="features">
         <div className={SECTION_INNER}>
-          <h2 className={SECTION_TITLE}>What&apos;s Included</h2>
+          <h2 className={SECTION_TITLE}>
+            <span className="glow-magenta text-neon-magenta">What&apos;s Included</span>
+          </h2>
           <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             {[
-              { icon: '⚡', title: 'High-converting layout', desc: 'Professionally designed templates built to convert visitors into customers.' },
-              { icon: '🌐', title: 'Branded subdomain', desc: 'Your site lives on a memorable .virtuallaunch.pro subdomain.' },
-              { icon: '💳', title: 'Stripe-ready', desc: 'Plug in your Stripe link or payment button in seconds.' },
-              { icon: '🔒', title: 'Cloudflare security', desc: 'DDoS protection, SSL, and global CDN included.' },
-              { icon: '✏️', title: 'Easy customization', desc: 'Edit your content, brand colors, and contact info from the dashboard.' },
-              { icon: '🎫', title: 'Scratch to Win', desc: 'Win a free template, discounts, or credits with our scratch ticket mechanic.' },
-            ].map(f => (
-              <div
-                key={f.title}
-                className="bg-white/[0.02] border border-white/[0.07] rounded-[14px] p-7 transition-all hover:border-brand-primary/30 hover:-translate-y-[3px]"
-              >
-                <span className="block text-[2rem] mb-3.5">{f.icon}</span>
-                <h3 className="font-sora text-base font-semibold mb-2 text-white">{f.title}</h3>
-                <p className="text-white/55 text-[0.88rem] leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
+              { icon: '⚡', title: 'High-converting layout', desc: 'Professionally designed templates built to convert visitors into customers.', color: 'blue' },
+              { icon: '🌐', title: 'Branded subdomain', desc: 'Your site lives on a memorable .virtuallaunch.pro subdomain.', color: 'yellow' },
+              { icon: '💳', title: 'Stripe-ready', desc: 'Plug in your Stripe link or payment button in seconds.', color: 'magenta' },
+              { icon: '🔒', title: 'Cloudflare security', desc: 'DDoS protection, SSL, and global CDN included.', color: 'cyan' },
+              { icon: '✏️', title: 'Easy customization', desc: 'Edit your content, brand colors, and contact info from the dashboard.', color: 'blue' },
+              { icon: '🎫', title: 'Scratch to Win', desc: 'Win a free template, discounts, or credits with our scratch ticket mechanic.', color: 'yellow' },
+            ].map((f, i) => {
+              const borderCls = f.color === 'blue' ? 'neon-border' : f.color === 'yellow' ? 'neon-border-yellow' : f.color === 'magenta' ? 'neon-border-magenta' : 'neon-border-cyan';
+              const animCls = i % 3 === 0 ? 'anim-float' : i % 3 === 1 ? 'anim-sway' : 'anim-dance';
+              return (
+                <div
+                  key={f.title}
+                  className={`glass-card rounded-[14px] p-7 ${borderCls} ${animCls}`}
+                >
+                  <span className="block text-[2rem] mb-3.5 anim-icon-bounce">{f.icon}</span>
+                  <h3 className="font-sora text-base font-bold mb-2 text-white">{f.title}</h3>
+                  <p className="text-white/60 text-[0.88rem] leading-relaxed">{f.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      <div className={NEON_LINE} />
+      <div className="neon-line" />
 
       {/* PRICING */}
       <section className={SECTION} id="pricing">
         <div className={SECTION_INNER}>
-          <h2 className={SECTION_TITLE}>Pricing</h2>
+          <h2 className={SECTION_TITLE}>
+            <span className="glow-yellow text-neon-yellow">Pricing</span>
+          </h2>
           <div className="grid gap-6 max-w-[960px] mx-auto md:grid-cols-3 grid-cols-1">
             <PricingBox
               price="$249"
@@ -330,7 +364,7 @@ export default function HomePage() {
                 'Mobile responsive',
               ]}
               ctaText="Browse Standard Sites"
-              ctaPrimary={false}
+              variant="blue"
             />
             <PricingBox
               price="$399"
@@ -346,7 +380,7 @@ export default function HomePage() {
                 'Mobile responsive',
               ]}
               ctaText="Browse Premium Sites"
-              ctaPrimary={true}
+              variant="yellow"
             />
             <PricingBox
               price="$14"
@@ -361,19 +395,21 @@ export default function HomePage() {
               ]}
               boldLast="First 12 months included with purchase"
               ctaText="See Templates"
-              ctaPrimary={false}
+              variant="magenta"
             />
           </div>
         </div>
       </section>
 
-      <div className={NEON_LINE} />
+      <div className="neon-line" />
 
       {/* FAQ */}
       <section className={SECTION} id="faq">
         <div className={SECTION_INNER}>
-          <h2 className={SECTION_TITLE}>FAQ</h2>
-          <div className="max-w-[720px] mx-auto flex flex-col gap-2">
+          <h2 className={SECTION_TITLE}>
+            <span className="glow-blue">FAQ</span>
+          </h2>
+          <div className="max-w-[720px] mx-auto flex flex-col gap-3">
             {[
               { q: 'Is this a subscription?', a: 'No. You pay one time ($249 standard or $399 premium) and own the site. Hosting for the first 12 months is included.' },
               { q: 'What happens after 12 months?', a: 'Continue with standard hosting at $14/mo or upgrade to premium hosting at $49/mo (includes content updates, SEO, and priority support).' },
@@ -390,17 +426,23 @@ export default function HomePage() {
       {/* BOTTOM CTA */}
       <section className={SECTION} id="cta">
         <div className={SECTION_INNER}>
-          <div className="text-center max-w-[640px] mx-auto flex flex-col items-center gap-5 py-12 px-6 bg-brand-primary/[0.04] border border-brand-primary/[0.12] rounded-[20px]">
-            <h2 className="font-sora text-[clamp(1.4rem,3vw,2rem)] font-bold text-white -tracking-[0.5px] leading-tight">
+          <div className="text-center max-w-[640px] mx-auto flex flex-col items-center gap-5 py-12 px-6 glass-card rounded-[20px] neon-border">
+            <h2 className="font-sora text-[clamp(1.4rem,3vw,2rem)] font-bold text-white -tracking-[0.5px] leading-tight glow-blue">
               210+ professional websites. Ready to launch.
             </h2>
-            <p className="text-base text-white/60 leading-[1.7] max-w-[520px]">
+            <p className="text-base text-white/65 leading-[1.7] max-w-[520px]">
               Skip the agency. Get a designer-quality website for your practice or business — one-time payment, 12 months hosting included.
             </p>
-            <a href="#sites" className={BTN_PRIMARY}>Browse templates</a>
+            <a
+              href="#sites"
+              className="inline-block px-8 py-3.5 bg-neon-yellow text-[#07070A] font-extrabold text-[0.95rem] rounded-lg no-underline cursor-pointer transition-all btn-glow-yellow hover:-translate-y-0.5"
+            >
+              Browse templates →
+            </a>
           </div>
         </div>
       </section>
+
     </div>
   );
 }
@@ -413,37 +455,53 @@ interface PricingBoxProps {
   features: string[];
   boldLast?: string;
   ctaText: string;
-  ctaPrimary: boolean;
+  variant: 'blue' | 'yellow' | 'magenta';
 }
 
-function PricingBox({ price, suffix, label, badge, features, boldLast, ctaText, ctaPrimary }: PricingBoxProps) {
+function PricingBox({ price, suffix, label, badge, features, boldLast, ctaText, variant }: PricingBoxProps) {
+  const borderCls = variant === 'blue' ? 'neon-border' : variant === 'yellow' ? 'neon-border-yellow' : 'neon-border-magenta';
+  const textCls = variant === 'blue' ? 'text-neon-blue' : variant === 'yellow' ? 'text-neon-yellow' : 'text-neon-magenta';
+  const glowCls = variant === 'blue' ? 'glow-blue' : variant === 'yellow' ? 'glow-yellow' : 'glow-magenta';
+  const btnCls =
+    variant === 'yellow'
+      ? 'bg-neon-yellow text-[#07070A] btn-glow-yellow'
+      : variant === 'blue'
+      ? 'bg-[rgba(0,212,255,0.08)] text-neon-blue neon-border'
+      : 'bg-[rgba(255,45,138,0.08)] text-neon-magenta neon-border-magenta';
+  const animCls = variant === 'yellow' ? 'anim-wobble' : variant === 'blue' ? 'anim-float' : 'anim-sway';
+
   return (
-    <div className="relative bg-white/[0.03] border border-white/[0.09] rounded-[18px] p-8 flex flex-col gap-4 transition-all hover:border-brand-primary/30 hover:-translate-y-1">
+    <div className={`relative glass-card rounded-[18px] p-8 flex flex-col gap-4 ${borderCls} ${animCls}`}>
       {badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-primary text-white text-[0.72rem] font-bold px-3.5 py-[3px] rounded-full whitespace-nowrap">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-neon-yellow text-[#07070A] text-[0.72rem] font-extrabold px-3.5 py-[4px] rounded-full whitespace-nowrap btn-glow-yellow">
           {badge}
         </div>
       )}
-      <div className="font-sora text-[2.4rem] font-extrabold text-white leading-none">
+      <div className={`font-sora text-[2.4rem] font-extrabold text-white leading-none ${glowCls}`}>
         {price}<span className="text-base font-normal text-white/50">{suffix}</span>
       </div>
-      <div className="text-[0.85rem] font-semibold text-white/50 uppercase tracking-wider">{label}</div>
+      <div className={`text-[0.85rem] font-bold uppercase tracking-wider ${textCls}`}>{label}</div>
       <ul className="list-none flex flex-col gap-2 flex-1">
         {features.map(f => (
           <li
             key={f}
-            className="text-[0.88rem] text-white/65 pl-[18px] relative before:content-['✓'] before:absolute before:left-0 before:text-brand-primary before:font-bold"
+            className={`text-[0.88rem] text-white/70 pl-[18px] relative before:content-['✓'] before:absolute before:left-0 ${textCls} before:font-bold`}
           >
-            {f}
+            <span className="text-white/70">{f}</span>
           </li>
         ))}
         {boldLast && (
-          <li className="text-[0.88rem] text-white/65 pl-[18px] relative before:content-['✓'] before:absolute before:left-0 before:text-brand-primary before:font-bold">
-            <strong>{boldLast}</strong>
+          <li className={`text-[0.88rem] pl-[18px] relative before:content-['✓'] before:absolute before:left-0 ${textCls} before:font-bold`}>
+            <strong className="text-white/85">{boldLast}</strong>
           </li>
         )}
       </ul>
-      <a href="#sites" className={ctaPrimary ? BTN_PRIMARY : BTN_SECONDARY}>{ctaText}</a>
+      <a
+        href="#sites"
+        className={`inline-block text-center px-6 py-3 font-extrabold text-[0.9rem] rounded-lg no-underline cursor-pointer transition-all hover:-translate-y-0.5 ${btnCls}`}
+      >
+        {ctaText}
+      </a>
     </div>
   );
 }
@@ -455,10 +513,10 @@ function TemplateCard({ t, onVote }: { t: Template; onVote: (slug: string) => vo
   const highBid = t.high_bid ?? t.current_bid ?? null;
 
   return (
-    <div className="group bg-white/[0.02] border border-white/[0.08] rounded-[14px] overflow-hidden transition-all flex flex-col hover:border-brand-primary/25 hover:-translate-y-[3px] hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+    <div className="group glass-card card-glow rounded-[14px] overflow-hidden flex flex-col hover:border-neon-blue/50">
       <Link
         href={`/sites/${t.slug}`}
-        className="block aspect-[16/9] bg-white/[0.04] overflow-hidden relative no-underline"
+        className="block aspect-[16/9] bg-gradient-to-br from-[rgba(0,212,255,0.06)] to-[rgba(255,45,138,0.04)] overflow-hidden relative no-underline"
       >
         {t.thumbnail_url ? (
           <Image
@@ -486,20 +544,20 @@ function TemplateCard({ t, onVote }: { t: Template; onVote: (slug: string) => vo
         </div>
         <div className="font-sora text-[0.9rem] font-semibold text-white leading-snug">{t.title}</div>
         <div className="text-[0.75rem] text-white/40 uppercase tracking-wider">{t.category}</div>
-        <div className="font-sora text-[1.1rem] font-extrabold text-brand-primary [text-shadow:0_0_12px_rgba(168,85,247,0.35)] mt-1">
+        <div className="font-sora text-[1.1rem] font-extrabold text-neon-blue glow-blue mt-1">
           ${getPriceForSlug(t.slug)}
         </div>
         {status === 'auction' && highBid != null && (
-          <div className="text-[0.8rem] text-brand-primary font-medium">High bid: ${highBid}</div>
+          <div className="text-[0.8rem] text-neon-yellow font-medium">High bid: ${highBid}</div>
         )}
         <div className="flex items-center gap-3 text-[0.72rem] text-white/50">
           <span className="inline-flex items-center gap-1">
-            <span className="text-brand-primary">♥</span>
+            <span className="text-neon-magenta">♥</span>
             {voteCount} vote{voteCount === 1 ? '' : 's'}
           </span>
           {bidCount > 0 && (
             <span className="inline-flex items-center gap-1">
-              <span>⚖</span>
+              <span className="text-neon-yellow">⚖</span>
               {bidCount} bid{bidCount === 1 ? '' : 's'}
             </span>
           )}
@@ -514,22 +572,22 @@ function TemplateCard({ t, onVote }: { t: Template; onVote: (slug: string) => vo
               {status === 'available' && (
                 <Link
                   href={`/sites/${t.slug}`}
-                  className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold no-underline border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
+                  className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-bold no-underline border border-neon-blue/40 text-neon-blue bg-[rgba(0,212,255,0.06)] cursor-pointer transition-all hover:bg-[rgba(0,212,255,0.14)] hover:border-neon-blue"
                 >
                   Buy Now — ${getPriceForSlug(t.slug)}
                 </Link>
               )}
               <Link
                 href={`/sites/${t.slug}`}
-                className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold no-underline border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
+                className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-bold no-underline border border-neon-yellow/40 text-neon-yellow bg-[rgba(255,229,52,0.06)] cursor-pointer transition-all hover:bg-[rgba(255,229,52,0.14)] hover:border-neon-yellow"
               >
                 {status === 'auction' ? `Bid${highBid ? ` $${highBid}` : ''}` : 'Place Bid'}
               </Link>
               <button
-                className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-semibold border border-brand-primary/35 text-brand-primary bg-brand-primary/[0.06] cursor-pointer transition-all hover:bg-brand-primary/[0.14] hover:border-brand-primary"
+                className="inline-block px-3 py-[5px] rounded-md text-[0.75rem] font-bold border border-neon-magenta/40 text-neon-magenta bg-[rgba(255,45,138,0.06)] cursor-pointer transition-all hover:bg-[rgba(255,45,138,0.14)] hover:border-neon-magenta"
                 onClick={() => onVote(t.slug)}
               >
-                Vote
+                ♥ Vote
               </button>
             </>
           )}
@@ -574,7 +632,7 @@ function FeaturedCarousel({
       onMouseLeave={() => setPaused(false)}
     >
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs uppercase tracking-widest text-white/40">Featured — most voted</p>
+        <p className="text-xs uppercase tracking-widest text-neon-blue glow-blue font-bold">★ Featured — most voted</p>
         <div className="flex items-center gap-1.5">
           {templates.map((_, i) => (
             <button
@@ -583,7 +641,7 @@ function FeaturedCarousel({
               onClick={() => setIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
-                i === index ? 'w-6 bg-brand-primary' : 'w-1.5 bg-white/20 hover:bg-white/40'
+                i === index ? 'w-6 bg-neon-blue shadow-[0_0_12px_rgba(0,212,255,0.8)]' : 'w-1.5 bg-white/20 hover:bg-white/40'
               }`}
             />
           ))}
@@ -600,9 +658,9 @@ function FeaturedCarousel({
           return (
             <div
               key={t.slug}
-              className="relative snap-start shrink-0 w-[min(420px,calc(100vw-3rem))] rounded-2xl overflow-hidden border border-brand-primary/20 bg-gradient-to-br from-brand-primary/[0.08] to-white/[0.02]"
+              className="relative snap-start shrink-0 w-[min(420px,calc(100vw-3rem))] rounded-2xl overflow-hidden glass-card neon-border"
             >
-              <Link href={`/sites/${t.slug}`} className="block aspect-[16/9] relative bg-white/[0.04]">
+              <Link href={`/sites/${t.slug}`} className="block aspect-[16/9] relative bg-gradient-to-br from-[rgba(0,212,255,0.08)] to-[rgba(255,45,138,0.04)]">
                 {t.thumbnail_url ? (
                   <Image
                     src={t.thumbnail_url}
@@ -615,21 +673,24 @@ function FeaturedCarousel({
                 ) : (
                   <span className="absolute inset-0 flex items-center justify-center text-[3.5rem]">🌐</span>
                 )}
+                <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[0.7rem] font-bold bg-[rgba(255,229,52,0.15)] border border-neon-yellow/50 text-neon-yellow">
+                  ★ Featured
+                </span>
               </Link>
               <div className="p-5 flex flex-col gap-2">
                 <div className={`inline-block px-2.5 py-0.5 rounded-full text-[0.72rem] font-semibold w-fit ${statusClasses(status)}`}>
                   {status === 'available' ? 'Available' : status === 'auction' ? 'Auction' : 'Sold'}
                 </div>
-                <div className="font-sora text-lg font-semibold text-white">{t.title}</div>
+                <div className="font-sora text-lg font-bold text-white">{t.title}</div>
                 <div className="flex items-center gap-4 text-[0.8rem] text-white/50">
-                  <span>♥ {t.vote_count ?? 0}</span>
-                  {bidCount > 0 && <span>⚖ {bidCount}</span>}
-                  {highBid != null && <span className="text-brand-primary">High bid: ${highBid}</span>}
+                  <span><span className="text-neon-magenta">♥</span> {t.vote_count ?? 0}</span>
+                  {bidCount > 0 && <span><span className="text-neon-yellow">⚖</span> {bidCount}</span>}
+                  {highBid != null && <span className="text-neon-yellow">High bid: ${highBid}</span>}
                 </div>
                 <div className="flex gap-2 mt-1">
                   <Link
                     href={`/sites/${t.slug}`}
-                    className="inline-block px-3 py-1.5 rounded-md text-[0.8rem] font-semibold no-underline bg-brand-primary text-white hover:bg-brand-primary/90"
+                    className="inline-block px-3 py-1.5 rounded-md text-[0.8rem] font-bold no-underline bg-neon-yellow text-[#07070A] hover:-translate-y-0.5 transition-transform btn-glow-yellow"
                   >
                     View
                   </Link>
@@ -637,9 +698,9 @@ function FeaturedCarousel({
                     <button
                       type="button"
                       onClick={() => onVote(t.slug)}
-                      className="inline-block px-3 py-1.5 rounded-md text-[0.8rem] font-semibold border border-brand-primary/40 text-brand-primary bg-brand-primary/[0.06] hover:bg-brand-primary/[0.14]"
+                      className="inline-block px-3 py-1.5 rounded-md text-[0.8rem] font-bold border border-neon-magenta/40 text-neon-magenta bg-[rgba(255,45,138,0.06)] hover:bg-[rgba(255,45,138,0.16)]"
                     >
-                      Vote
+                      ♥ Vote
                     </button>
                   )}
                 </div>
@@ -655,14 +716,14 @@ function FeaturedCarousel({
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-white/[0.08] rounded-[10px] overflow-hidden mb-2 bg-white/[0.02]">
+    <div className={`glass-card rounded-[12px] overflow-hidden ${open ? 'neon-border' : 'border border-glassBorder'}`}>
       <button
-        className="w-full bg-transparent border-0 text-white px-5 py-[18px] text-[0.95rem] font-medium text-left cursor-pointer flex justify-between items-center transition-colors hover:text-brand-primary"
+        className="w-full bg-transparent border-0 text-white px-5 py-[18px] text-[0.95rem] font-semibold text-left cursor-pointer flex justify-between items-center transition-colors hover:text-neon-blue"
         onClick={() => setOpen(!open)}
       >
-        {q}<span className="text-[1.3rem] text-white/40 leading-none">{open ? '−' : '+'}</span>
+        {q}<span className="text-[1.3rem] text-neon-blue leading-none">{open ? '−' : '+'}</span>
       </button>
-      {open && <div className="px-5 pb-[18px] text-white/60 text-[0.9rem] leading-[1.7]">{a}</div>}
+      {open && <div className="px-5 pb-[18px] text-white/70 text-[0.9rem] leading-[1.7]">{a}</div>}
     </div>
   );
 }
