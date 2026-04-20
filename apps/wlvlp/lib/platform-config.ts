@@ -90,9 +90,9 @@ export const wlvlpConfig: PlatformConfig = {
       ],
       toolsExtras: [
         { label: 'Template Gallery', href: '/' },
-        { label: 'Before/After Preview', href: '/' },
-        { label: 'Design Tips', href: '/support' },
-        { label: 'Free Scratch Ticket', href: '/scratch' },
+        { label: 'Before/After Preview', href: '/before-after' },
+        { label: 'Design Tips', href: '/design-tips' },
+        { label: 'Get Launched', href: '/launch' },
       ],
       ctaText: 'Want a professional website without building one yourself?',
       ctaMagnetLabel: 'Try a Free Scratch Ticket',

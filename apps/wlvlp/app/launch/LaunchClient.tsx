@@ -7,7 +7,7 @@ const POSTHOG_KEY = 'phc_o5nTrNkxc37W2G9PXFL8peXMjWzdjo5d2HSjE5XzggkY';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
 const LEADS_ENDPOINT = 'https://api.virtuallaunch.pro/v1/wlvlp/leads';
 const TEMPLATES_ENDPOINT = 'https://api.virtuallaunch.pro/v1/wlvlp/templates';
-const YT_EMBED_ID = 'REPLACE_WITH_YT00A_VIDEO_ID';
+const YT_EMBED_ID = 'DPe9qhvEOpg';
 
 const NEON = {
   blue: '#00D4FF',
