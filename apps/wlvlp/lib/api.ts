@@ -199,8 +199,15 @@ export async function getTemplatesWithFallback(): Promise<Template[]> {
   }
 }
 
-export function getTemplate(slug: string): Promise<Template> {
-  return apiFetch(`/v1/wlvlp/templates/${slug}`);
+export async function getTemplate(slug: string): Promise<Template> {
+  const data = await apiFetch<{ ok?: boolean; template?: Template; highest_bid?: number | null; bid_history?: { amount: number; created_at: string }[] } & Partial<Template>>(
+    `/v1/wlvlp/templates/${slug}`
+  );
+  const t: Template = (data.template ?? (data as unknown as Template));
+  if (t.high_bid === undefined && data.highest_bid != null) {
+    t.high_bid = data.highest_bid;
+  }
+  return t;
 }
 
 export function getTemplateBids(slug: string): Promise<Bid[]> {
