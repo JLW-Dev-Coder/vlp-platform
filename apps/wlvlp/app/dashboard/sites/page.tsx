@@ -96,7 +96,7 @@ function SiteCard({ site }: { site: PurchasedSite }) {
     !isExpired && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 30;
 
   const hasDomain = Boolean(savedDomain);
-  const domainPending = hasDomain && site.domain_status !== 'verified';
+  const domainPending = hasDomain;
 
   let statusLabel: string;
   let statusClass: string;
@@ -218,7 +218,7 @@ function SiteCard({ site }: { site: PurchasedSite }) {
           {domainOpen ? 'Hide Domain' : 'Connect Domain'}
         </button>
         <a
-          href={site.site_url}
+          href={`/sites/${site.slug}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 text-center px-3.5 py-2 rounded-lg text-white/70 font-semibold text-[0.85rem] no-underline transition-all hover:text-brand-primary"
