@@ -187,7 +187,7 @@ After reaching `qualify-yes.mp4` or `next-steps.mp4`:
 
 ## 5. Landing Page Structure
 
-### URL: `/kwong-claim`
+### URL: `/gala`
 
 | Section | Content |
 |---------|---------|
@@ -222,18 +222,18 @@ After reaching `qualify-yes.mp4` or `next-steps.mp4`:
 
 | # | Title Pattern | Length | Gala Landing Page Link |
 |---|--------------|--------|----------------------|
-| 1 | "The IRS Owes You Money? Here's How to Check (Kwong v. US)" | 90s | `/kwong-claim` |
-| 2 | "Form 843 Explained in 60 Seconds" | 60s | `/kwong-claim` |
-| 3 | "5 Signs the Kwong Claim Applies to Your Case" | 3m | `/kwong-claim` |
-| 4 | "IRS Penalty Abatement: What CPAs Need to Know Before July 2026" | 8m | `/kwong-claim` |
-| 5 | "How to File Form 843 (Step-by-Step)" | 5m | `/kwong-claim` |
-| 6 | "Kwong v. US: The Ruling That Could Get Your Penalty Refunded" | 4m | `/kwong-claim` |
+| 1 | "The IRS Owes You Money? Here's How to Check (Kwong v. US)" | 90s | `/gala` |
+| 2 | "Form 843 Explained in 60 Seconds" | 60s | `/gala` |
+| 3 | "5 Signs the Kwong Claim Applies to Your Case" | 3m | `/gala` |
+| 4 | "IRS Penalty Abatement: What CPAs Need to Know Before July 2026" | 8m | `/gala` |
+| 5 | "How to File Form 843 (Step-by-Step)" | 5m | `/gala` |
+| 6 | "Kwong v. US: The Ruling That Could Get Your Penalty Refunded" | 4m | `/gala` |
 
 ### Thumbnail + Title Rules
 
 - Thumbnails: bold text overlay, face (Gala or presenter), IRS/tax visual elements, yellow brand accent
 - Titles: question or number format, include "IRS" or "penalty" for search, deadline urgency where applicable
-- Description: first 2 lines = hook + CTA link to `/kwong-claim`, then expanded description, then tags
+- Description: first 2 lines = hook + CTA link to `/gala`, then expanded description, then tags
 
 ---
 
@@ -243,7 +243,7 @@ After reaching `qualify-yes.mp4` or `next-steps.mp4`:
 
 1. Define the complete Kwong claim decision tree (this document, §4)
 2. Write Gala's branching scripts (text for each clip — what she says)
-3. Build the landing page skeleton at `/kwong-claim` with placeholder video area + working button flow
+3. Build the landing page skeleton at `/gala` with placeholder video area + working button flow
 4. Build Worker session endpoints (`/v1/tcvlp/gala/session`, `/v1/tcvlp/gala/next`)
 
 ### Phase 2: Video Production
@@ -279,7 +279,7 @@ After reaching `qualify-yes.mp4` or `next-steps.mp4`:
 
 | # | Question | Decision |
 |---|----------|----------|
-| 1 | Landing page URL | **CONFIRMED: `/kwong-claim`** — SEO advantage, "Kwong claim" is the search term |
+| 1 | Landing page URL | **CONFIRMED: `/gala`** — SEO advantage, "Kwong claim" is the search term |
 | 2 | YouTube channel name | **CONFIRMED: `TaxClaim Pro`** — matches product name, broader than just Kwong |
 | 3 | Avatar tool | **CONFIRMED: HeyGen** — Gala avatar with 18 looks already created |
 | 4 | Gala's appearance | **CONFIRMED: Gala Business Sofa Front (landing page clips), Gala Office Front (YouTube authority pieces)** |
