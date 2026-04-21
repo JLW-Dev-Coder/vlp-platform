@@ -1,1 +1,617 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/ef24942c-8395-4562-98db-cd77719445cb -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IndexOrbit Hub</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&amp;family=Instrument+Serif:ital@0;1&amp;family=Outfit:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Instrument Serif', 'Georgia', 'serif'],
+            sans: ['Outfit', 'system-ui', 'sans-serif'],
+            mono: ['DM Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+
+    .app-root { height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+
+    /* Index sidebar highlight sweep */
+    .idx-item { position: relative; transition: all 0.3s ease; }
+    .idx-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0;
+      background: var(--accent-color, #c8553d);
+      transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity: 0.12;
+      border-radius: 0 4px 4px 0;
+    }
+    .idx-item.active::before { width: 100%; }
+    .idx-item.active { color: var(--accent-color, #c8553d); }
+    .idx-item::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+    .idx-item.active::after { background: var(--accent-color, #c8553d); }
+
+    /* Module card reveal */
+    .mod-card {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .mod-card.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* CTA pulse */
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(200, 85, 61, 0.35); }
+      50% { box-shadow: 0 0 0 10px rgba(200, 85, 61, 0); }
+    }
+    .cta-pulse { animation: ctaPulse 2.5s ease-in-out infinite; }
+
+    /* Section fade-in */
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .section-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Thin line icon style */
+    .icon-thin svg { stroke-width: 1.2; }
+
+    /* Sticky nav */
+    .top-nav {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* Custom scrollbar */
+    .app-root::-webkit-scrollbar { width: 4px; }
+    .app-root::-webkit-scrollbar-track { background: transparent; }
+    .app-root::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 2px; }
+
+    /* Image containers */
+    .img-frame {
+      background: linear-gradient(135deg, #e8e4df 0%, #d5cfc7 100%);
+      overflow: hidden;
+    }
+    .img-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .img-frame:hover img { transform: scale(1.03); }
+
+    /* Review card */
+    .review-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .review-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
+
+    /* Mobile index overlay */
+    .mobile-index-overlay {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .mobile-index-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .mobile-index-panel {
+      transform: translateX(-100%);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .mobile-index-overlay.open .mobile-index-panel {
+      transform: translateX(0);
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-root" id="appRoot"><!-- Top Nav -->
+   <nav class="top-nav fixed top-0 left-0 w-full z-50 border-b" id="topNav" style="background:rgba(250,248,245,0.9); border-color:#e5e0da;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-12">
+     <div class="flex items-center gap-2"><button id="mobileMenuBtn" class="lg:hidden p-1 icon-thin" aria-label="Open index"> <i data-lucide="menu" style="width:18px;height:18px;"></i> </button> <span class="font-mono text-xs tracking-widest uppercase" id="brandName" style="color:#1a1815;">IndexOrbit</span>
+     </div>
+     <div class="hidden md:flex items-center gap-6"><a href="#home" class="font-mono text-xs tracking-wide hover:opacity-70 transition-opacity" style="color:#6b6560;">Home</a> <a href="#modules" class="font-mono text-xs tracking-wide hover:opacity-70 transition-opacity" style="color:#6b6560;">Modules</a> <a href="#preview" class="font-mono text-xs tracking-wide hover:opacity-70 transition-opacity" style="color:#6b6560;">Preview</a> <a href="#who" class="font-mono text-xs tracking-wide hover:opacity-70 transition-opacity" style="color:#6b6560;">Who It's For</a> <a href="#reviews" class="font-mono text-xs tracking-wide hover:opacity-70 transition-opacity" style="color:#6b6560;">Reviews</a> <a href="#download" class="font-mono text-xs tracking-wide hover:opacity-70 transition-opacity" style="color:#6b6560;">Download</a>
+     </div>
+     <div class="flex items-center gap-2 icon-thin"><button aria-label="Search" class="p-1 hover:opacity-70 transition-opacity"><i data-lucide="search" style="width:16px;height:16px;"></i></button>
+     </div>
+    </div>
+   </nav><!-- Mobile Index Overlay -->
+   <div class="mobile-index-overlay fixed inset-0 z-40 lg:hidden" id="mobileOverlay">
+    <div class="absolute inset-0 bg-black bg-opacity-20" id="mobileOverlayBg"></div>
+    <div class="mobile-index-panel absolute left-0 top-0 bottom-0 w-64 pt-14 px-5 pb-6 overflow-y-auto" style="background:#faf8f5;">
+     <div class="font-mono text-xs tracking-widest uppercase mb-6" style="color:#a09890;">
+      Index
+     </div>
+     <div id="mobileIndexList" class="flex flex-col gap-1"></div>
+    </div>
+   </div>
+   <div class="flex w-full max-w-7xl mx-auto" style="padding-top:48px;"><!-- Floating Index Sidebar (desktop) -->
+    <aside class="hidden lg:block w-52 flex-shrink-0 relative">
+     <div class="fixed w-48 pt-8 pl-6" style="top:48px;">
+      <div class="font-mono text-xs tracking-widest uppercase mb-5" style="color:#a09890;">
+       Index
+      </div>
+      <div id="indexList" class="flex flex-col gap-1"><!-- Populated by JS -->
+      </div>
+      <div class="mt-8 pt-6" style="border-top:1px solid #e5e0da;">
+       <div class="font-mono text-xs" style="color:#b5afa8;">
+        v1.0
+       </div>
+       <div class="font-mono text-xs mt-1" style="color:#b5afa8;">
+        6 Modules
+       </div>
+      </div>
+     </div>
+    </aside><!-- Main Content -->
+    <main class="flex-1 min-w-0 px-4 sm:px-6 lg:px-10"><!-- HERO -->
+     <section id="home" class="pt-16 pb-20 section-reveal">
+      <div class="max-w-2xl">
+       <div class="font-mono text-xs tracking-widest uppercase mb-6" style="color:#a09890;">
+        System / Hub / v1.0
+       </div>
+       <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-tight mb-5" id="heroTitle" style="color:#1a1815;">Everything you sell, organized like a system.</h1>
+       <p class="font-sans text-lg font-light leading-relaxed mb-8" id="heroSubtitle" style="color:#6b6560;">A one-page hub that feels like software.</p>
+       <div class="flex flex-wrap gap-3"><button class="cta-pulse font-mono text-sm px-6 py-3 rounded transition-all hover:opacity-90" id="ctaPrimary" style="background:#c8553d; color:#faf8f5;">Get the Hub Template</button> <button class="font-mono text-sm px-6 py-3 rounded border transition-all hover:opacity-70" id="ctaSecondary" style="border-color:#c8553d; color:#c8553d;">View Modules</button>
+       </div>
+      </div>
+      <div class="mt-12 img-frame rounded-lg" style="height:280px;"><img src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&amp;q=80" alt="Minimalist workspace with laptop" loading="lazy" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#e8e4df,#d5cfc7)'; this.alt='Image unavailable'; this.style.display='none';">
+      </div>
+     </section><!-- MODULES -->
+     <section id="modules" class="py-16 section-reveal">
+      <div class="flex items-center gap-3 mb-2 icon-thin"><i data-lucide="layout-grid" style="width:18px;height:18px;color:#c8553d;"></i> <span class="font-mono text-xs tracking-widest uppercase" style="color:#a09890;">Modules</span>
+      </div>
+      <h2 class="font-serif text-3xl sm:text-4xl mb-3" style="color:#1a1815;">Six modules. One system.</h2>
+      <p class="font-sans font-light mb-10 max-w-lg" style="color:#6b6560;">Each module is designed to stand alone or work together as a connected knowledge hub.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="moduleGrid"><!-- Module 1 -->
+       <div class="mod-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex items-center justify-between mb-4"><span class="font-mono text-xs tracking-widest" style="color:#a09890;">01</span>
+         <div class="icon-thin">
+          <i data-lucide="book-open" style="width:18px;height:18px;color:#c8553d;"></i>
+         </div>
+        </div>
+        <h3 class="font-serif text-xl mb-2" style="color:#1a1815;">Guide Library</h3>
+        <p class="font-sans text-sm font-light leading-relaxed" style="color:#6b6560;">Organize your guides, SOPs, and tutorials in a browsable, indexed format.</p>
+        <div class="mt-4 flex items-center gap-1 icon-thin" style="color:#c8553d;"><span class="font-mono text-xs">Explore</span> <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+        </div>
+       </div><!-- Module 2 -->
+       <div class="mod-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex items-center justify-between mb-4"><span class="font-mono text-xs tracking-widest" style="color:#a09890;">02</span>
+         <div class="icon-thin">
+          <i data-lucide="package" style="width:18px;height:18px;color:#c8553d;"></i>
+         </div>
+        </div>
+        <h3 class="font-serif text-xl mb-2" style="color:#1a1815;">Digital Products</h3>
+        <p class="font-sans text-sm font-light leading-relaxed" style="color:#6b6560;">Showcase downloads, templates, and digital assets with built-in previews.</p>
+        <div class="mt-4 flex items-center gap-1 icon-thin" style="color:#c8553d;"><span class="font-mono text-xs">Explore</span> <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+        </div>
+       </div><!-- Module 3 -->
+       <div class="mod-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex items-center justify-between mb-4"><span class="font-mono text-xs tracking-widest" style="color:#a09890;">03</span>
+         <div class="icon-thin">
+          <i data-lucide="list" style="width:18px;height:18px;color:#c8553d;"></i>
+         </div>
+        </div>
+        <h3 class="font-serif text-xl mb-2" style="color:#1a1815;">Service Catalog</h3>
+        <p class="font-sans text-sm font-light leading-relaxed" style="color:#6b6560;">Present your services like indexed entries, complete with scope and pricing.</p>
+        <div class="mt-4 flex items-center gap-1 icon-thin" style="color:#c8553d;"><span class="font-mono text-xs">Explore</span> <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+        </div>
+       </div><!-- Module 4 -->
+       <div class="mod-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex items-center justify-between mb-4"><span class="font-mono text-xs tracking-widest" style="color:#a09890;">04</span>
+         <div class="icon-thin">
+          <i data-lucide="search" style="width:18px;height:18px;color:#c8553d;"></i>
+         </div>
+        </div>
+        <h3 class="font-serif text-xl mb-2" style="color:#1a1815;">Smart Search</h3>
+        <p class="font-sans text-sm font-light leading-relaxed" style="color:#6b6560;">Help visitors find exactly what they need with filtered, instant navigation.</p>
+        <div class="mt-4 flex items-center gap-1 icon-thin" style="color:#c8553d;"><span class="font-mono text-xs">Explore</span> <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+        </div>
+       </div><!-- Module 5 -->
+       <div class="mod-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex items-center justify-between mb-4"><span class="font-mono text-xs tracking-widest" style="color:#a09890;">05</span>
+         <div class="icon-thin">
+          <i data-lucide="download" style="width:18px;height:18px;color:#c8553d;"></i>
+         </div>
+        </div>
+        <h3 class="font-serif text-xl mb-2" style="color:#1a1815;">Download Gate</h3>
+        <p class="font-sans text-sm font-light leading-relaxed" style="color:#6b6560;">Deliver files and resources with elegant, one-click download sections.</p>
+        <div class="mt-4 flex items-center gap-1 icon-thin" style="color:#c8553d;"><span class="font-mono text-xs">Explore</span> <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+        </div>
+       </div><!-- Module 6 -->
+       <div class="mod-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex items-center justify-between mb-4"><span class="font-mono text-xs tracking-widest" style="color:#a09890;">06</span>
+         <div class="icon-thin">
+          <i data-lucide="lock" style="width:18px;height:18px;color:#c8553d;"></i>
+         </div>
+        </div>
+        <h3 class="font-serif text-xl mb-2" style="color:#1a1815;">Access Control</h3>
+        <p class="font-sans text-sm font-light leading-relaxed" style="color:#6b6560;">Section-level visibility so you can tier your content for different audiences.</p>
+        <div class="mt-4 flex items-center gap-1 icon-thin" style="color:#c8553d;"><span class="font-mono text-xs">Explore</span> <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+        </div>
+       </div>
+      </div>
+     </section><!-- PREVIEW -->
+     <section id="preview" class="py-16 section-reveal">
+      <div class="flex items-center gap-3 mb-2 icon-thin"><i data-lucide="eye" style="width:18px;height:18px;color:#c8553d;"></i> <span class="font-mono text-xs tracking-widest uppercase" style="color:#a09890;">Preview</span>
+      </div>
+      <h2 class="font-serif text-3xl sm:text-4xl mb-3" style="color:#1a1815;">See it in action.</h2>
+      <p class="font-sans font-light mb-8 max-w-lg" style="color:#6b6560;">A real preview of how your hub looks when it's live. Clean, fast, professional.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div class="img-frame rounded-lg" style="height:220px;"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&amp;q=80" alt="Clean documentation concept" loading="lazy" onerror="console.error('Image failed:', this.src); this.style.display='none';">
+       </div>
+       <div class="img-frame rounded-lg" style="height:220px;"><img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&amp;q=80" alt="Library shelves" loading="lazy" onerror="console.error('Image failed:', this.src); this.style.display='none';">
+       </div>
+      </div>
+      <div class="mt-4 rounded-lg p-6 border" style="background:#fff; border-color:#e5e0da;">
+       <div class="flex items-center gap-2 mb-3">
+        <div class="w-2 h-2 rounded-full" style="background:#c8553d;"></div>
+        <div class="w-2 h-2 rounded-full" style="background:#e5e0da;"></div>
+        <div class="w-2 h-2 rounded-full" style="background:#e5e0da;"></div><span class="font-mono text-xs ml-2" style="color:#a09890;">indexorbit.hub/preview</span>
+       </div>
+       <div class="flex gap-4">
+        <div class="w-32 flex-shrink-0 hidden sm:block">
+         <div class="h-3 rounded mb-2" style="background:#e5e0da; width:80%;"></div>
+         <div class="h-2 rounded mb-2" style="background:#f0ece7; width:60%;"></div>
+         <div class="h-2 rounded mb-2" style="background:#f0ece7; width:70%;"></div>
+         <div class="h-2 rounded mb-2" style="background:#c8553d; width:50%; opacity:0.3;"></div>
+         <div class="h-2 rounded mb-2" style="background:#f0ece7; width:65%;"></div>
+         <div class="h-2 rounded" style="background:#f0ece7; width:55%;"></div>
+        </div>
+        <div class="flex-1">
+         <div class="h-4 rounded mb-3" style="background:#1a1815; width:40%; opacity:0.1;"></div>
+         <div class="h-2 rounded mb-2" style="background:#f0ece7; width:100%;"></div>
+         <div class="h-2 rounded mb-2" style="background:#f0ece7; width:90%;"></div>
+         <div class="h-2 rounded mb-4" style="background:#f0ece7; width:70%;"></div>
+         <div class="grid grid-cols-3 gap-2">
+          <div class="h-16 rounded" style="background:#f0ece7;"></div>
+          <div class="h-16 rounded" style="background:#f0ece7;"></div>
+          <div class="h-16 rounded" style="background:#f0ece7;"></div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </section><!-- WHO IT'S FOR -->
+     <section id="who" class="py-16 section-reveal">
+      <div class="flex items-center gap-3 mb-2 icon-thin"><i data-lucide="users" style="width:18px;height:18px;color:#c8553d;"></i> <span class="font-mono text-xs tracking-widest uppercase" style="color:#a09890;">Who It's For</span>
+      </div>
+      <h2 class="font-serif text-3xl sm:text-4xl mb-3" style="color:#1a1815;">Built for builders.</h2>
+      <p class="font-sans font-light mb-8 max-w-lg" style="color:#6b6560;">Whether you're a solo creator or a small team, this hub replaces a dozen scattered pages.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div class="rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="font-serif text-lg mb-2" style="color:#1a1815;">
+         Course Creators
+        </div>
+        <p class="font-sans text-sm font-light" style="color:#6b6560;">Index your lessons, downloads, and bonus materials in one organized hub.</p>
+       </div>
+       <div class="rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="font-serif text-lg mb-2" style="color:#1a1815;">
+         Consultants
+        </div>
+        <p class="font-sans text-sm font-light" style="color:#6b6560;">Present your service packages, case studies, and resources like a product manual.</p>
+       </div>
+       <div class="rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="font-serif text-lg mb-2" style="color:#1a1815;">
+         Template Sellers
+        </div>
+        <p class="font-sans text-sm font-light" style="color:#6b6560;">Showcase your digital products with previews, specs, and instant downloads.</p>
+       </div>
+       <div class="rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="font-serif text-lg mb-2" style="color:#1a1815;">
+         Agencies
+        </div>
+        <p class="font-sans text-sm font-light" style="color:#6b6560;">Give clients a single, polished page to explore everything you offer.</p>
+       </div>
+      </div>
+      <div class="mt-6 img-frame rounded-lg" style="height:200px;"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1000&amp;q=80" alt="Clean office workspace" loading="lazy" onerror="console.error('Image failed:', this.src); this.style.display='none';">
+      </div>
+     </section><!-- REVIEWS -->
+     <section id="reviews" class="py-16 section-reveal">
+      <div class="flex items-center gap-3 mb-2 icon-thin"><i data-lucide="message-circle" style="width:18px;height:18px;color:#c8553d;"></i> <span class="font-mono text-xs tracking-widest uppercase" style="color:#a09890;">Reviews</span>
+      </div>
+      <h2 class="font-serif text-3xl sm:text-4xl mb-8" style="color:#1a1815;">What people say.</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+       <div class="review-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex gap-1 mb-3">
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+        </div>
+        <p class="font-sans text-sm font-light leading-relaxed mb-4" style="color:#6b6560;">"This replaced my entire Notion setup. Clients actually find things now."</p>
+        <div class="font-mono text-xs" style="color:#a09890;">
+         A.M. / Consultant
+        </div>
+       </div>
+       <div class="review-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex gap-1 mb-3">
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+        </div>
+        <p class="font-sans text-sm font-light leading-relaxed mb-4" style="color:#6b6560;">"The index sidebar is genius. It makes a single page feel like an entire platform."</p>
+        <div class="font-mono text-xs" style="color:#a09890;">
+         R.K. / Course Creator
+        </div>
+       </div>
+       <div class="review-card rounded-lg p-5 border" style="background:#fff; border-color:#e5e0da;">
+        <div class="flex gap-1 mb-3">
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+         <div class="w-1 h-1 rounded-full" style="background:#c8553d;"></div>
+        </div>
+        <p class="font-sans text-sm font-light leading-relaxed mb-4" style="color:#6b6560;">"Clean, professional, and it took me 20 minutes to set up. Worth every penny."</p>
+        <div class="font-mono text-xs" style="color:#a09890;">
+         S.L. / Template Seller
+        </div>
+       </div>
+      </div>
+     </section><!-- DOWNLOAD / BOTTOM CTA -->
+     <section id="download" class="py-20 section-reveal">
+      <div class="rounded-xl p-8 sm:p-12 text-center" style="background:#1a1815;">
+       <div class="font-mono text-xs tracking-widest uppercase mb-4" style="color:#a09890;">
+        Ready?
+       </div>
+       <h2 class="font-serif text-3xl sm:text-4xl mb-4" id="bottomCtaText" style="color:#faf8f5;">Turn content into a product.</h2>
+       <p class="font-sans font-light mb-8 max-w-md mx-auto" style="color:#6b6560;">Get the full IndexOrbit Hub template and launch your knowledge system today.</p><button class="cta-pulse font-mono text-sm px-8 py-3 rounded transition-all hover:opacity-90" style="background:#c8553d; color:#faf8f5;">Get the Hub Template</button>
+       <div class="flex items-center justify-center gap-4 mt-6 icon-thin" style="color:#6b6560;">
+        <div class="flex items-center gap-1">
+         <i data-lucide="download" style="width:14px;height:14px;"></i><span class="font-mono text-xs">Instant download</span>
+        </div>
+        <div class="flex items-center gap-1">
+         <i data-lucide="lock" style="width:14px;height:14px;"></i><span class="font-mono text-xs">Secure access</span>
+        </div>
+       </div>
+      </div>
+      <footer class="mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3" style="border-top:1px solid #e5e0da;"><span class="font-mono text-xs" style="color:#b5afa8;">IndexOrbit Hub v1.0</span> <span class="font-mono text-xs" style="color:#b5afa8;">Built with intent.</span>
+      </footer>
+     </section>
+    </main>
+   </div>
+  </div>
+  <script>
+  // Index items data
+  const indexSections = [
+    { id: 'home', label: 'Home', num: '00' },
+    { id: 'modules', label: 'Modules', num: '01' },
+    { id: 'preview', label: 'Preview', num: '02' },
+    { id: 'who', label: 'Who It\'s For', num: '03' },
+    { id: 'reviews', label: 'Reviews', num: '04' },
+    { id: 'download', label: 'Download', num: '05' }
+  ];
+
+  // Build index sidebar
+  function buildIndex(container, isMobile) {
+    container.innerHTML = '';
+    indexSections.forEach(s => {
+      const a = document.createElement('a');
+      a.href = '#' + s.id;
+      a.className = 'idx-item flex items-center gap-3 px-3 py-2 rounded cursor-pointer no-underline';
+      a.dataset.section = s.id;
+      a.innerHTML = `<span class="font-mono text-xs" style="color:#b5afa8; min-width:20px;">${s.num}</span><span class="font-sans text-sm" style="color:#6b6560;">${s.label}</span>`;
+      if (isMobile) {
+        a.addEventListener('click', () => {
+          document.getElementById('mobileOverlay').classList.remove('open');
+        });
+      }
+      container.appendChild(a);
+    });
+  }
+
+  buildIndex(document.getElementById('indexList'), false);
+  buildIndex(document.getElementById('mobileIndexList'), true);
+
+  // Mobile menu
+  document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+    document.getElementById('mobileOverlay').classList.add('open');
+  });
+  document.getElementById('mobileOverlayBg').addEventListener('click', () => {
+    document.getElementById('mobileOverlay').classList.remove('open');
+  });
+
+  // Active index tracking
+  const appRoot = document.getElementById('appRoot');
+  function updateActiveIndex() {
+    const scrollTop = appRoot.scrollTop;
+    let currentId = 'home';
+    indexSections.forEach(s => {
+      const el = document.getElementById(s.id);
+      if (el && el.offsetTop - 100 <= scrollTop) currentId = s.id;
+    });
+    document.querySelectorAll('.idx-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === currentId);
+    });
+  }
+  appRoot.addEventListener('scroll', updateActiveIndex);
+  updateActiveIndex();
+
+  // Section reveal on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1, root: appRoot });
+  document.querySelectorAll('.section-reveal').forEach(el => observer.observe(el));
+
+  // Module card sequential reveal
+  const modObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const cards = document.querySelectorAll('.mod-card');
+        cards.forEach((card, i) => {
+          setTimeout(() => card.classList.add('revealed'), i * 120);
+        });
+        modObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.15, root: appRoot });
+  const moduleSection = document.getElementById('modules');
+  if (moduleSection) modObserver.observe(moduleSection);
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(a.getAttribute('href').slice(1));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // View Modules button
+  document.getElementById('ctaSecondary').addEventListener('click', () => {
+    document.getElementById('modules').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Init icons
+  lucide.createIcons();
+
+  // Element SDK
+  const defaultConfig = {
+    hero_title: 'Everything you sell, organized like a system.',
+    hero_subtitle: 'A one-page hub that feels like software.',
+    cta_primary: 'Get the Hub Template',
+    cta_secondary: 'View Modules',
+    bottom_cta_text: 'Turn content into a product.',
+    background_color: '#faf8f5',
+    surface_color: '#ffffff',
+    text_color: '#1a1815',
+    accent_color: '#c8553d',
+    muted_color: '#6b6560',
+    font_family: 'Instrument Serif',
+    font_size: 16
+  };
+
+  function applyConfig(cfg) {
+    const c = { ...defaultConfig, ...cfg };
+
+    document.getElementById('heroTitle').textContent = c.hero_title;
+    document.getElementById('heroSubtitle').textContent = c.hero_subtitle;
+    document.getElementById('ctaPrimary').textContent = c.cta_primary;
+    document.getElementById('ctaSecondary').textContent = c.cta_secondary;
+    document.getElementById('bottomCtaText').textContent = c.bottom_cta_text;
+
+    // Colors
+    const root = document.getElementById('appRoot');
+    root.style.background = c.background_color;
+    document.documentElement.style.setProperty('--accent-color', c.accent_color);
+
+    // Nav
+    document.getElementById('topNav').style.background = c.background_color + 'e6';
+    document.getElementById('brandName').style.color = c.text_color;
+
+    // Accent color elements
+    document.getElementById('ctaPrimary').style.background = c.accent_color;
+    document.getElementById('ctaSecondary').style.borderColor = c.accent_color;
+    document.getElementById('ctaSecondary').style.color = c.accent_color;
+
+    document.querySelectorAll('[data-lucide]').forEach(el => {
+      const parent = el.closest('.icon-thin');
+      if (parent) {
+        const svg = parent.querySelector('svg');
+        if (svg && svg.getAttribute('data-lucide-icon')) {
+          // Icons near section headers get accent color
+        }
+      }
+    });
+
+    // Surface color on cards
+    document.querySelectorAll('.mod-card, .review-card, [id="who"] .rounded-lg.border').forEach(el => {
+      el.style.background = c.surface_color;
+    });
+
+    // Text color
+    document.querySelectorAll('.font-serif').forEach(el => {
+      if (!el.closest('[style*="background:#1a1815"]') && !el.closest('.rounded-xl')) {
+        el.style.color = c.text_color;
+      }
+    });
+
+    // Muted text
+    document.querySelectorAll('.font-sans.font-light, .font-sans.text-sm.font-light').forEach(el => {
+      if (!el.closest('.rounded-xl')) el.style.color = c.muted_color;
+    });
+
+    // Font
+    const fontStack = `${c.font_family}, Georgia, serif`;
+    document.querySelectorAll('.font-serif').forEach(el => el.style.fontFamily = fontStack);
+
+    // Font size
+    const base = c.font_size || 16;
+    document.getElementById('heroTitle').style.fontSize = `${base * 3.2}px`;
+    document.getElementById('heroSubtitle').style.fontSize = `${base * 1.15}px`;
+    document.querySelectorAll('#modules h2, #preview h2, #who h2, #reviews h2').forEach(el => {
+      el.style.fontSize = `${base * 2.2}px`;
+    });
+    document.getElementById('bottomCtaText').style.fontSize = `${base * 2.2}px`;
+  }
+
+  if (window.elementSdk) {
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => applyConfig(config),
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+          { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['hero_title', config.hero_title || defaultConfig.hero_title],
+        ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+        ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+        ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+        ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+      ])
+    });
+  }
+
+  // Initial render
+  applyConfig(defaultConfig);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82cdfb184d93b',t:'MTc3NjczMDMyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

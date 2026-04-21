@@ -1,1 +1,805 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/7eeebe68-8de4-445a-8f13-8ebe393e2a05 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlassElevator One-Pager</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&amp;family=Playfair+Display:wght@400;700&amp;display=swap" rel="stylesheet">
+  <style>
+html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #0c0f14;
+  --surface: rgba(255,255,255,0.06);
+  --text: #e8e6e1;
+  --accent: #c9a96e;
+  --secondary: rgba(201,169,110,0.18);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+.font-display { font-family: 'Playfair Display', serif; }
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+}
+
+/* Floor indicator */
+.floor-indicator {
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.floor-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  transition: all 0.5s cubic-bezier(0.22,1,0.36,1);
+  position: relative;
+}
+.floor-dot.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 16px rgba(201,169,110,0.5);
+}
+.floor-dot-label {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  color: var(--accent);
+}
+.floor-dot:hover .floor-dot-label,
+.floor-dot.active .floor-dot-label { opacity: 1; }
+
+/* Sticky nav */
+.sticky-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(12,15,20,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: transform 0.4s;
+}
+.nav-link {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  transition: color 0.3s;
+  text-decoration: none;
+  padding: 4px 0;
+}
+.nav-link:hover, .nav-link.active { color: var(--accent); }
+
+/* Floor number watermark */
+.floor-number {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(120px, 18vw, 280px);
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.02);
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  user-select: none;
+  transition: color 0.8s;
+}
+.floor-section.in-view .floor-number {
+  color: rgba(255,255,255,0.04);
+}
+
+/* Reveal animations */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Light sweep */
+@keyframes lightSweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.light-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: lightSweep 6s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Image pan */
+@keyframes slowPan {
+  0% { transform: scale(1.08) translate(0, 0); }
+  50% { transform: scale(1.12) translate(-1.5%, -1%); }
+  100% { transform: scale(1.08) translate(0, 0); }
+}
+.img-pan { animation: slowPan 20s ease-in-out infinite; }
+
+/* CTA pulse */
+@keyframes subtlePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,169,110,0.3); }
+  50% { box-shadow: 0 0 24px 4px rgba(201,169,110,0.15); }
+}
+.cta-pulse { animation: subtlePulse 3s ease-in-out infinite; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* Floor image container */
+.floor-img-wrap {
+  overflow: hidden;
+  border-radius: 12px;
+  position: relative;
+  aspect-ratio: 4/3;
+}
+
+/* Review stars */
+.star-filled { fill: var(--accent); stroke: var(--accent); }
+
+@media (max-width: 768px) {
+  .floor-indicator { display: none; }
+  .sticky-nav { padding: 12px 16px; }
+  .floor-number { font-size: 80px !important; }
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full" style="height:100%; overflow-y:auto; overflow-x:hidden;"><!-- Nav -->
+   <nav class="sticky-nav" id="mainNav">
+    <div style="font-size:13px;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);font-weight:500;">
+     <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="display:inline;vertical-align:-3px;margin-right:6px;"><rect x="3" y="2" width="18" height="20" rx="2" /><line x1="12" y1="6" x2="12" y2="18" /><line x1="7" y1="10" x2="17" y2="10" /><line x1="7" y1="14" x2="17" y2="14" />
+     </svg> GlassElevator
+    </div>
+    <div class="hidden md:flex gap-6"><a href="#hero" class="nav-link active" data-nav="hero">Home</a> <a href="#floors" class="nav-link" data-nav="floors">Floors</a> <a href="#highlights" class="nav-link" data-nav="highlights">Highlights</a> <a href="#packages" class="nav-link" data-nav="packages">Packages</a> <a href="#reviews" class="nav-link" data-nav="reviews">Reviews</a> <a href="#book" class="nav-link" data-nav="book">Book</a>
+    </div><button id="mobileMenuBtn" class="md:hidden" style="color:var(--text);" aria-label="Menu"> <i data-lucide="menu" style="width:20px;height:20px;"></i> </button>
+   </nav><!-- Mobile menu -->
+   <div id="mobileMenu" class="fixed inset-0 z-[110] hidden" style="background:rgba(12,15,20,0.95);backdrop-filter:blur(20px);">
+    <div class="flex flex-col items-center justify-center h-full gap-8"><a href="#hero" class="nav-link text-lg" onclick="closeMobileMenu()">Home</a> <a href="#floors" class="nav-link text-lg" onclick="closeMobileMenu()">Floors</a> <a href="#highlights" class="nav-link text-lg" onclick="closeMobileMenu()">Highlights</a> <a href="#packages" class="nav-link text-lg" onclick="closeMobileMenu()">Packages</a> <a href="#reviews" class="nav-link text-lg" onclick="closeMobileMenu()">Reviews</a> <a href="#book" class="nav-link text-lg" onclick="closeMobileMenu()">Book</a> <button onclick="closeMobileMenu()" style="color:var(--accent);margin-top:24px;" aria-label="Close menu"> <i data-lucide="x" style="width:28px;height:28px;"></i> </button>
+    </div>
+   </div><!-- Floor Indicator -->
+   <div class="floor-indicator" id="floorIndicator">
+    <div class="floor-dot active" data-floor="0">
+     <span class="floor-dot-label">Home</span>
+    </div>
+    <div class="floor-dot" data-floor="1">
+     <span class="floor-dot-label">Floor 01</span>
+    </div>
+    <div class="floor-dot" data-floor="2">
+     <span class="floor-dot-label">Floor 02</span>
+    </div>
+    <div class="floor-dot" data-floor="3">
+     <span class="floor-dot-label">Floor 03</span>
+    </div>
+    <div class="floor-dot" data-floor="4">
+     <span class="floor-dot-label">Floor 04</span>
+    </div>
+    <div class="floor-dot" data-floor="5">
+     <span class="floor-dot-label">Highlights</span>
+    </div>
+    <div class="floor-dot" data-floor="6">
+     <span class="floor-dot-label">Packages</span>
+    </div>
+    <div class="floor-dot" data-floor="7">
+     <span class="floor-dot-label">Reviews</span>
+    </div>
+    <div class="floor-dot" data-floor="8">
+     <span class="floor-dot-label">Book</span>
+    </div>
+   </div><!-- HERO -->
+   <section id="hero" class="relative flex items-center justify-center" style="min-height:100%;overflow:hidden;">
+    <div class="absolute inset-0"><img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&amp;q=80" alt="Modern glass building interior" loading="lazy" class="w-full h-full object-cover img-pan" style="opacity:0.25;" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#1a1a2e,#0c0f14)';this.alt='Image unavailable';">
+     <div class="absolute inset-0" style="background:linear-gradient(to bottom,rgba(12,15,20,0.4) 0%,var(--bg) 100%);"></div>
+    </div>
+    <div class="relative z-10 text-center px-6 max-w-3xl mx-auto">
+     <div class="reveal-up" style="transition-delay:0.1s;">
+      <div style="font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="display:inline;vertical-align:-2px;margin-right:8px;"><rect x="3" y="2" width="18" height="20" rx="2" /><polyline points="8 22 8 18 16 18 16 22" /><line x1="12" y1="6" x2="12" y2="14" /><line x1="8" y1="10" x2="16" y2="10" />
+       </svg> Floor-by-Floor Experience
+      </div>
+     </div>
+     <h1 id="heroTitle" class="font-display reveal-up" style="font-size:clamp(40px,8vw,88px);font-weight:700;line-height:1.05;margin-bottom:24px;transition-delay:0.25s;">Ride the story upward.</h1>
+     <p id="heroSubtitle" class="reveal-up" style="font-size:clamp(16px,2vw,20px);color:rgba(255,255,255,0.5);max-width:520px;margin:0 auto 40px;line-height:1.6;transition-delay:0.4s;">A floor-by-floor page that keeps people scrolling.</p>
+     <div class="reveal-up flex flex-wrap gap-4 justify-center" style="transition-delay:0.55s;"><a href="#book" id="ctaPrimary" class="cta-pulse inline-block px-8 py-3.5 rounded-full text-sm font-medium" style="background:var(--accent);color:#0c0f14;letter-spacing:0.05em;"> Get Template + License </a> <a href="#floors" id="ctaSecondary" class="inline-block px-8 py-3.5 rounded-full text-sm font-medium" style="border:1px solid rgba(255,255,255,0.15);color:var(--text);letter-spacing:0.05em;transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)'"> Start the Ride </a>
+     </div>
+     <div class="reveal-up mt-16" style="transition-delay:0.7s;">
+      <svg width="20" height="32" viewbox="0 0 20 32" fill="none" stroke="currentColor" stroke-width="1" style="color:rgba(255,255,255,0.2);"><rect x="1" y="1" width="18" height="30" rx="9" /> <circle cx="10" cy="10" r="2" fill="currentColor" style="animation:scrollDot 2s ease-in-out infinite;" />
+      </svg>
+      <style>
+        @keyframes scrollDot { 0%,100%{transform:translateY(0);opacity:1;} 50%{transform:translateY(10px);opacity:0.3;} }
+      </style>
+     </div>
+    </div>
+   </section><!-- FLOORS -->
+   <div id="floors"><!-- Floor 01 -->
+    <section class="floor-section relative" style="min-height:100%;padding:120px 24px 80px;" data-section="floors">
+     <div class="floor-number">
+      01
+     </div>
+     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+      <div class="reveal-up">
+       <div class="floor-img-wrap"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&amp;q=80" alt="Modern elevator lobby" loading="lazy" class="w-full h-full object-cover img-pan" onerror="console.error('Image failed:',this.src);this.style.background='#1a1a2e';this.alt='Image unavailable';">
+        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(12,15,20,0.6) 0%,transparent 50%);"></div>
+       </div>
+      </div>
+      <div class="reveal-up" style="transition-delay:0.15s;">
+       <div style="font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="display:inline;vertical-align:-2px;margin-right:6px;"><rect x="3" y="2" width="18" height="20" rx="2" /><line x1="12" y1="6" x2="12" y2="18" />
+        </svg> Floor 01 — The Lobby
+       </div>
+       <h2 class="font-display" style="font-size:clamp(28px,4vw,44px);font-weight:700;line-height:1.1;margin-bottom:16px;">First impressions, architected.</h2>
+       <div class="glass-card light-sweep relative p-6 mt-6">
+        <p style="color:rgba(255,255,255,0.55);line-height:1.7;font-size:15px;">The hero section that stops the scroll. A full-bleed moment that sets the tone — cinematic imagery, typographic authority, one clear call to action.</p>
+        <div class="mt-4 flex items-center gap-3" style="color:var(--accent);font-size:13px;">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="10" /><path d="M8 12l3 3 5-5" />
+         </svg> Hero layout included
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Floor 02 -->
+    <section class="floor-section relative" style="min-height:100%;padding:80px 24px;">
+     <div class="floor-number">
+      02
+     </div>
+     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+      <div class="reveal-up order-2 md:order-1" style="transition-delay:0.15s;">
+       <div style="font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="display:inline;vertical-align:-2px;margin-right:6px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z" /><circle cx="12" cy="10" r="3" />
+        </svg> Floor 02 — The View
+       </div>
+       <h2 class="font-display" style="font-size:clamp(28px,4vw,44px);font-weight:700;line-height:1.1;margin-bottom:16px;">Show the landscape.</h2>
+       <div class="glass-card light-sweep relative p-6 mt-6">
+        <p style="color:rgba(255,255,255,0.55);line-height:1.7;font-size:15px;">Features and benefits, revealed like a skyline at sunset. Each panel slides into frame as visitors scroll — clean grid, glassmorphism overlays, precise spatial rhythm.</p>
+        <div class="mt-4 flex items-center gap-3" style="color:var(--accent);font-size:13px;">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="10" /><path d="M8 12l3 3 5-5" />
+         </svg> Feature grid included
+        </div>
+       </div>
+      </div>
+      <div class="reveal-up order-1 md:order-2">
+       <div class="floor-img-wrap"><img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=900&amp;q=80" alt="Skyline view from glass building" loading="lazy" class="w-full h-full object-cover img-pan" onerror="console.error('Image failed:',this.src);this.style.background='#1a1a2e';this.alt='Image unavailable';">
+        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(12,15,20,0.6) 0%,transparent 50%);"></div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Floor 03 -->
+    <section class="floor-section relative" style="min-height:100%;padding:80px 24px;">
+     <div class="floor-number">
+      03
+     </div>
+     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+      <div class="reveal-up">
+       <div class="floor-img-wrap"><img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=900&amp;q=80" alt="Modern minimal office space" loading="lazy" class="w-full h-full object-cover img-pan" onerror="console.error('Image failed:',this.src);this.style.background='#1a1a2e';this.alt='Image unavailable';">
+        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(12,15,20,0.6) 0%,transparent 50%);"></div>
+       </div>
+      </div>
+      <div class="reveal-up" style="transition-delay:0.15s;">
+       <div style="font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="display:inline;vertical-align:-2px;margin-right:6px;"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 8h20" />
+        </svg> Floor 03 — The Studio
+       </div>
+       <h2 class="font-display" style="font-size:clamp(28px,4vw,44px);font-weight:700;line-height:1.1;margin-bottom:16px;">Where the work happens.</h2>
+       <div class="glass-card light-sweep relative p-6 mt-6">
+        <p style="color:rgba(255,255,255,0.55);line-height:1.7;font-size:15px;">Social proof, case studies, and process breakdowns. Visitors see the method behind the result — structured, transparent, undeniably credible.</p>
+        <div class="mt-4 flex items-center gap-3" style="color:var(--accent);font-size:13px;">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="10" /><path d="M8 12l3 3 5-5" />
+         </svg> Process section included
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Floor 04 -->
+    <section class="floor-section relative" style="min-height:100%;padding:80px 24px;">
+     <div class="floor-number">
+      04
+     </div>
+     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+      <div class="reveal-up order-2 md:order-1" style="transition-delay:0.15s;">
+       <div style="font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="display:inline;vertical-align:-2px;margin-right:6px;"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+        </svg> Floor 04 — The Penthouse
+       </div>
+       <h2 class="font-display" style="font-size:clamp(28px,4vw,44px);font-weight:700;line-height:1.1;margin-bottom:16px;">The closing view.</h2>
+       <div class="glass-card light-sweep relative p-6 mt-6">
+        <p style="color:rgba(255,255,255,0.55);line-height:1.7;font-size:15px;">Pricing, packages, and the final call to action. Visitors have ascended the full story — now they decide. Clean comparison, zero friction, maximum clarity.</p>
+        <div class="mt-4 flex items-center gap-3" style="color:var(--accent);font-size:13px;">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="10" /><path d="M8 12l3 3 5-5" />
+         </svg> Pricing layout included
+        </div>
+       </div>
+      </div>
+      <div class="reveal-up order-1 md:order-2">
+       <div class="floor-img-wrap"><img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&amp;q=80" alt="Modern hallway with natural light" loading="lazy" class="w-full h-full object-cover img-pan" onerror="console.error('Image failed:',this.src);this.style.background='#1a1a2e';this.alt='Image unavailable';">
+        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(12,15,20,0.6) 0%,transparent 50%);"></div>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- HIGHLIGHTS -->
+   <section id="highlights" class="relative" style="padding:100px 24px;" data-section="highlights">
+    <div class="max-w-6xl mx-auto text-center">
+     <div class="reveal-up">
+      <div style="font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;">
+       What's Inside
+      </div>
+      <h2 class="font-display" style="font-size:clamp(32px,5vw,52px);font-weight:700;margin-bottom:60px;">Built for impact.</h2>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="glass-card light-sweep relative p-8 text-left reveal-up" style="transition-delay:0.05s;">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" class="mb-4"><rect x="3" y="2" width="18" height="20" rx="2" /><line x1="12" y1="6" x2="12" y2="18" /><line x1="7" y1="10" x2="17" y2="10" />
+       </svg>
+       <h3 style="font-size:17px;font-weight:600;margin-bottom:8px;">Elevator Structure</h3>
+       <p style="color:rgba(255,255,255,0.45);font-size:14px;line-height:1.6;">Floor-by-floor vertical reveal that guides visitors through your story in sequence.</p>
+      </div>
+      <div class="glass-card light-sweep relative p-8 text-left reveal-up" style="transition-delay:0.15s;">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" class="mb-4"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+       </svg>
+       <h3 style="font-size:17px;font-weight:600;margin-bottom:8px;">Glassmorphism Cards</h3>
+       <p style="color:rgba(255,255,255,0.45);font-size:14px;line-height:1.6;">Frosted overlays with light sweep animations that feel architectural and premium.</p>
+      </div>
+      <div class="glass-card light-sweep relative p-8 text-left reveal-up" style="transition-delay:0.25s;">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" class="mb-4"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+       </svg>
+       <h3 style="font-size:17px;font-weight:600;margin-bottom:8px;">Scroll Animations</h3>
+       <p style="color:rgba(255,255,255,0.45);font-size:14px;line-height:1.6;">Performance-friendly reveals, parallax depth, and slow pan imagery throughout.</p>
+      </div>
+      <div class="glass-card light-sweep relative p-8 text-left reveal-up" style="transition-delay:0.35s;">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" class="mb-4"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z" /><circle cx="12" cy="10" r="3" />
+       </svg>
+       <h3 style="font-size:17px;font-weight:600;margin-bottom:8px;">Floor Indicator</h3>
+       <p style="color:rgba(255,255,255,0.45);font-size:14px;line-height:1.6;">Fixed dot navigation that tracks your position like an elevator panel.</p>
+      </div>
+      <div class="glass-card light-sweep relative p-8 text-left reveal-up" style="transition-delay:0.45s;">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" class="mb-4"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+       </svg>
+       <h3 style="font-size:17px;font-weight:600;margin-bottom:8px;">Fully Responsive</h3>
+       <p style="color:rgba(255,255,255,0.45);font-size:14px;line-height:1.6;">Every floor adapts gracefully from widescreen to mobile viewports.</p>
+      </div>
+      <div class="glass-card light-sweep relative p-8 text-left reveal-up" style="transition-delay:0.55s;">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" class="mb-4"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+       </svg>
+       <h3 style="font-size:17px;font-weight:600;margin-bottom:8px;">One-Click Template</h3>
+       <p style="color:rgba(255,255,255,0.45);font-size:14px;line-height:1.6;">Drop in your content, swap imagery, adjust colors. Ship the same day.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- PACKAGES -->
+   <section id="packages" class="relative" style="padding:100px 24px;" data-section="packages">
+    <div class="max-w-5xl mx-auto text-center">
+     <div class="reveal-up">
+      <div style="font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;">
+       Packages
+      </div>
+      <h2 class="font-display" style="font-size:clamp(32px,5vw,52px);font-weight:700;margin-bottom:60px;">Choose your floor plan.</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6"><!-- Starter -->
+      <div class="glass-card relative p-8 text-left reveal-up flex flex-col" style="transition-delay:0.05s;">
+       <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">
+        Starter
+       </div>
+       <div class="font-display" style="font-size:36px;font-weight:700;margin-bottom:4px;">
+        $0
+       </div>
+       <p style="color:rgba(255,255,255,0.35);font-size:13px;margin-bottom:24px;">Preview only</p>
+       <div class="flex-1 flex flex-col gap-3 mb-8" style="font-size:14px;color:rgba(255,255,255,0.5);">
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> View demo
+        </div>
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Inspect structure
+        </div>
+        <div class="flex items-center gap-2" style="opacity:0.35;">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+         </svg> Source files
+        </div>
+       </div><a href="#book" class="block text-center py-3 rounded-full text-sm" style="border:1px solid rgba(255,255,255,0.12);color:var(--text);transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">Browse Free</a>
+      </div><!-- Pro -->
+      <div class="glass-card relative p-8 text-left reveal-up flex flex-col" style="transition-delay:0.15s;border-color:var(--accent);">
+       <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0c0f14;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;padding:4px 16px;border-radius:99px;font-weight:600;">
+        Popular
+       </div>
+       <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">
+        Professional
+       </div>
+       <div class="font-display" style="font-size:36px;font-weight:700;margin-bottom:4px;">
+        $49
+       </div>
+       <p style="color:rgba(255,255,255,0.35);font-size:13px;margin-bottom:24px;">One-time license</p>
+       <div class="flex-1 flex flex-col gap-3 mb-8" style="font-size:14px;color:rgba(255,255,255,0.5);">
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Full source code
+        </div>
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> All 4 floor layouts
+        </div>
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Commercial license
+        </div>
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> 6 months updates
+        </div>
+       </div><a href="#book" class="cta-pulse block text-center py-3 rounded-full text-sm font-medium" style="background:var(--accent);color:#0c0f14;">Get Template</a>
+      </div><!-- Studio -->
+      <div class="glass-card relative p-8 text-left reveal-up flex flex-col" style="transition-delay:0.25s;">
+       <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">
+        Studio
+       </div>
+       <div class="font-display" style="font-size:36px;font-weight:700;margin-bottom:4px;">
+        $129
+       </div>
+       <p style="color:rgba(255,255,255,0.35);font-size:13px;margin-bottom:24px;">Team license</p>
+       <div class="flex-1 flex flex-col gap-3 mb-8" style="font-size:14px;color:rgba(255,255,255,0.5);">
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Everything in Pro
+        </div>
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Figma source file
+        </div>
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Extended team license
+        </div>
+        <div class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Priority support
+        </div>
+       </div><a href="#book" class="block text-center py-3 rounded-full text-sm" style="border:1px solid rgba(255,255,255,0.12);color:var(--text);transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">Contact Us</a>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="relative" style="padding:100px 24px;" data-section="reviews">
+    <div class="max-w-5xl mx-auto text-center">
+     <div class="reveal-up">
+      <div style="font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;">
+       Reviews
+      </div>
+      <h2 class="font-display" style="font-size:clamp(32px,5vw,52px);font-weight:700;margin-bottom:60px;">From the residents.</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="glass-card p-8 text-left reveal-up" style="transition-delay:0.05s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p style="color:rgba(255,255,255,0.55);font-size:14px;line-height:1.7;margin-bottom:16px;">"The scroll experience alone sold three clients. They'd never seen a one-pager feel like walking through a building."</p>
+       <div style="font-size:13px;font-weight:500;">
+        Marta Alvarez
+       </div>
+       <div style="font-size:12px;color:rgba(255,255,255,0.3);">
+        Creative Director, Atelier
+       </div>
+      </div>
+      <div class="glass-card p-8 text-left reveal-up" style="transition-delay:0.15s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p style="color:rgba(255,255,255,0.55);font-size:14px;line-height:1.7;margin-bottom:16px;">"Dropped this into our pitch deck site and conversion jumped 40%. The floor indicator is genius — people actually scroll to the end."</p>
+       <div style="font-size:13px;font-weight:500;">
+        James Okonkwo
+       </div>
+       <div style="font-size:12px;color:rgba(255,255,255,0.3);">
+        Founder, Buildstack
+       </div>
+      </div>
+      <div class="glass-card p-8 text-left reveal-up" style="transition-delay:0.25s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p style="color:rgba(255,255,255,0.55);font-size:14px;line-height:1.7;margin-bottom:16px;">"Finally a template that doesn't feel like a template. The architectural motif gives it an identity most sites wish they had."</p>
+       <div style="font-size:13px;font-weight:500;">
+        Lina Chen
+       </div>
+       <div style="font-size:12px;color:rgba(255,255,255,0.3);">
+        UX Lead, Forma Studio
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- BOOK / Bottom CTA -->
+   <section id="book" class="relative" style="padding:120px 24px;" data-section="book">
+    <div class="absolute inset-0"><img src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&amp;q=80" alt="Glass architecture exterior" loading="lazy" class="w-full h-full object-cover" style="opacity:0.12;" onerror="console.error('Image failed:',this.src);this.style.background='#111';this.alt='Image unavailable';">
+     <div class="absolute inset-0" style="background:linear-gradient(to bottom,var(--bg) 0%,rgba(12,15,20,0.6) 50%,var(--bg) 100%);"></div>
+    </div>
+    <div class="relative z-10 max-w-2xl mx-auto text-center">
+     <div class="reveal-up">
+      <div style="font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;">
+       Top Floor
+      </div>
+      <h2 id="bottomCtaText" class="font-display" style="font-size:clamp(32px,6vw,60px);font-weight:700;line-height:1.1;margin-bottom:24px;">Make the page feel like a place.</h2>
+      <p style="color:rgba(255,255,255,0.45);font-size:16px;max-width:440px;margin:0 auto 40px;line-height:1.7;">Start building your floor-by-floor story today. One template, infinite stories.</p><a href="#" class="cta-pulse inline-block px-10 py-4 rounded-full text-sm font-medium" style="background:var(--accent);color:#0c0f14;letter-spacing:0.05em;" onclick="event.preventDefault();"> Get Template + License </a>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer class="relative" style="padding:40px 24px;border-top:1px solid rgba(255,255,255,0.05);">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+     <div style="font-size:12px;color:rgba(255,255,255,0.25);">
+      GlassElevator One-Pager
+     </div>
+     <div style="font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;">
+      Template by Canva Code
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+const defaultConfig = {
+  background_color: '#0c0f14',
+  surface_color: 'rgba(255,255,255,0.06)',
+  text_color: '#e8e6e1',
+  accent_color: '#c9a96e',
+  secondary_color: 'rgba(201,169,110,0.18)',
+  font_family: 'DM Sans',
+  font_size: 16,
+  hero_title: 'Ride the story upward.',
+  hero_subtitle: 'A floor-by-floor page that keeps people scrolling.',
+  cta_primary: 'Get Template + License',
+  cta_secondary: 'Start the Ride',
+  bottom_cta_text: 'Make the page feel like a place.'
+};
+
+function applyConfig(config) {
+  const root = document.documentElement;
+  root.style.setProperty('--bg', config.background_color || defaultConfig.background_color);
+  root.style.setProperty('--surface', config.surface_color || defaultConfig.surface_color);
+  root.style.setProperty('--text', config.text_color || defaultConfig.text_color);
+  root.style.setProperty('--accent', config.accent_color || defaultConfig.accent_color);
+  root.style.setProperty('--secondary', config.secondary_color || defaultConfig.secondary_color);
+
+  document.body.style.color = config.text_color || defaultConfig.text_color;
+  document.body.style.background = config.background_color || defaultConfig.background_color;
+
+  const font = config.font_family || defaultConfig.font_family;
+  const baseSize = config.font_size || defaultConfig.font_size;
+  document.body.style.fontFamily = `${font}, 'DM Sans', sans-serif`;
+
+  document.querySelectorAll('.font-display').forEach(el => {
+    el.style.fontFamily = `'Playfair Display', ${font}, serif`;
+  });
+
+  // Text content
+  const heroTitle = document.getElementById('heroTitle');
+  if (heroTitle) heroTitle.textContent = config.hero_title || defaultConfig.hero_title;
+
+  const heroSub = document.getElementById('heroSubtitle');
+  if (heroSub) heroSub.textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+
+  const ctaP = document.getElementById('ctaPrimary');
+  if (ctaP) ctaP.textContent = config.cta_primary || defaultConfig.cta_primary;
+
+  const ctaS = document.getElementById('ctaSecondary');
+  if (ctaS) ctaS.textContent = config.cta_secondary || defaultConfig.cta_secondary;
+
+  const bottom = document.getElementById('bottomCtaText');
+  if (bottom) bottom.textContent = config.bottom_cta_text || defaultConfig.bottom_cta_text;
+
+  // Font size scaling
+  document.body.style.fontSize = `${baseSize}px`;
+}
+
+// Element SDK init
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => { applyConfig(config); },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }},
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }},
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }},
+        { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }},
+        { get: () => config.secondary_color || defaultConfig.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); }}
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['hero_title', config.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+      ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+      ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+      ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+    ])
+  });
+}
+
+// Scroll observer for reveals
+const scrollContainer = document.getElementById('app');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { root: scrollContainer, threshold: 0.12 });
+
+document.querySelectorAll('.reveal-up').forEach(el => revealObserver.observe(el));
+
+// Floor indicator + nav tracking
+const sections = [
+  { el: document.getElementById('hero'), name: 'hero' },
+  ...Array.from(document.querySelectorAll('.floor-section')).map((el, i) => ({ el, name: 'floors' })),
+  { el: document.getElementById('highlights'), name: 'highlights' },
+  { el: document.getElementById('packages'), name: 'packages' },
+  { el: document.getElementById('reviews'), name: 'reviews' },
+  { el: document.getElementById('book'), name: 'book' }
+];
+
+const floorDots = document.querySelectorAll('.floor-dot');
+const navLinks = document.querySelectorAll('.nav-link[data-nav]');
+
+function updateIndicators() {
+  const scrollTop = scrollContainer.scrollTop;
+  const windowH = scrollContainer.clientHeight;
+  let activeIdx = 0;
+
+  sections.forEach((s, i) => {
+    if (!s.el) return;
+    const rect = s.el.getBoundingClientRect();
+    const top = s.el.offsetTop - scrollContainer.offsetTop;
+    if (scrollTop + windowH * 0.4 >= top) activeIdx = i;
+  });
+
+  floorDots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+
+  // In-view class for floor number animation
+  document.querySelectorAll('.floor-section').forEach((s, i) => {
+    const top = s.offsetTop - scrollContainer.offsetTop;
+    const inView = scrollTop + windowH * 0.5 >= top && scrollTop < top + s.offsetHeight;
+    s.classList.toggle('in-view', inView);
+  });
+
+  // Nav active
+  const activeName = sections[activeIdx]?.name;
+  navLinks.forEach(l => l.classList.toggle('active', l.dataset.nav === activeName));
+}
+
+scrollContainer.addEventListener('scroll', updateIndicators, { passive: true });
+updateIndicators();
+
+// Mobile menu
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.remove('hidden');
+});
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.add('hidden');
+}
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Init icons
+lucide.createIcons();
+applyConfig(defaultConfig);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82c42f325d93b',t:'MTc3NjczMDMwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
