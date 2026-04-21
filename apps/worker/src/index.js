@@ -4760,7 +4760,8 @@ const ROUTES = [
             if (platform === 'wlvlp' && obj.metadata?.slug) {
               try {
                 const slug = obj.metadata.slug;
-                const tier = obj.metadata.tier;
+                const acquisitionType = obj.metadata.acquisition_type || 'purchase';
+                const tier = obj.metadata.tier || null;
 
                 // Idempotency: if we've already processed this checkout session, skip
                 try {
@@ -4845,8 +4846,15 @@ const ROUTES = [
                     `INSERT INTO wlvlp_purchases
                      (purchase_id, account_id, slug, acquisition_type, monthly_price, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at, tier, purchased_at, hosting_expires_at, stripe_session_id)
                      VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?)`
-                  ).bind(purchaseId, wlvlpAccountId, slug, tier, Math.round((obj.amount_total || 0) / 100), obj.customer, obj.subscription || null, purchasedAt, purchasedAt, tier, purchasedAt, hostingExpiresAt, obj.id).run();
-                } catch (_) {}
+                  ).bind(
+                    purchaseId, wlvlpAccountId, slug, acquisitionType,
+                    Math.round((obj.amount_total || 0) / 100),
+                    obj.customer, obj.subscription || null,
+                    purchasedAt, purchasedAt, tier, purchasedAt, hostingExpiresAt, obj.id
+                  ).run();
+                } catch (e) {
+                  console.error('WLVLP purchase INSERT failed:', e?.message, { slug, account: wlvlpAccountId, session: obj.id });
+                }
 
                 console.log(`WLVLP purchase activated: ${wlvlpAccountId} -> ${slug} (${tier})`);
 
