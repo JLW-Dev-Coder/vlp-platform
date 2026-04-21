@@ -34,8 +34,15 @@ export function MemberSidebar({ config, onSignOut }: MemberSidebarProps) {
     setExpanded((prev) => ({ ...prev, [href]: !prev[href] }))
   }
 
+  const allHrefs = config.navSections.flatMap((s) =>
+    s.items.flatMap((i) => [i.href, ...(i.children?.map((c) => c.href) ?? [])])
+  )
+
   function isActive(href: string) {
-    return pathname === href || pathname.startsWith(href + '/')
+    if (pathname === href) return true
+    const hasChildNavItem = allHrefs.some((h) => h !== href && h.startsWith(href + '/'))
+    if (hasChildNavItem) return false
+    return pathname.startsWith(href + '/')
   }
 
   return (
