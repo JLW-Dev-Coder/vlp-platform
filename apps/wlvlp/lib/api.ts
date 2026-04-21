@@ -316,6 +316,7 @@ export interface PurchasedSite {
   slug: string;
   title: string;
   category?: string;
+  tier?: string;
   purchased_at: string;
   hosting_status: 'active' | 'expired' | 'pending';
   hosting_expires_at?: string;
@@ -395,6 +396,7 @@ export async function getMySites(account_id: string): Promise<PurchasedSite[]> {
       slug: r.slug,
       title,
       category,
+      tier: r.tier,
       purchased_at: r.purchased_at,
       hosting_status,
       hosting_expires_at: r.hosting_expires_at,
