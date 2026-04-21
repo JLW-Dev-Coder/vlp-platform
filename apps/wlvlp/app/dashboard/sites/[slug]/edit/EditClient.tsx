@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Building2, Phone, Palette, Globe, Upload, ArrowLeft } from 'lucide-react';
 import catalog from '@/wlvlp-catalog.json';
 import {
   getSiteData,
@@ -17,11 +18,33 @@ const INPUT =
   'bg-black/40 border border-white/[0.12] rounded-lg px-3 py-2.5 text-white text-[0.9rem] transition-colors focus:outline-none focus:border-brand-primary focus:shadow-[0_0_0_2px_rgba(0,212,255,0.15)] placeholder:text-white/30';
 const HINT = 'text-[0.75rem] text-white/40 m-0';
 const SAVE_BTN =
-  'px-7 py-3 bg-brand-primary text-white font-bold text-[0.9rem] border-0 rounded-lg cursor-pointer transition-all shadow-brand hover:enabled:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center gap-2 px-7 py-3 bg-brand-primary text-white font-bold text-[0.9rem] border-0 rounded-xl cursor-pointer transition-all shadow-brand hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_0_24px_rgba(0,212,255,0.45)] disabled:opacity-60 disabled:cursor-not-allowed';
 const SECTION_CARD =
   'flex flex-col gap-[18px] bg-white/[0.02] border border-white/[0.07] rounded-[14px] p-7';
-const SECTION_TITLE = 'font-sora text-[1.15rem] font-bold text-white m-0';
-const SECTION_SUB = 'text-white/55 text-[0.85rem] m-0 -mt-2';
+const SECTION_TITLE = 'font-sora text-[1.15rem] font-bold text-white m-0 leading-tight';
+const SECTION_SUB = 'text-white/55 text-[0.85rem] m-0 mt-1';
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="flex items-start gap-3.5">
+      <div className="w-9 h-9 rounded-lg bg-brand-primary/10 border border-brand-primary/25 flex items-center justify-center flex-shrink-0 text-brand-primary">
+        <Icon className="w-[18px] h-[18px]" />
+      </div>
+      <div className="flex flex-col">
+        <h2 className={SECTION_TITLE}>{title}</h2>
+        <p className={SECTION_SUB}>{subtitle}</p>
+      </div>
+    </div>
+  );
+}
 const ERROR_BOX = 'bg-[rgba(239,68,68,0.06)] border border-[rgba(239,68,68,0.25)] rounded-lg px-4 py-3.5';
 const ERROR_TITLE = 'text-[var(--color-error)] font-bold m-0 mb-1 text-[0.9rem]';
 const ERROR_MSG = 'text-white/60 text-[0.85rem] m-0';
@@ -147,9 +170,10 @@ export default function EditClient({ slug }: { slug: string }) {
       <header className="mb-7">
         <Link
           href="/dashboard/sites"
-          className="inline-block text-[0.85rem] text-white/50 no-underline mb-4 hover:text-brand-primary"
+          className="inline-flex items-center gap-1.5 text-[0.85rem] text-white/50 no-underline mb-4 hover:text-brand-primary transition-colors"
         >
-          ← Back to My Sites
+          <ArrowLeft className="w-4 h-4" />
+          Back to My Sites
         </Link>
         <h1 className="font-sora text-3xl font-extrabold text-white m-0 mb-2 -tracking-[0.5px]">Edit Site</h1>
         <p className="text-white/55 text-[0.95rem] m-0">
@@ -185,10 +209,11 @@ export default function EditClient({ slug }: { slug: string }) {
       {!loading && !notOwner && !loadError && (
         <form className="flex flex-col gap-6" onSubmit={handleSave}>
           <section className={SECTION_CARD}>
-            <div>
-              <h2 className={SECTION_TITLE}>Business Info</h2>
-            </div>
-            <p className={SECTION_SUB}>How your business is introduced across the site.</p>
+            <SectionHeader
+              icon={Building2}
+              title="Business Information"
+              subtitle="How your business is introduced across the site."
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px]">
               <div className={FIELD}>
@@ -229,8 +254,11 @@ export default function EditClient({ slug }: { slug: string }) {
           </section>
 
           <section className={SECTION_CARD}>
-            <h2 className={SECTION_TITLE}>Contact</h2>
-            <p className={SECTION_SUB}>Where customers reach you.</p>
+            <SectionHeader
+              icon={Phone}
+              title="Contact Details"
+              subtitle="Where customers reach you."
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px]">
               <div className={FIELD}>
@@ -271,8 +299,11 @@ export default function EditClient({ slug }: { slug: string }) {
           </section>
 
           <section className={SECTION_CARD}>
-            <h2 className={SECTION_TITLE}>Branding</h2>
-            <p className={SECTION_SUB}>Logo and color to match your brand.</p>
+            <SectionHeader
+              icon={Palette}
+              title="Brand & Identity"
+              subtitle="Logo and color to match your brand."
+            />
 
             <LogoUploader
               slug={slug}
@@ -300,6 +331,9 @@ export default function EditClient({ slug }: { slug: string }) {
 
           <div className="flex justify-end">
             <button type="submit" className={SAVE_BTN} disabled={saving}>
+              {saving && (
+                <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              )}
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
@@ -340,20 +374,43 @@ function LogoUploader({
   return (
     <div className={FIELD}>
       <label className={LABEL}>Logo</label>
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="w-20 h-20 rounded-lg bg-black/40 border border-white/[0.12] flex items-center justify-center overflow-hidden flex-shrink-0">
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logoUrl}
-              alt="Logo preview"
-              className="w-full h-full object-contain"
+      {logoUrl ? (
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="w-20 h-20 rounded-xl bg-black/40 border border-white/[0.12] shadow-[0_4px_16px_rgba(0,0,0,0.35)] flex items-center justify-center overflow-hidden flex-shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logoUrl} alt="Logo preview" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFile(f);
+                e.target.value = '';
+              }}
             />
-          ) : (
-            <span className="text-white/30 text-[0.7rem] uppercase tracking-wider">No logo</span>
-          )}
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="px-4 py-2 bg-white/[0.06] border border-white/[0.12] rounded-lg text-white text-[0.85rem] font-semibold cursor-pointer transition-all hover:enabled:bg-white/[0.1] hover:enabled:border-brand-primary/40 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {uploading ? 'Uploading…' : 'Change Logo'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="text-[0.75rem] text-white/45 hover:text-[var(--color-error)] self-start cursor-pointer bg-transparent border-0 p-0"
+            >
+              Remove
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-1.5">
+      ) : (
+        <>
           <input
             ref={inputRef}
             type="file"
@@ -369,21 +426,16 @@ function LogoUploader({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="px-4 py-2 bg-white/[0.06] border border-white/[0.12] rounded-lg text-white text-[0.85rem] font-semibold cursor-pointer transition-all hover:enabled:bg-white/[0.1] hover:enabled:border-brand-primary/40 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full flex flex-col items-center justify-center gap-2 py-8 px-4 bg-white/[0.015] border-2 border-dashed border-white/[0.15] rounded-xl text-white/60 cursor-pointer transition-all hover:enabled:border-brand-primary/50 hover:enabled:bg-brand-primary/[0.04] hover:enabled:text-white disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {uploading ? 'Uploading…' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+            <Upload className="w-6 h-6" />
+            <span className="text-[0.9rem] font-semibold">
+              {uploading ? 'Uploading…' : 'Upload your logo'}
+            </span>
+            <span className="text-[0.75rem] text-white/40">Click to browse</span>
           </button>
-          {logoUrl && (
-            <button
-              type="button"
-              onClick={() => onChange('')}
-              className="text-[0.75rem] text-white/45 hover:text-[var(--color-error)] self-start cursor-pointer bg-transparent border-0 p-0"
-            >
-              Remove
-            </button>
-          )}
-        </div>
-      </div>
+        </>
+      )}
       {error && <p className="text-[var(--color-error)] text-[0.8rem] m-0">{error}</p>}
       <p className={HINT}>PNG, JPG, or SVG. Square images work best.</p>
     </div>
@@ -409,7 +461,7 @@ function ColorPickerRow({
       <label className={LABEL} htmlFor="brand_color">Primary Brand Color</label>
       <div className="flex items-center gap-3 flex-wrap">
         <div
-          className="w-11 h-11 rounded-lg border border-white/[0.12] flex-shrink-0"
+          className="w-14 h-14 rounded-xl ring-2 ring-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.35)] flex-shrink-0"
           style={{ background: isValidHex(value) ? value : 'rgba(255,255,255,0.04)' }}
           aria-hidden
         />
@@ -503,10 +555,13 @@ function DomainSection({ slug }: { slug: string }) {
 
   return (
     <section className="mt-7 bg-white/[0.02] border border-white/[0.07] rounded-[14px] p-7">
-      <h2 className="font-sora text-[1.25rem] font-bold text-white m-0 mb-1.5">Custom Domain</h2>
-      <p className="text-white/55 text-[0.88rem] m-0 mb-5">
-        Connect your own domain to host this site at your own URL.
-      </p>
+      <div className="mb-5">
+        <SectionHeader
+          icon={Globe}
+          title="Custom Domain"
+          subtitle="Connect your own domain to host this site at your own URL."
+        />
+      </div>
 
       {currentDomain && (
         <div className="bg-brand-primary/[0.06] border border-brand-primary/25 rounded-[10px] px-[18px] py-3.5 mb-[18px]">
@@ -571,6 +626,9 @@ function DomainSection({ slug }: { slug: string }) {
 
         <div className="flex justify-end mt-2">
           <button type="submit" className={SAVE_BTN} disabled={submitting || !domain.trim()}>
+            {submitting && (
+              <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            )}
             {submitting ? 'Connecting…' : 'Connect Domain'}
           </button>
         </div>
