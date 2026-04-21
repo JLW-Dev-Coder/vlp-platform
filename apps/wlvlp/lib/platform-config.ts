@@ -94,7 +94,7 @@ export const wlvlpConfig: PlatformConfig = {
         { label: 'Template Gallery', href: '/' },
         { label: 'Before/After Preview', href: '/before-after' },
         { label: 'Design Tips', href: '/design-tips' },
-        { label: 'Get Launched Ready', href: '/launch' },
+        { label: 'Get Launch Ready', href: '/launch' },
       ],
       ctaText: 'Want a professional website without building one yourself?',
       ctaMagnetLabel: 'Try a Free Scratch Ticket',
