@@ -1,1 +1,528 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/88215086-cd2a-46fb-9df9-d631427825fc -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContrastClub Wellness</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&amp;family=Outfit:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Cormorant Garamond', 'serif'],
+            sans: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+
+    /* Steam particle animation */
+    @keyframes steamRise {
+      0% { transform: translateY(0) scale(1); opacity: 0.3; }
+      50% { opacity: 0.15; }
+      100% { transform: translateY(-180px) scale(1.8); opacity: 0; }
+    }
+    @keyframes steamRise2 {
+      0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.25; }
+      50% { transform: translateY(-90px) translateX(15px) scale(1.3); opacity: 0.12; }
+      100% { transform: translateY(-200px) translateX(-10px) scale(2); opacity: 0; }
+    }
+    .steam-particle {
+      position: absolute;
+      bottom: 0;
+      width: 60px;
+      height: 60px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: steamRise 5s ease-out infinite;
+      pointer-events: none;
+    }
+    .steam-particle:nth-child(2) { left: 20%; animation-delay: 1.2s; animation-duration: 6s; }
+    .steam-particle:nth-child(3) { left: 40%; animation-delay: 0.5s; animation-duration: 4.5s; animation-name: steamRise2; }
+    .steam-particle:nth-child(4) { left: 60%; animation-delay: 2s; animation-duration: 5.5s; }
+    .steam-particle:nth-child(5) { left: 80%; animation-delay: 0.8s; animation-duration: 7s; animation-name: steamRise2; }
+    .steam-particle:nth-child(6) { left: 10%; animation-delay: 3s; animation-duration: 4s; }
+    .steam-particle:nth-child(7) { left: 70%; animation-delay: 1.8s; animation-duration: 6.5s; animation-name: steamRise2; }
+    .steam-particle:nth-child(8) { left: 50%; animation-delay: 3.5s; animation-duration: 5s; }
+
+    /* Reveal on scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.15s; }
+    .reveal-delay-2 { transition-delay: 0.3s; }
+    .reveal-delay-3 { transition-delay: 0.45s; }
+    .reveal-delay-4 { transition-delay: 0.6s; }
+
+    /* CTA pulse */
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(200,160,120,0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(200,160,120,0); }
+    }
+    .cta-pulse { animation: ctaPulse 2.5s ease-in-out infinite; }
+
+    /* Hero image parallax-like depth */
+    @keyframes heroFloat {
+      0%, 100% { transform: scale(1.05) translateY(0); }
+      50% { transform: scale(1.05) translateY(-8px); }
+    }
+    .hero-bg-animate { animation: heroFloat 12s ease-in-out infinite; }
+
+    /* Water shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .text-shimmer {
+      background: linear-gradient(90deg, #c8a078, #e8d5c0, #c8a078, #a07850);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s linear infinite;
+    }
+
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+
+    /* Nav active */
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      width: 0;
+      height: 1px;
+      background: #c8a078;
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+    .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+    /* Benefit card hover */
+    .benefit-card {
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+    }
+    .benefit-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+
+    /* Star rating */
+    .star-filled { color: #c8a078; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto" style="background:#0e0e0e; color:#e8e0d8; font-family:'Outfit',sans-serif;"><!-- Sticky Nav -->
+  <nav id="mainNav" style="position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);background:rgba(14,14,14,0.85);border-bottom:1px solid rgba(200,160,120,0.1);transition:all 0.3s ease;">
+   <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;"><a href="#home" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#c8a078;text-decoration:none;letter-spacing:1px;">ContrastClub</a>
+    <div style="display:flex;gap:28px;align-items:center;" id="navLinks"><a href="#home" class="nav-link active" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;font-weight:400;">Home</a> <a href="#benefits" class="nav-link" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;font-weight:400;">Benefits</a> <a href="#programs" class="nav-link" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;font-weight:400;">Programs</a> <a href="#studio" class="nav-link" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;font-weight:400;">Studio</a> <a href="#reviews" class="nav-link" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;font-weight:400;">Reviews</a> <a href="#join" class="nav-link" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;font-weight:400;">Join</a>
+    </div><button id="mobileMenuBtn" style="display:none;background:none;border:none;color:#c8a078;cursor:pointer;" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')"> <i data-lucide="menu" style="width:24px;height:24px;"></i> </button> <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden" style="position:fixed;top:60px;left:0;right:0;width:100%;padding:16px 24px;display:flex;flex-direction:column;gap:12px;background:rgba(14,14,14,0.98);border-bottom:1px solid rgba(200,160,120,0.1);z-index:40;"><a href="#home" onclick="closeMobile()" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;">Home</a> <a href="#benefits" onclick="closeMobile()" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;">Benefits</a> <a href="#programs" onclick="closeMobile()" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;">Programs</a> <a href="#studio" onclick="closeMobile()" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;">Studio</a> <a href="#reviews" onclick="closeMobile()" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;">Reviews</a> <a href="#join" onclick="closeMobile()" style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#a09890;text-decoration:none;">Join</a>
+    </div>
+   </div>
+  </nav>
+  <main id="appWrapper" style="width:100%;"><!-- HERO -->
+   <section id="home" style="position:relative;overflow:hidden;min-height:600px;display:flex;align-items:center;justify-content:center;"><!-- BG Image -->
+    <div style="position:absolute;inset:0;z-index:0;"><img src="https://images.unsplash.com/photo-1540555700478-4be289fbec6d?w=1600&amp;q=80" alt="Steam rising in sauna" loading="lazy" class="hero-bg-animate" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.3) saturate(0.7);" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#1a1410,#0e0e0e)';this.alt='Image unavailable';">
+     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,14,14,0.4) 0%,rgba(14,14,14,0.8) 100%);"></div>
+    </div><!-- Steam particles -->
+    <div style="position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;">
+     <div class="steam-particle" style="left:15%;"></div>
+     <div class="steam-particle"></div>
+     <div class="steam-particle"></div>
+     <div class="steam-particle"></div>
+     <div class="steam-particle"></div>
+     <div class="steam-particle"></div>
+     <div class="steam-particle"></div>
+     <div class="steam-particle"></div>
+    </div><!-- Content -->
+    <div style="position:relative;z-index:2;text-align:center;padding:80px 24px;max-width:800px;">
+     <p class="reveal" style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#c8a078;margin-bottom:24px;font-weight:400;">ContrastClub Wellness</p>
+     <h1 id="heroTagline" class="reveal reveal-delay-1 text-shimmer" style="font-family:'Cormorant Garamond',serif;font-size:clamp(48px,8vw,96px);font-weight:300;line-height:1;margin:0 0 24px;">Hot. Cold. Reset.</h1>
+     <p id="heroSubhead" class="reveal reveal-delay-2" style="font-size:clamp(16px,2vw,20px);color:#b0a89e;font-weight:300;max-width:500px;margin:0 auto 40px;line-height:1.6;">A 14-day system your body will thank you for.</p>
+     <div class="reveal reveal-delay-3" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;"><a href="#join" id="ctaPrimary" class="cta-pulse" style="display:inline-block;padding:14px 36px;background:#c8a078;color:#0e0e0e;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:1px;text-transform:uppercase;border-radius:2px;transition:background 0.3s;" onmouseover="this.style.background='#d4b08c'" onmouseout="this.style.background='#c8a078'">Join the Program</a> <a href="#benefits" id="ctaSecondary" style="display:inline-block;padding:14px 36px;border:1px solid rgba(200,160,120,0.4);color:#c8a078;text-decoration:none;font-size:14px;font-weight:400;letter-spacing:1px;text-transform:uppercase;border-radius:2px;transition:all 0.3s;" onmouseover="this.style.borderColor='#c8a078';this.style.background='rgba(200,160,120,0.08)'" onmouseout="this.style.borderColor='rgba(200,160,120,0.4)';this.style.background='transparent'">See Benefits</a>
+     </div>
+    </div>
+   </section><!-- BENEFITS -->
+   <section id="benefits" style="padding:100px 24px;max-width:1100px;margin:0 auto;">
+    <div class="reveal" style="text-align:center;margin-bottom:60px;">
+     <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#c8a078;margin-bottom:12px;">Why Contrast Therapy</p>
+     <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#e8e0d8;margin:0;">Benefits That Go Deep</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;"><!-- Card 1 -->
+     <div class="benefit-card reveal reveal-delay-1" style="background:rgba(255,255,255,0.03);border:1px solid rgba(200,160,120,0.12);border-radius:4px;padding:40px 28px;text-align:center;">
+      <svg width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#c8a078" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 20px;display:block;">
+       <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
+      </svg>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin:0 0 12px;color:#e8e0d8;">Regulate Temperature</h3>
+      <p style="font-size:14px;color:#908880;line-height:1.7;font-weight:300;margin:0;">Train your body's thermoregulation for resilience, energy, and a stronger immune response.</p>
+     </div><!-- Card 2 -->
+     <div class="benefit-card reveal reveal-delay-2" style="background:rgba(255,255,255,0.03);border:1px solid rgba(200,160,120,0.12);border-radius:4px;padding:40px 28px;text-align:center;">
+      <svg width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#c8a078" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 20px;display:block;">
+       <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+      </svg>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin:0 0 12px;color:#e8e0d8;">Reduce Inflammation</h3>
+      <p style="font-size:14px;color:#908880;line-height:1.7;font-weight:300;margin:0;">Cold exposure reduces swelling and speeds recovery. Pair with heat for deep tissue relief.</p>
+     </div><!-- Card 3 -->
+     <div class="benefit-card reveal reveal-delay-3" style="background:rgba(255,255,255,0.03);border:1px solid rgba(200,160,120,0.12);border-radius:4px;padding:40px 28px;text-align:center;">
+      <svg width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#c8a078" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 20px;display:block;">
+       <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+      </svg>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin:0 0 12px;color:#e8e0d8;">Better Sleep Cycles</h3>
+      <p style="font-size:14px;color:#908880;line-height:1.7;font-weight:300;margin:0;">Thermal cycling resets circadian rhythm. Members report deeper, more restorative sleep within days.</p>
+     </div><!-- Card 4 -->
+     <div class="benefit-card reveal reveal-delay-4" style="background:rgba(255,255,255,0.03);border:1px solid rgba(200,160,120,0.12);border-radius:4px;padding:40px 28px;text-align:center;">
+      <svg width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#c8a078" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 20px;display:block;">
+       <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+      </svg>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin:0 0 12px;color:#e8e0d8;">Mental Clarity</h3>
+      <p style="font-size:14px;color:#908880;line-height:1.7;font-weight:300;margin:0;">Norepinephrine surges sharpen focus and mood. Feel the calm clarity after every session.</p>
+     </div>
+    </div>
+   </section><!-- PROGRAMS -->
+   <section id="programs" style="padding:100px 24px;background:rgba(200,160,120,0.03);">
+    <div style="max-width:1100px;margin:0 auto;">
+     <div class="reveal" style="text-align:center;margin-bottom:60px;">
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#c8a078;margin-bottom:12px;">Programs</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#e8e0d8;margin:0;">Your Path to Reset</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;"><!-- Program 1 -->
+      <div class="reveal reveal-delay-1" style="position:relative;overflow:hidden;border-radius:4px;border:1px solid rgba(200,160,120,0.12);"><img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&amp;q=80" alt="Wellness spa treatment" loading="lazy" style="width:100%;height:220px;object-fit:cover;filter:brightness(0.5) saturate(0.6);" onerror="console.error('Image failed:',this.src);this.style.background='#1a1410';this.alt='Image unavailable';">
+       <div style="padding:28px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#c8a078" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+         </svg><span style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#c8a078;">14 Days</span>
+        </div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;margin:0 0 8px;color:#e8e0d8;">The Reset Program</h3>
+        <p style="font-size:14px;color:#908880;line-height:1.7;font-weight:300;margin:0 0 20px;">PDF guide, daily protocol, habit tracker, and safety checklist. Everything to start your contrast therapy journey.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#c8a078;">$49</span> <a href="#join" style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#c8a078;text-decoration:none;border-bottom:1px solid rgba(200,160,120,0.3);padding-bottom:2px;">Learn More</a>
+        </div>
+       </div>
+      </div><!-- Program 2 -->
+      <div class="reveal reveal-delay-2" style="position:relative;overflow:hidden;border-radius:4px;border:1px solid rgba(200,160,120,0.25);background:rgba(200,160,120,0.04);"><img src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=800&amp;q=80" alt="Cold plunge pool" loading="lazy" style="width:100%;height:220px;object-fit:cover;filter:brightness(0.5) saturate(0.6);" onerror="console.error('Image failed:',this.src);this.style.background='#1a1410';this.alt='Image unavailable';">
+       <div style="position:absolute;top:16px;right:16px;background:#c8a078;color:#0e0e0e;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:2px;font-weight:500;">
+        Popular
+       </div>
+       <div style="padding:28px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#c8a078" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+         </svg><span style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#c8a078;">Monthly</span>
+        </div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;margin:0 0 8px;color:#e8e0d8;">Studio Membership</h3>
+        <p style="font-size:14px;color:#908880;line-height:1.7;font-weight:300;margin:0 0 20px;">Unlimited sauna and cold plunge sessions. Class schedule access, promo story templates, and member pricing on programs.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#c8a078;">$129<span style="font-size:14px;color:#908880;">/mo</span></span> <a href="#join" style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#c8a078;text-decoration:none;border-bottom:1px solid rgba(200,160,120,0.3);padding-bottom:2px;">Join Now</a>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- STUDIO -->
+   <section id="studio" style="padding:100px 24px;">
+    <div style="max-width:1100px;margin:0 auto;">
+     <div class="reveal" style="text-align:center;margin-bottom:60px;">
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#c8a078;margin-bottom:12px;">The Space</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#e8e0d8;margin:0;">Our Studio</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" class="reveal">
+      <div style="grid-row:span 2;"><img src="https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=800&amp;q=80" alt="Sauna interior with wooden benches" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;filter:brightness(0.7) saturate(0.8);" onerror="console.error('Image failed:',this.src);this.style.background='#1a1410';this.alt='Image unavailable';">
+      </div>
+      <div><img src="https://images.unsplash.com/photo-1583416750470-965b2707b355?w=600&amp;q=80" alt="Minimal spa towels" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;filter:brightness(0.7) saturate(0.8);" onerror="console.error('Image failed:',this.src);this.style.background='#1a1410';this.alt='Image unavailable';">
+      </div>
+      <div><img src="https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&amp;q=80" alt="Water droplets close up" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;filter:brightness(0.7) saturate(0.8);" onerror="console.error('Image failed:',this.src);this.style.background='#1a1410';this.alt='Image unavailable';">
+      </div>
+      <div style="grid-column:span 2;"><img src="https://images.unsplash.com/photo-1559599189-fe84dea4eb79?w=1000&amp;q=80" alt="Wellness spa atmosphere" loading="lazy" style="width:100%;height:200px;object-fit:cover;border-radius:4px;filter:brightness(0.7) saturate(0.8);" onerror="console.error('Image failed:',this.src);this.style.background='#1a1410';this.alt='Image unavailable';">
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" style="padding:100px 24px;background:rgba(200,160,120,0.03);">
+    <div style="max-width:900px;margin:0 auto;">
+     <div class="reveal" style="text-align:center;margin-bottom:60px;">
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#c8a078;margin-bottom:12px;">Testimonials</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#e8e0d8;margin:0;">What Members Say</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;">
+      <div class="reveal reveal-delay-1" style="background:rgba(255,255,255,0.02);border:1px solid rgba(200,160,120,0.1);border-radius:4px;padding:32px;">
+       <div style="display:flex;gap:4px;margin-bottom:16px;">
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p style="font-size:15px;color:#b0a89e;line-height:1.7;font-style:italic;font-weight:300;margin:0 0 20px;">"By day 5, I was sleeping through the night for the first time in years. The cold plunge protocol changed everything."</p>
+       <p style="font-size:13px;color:#c8a078;margin:0;font-weight:500;">Sarah M.</p>
+       <p style="font-size:12px;color:#706860;margin:4px 0 0;">14-Day Reset Member</p>
+      </div>
+      <div class="reveal reveal-delay-2" style="background:rgba(255,255,255,0.02);border:1px solid rgba(200,160,120,0.1);border-radius:4px;padding:32px;">
+       <div style="display:flex;gap:4px;margin-bottom:16px;">
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p style="font-size:15px;color:#b0a89e;line-height:1.7;font-style:italic;font-weight:300;margin:0 0 20px;">"The studio is immaculate. The contrast between the sauna and cold plunge is addictive. Best wellness investment I've made."</p>
+       <p style="font-size:13px;color:#c8a078;margin:0;font-weight:500;">James R.</p>
+       <p style="font-size:12px;color:#706860;margin:4px 0 0;">Studio Member</p>
+      </div>
+      <div class="reveal reveal-delay-3" style="background:rgba(255,255,255,0.02);border:1px solid rgba(200,160,120,0.1);border-radius:4px;padding:32px;">
+       <div style="display:flex;gap:4px;margin-bottom:16px;">
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-filled" width="16" height="16" viewbox="0 0 24 24" fill="currentColor" stroke="none">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p style="font-size:15px;color:#b0a89e;line-height:1.7;font-style:italic;font-weight:300;margin:0 0 20px;">"I came for the trend, I stayed for the results. My recovery time after workouts has been cut in half."</p>
+       <p style="font-size:13px;color:#c8a078;margin:0;font-weight:500;">Priya K.</p>
+       <p style="font-size:12px;color:#706860;margin:4px 0 0;">Studio Member</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- BOTTOM CTA / JOIN -->
+   <section id="join" style="padding:100px 24px;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;">
+     <div class="steam-particle" style="left:25%;"></div>
+     <div class="steam-particle" style="left:50%;animation-delay:1s;"></div>
+     <div class="steam-particle" style="left:75%;animation-delay:2s;"></div>
+    </div>
+    <div style="max-width:700px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+     <div class="reveal">
+      <h2 id="bottomCtaText" style="font-family:'Cormorant Garamond',serif;font-size:clamp(36px,6vw,56px);font-weight:300;margin:0 0 20px;" class="text-shimmer">Reset your routine.</h2>
+      <p style="font-size:16px;color:#908880;line-height:1.7;font-weight:300;margin:0 0 40px;">Start with the 14-day program or visit our studio. Your body is waiting.</p><a href="#home" class="cta-pulse" style="display:inline-block;padding:16px 48px;background:#c8a078;color:#0e0e0e;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;border-radius:2px;transition:background 0.3s;" onmouseover="this.style.background='#d4b08c'" onmouseout="this.style.background='#c8a078'">Join the Program</a>
+     </div><!-- Vote + Comment Widget -->
+     <div class="reveal" style="margin-top:80px;padding-top:60px;border-top:1px solid rgba(200,160,120,0.12);">
+      <p style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#706860;margin-bottom:24px;">Vote + Comment</p>
+      <div id="voteWidget" style="display:flex;align-items:center;justify-content:center;gap:32px;margin-bottom:32px;"><button onclick="castVote('up')" id="voteUpBtn" style="display:flex;align-items:center;gap:8px;background:rgba(200,160,120,0.08);border:1px solid rgba(200,160,120,0.2);color:#c8a078;padding:10px 20px;border-radius:4px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:14px;transition:all 0.3s;" onmouseover="this.style.background='rgba(200,160,120,0.15)'" onmouseout="this.style.background='rgba(200,160,120,0.08)'">
+        <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="m12 19V5M5 12l7-7 7 7" />
+        </svg><span id="voteUpCount">0</span> </button> <button onclick="castVote('down')" id="voteDownBtn" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);color:#706860;padding:10px 20px;border-radius:4px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:14px;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+        <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="m12 5v14M5 12l7 7 7-7" />
+        </svg><span id="voteDownCount">0</span> </button>
+      </div><!-- Comment form -->
+      <form onsubmit="addComment(event)" style="max-width:500px;margin:0 auto;">
+       <div style="display:flex;gap:8px;"><input type="text" id="commentInput" placeholder="Leave a comment..." aria-label="Comment" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(200,160,120,0.15);color:#e8e0d8;padding:12px 16px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;transition:border-color 0.3s;" onfocus="this.style.borderColor='rgba(200,160,120,0.4)'" onblur="this.style.borderColor='rgba(200,160,120,0.15)'"> <button type="submit" style="background:#c8a078;color:#0e0e0e;border:none;padding:12px 20px;border-radius:4px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;transition:background 0.3s;" onmouseover="this.style.background='#d4b08c'" onmouseout="this.style.background='#c8a078'">Post</button>
+       </div>
+      </form>
+      <div id="commentsList" style="max-width:500px;margin:20px auto 0;text-align:left;"></div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer style="padding:40px 24px;border-top:1px solid rgba(200,160,120,0.08);text-align:center;">
+    <p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#c8a078;margin:0 0 8px;">ContrastClub Wellness</p>
+    <p style="font-size:12px;color:#504840;margin:0;">Hot. Cold. Reset.</p>
+   </footer>
+  </main>
+  <script>
+    // === Vote + Comment logic ===
+    let votes = { up: 0, down: 0 };
+    let comments = [];
+
+    function castVote(type) {
+      votes[type]++;
+      document.getElementById('voteUpCount').textContent = votes.up;
+      document.getElementById('voteDownCount').textContent = votes.down;
+    }
+
+    function addComment(e) {
+      e.preventDefault();
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+      if (!text) return;
+      comments.push(text);
+      input.value = '';
+      renderComments();
+    }
+
+    function renderComments() {
+      const list = document.getElementById('commentsList');
+      list.innerHTML = comments.map(c =>
+        `<div style="padding:12px 16px;margin-bottom:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(200,160,120,0.08);border-radius:4px;">
+          <p style="font-size:14px;color:#b0a89e;margin:0;line-height:1.6;font-weight:300;">${c.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+        </div>`
+      ).join('');
+    }
+
+    // === Scroll reveal ===
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // === Active nav ===
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('#navLinks .nav-link');
+    const mainWrapper = document.getElementById('appWrapper').parentElement;
+
+    function updateActiveNav() {
+      let current = '';
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 120) current = section.getAttribute('id');
+      });
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+      });
+    }
+    // Listen on body since that's the scroller
+    document.body.addEventListener('scroll', updateActiveNav, { passive: true });
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+    // === Mobile nav ===
+    function closeMobile() {
+      document.getElementById('mobileMenu').classList.add('hidden');
+    }
+
+    // Responsive nav
+    function checkWidth() {
+      const isMobile = window.innerWidth < 768;
+      document.getElementById('navLinks').style.display = isMobile ? 'none' : 'flex';
+      document.getElementById('mobileMenuBtn').style.display = isMobile ? 'block' : 'none';
+      if (!isMobile) closeMobile();
+    }
+    checkWidth();
+    window.addEventListener('resize', checkWidth);
+
+    // === Element SDK ===
+    const defaultConfig = {
+      hero_tagline: 'Hot. Cold. Reset.',
+      hero_subhead: 'A 14-day system your body will thank you for.',
+      cta_primary: 'Join the Program',
+      cta_secondary: 'See Benefits',
+      bottom_cta_text: 'Reset your routine.',
+      background_color: '#0e0e0e',
+      accent_color: '#c8a078',
+      text_color: '#e8e0d8',
+      muted_color: '#908880',
+      surface_color: '#1a1410',
+      font_family: 'Cormorant Garamond',
+      font_size: 16
+    };
+
+    async function initSDK() {
+      if (!window.elementSdk) return;
+      await window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          const c = { ...defaultConfig, ...config };
+          const font = c.font_family || defaultConfig.font_family;
+          const baseSize = c.font_size || defaultConfig.font_size;
+
+          document.getElementById('heroTagline').textContent = c.hero_tagline;
+          document.getElementById('heroSubhead').textContent = c.hero_subhead;
+          document.getElementById('ctaPrimary').textContent = c.cta_primary;
+          document.getElementById('ctaSecondary').textContent = c.cta_secondary;
+          document.getElementById('bottomCtaText').textContent = c.bottom_cta_text;
+
+          // Colors
+          document.body.style.background = c.background_color;
+          document.body.style.color = c.text_color;
+          document.querySelectorAll('.benefit-card').forEach(card => {
+            card.style.borderColor = c.accent_color + '1f';
+          });
+
+          // Font
+          document.querySelectorAll('[style*="Cormorant Garamond"]').forEach(el => {
+            el.style.fontFamily = `${font}, serif`;
+          });
+          document.getElementById('heroTagline').style.fontFamily = `${font}, serif`;
+          document.getElementById('bottomCtaText').style.fontFamily = `${font}, serif`;
+
+          // Font size
+          document.getElementById('heroSubhead').style.fontSize = `${baseSize * 1.2}px`;
+        },
+        mapToCapabilities: (config) => {
+          const c = { ...defaultConfig, ...config };
+          return {
+            recolorables: [
+              { get: () => c.background_color, set: (v) => { c.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+              { get: () => c.surface_color, set: (v) => { c.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+              { get: () => c.text_color, set: (v) => { c.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+              { get: () => c.accent_color, set: (v) => { c.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+              { get: () => c.muted_color, set: (v) => { c.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => c.font_family || defaultConfig.font_family,
+              set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+            },
+            fontSizeable: {
+              get: () => c.font_size || defaultConfig.font_size,
+              set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+            }
+          };
+        },
+        mapToEditPanelValues: (config) => {
+          const c = { ...defaultConfig, ...config };
+          return new Map([
+            ['hero_tagline', c.hero_tagline],
+            ['hero_subhead', c.hero_subhead],
+            ['cta_primary', c.cta_primary],
+            ['cta_secondary', c.cta_secondary],
+            ['bottom_cta_text', c.bottom_cta_text]
+          ]);
+        }
+      });
+    }
+    initSDK();
+
+    lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef825d727e427c5',t:'MTc3NjczMDAzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

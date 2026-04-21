@@ -1,47 +1,149 @@
 'use client';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { PurchaseBeacon } from '@vlp/member-ui';
 
-const PAGE_BG = 'min-h-screen flex flex-col';
-const NAV = 'sticky top-0 z-50 bg-black/85 backdrop-blur-md border-b border-border-subtle';
-const NAV_INNER = 'max-w-[960px] mx-auto px-6 h-[60px] flex items-center';
-const NAV_LOGO = 'font-sora font-extrabold text-[1.2rem] text-brand-primary no-underline [text-shadow:0_0_20px_rgba(168,85,247,0.5)]';
-const MAIN = 'flex-1 flex flex-col items-center justify-center py-[60px] px-6 gap-5 text-center max-w-[600px] mx-auto';
-const ICON = 'text-[5rem] [filter:drop-shadow(0_0_24px_rgba(168,85,247,0.4))]';
-const TITLE = 'font-sora text-[2.4rem] font-extrabold text-white tracking-tight';
-const DESC = 'text-white/70 text-[1.05rem] leading-relaxed';
-const REF_NOTE = 'text-white/40 text-[0.82rem]';
-const PRIMARY_BTN = 'inline-block px-7 py-[13px] bg-brand-primary text-white font-bold text-[0.92rem] rounded-lg no-underline transition-all shadow-brand hover:-translate-y-0.5';
-const SECONDARY_BTN = 'inline-block px-7 py-[13px] bg-transparent text-brand-primary font-semibold text-[0.92rem] rounded-lg no-underline border border-brand-primary/40 transition-all hover:border-brand-primary hover:bg-brand-primary/10';
+const NEON_COLORS = ['#FFE500', '#00E5FF', '#FF00FF', '#39FF14'];
+
+function Confetti() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    type Particle = { x: number; y: number; vx: number; vy: number; size: number; color: string; rot: number; vr: number };
+    const particles: Particle[] = [];
+    for (let i = 0; i < 140; i++) {
+      particles.push({
+        x: canvas.width / 2,
+        y: canvas.height / 3,
+        vx: (Math.random() - 0.5) * 12,
+        vy: Math.random() * -14 - 4,
+        size: Math.random() * 8 + 4,
+        color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+      });
+    }
+
+    let raf = 0;
+    const start = performance.now();
+    const tick = (t: number) => {
+      const elapsed = t - start;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of particles) {
+        p.vy += 0.25;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 12;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.5);
+        ctx.restore();
+      }
+      if (elapsed < 5000) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-[60]"
+      aria-hidden="true"
+    />
+  );
+}
 
 function PurchaseSuccessInner() {
   const params = useSearchParams();
   const sessionId = params.get('session_id');
 
   return (
-    <div className={PAGE_BG}>
+    <div className="min-h-screen flex flex-col">
       <PurchaseBeacon app="wlvlp" sessionId={sessionId ?? undefined} />
-      <nav className={NAV}>
-        <div className={NAV_INNER}>
-          <Link href="/" className={NAV_LOGO}>Website Lotto</Link>
+      <style>{`
+        @keyframes dance {
+          0%, 100% { transform: rotate(0deg) scale(1); }
+          25% { transform: rotate(-15deg) scale(1.2); }
+          50% { transform: rotate(15deg) scale(1.3); }
+          75% { transform: rotate(-10deg) scale(1.1); }
+        }
+        @media (prefers-reduced-motion: no-preference) {
+          .dance-emoji { animation: dance 1.5s ease-in-out infinite; display: inline-block; transform-origin: center; }
+        }
+      `}</style>
+      <Confetti />
+      <nav className="sticky top-0 z-50 bg-[rgba(7,7,10,0.75)] backdrop-blur-md border-b border-neon-blue/20">
+        <div className="max-w-[960px] mx-auto px-6 h-[60px] flex items-center">
+          <Link href="/" className="font-sora font-extrabold text-[1.2rem] text-neon-blue glow-blue no-underline">
+            Website Lotto
+          </Link>
         </div>
       </nav>
-      <main className={MAIN}>
-        <div className={ICON}>🎉</div>
-        <h1 className={TITLE}>Your site has been claimed</h1>
-        <p className={DESC}>
-          We&apos;ll set it up and send you access details within 24 hours.
-        </p>
-        {sessionId && (
-          <p className={REF_NOTE}>
-            Reference: <code className="bg-white/5 px-2 py-0.5 rounded font-mono">{sessionId}</code>
+      <main className="flex-1 flex items-center justify-center px-6 py-12 min-h-[60vh]">
+        <div className="w-full max-w-md bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8 shadow-2xl text-center flex flex-col items-center gap-5 neon-border">
+          <div
+            className="dance-emoji text-[5rem] leading-none"
+            style={{ filter: 'drop-shadow(0 0 24px rgba(255,229,0,0.6))' }}
+          >
+            🎉
+          </div>
+          <h1
+            className="font-sora text-[2.2rem] font-extrabold text-white tracking-tight leading-tight"
+            style={{ textShadow: '0 0 20px #FFE500, 0 0 40px rgba(255,229,0,0.5)' }}
+          >
+            Your site has been claimed
+          </h1>
+          <p className="text-white/75 text-[1rem] leading-relaxed">
+            We&apos;ll set it up and send you access details within 24 hours.
           </p>
-        )}
-        <div className="flex gap-3 flex-wrap justify-center mt-3">
-          <Link href="/" className={PRIMARY_BTN}>Back to Marketplace</Link>
-          <Link href="/dashboard" className={SECONDARY_BTN}>Go to Dashboard</Link>
+          {sessionId && (
+            <p className="text-xs text-gray-500 font-mono break-all">
+              Ref: {sessionId}
+            </p>
+          )}
+          <div className="flex gap-3 flex-wrap justify-center mt-2 w-full">
+            <Link
+              href="/"
+              className="flex-1 min-w-[140px] inline-block px-5 py-3 bg-neon-yellow text-[#07070A] font-extrabold text-[0.9rem] rounded-lg no-underline transition-all btn-glow-yellow hover:-translate-y-0.5"
+            >
+              Back to Marketplace
+            </Link>
+            <Link
+              href="/dashboard"
+              className="flex-1 min-w-[140px] inline-block px-5 py-3 bg-[rgba(0,212,255,0.08)] text-neon-blue font-bold text-[0.9rem] rounded-lg no-underline border neon-border transition-all hover:-translate-y-0.5"
+            >
+              Go to Dashboard
+            </Link>
+          </div>
         </div>
       </main>
     </div>
@@ -50,7 +152,7 @@ function PurchaseSuccessInner() {
 
 export default function PurchaseSuccessPage() {
   return (
-    <Suspense fallback={<div className={PAGE_BG} />}>
+    <Suspense fallback={<div className="min-h-screen" />}>
       <PurchaseSuccessInner />
     </Suspense>
   );

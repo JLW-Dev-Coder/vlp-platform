@@ -1,1 +1,482 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/385c75bf-8d39-4e12-bfd7-dc9895fd27a3 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CutoutCity Studio</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet">
+  <style>
+  html { height: 100%; }
+  body { height: 100%; margin: 0; }
+
+  :root {
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --text: #f0ece4;
+    --accent: #ff3d00;
+    --accent2: #00e0d0;
+  }
+
+  * { box-sizing: border-box; }
+
+  .font-display { font-family: 'Bebas Neue', sans-serif; }
+  .font-body { font-family: 'DM Sans', sans-serif; }
+
+  /* Cutout card style */
+  .cutout {
+    border: 3px solid var(--text);
+    box-shadow: 8px 8px 0 rgba(255,61,0,0.35);
+    overflow: hidden;
+    position: relative;
+    opacity: 0;
+    transform: translateY(40px) rotate(var(--rot, 0deg));
+    transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cutout.visible {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+  .cutout img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Light streak overlay */
+  .streak {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+    animation: streakMove 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes streakMove {
+    0% { left: -60%; }
+    100% { left: 120%; }
+  }
+
+  /* CTA pulse */
+  .pulse-btn {
+    animation: ctaPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,61,0,0.5); }
+    50% { box-shadow: 0 0 0 10px rgba(255,61,0,0); }
+  }
+
+  /* Scroll fade-in for non-cutout elements */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  /* Nav */
+  .nav-link {
+    position: relative;
+    letter-spacing: 0.12em;
+    transition: color 0.2s;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 0; height: 1.5px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+  .nav-link:hover::after { width: 100%; }
+  .nav-link:hover { color: var(--accent); }
+
+  /* Review card */
+  .review-card {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    padding: 24px 28px;
+  }
+
+  /* Star SVG */
+  .star { fill: var(--accent); width: 14px; height: 14px; }
+
+  /* Package card */
+  .pkg-card {
+    border: 2px solid rgba(240,236,228,0.12);
+    background: var(--surface);
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .pkg-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+  }
+  .pkg-featured {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 30px rgba(255,61,0,0.15);
+  }
+
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full" style="background:var(--bg); color:var(--text);">
+  <div id="app" class="w-full h-full overflow-auto scrollbar-hide font-body" style="background:var(--bg);"><!-- Sticky Nav -->
+   <nav id="stickyNav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300" style="background:rgba(14,14,14,0.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(240,236,228,0.06);">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between" style="height:56px;"><a href="#home" class="font-display text-xl tracking-widest" style="color:var(--accent);">CUTOUTCITY</a>
+     <div class="hidden md:flex gap-6 items-center text-xs uppercase font-medium" style="color:var(--text);"><a href="#home" class="nav-link">Home</a> <a href="#gallery" class="nav-link">Gallery</a> <a href="#highlights" class="nav-link">Highlights</a> <a href="#packages" class="nav-link">Packages</a> <a href="#reviews" class="nav-link">Reviews</a> <a href="#buy" class="nav-link">Buy</a>
+     </div><button id="menuBtn" class="md:hidden" aria-label="Menu"><i data-lucide="menu" style="width:22px;height:22px;"></i></button>
+    </div><!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden flex-col gap-3 px-6 pb-4 text-xs uppercase font-medium" style="color:var(--text);"><a href="#home" class="nav-link py-1">Home</a> <a href="#gallery" class="nav-link py-1">Gallery</a> <a href="#highlights" class="nav-link py-1">Highlights</a> <a href="#packages" class="nav-link py-1">Packages</a> <a href="#reviews" class="nav-link py-1">Reviews</a> <a href="#buy" class="nav-link py-1">Buy</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative w-full" style="min-height:100%; padding-top:56px;">
+    <div class="max-w-7xl mx-auto px-6 py-16 md:py-24 flex flex-col lg:flex-row items-center gap-10 lg:gap-16 relative" style="min-height:calc(100% - 56px);"><!-- Text -->
+     <div class="flex-1 z-10 text-center lg:text-left">
+      <p class="text-xs uppercase tracking-[0.3em] mb-4 fade-up" style="color:var(--accent); transition-delay:0.1s;">CutoutCity Studio</p>
+      <h1 id="heroTitle" class="font-display leading-none mb-4 fade-up" style="font-size:clamp(3.2rem,8vw,7rem); transition-delay:0.2s;">City energy, packaged.</h1>
+      <p id="heroSub" class="text-lg md:text-xl mb-8 fade-up" style="color:rgba(240,236,228,0.65); transition-delay:0.35s;">A page that looks like art.</p>
+      <div class="flex flex-wrap gap-4 justify-center lg:justify-start fade-up" style="transition-delay:0.5s;"><a href="#buy" id="ctaPrimary" class="pulse-btn inline-block px-8 py-3 font-display text-lg tracking-wider" style="background:var(--accent); color:var(--bg);">Get the Template</a> <a href="#gallery" id="ctaSecondary" class="inline-block px-8 py-3 font-display text-lg tracking-wider border-2" style="border-color:var(--text); color:var(--text);">View Gallery</a>
+      </div>
+     </div><!-- Collage cluster -->
+     <div class="flex-1 relative" style="min-height:380px;">
+      <div class="cutout absolute" style="width:58%; top:0; right:0; --rot:-2deg; z-index:3; aspect-ratio:3/4; transition-delay:0.15s;"><img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=600&amp;q=80" alt="City skyline at night" loading="lazy" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+       <div class="streak"></div>
+      </div>
+      <div class="cutout absolute" style="width:42%; bottom:5%; left:0; --rot:3deg; z-index:2; aspect-ratio:4/5; transition-delay:0.35s;"><img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=500&amp;q=80" alt="Neon street" loading="lazy" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+       <div class="streak" style="animation-delay:1.5s;"></div>
+      </div>
+      <div class="cutout absolute" style="width:34%; top:55%; right:8%; --rot:-4deg; z-index:4; aspect-ratio:1; transition-delay:0.55s;"><img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&amp;q=80" alt="Architecture lines" loading="lazy" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+      </div>
+     </div>
+    </div>
+   </section><!-- GALLERY -->
+   <section id="gallery" class="w-full py-20">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="flex items-center gap-3 mb-2 fade-up">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+      </svg>
+      <p class="text-xs uppercase tracking-[0.25em]" style="color:var(--accent);">Gallery</p>
+     </div>
+     <h2 class="font-display mb-12 fade-up" style="font-size:clamp(2.2rem,5vw,4rem);">Curated Cuts</h2>
+     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="cutout col-span-2 row-span-2" style="--rot:-1deg; aspect-ratio:1; transition-delay:0.1s;"><img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&amp;q=80" alt="Skyline panorama" loading="lazy" onerror="this.style.background='#1a1a1a';">
+       <div class="streak"></div>
+      </div>
+      <div class="cutout" style="--rot:2deg; aspect-ratio:3/4; transition-delay:0.25s;"><img src="https://images.unsplash.com/photo-1517690623533-ca60e4ab0add?w=400&amp;q=80" alt="Subway station" loading="lazy" onerror="this.style.background='#1a1a1a';">
+      </div>
+      <div class="cutout" style="--rot:-3deg; aspect-ratio:3/4; transition-delay:0.4s;"><img src="https://images.unsplash.com/photo-1493514789931-586cb221d7a7?w=400&amp;q=80" alt="Rain reflections" loading="lazy" onerror="this.style.background='#1a1a1a';">
+      </div>
+      <div class="cutout" style="--rot:1deg; aspect-ratio:3/4; transition-delay:0.55s;"><img src="https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=400&amp;q=80" alt="Rooftop view" loading="lazy" onerror="this.style.background='#1a1a1a';">
+      </div>
+      <div class="cutout" style="--rot:-2deg; aspect-ratio:3/4; transition-delay:0.7s;"><img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=400&amp;q=80" alt="City neon" loading="lazy" onerror="this.style.background='#1a1a1a';">
+      </div>
+     </div>
+    </div>
+   </section><!-- HIGHLIGHTS -->
+   <section id="highlights" class="w-full py-20" style="background:var(--surface);">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="flex items-center gap-3 mb-2 fade-up">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <p class="text-xs uppercase tracking-[0.25em]" style="color:var(--accent);">Highlights</p>
+     </div>
+     <h2 class="font-display mb-14 fade-up" style="font-size:clamp(2.2rem,5vw,4rem);">Why CutoutCity</h2>
+     <div class="grid md:grid-cols-3 gap-8">
+      <div class="fade-up" style="transition-delay:0.1s;">
+       <div class="mb-4" style="color:var(--accent);">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <path d="M15 10l-4 4l6 6l4-16l-18 7l4 2l2 6l3-4" />
+        </svg>
+       </div>
+       <h3 class="font-display text-2xl mb-2">Share-Ready</h3>
+       <p style="color:rgba(240,236,228,0.55); line-height:1.7;">Every layout exports as a pixel-perfect page. Share a link, embed it, or print it as a poster.</p>
+      </div>
+      <div class="fade-up" style="transition-delay:0.25s;">
+       <div class="mb-4" style="color:var(--accent);">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+       </div>
+       <h3 class="font-display text-2xl mb-2">Event-Tuned</h3>
+       <p style="color:rgba(240,236,228,0.55); line-height:1.7;">Built for nightlife launches, real estate showcases, travel campaigns, and city brand identities.</p>
+      </div>
+      <div class="fade-up" style="transition-delay:0.4s;">
+       <div class="mb-4" style="color:var(--accent);">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" /><circle cx="12" cy="13" r="4" />
+        </svg>
+       </div>
+       <h3 class="font-display text-2xl mb-2">Photo-First</h3>
+       <p style="color:rgba(240,236,228,0.55); line-height:1.7;">Drop in your own shots. The cutout grid adapts to any image ratio while keeping that editorial edge.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- PACKAGES -->
+   <section id="packages" class="w-full py-20">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="flex items-center gap-3 mb-2 fade-up">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a4 4 0 00-8 0v2" />
+      </svg>
+      <p class="text-xs uppercase tracking-[0.25em]" style="color:var(--accent);">Packages</p>
+     </div>
+     <h2 class="font-display mb-14 fade-up" style="font-size:clamp(2.2rem,5vw,4rem);">Pick Your Kit</h2>
+     <div class="grid md:grid-cols-3 gap-6"><!-- Starter -->
+      <div class="pkg-card rounded-sm p-8 fade-up" style="transition-delay:0.1s;">
+       <p class="text-xs uppercase tracking-widest mb-1" style="color:rgba(240,236,228,0.4);">Starter</p>
+       <p class="font-display text-5xl mb-4">$29</p>
+       <ul class="space-y-2 mb-8 text-sm" style="color:rgba(240,236,228,0.6);">
+        <li>1 page template</li>
+        <li>6 cutout slots</li>
+        <li>Light &amp; dark mode</li>
+       </ul><a href="#buy" class="block text-center py-3 font-display tracking-wider border-2 text-sm" style="border-color:rgba(240,236,228,0.2); color:var(--text);">Select</a>
+      </div><!-- Pro -->
+      <div class="pkg-card pkg-featured rounded-sm p-8 fade-up relative" style="transition-delay:0.25s;"><span class="absolute top-0 right-0 px-3 py-1 text-[10px] uppercase tracking-widest font-bold" style="background:var(--accent); color:var(--bg);">Popular</span>
+       <p class="text-xs uppercase tracking-widest mb-1" style="color:var(--accent);">Pro</p>
+       <p class="font-display text-5xl mb-4">$59</p>
+       <ul class="space-y-2 mb-8 text-sm" style="color:rgba(240,236,228,0.6);">
+        <li>3 page templates</li>
+        <li>12 cutout slots</li>
+        <li>Animation presets</li>
+        <li>Priority support</li>
+       </ul><a href="#buy" class="block text-center py-3 font-display tracking-wider text-sm" style="background:var(--accent); color:var(--bg);">Select</a>
+      </div><!-- Agency -->
+      <div class="pkg-card rounded-sm p-8 fade-up" style="transition-delay:0.4s;">
+       <p class="text-xs uppercase tracking-widest mb-1" style="color:rgba(240,236,228,0.4);">Agency</p>
+       <p class="font-display text-5xl mb-4">$129</p>
+       <ul class="space-y-2 mb-8 text-sm" style="color:rgba(240,236,228,0.6);">
+        <li>Unlimited templates</li>
+        <li>Custom grid builder</li>
+        <li>White-label export</li>
+        <li>Dedicated support</li>
+       </ul><a href="#buy" class="block text-center py-3 font-display tracking-wider border-2 text-sm" style="border-color:rgba(240,236,228,0.2); color:var(--text);">Select</a>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="w-full py-20" style="background:var(--surface);">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="flex items-center gap-3 mb-2 fade-up">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+      </svg>
+      <p class="text-xs uppercase tracking-[0.25em]" style="color:var(--accent);">Reviews</p>
+     </div>
+     <h2 class="font-display mb-14 fade-up" style="font-size:clamp(2.2rem,5vw,4rem);">What They Say</h2>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="review-card fade-up" style="transition-delay:0.1s;">
+       <div class="flex gap-1 mb-3">
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+       </div>
+       <p class="text-sm mb-4" style="color:rgba(240,236,228,0.65); line-height:1.7;">"Launched our rooftop bar site in one afternoon. Clients thought we hired a design agency."</p>
+       <p class="font-display text-sm tracking-wider">— Mariel Torres, NYC</p>
+      </div>
+      <div class="review-card fade-up" style="transition-delay:0.25s;">
+       <div class="flex gap-1 mb-3">
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+       </div>
+       <p class="text-sm mb-4" style="color:rgba(240,236,228,0.65); line-height:1.7;">"The collage format is perfect for real estate listings. Every property looks editorial."</p>
+       <p class="font-display text-sm tracking-wider">— David Chen, London</p>
+      </div>
+      <div class="review-card fade-up" style="transition-delay:0.4s;">
+       <div class="flex gap-1 mb-3">
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+        <svg class="star" viewbox="0 0 24 24">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01z" />
+        </svg>
+       </div>
+       <p class="text-sm mb-4" style="color:rgba(240,236,228,0.65); line-height:1.7;">"Used it for our Tokyo travel guide. The neon photo cutouts practically sell the trip themselves."</p>
+       <p class="font-display text-sm tracking-wider">— Suki Yamamoto, Osaka</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- BUY / BOTTOM CTA -->
+   <section id="buy" class="w-full py-24 relative overflow-hidden">
+    <div class="absolute inset-0" style="background:linear-gradient(135deg, var(--bg) 0%, rgba(255,61,0,0.08) 50%, var(--bg) 100%);"></div>
+    <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
+     <h2 id="bottomCtaText" class="font-display mb-6 fade-up" style="font-size:clamp(2.5rem,6vw,5rem);">Make the city your brand.</h2>
+     <p class="mb-10 fade-up" style="color:rgba(240,236,228,0.5); transition-delay:0.15s;">Start building bold, photo-driven pages that feel like gallery walls.</p><a href="#packages" class="pulse-btn inline-block px-10 py-4 font-display text-xl tracking-wider fade-up" style="background:var(--accent); color:var(--bg); transition-delay:0.3s;">Get Started Now</a>
+    </div>
+   </section><!-- Footer -->
+   <footer class="w-full py-10" style="border-top:1px solid rgba(240,236,228,0.06);">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs" style="color:rgba(240,236,228,0.3);">
+     <p class="font-display tracking-widest" style="color:var(--accent);">CUTOUTCITY</p>
+     <p>Images via Unsplash. Template for demonstration.</p>
+     <div class="flex gap-4">
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+      </svg>
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a4 4 0 00-8 0v2" />
+      </svg>
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" />
+      </svg>
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'City energy, packaged.',
+  hero_subtitle: 'A page that looks like art.',
+  cta_primary: 'Get the Template',
+  cta_secondary: 'View Gallery',
+  bottom_cta_text: 'Make the city your brand.',
+  background_color: '#0e0e0e',
+  surface_color: '#1a1a1a',
+  text_color: '#f0ece4',
+  accent_color: '#ff3d00',
+  accent2_color: '#00e0d0',
+  font_family: 'Bebas Neue',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  // Text
+  document.getElementById('heroTitle').textContent = c.hero_title;
+  document.getElementById('heroSub').textContent = c.hero_subtitle;
+  document.getElementById('ctaPrimary').textContent = c.cta_primary;
+  document.getElementById('ctaSecondary').textContent = c.cta_secondary;
+  document.getElementById('bottomCtaText').textContent = c.bottom_cta_text;
+  // Colors
+  document.documentElement.style.setProperty('--bg', c.background_color);
+  document.documentElement.style.setProperty('--surface', c.surface_color);
+  document.documentElement.style.setProperty('--text', c.text_color);
+  document.documentElement.style.setProperty('--accent', c.accent_color);
+  document.documentElement.style.setProperty('--accent2', c.accent2_color);
+  document.body.style.color = c.text_color;
+  document.body.style.background = c.background_color;
+  document.getElementById('app').style.background = c.background_color;
+  // Font
+  const ff = c.font_family || defaultConfig.font_family;
+  document.querySelectorAll('.font-display').forEach(el => {
+    el.style.fontFamily = `${ff}, sans-serif`;
+  });
+  // Font size
+  const bs = c.font_size || defaultConfig.font_size;
+  document.querySelectorAll('.font-body, p, li, .review-card p').forEach(el => {
+    if (!el.classList.contains('font-display')) el.style.fontSize = `${bs}px`;
+  });
+}
+
+// Element SDK
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.accent2_color || defaultConfig.accent2_color, set: v => { config.accent2_color = v; window.elementSdk.setConfig({ accent2_color: v }); } },
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family,
+      set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: {
+      get: () => config.font_size || defaultConfig.font_size,
+      set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+    }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['hero_title', config.hero_title || defaultConfig.hero_title],
+    ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+    ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+    ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+    ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text],
+  ])
+});
+
+// Mobile menu
+document.getElementById('menuBtn').addEventListener('click', () => {
+  const m = document.getElementById('mobileMenu');
+  m.classList.toggle('hidden');
+  m.classList.toggle('flex');
+});
+document.querySelectorAll('#mobileMenu a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('mobileMenu').classList.add('hidden');
+    document.getElementById('mobileMenu').classList.remove('flex');
+  });
+});
+
+// Scroll observer for fade-up and cutout animations
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.cutout, .fade-up').forEach(el => obs.observe(el));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef8282e876527c5',t:'MTc3NjczMDEzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,1 +1,797 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/3a65ea49-0200-45d2-8412-bb38b99aa956 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CurioCabinet Catalog</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&amp;family=DM+Sans:wght@300;400;500;600&amp;family=Courier+Prime&amp;display=swap" rel="stylesheet">
+  <style>
+html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #2c2418;
+  --surface: #f4ece1;
+  --text: #1a1410;
+  --accent: #8b6914;
+  --muted: #6b5d4f;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.font-display { font-family: 'Playfair Display', serif; }
+.font-mono { font-family: 'Courier Prime', monospace; }
+
+/* Grain overlay */
+.grain::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Drawer slide animation */
+@keyframes drawerSlide {
+  from { transform: translateY(30px); opacity: 0; clip-path: inset(100% 0 0 0); }
+  to { transform: translateY(0); opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes fadeUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes labelReveal {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139,105,20,0.3); }
+  50% { box-shadow: 0 0 0 10px rgba(139,105,20,0); }
+}
+
+@keyframes drawerOpen {
+  0% { transform: translateY(0) rotateX(0deg); opacity: 0.15; }
+  50% { transform: translateY(-8px) rotateX(5deg); opacity: 0.4; }
+  100% { transform: translateY(0) rotateX(0deg); opacity: 0.15; }
+}
+
+@keyframes drawerPulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.02); }
+}
+
+.drawer-clickable { cursor: pointer; transition: all 0.3s; }
+.drawer-clickable:hover { opacity: 0.35; transform: translateY(-2px); }
+.animate-drawer-pulse { animation: drawerPulse 3s ease-in-out infinite; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(44, 36, 24, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-content {
+  background: var(--surface);
+  border: 1px solid #a89470;
+  padding: 48px;
+  max-width: 500px;
+  width: 90%;
+  transform: scale(0.9);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.modal-overlay.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #6b5d4f;
+  transition: color 0.3s;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.animate-drawer { animation: drawerSlide 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-label { animation: labelReveal 0.5s ease both; transform-origin: left; }
+.animate-pulse-cta { animation: ctaPulse 2.5s ease-in-out infinite; }
+
+.drawer-panel {
+  background: linear-gradient(180deg, #d4c4a8 0%, #c4b393 4%, #b8a682 6%, #c4b393 8%, #d4c4a8 100%);
+  border: 1px solid #a89470;
+  position: relative;
+}
+
+.drawer-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 8px;
+  background: linear-gradient(180deg, #8b7a5e, #6b5d4f);
+  border-radius: 0 0 4px 4px;
+}
+
+.specimen-card {
+  background: var(--surface);
+  border: 1px solid #c4b393;
+  position: relative;
+}
+
+.specimen-card::after {
+  content: '';
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1px solid #a89470;
+  background: radial-gradient(circle, transparent 40%, #e8dcc8 41%);
+}
+
+.wood-bg {
+  background: linear-gradient(135deg, #3d2e1a 0%, #2c2418 30%, #3a2d1c 60%, #2c2418 100%);
+}
+
+.paper-tag {
+  background: #e8dcc8;
+  border: 1px solid #c4b393;
+  position: relative;
+}
+
+.paper-tag::before {
+  content: '';
+  position: absolute;
+  top: -4px; left: 12px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+/* Sticky nav */
+.nav-link {
+  color: #a89470;
+  text-decoration: none;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.3s;
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--surface);
+  border-bottom-color: var(--accent);
+}
+
+.scroll-reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Star rating */
+.star-outline { stroke: var(--accent); fill: none; stroke-width: 1.5; }
+.star-filled { stroke: var(--accent); fill: var(--accent); stroke-width: 1.5; }
+
+img { transition: opacity 0.4s; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full grain">
+  <div id="app-wrapper" class="w-full h-full overflow-auto"><!-- Modal Overlay -->
+   <div id="drawerModal" class="modal-overlay">
+    <div class="modal-content"><button class="modal-close" onclick="document.getElementById('drawerModal').classList.remove('active');">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button> <span class="paper-tag font-mono" style="display:inline-block;padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;"></span>
+     <h3 class="font-display" id="modalTitle" style="font-size:1.5rem;font-weight:700;margin:8px 0 16px;color:var(--text);"></h3>
+     <p id="modalText" style="font-size:0.9rem;color:var(--muted);line-height:1.6;margin:0 0 24px;"></p><a href="#drawers" onclick="document.getElementById('drawerModal').classList.remove('active');" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--accent);color:var(--surface);font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:all 0.3s;"> Explore Collection </a>
+    </div>
+   </div><!-- Sticky Nav -->
+   <nav id="sticky-nav" style="position:sticky;top:0;z-index:100;background:rgba(44,36,24,0.95);backdrop-filter:blur(8px);border-bottom:1px solid #3d2e1a;">
+    <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;">
+     <div style="display:flex;align-items:center;gap:8px;">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#a89470" stroke-width="1.2">
+       <rect x="3" y="3" width="18" height="18" rx="1" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /><circle cx="12" cy="6" r="1" fill="#a89470" /><circle cx="12" cy="12" r="1" fill="#a89470" /><circle cx="12" cy="18" r="1" fill="#a89470" />
+      </svg><span class="font-display" style="color:#f4ece1;font-size:0.9rem;font-weight:700;letter-spacing:0.05em;">CurioCabinet</span>
+     </div>
+     <div style="display:flex;gap:20px;flex-wrap:wrap;"><a href="#home" class="nav-link active">Home</a> <a href="#drawers" class="nav-link">Drawers</a> <a href="#featured" class="nav-link">Featured</a> <a href="#details" class="nav-link">Details</a> <a href="#pricing" class="nav-link">Pricing</a> <a href="#reviews" class="nav-link">Reviews</a> <a href="#buy" class="nav-link">Buy</a>
+     </div>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="wood-bg" style="min-height:90%;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;opacity:0.06;">
+     <svg width="100%" height="100%">
+      <defs>
+       <pattern id="woodgrain" patternunits="userSpaceOnUse" width="100" height="6">
+        <line x1="0" y1="3" x2="100" y2="3" stroke="#a89470" stroke-width="0.5" opacity="0.5" />
+       </pattern>
+      </defs><rect width="100%" height="100%" fill="url(#woodgrain)" />
+     </svg>
+    </div><!-- Decorative drawer layers -->
+    <div style="position:absolute;top:15%;left:8%;width:140px;height:16px;opacity:0.15;" class="drawer-panel animate-drawer" data-delay="0.2"></div>
+    <div style="position:absolute;top:22%;left:6%;width:160px;height:16px;opacity:0.12;" class="drawer-panel animate-drawer" data-delay="0.4"></div>
+    <div style="position:absolute;bottom:20%;right:8%;width:130px;height:16px;opacity:0.15;" class="drawer-panel animate-drawer" data-delay="0.6"></div>
+    <div style="position:absolute;bottom:28%;right:6%;width:150px;height:16px;opacity:0.1;" class="drawer-panel animate-drawer" data-delay="0.8"></div>
+    <div style="text-align:center;position:relative;z-index:2;padding:40px 24px;max-width:700px;">
+     <div class="animate-label" style="display:inline-block;margin-bottom:24px;"><span class="paper-tag font-mono" style="display:inline-block;padding:6px 20px 6px 24px;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#6b5d4f;">Est. Collection — 2024</span>
+     </div>
+     <h1 id="hero-title" class="font-display animate-fade-up" style="font-size:clamp(3rem,8vw,5.5rem);font-weight:900;color:#f4ece1;line-height:0.95;margin:0 0 20px;">Open the cabinet.</h1>
+     <p id="hero-subtitle" class="animate-fade-up" style="font-size:clamp(1rem,2.5vw,1.25rem);color:#a89470;font-weight:300;margin:0 0 40px;animation-delay:0.15s;">A catalog that feels discovered.</p>
+     <div class="animate-fade-up" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation-delay:0.3s;"><a href="#drawers" id="cta-primary-btn" class="animate-pulse-cta" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:#8b6914;color:#f4ece1;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="1" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /><circle cx="12" cy="6" r="1" fill="currentColor" /><circle cx="12" cy="12" r="1" fill="currentColor" />
+       </svg><span id="cta-primary-text">Browse Drawers</span> </a> <a href="#buy" id="cta-secondary-btn" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:1px solid #6b5d4f;color:#a89470;font-size:0.85rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:all 0.3s;">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+       </svg><span id="cta-secondary-text">Shop Collection</span> </a>
+     </div>
+    </div>
+   </section><!-- DRAWERS SECTION -->
+   <section id="drawers" style="background:var(--surface);padding:80px 24px;">
+    <div style="max-width:1100px;margin:0 auto;">
+     <div class="scroll-reveal" style="margin-bottom:48px;"><span class="font-mono" style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);">Catalog Index</span>
+      <h2 class="font-display" style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;color:var(--text);margin:8px 0 0;line-height:1.05;">The Drawers</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;"><!-- Drawer 1 -->
+      <div class="scroll-reveal drawer-item" style="transition-delay:0.1s;">
+       <div class="drawer-panel" style="padding:32px 24px 24px;cursor:pointer;" onclick="this.querySelector('.drawer-content').classList.toggle('open')">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><span class="paper-tag font-mono" style="padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);">Drawer I</span>
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#6b5d4f" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+         </svg>
+        </div>
+        <h3 class="font-display" style="font-size:1.3rem;font-weight:700;margin:0 0 8px;color:var(--text);">Optical Instruments</h3>
+        <p style="font-size:0.8rem;color:var(--muted);margin:0 0 16px;line-height:1.5;">Brass loupes, field microscopes, and precision lenses from the 19th century.</p><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&amp;h=360&amp;fit=crop" alt="Vintage optical instruments on wooden surface" loading="lazy" style="width:100%;height:180px;object-fit:cover;border:1px solid #a89470;" onerror="this.style.background='linear-gradient(135deg,#c4b393,#a89470)';this.alt='Image unavailable';">
+        <div class="drawer-content" style="max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1);">
+         <div class="specimen-card" style="margin-top:16px;padding:16px;"><span class="font-mono" style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Spec Card</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:0.75rem;">
+           <div>
+            <span style="color:var(--muted);">Origin:</span> London, 1887
+           </div>
+           <div>
+            <span style="color:var(--muted);">Condition:</span> Excellent
+           </div>
+           <div>
+            <span style="color:var(--muted);">Material:</span> Brass &amp; Glass
+           </div>
+           <div>
+            <span style="color:var(--muted);">Rarity:</span>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-outline" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Drawer 2 -->
+      <div class="scroll-reveal drawer-item" style="transition-delay:0.2s;">
+       <div class="drawer-panel" style="padding:32px 24px 24px;cursor:pointer;" onclick="this.querySelector('.drawer-content').classList.toggle('open')">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><span class="paper-tag font-mono" style="padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);">Drawer II</span>
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#6b5d4f" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+         </svg>
+        </div>
+        <h3 class="font-display" style="font-size:1.3rem;font-weight:700;margin:0 0 8px;color:var(--text);">Cartography Tools</h3>
+        <p style="font-size:0.8rem;color:var(--muted);margin:0 0 16px;line-height:1.5;">Dividers, compasses, and hand-drawn charts from maritime expeditions.</p><img src="https://images.unsplash.com/photo-1524338198850-8a2ff63cfdca?w=600&amp;h=360&amp;fit=crop" alt="Vintage cartography tools and maps" loading="lazy" style="width:100%;height:180px;object-fit:cover;border:1px solid #a89470;" onerror="this.style.background='linear-gradient(135deg,#c4b393,#a89470)';this.alt='Image unavailable';">
+        <div class="drawer-content" style="max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1);">
+         <div class="specimen-card" style="margin-top:16px;padding:16px;"><span class="font-mono" style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Spec Card</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:0.75rem;">
+           <div>
+            <span style="color:var(--muted);">Origin:</span> Lisbon, 1742
+           </div>
+           <div>
+            <span style="color:var(--muted);">Condition:</span> Good
+           </div>
+           <div>
+            <span style="color:var(--muted);">Material:</span> Iron &amp; Vellum
+           </div>
+           <div>
+            <span style="color:var(--muted);">Rarity:</span>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Drawer 3 -->
+      <div class="scroll-reveal drawer-item" style="transition-delay:0.3s;">
+       <div class="drawer-panel" style="padding:32px 24px 24px;cursor:pointer;" onclick="this.querySelector('.drawer-content').classList.toggle('open')">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><span class="paper-tag font-mono" style="padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);">Drawer III</span>
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#6b5d4f" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+         </svg>
+        </div>
+        <h3 class="font-display" style="font-size:1.3rem;font-weight:700;margin:0 0 8px;color:var(--text);">Botanical Specimens</h3>
+        <p style="font-size:0.8rem;color:var(--muted);margin:0 0 16px;line-height:1.5;">Pressed flora, seed catalogs, and herbarium sheets from alpine expeditions.</p><img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600&amp;h=360&amp;fit=crop" alt="Botanical specimens and pressed flowers" loading="lazy" style="width:100%;height:180px;object-fit:cover;border:1px solid #a89470;" onerror="this.style.background='linear-gradient(135deg,#c4b393,#a89470)';this.alt='Image unavailable';">
+        <div class="drawer-content" style="max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1);">
+         <div class="specimen-card" style="margin-top:16px;padding:16px;"><span class="font-mono" style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Spec Card</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:0.75rem;">
+           <div>
+            <span style="color:var(--muted);">Origin:</span> Swiss Alps, 1903
+           </div>
+           <div>
+            <span style="color:var(--muted);">Condition:</span> Preserved
+           </div>
+           <div>
+            <span style="color:var(--muted);">Material:</span> Paper &amp; Flora
+           </div>
+           <div>
+            <span style="color:var(--muted);">Rarity:</span>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-filled" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-outline" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+            <svg class="star-outline" width="12" height="12" viewbox="0 0 24 24" style="display:inline;vertical-align:middle;">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+            </svg>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- FEATURED -->
+   <section id="featured" class="wood-bg" style="padding:80px 24px;">
+    <div style="max-width:1100px;margin:0 auto;">
+     <div class="scroll-reveal" style="margin-bottom:48px;"><span class="font-mono" style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#6b5d4f;">Curator's Pick</span>
+      <h2 class="font-display" style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;color:var(--surface);margin:8px 0 0;line-height:1.05;">Featured Artifact</h2>
+     </div>
+     <div class="scroll-reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;transition-delay:0.15s;" id="featured-grid">
+      <div><img src="https://images.unsplash.com/photo-1461360370896-922624d12571?w=700&amp;h=800&amp;fit=crop" alt="Antique collectible object detail" loading="lazy" style="width:100%;height:auto;border:2px solid #3d2e1a;aspect-ratio:7/8;object-fit:cover;" onerror="this.style.background='linear-gradient(135deg,#3d2e1a,#2c2418)';this.alt='Image unavailable';">
+      </div>
+      <div><span class="paper-tag font-mono" style="display:inline-block;padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">No. 0047</span>
+       <h3 class="font-display" style="font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;color:var(--surface);margin:0 0 12px;">Victorian Field Compass</h3>
+       <p style="font-size:0.9rem;color:#a89470;line-height:1.7;margin:0 0 24px;">A surveyor's companion from the British Ordnance Survey. Brass casing with mother-of-pearl inlay and a hand-painted declination chart on the interior lid.</p>
+       <div class="specimen-card" style="padding:20px;background:#3d2e1a;border-color:#4d3e2a;"><span class="font-mono" style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Specimen Record</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;font-size:0.8rem;color:#a89470;">
+         <div>
+          <span style="color:#6b5d4f;">Year:</span> 1862
+         </div>
+         <div>
+          <span style="color:#6b5d4f;">Maker:</span> T.B. Winter &amp; Sons
+         </div>
+         <div>
+          <span style="color:#6b5d4f;">Weight:</span> 340g
+         </div>
+         <div>
+          <span style="color:#6b5d4f;">Diameter:</span> 76mm
+         </div>
+         <div>
+          <span style="color:#6b5d4f;">Provenance:</span> Hampshire Estate
+         </div>
+         <div>
+          <span style="color:#6b5d4f;">Estimate:</span> £2,400
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DETAILS -->
+   <section id="details" style="background:var(--surface);padding:80px 24px;">
+    <div style="max-width:1100px;margin:0 auto;">
+     <div class="scroll-reveal" style="margin-bottom:48px;"><span class="font-mono" style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);">How It Works</span>
+      <h2 class="font-display" style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;color:var(--text);margin:8px 0 0;line-height:1.05;">The Process</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;">
+      <div class="scroll-reveal" style="transition-delay:0.1s;">
+       <div style="width:48px;height:48px;border:1px solid #a89470;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="#8b6914" stroke-width="1.2">
+         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+       </div>
+       <h4 class="font-display" style="font-size:1.1rem;font-weight:700;margin:0 0 8px;">Discover</h4>
+       <p style="font-size:0.8rem;color:var(--muted);line-height:1.6;margin:0;">Browse indexed drawers. Each piece is cataloged with provenance, condition notes, and rarity scores.</p>
+      </div>
+      <div class="scroll-reveal" style="transition-delay:0.2s;">
+       <div style="width:48px;height:48px;border:1px solid #a89470;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="#8b6914" stroke-width="1.2">
+         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+        </svg>
+       </div>
+       <h4 class="font-display" style="font-size:1.1rem;font-weight:700;margin:0 0 8px;">Authenticate</h4>
+       <p style="font-size:0.8rem;color:var(--muted);line-height:1.6;margin:0;">Each artifact carries a certificate of authenticity, hand-signed by our resident antiquarian.</p>
+      </div>
+      <div class="scroll-reveal" style="transition-delay:0.3s;">
+       <div style="width:48px;height:48px;border:1px solid #a89470;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="#8b6914" stroke-width="1.2">
+         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+       </div>
+       <h4 class="font-display" style="font-size:1.1rem;font-weight:700;margin:0 0 8px;">Preserve</h4>
+       <p style="font-size:0.8rem;color:var(--muted);line-height:1.6;margin:0;">Climate-controlled shipping in bespoke archival casing. Your collection, safeguarded.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="wood-bg" style="padding:80px 24px;">
+    <div style="max-width:900px;margin:0 auto;">
+     <div class="scroll-reveal" style="margin-bottom:48px;"><span class="font-mono" style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#6b5d4f;">Testimonials</span>
+      <h2 class="font-display" style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;color:var(--surface);margin:8px 0 0;line-height:1.05;">From the Collectors</h2>
+     </div>
+     <div style="display:grid;gap:24px;">
+      <div class="scroll-reveal specimen-card" style="padding:28px;background:#3d2e1a;border-color:#4d3e2a;transition-delay:0.1s;">
+       <div style="display:flex;gap:4px;margin-bottom:12px;">
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+       </div>
+       <p class="font-display" style="font-size:1.05rem;font-style:italic;color:#c4b393;line-height:1.6;margin:0 0 16px;">"Every piece arrived as if it had been waiting for me. The packaging alone felt like opening a museum archive."</p>
+       <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#6b5d4f;display:flex;align-items:center;justify-content:center;"><span style="color:var(--surface);font-size:0.7rem;font-weight:600;">E.H.</span>
+        </div>
+        <div><span style="font-size:0.8rem;color:#a89470;font-weight:500;">Eleanor Hargrove</span> <span class="font-mono" style="font-size:0.65rem;color:#6b5d4f;display:block;">Private Collector, Edinburgh</span>
+        </div>
+       </div>
+      </div>
+      <div class="scroll-reveal specimen-card" style="padding:28px;background:#3d2e1a;border-color:#4d3e2a;transition-delay:0.2s;">
+       <div style="display:flex;gap:4px;margin-bottom:12px;">
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+        <svg class="star-outline" width="14" height="14" viewbox="0 0 24 24">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+        </svg>
+       </div>
+       <p class="font-display" style="font-size:1.05rem;font-style:italic;color:#c4b393;line-height:1.6;margin:0 0 16px;">"The spec cards are a revelation. I finally know the full story behind every object in my study."</p>
+       <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#6b5d4f;display:flex;align-items:center;justify-content:center;"><span style="color:var(--surface);font-size:0.7rem;font-weight:600;">M.T.</span>
+        </div>
+        <div><span style="font-size:0.8rem;color:#a89470;font-weight:500;">Marcus Thorne</span> <span class="font-mono" style="font-size:0.65rem;color:#6b5d4f;display:block;">Antiquarian, Boston</span>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- PRICING -->
+   <section id="pricing" style="background:var(--surface);padding:80px 24px;">
+    <div style="max-width:1200px;margin:0 auto;">
+     <div class="scroll-reveal" style="margin-bottom:48px;text-align:center;"><span class="font-mono" style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);">Collection Plans</span>
+      <h2 class="font-display" style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;color:var(--text);margin:8px 0 0;line-height:1.05;">Choose Your Tier</h2>
+      <p style="font-size:0.9rem;color:var(--muted);margin:16px 0 0;max-width:500px;margin-left:auto;margin-right:auto;">Each tier unlocks exclusive access to our cabinet's finest specimens and member-only events.</p>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;align-items:stretch;">
+      <!-- Tier 1 -->
+      <div class="scroll-reveal specimen-card" style="padding:32px;display:flex;flex-direction:column;border:1px solid #c4b393;transition-delay:0.1s;position:relative;">
+       <span class="paper-tag font-mono" style="display:inline-block;padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;width:fit-content;">Tier I</span>
+       <h3 class="font-display" style="font-size:1.4rem;font-weight:700;margin:0 0 8px;color:var(--text);">Novice</h3>
+       <p style="font-size:0.8rem;color:var(--muted);margin:0 0 24px;line-height:1.5;">Entry to the cabinet's collections and quarterly catalogs.</p>
+       <div style="margin:24px 0;padding-top:24px;border-top:1px solid #e8dcc8;">
+        <span class="font-display" style="font-size:2rem;font-weight:900;color:var(--text);">$49</span> <span style="font-size:0.75rem;color:var(--muted);margin-left:6px;">/month</span>
+       </div>
+       <ul style="list-style:none;padding:0;margin:24px 0;flex-grow:1;font-size:0.8rem;color:var(--muted);line-height:1.8;">
+        <li style="margin-bottom:10px;">✓ Access to 3 drawers</li>
+        <li style="margin-bottom:10px;">✓ Monthly curated catalog</li>
+        <li style="margin-bottom:10px;">✓ Email updates</li>
+        <li style="color:#c4b393;">○ Preview sales</li>
+        <li style="color:#c4b393;">○ Priority shipping</li>
+       </ul><a href="#buy" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 20px;border:1px solid #a89470;color:var(--text);font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:all 0.3s;margin-top:auto;">Select Plan</a>
+      </div><!-- Tier 2 (Featured) -->
+      <div class="scroll-reveal specimen-card" style="padding:32px;display:flex;flex-direction:column;border:2px solid #8b6914;background:linear-gradient(135deg, #faf6f1 0%, var(--surface) 100%);transition-delay:0.2s;position:relative;transform:scale(1.02);">
+       <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--surface);padding:4px 16px;"><span class="font-mono" style="font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#8b6914;font-weight:600;">Most Popular</span>
+       </div><span class="paper-tag font-mono" style="display:inline-block;padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#8b6914;margin-bottom:16px;width:fit-content;margin-top:8px;">Tier II</span>
+       <h3 class="font-display" style="font-size:1.4rem;font-weight:700;margin:0 0 8px;color:var(--text);">Curator</h3>
+       <p style="font-size:0.8rem;color:var(--muted);margin:0 0 24px;line-height:1.5;">Full catalog access with exclusive preview nights and authentication services.</p>
+       <div style="margin:24px 0;padding-top:24px;border-top:2px solid #8b6914;">
+        <span class="font-display" style="font-size:2rem;font-weight:900;color:var(--text);">$129</span> <span style="font-size:0.75rem;color:var(--muted);margin-left:6px;">/month</span>
+       </div>
+       <ul style="list-style:none;padding:0;margin:24px 0;flex-grow:1;font-size:0.8rem;color:var(--muted);line-height:1.8;">
+        <li style="margin-bottom:10px;color:var(--text);font-weight:500;">✓ Unlimited drawer access</li>
+        <li style="margin-bottom:10px;color:var(--text);font-weight:500;">✓ Weekly updates &amp; insights</li>
+        <li style="margin-bottom:10px;color:var(--text);font-weight:500;">✓ 24-hour preview sales</li>
+        <li style="margin-bottom:10px;color:var(--text);font-weight:500;">✓ Priority shipping (free)</li>
+        <li style="color:#c4b393;">○ Annual gala invitation</li>
+       </ul><button style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 20px;background:#8b6914;color:var(--surface);font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;transition:all 0.3s;margin-top:auto;" class="animate-pulse-cta">Get Started</button>
+      </div><!-- Tier 3 -->
+      <div class="scroll-reveal specimen-card" style="padding:32px;display:flex;flex-direction:column;border:1px solid #c4b393;transition-delay:0.3s;position:relative;">
+       <span class="paper-tag font-mono" style="display:inline-block;padding:4px 14px 4px 18px;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;width:fit-content;">Tier III</span>
+       <h3 class="font-display" style="font-size:1.4rem;font-weight:700;margin:0 0 8px;color:var(--text);">Collector</h3>
+       <p style="font-size:0.8rem;color:var(--muted);margin:0 0 24px;line-height:1.5;">White-glove service with personal antiquarian and annual acquisition allocations.</p>
+       <div style="margin:24px 0;padding-top:24px;border-top:1px solid #e8dcc8;">
+        <span class="font-display" style="font-size:2rem;font-weight:900;color:var(--text);">$399</span> <span style="font-size:0.75rem;color:var(--muted);margin-left:6px;">/month</span>
+       </div>
+       <ul style="list-style:none;padding:0;margin:24px 0;flex-grow:1;font-size:0.8rem;color:var(--muted);line-height:1.8;">
+        <li style="margin-bottom:10px;">✓ Everything in Curator</li>
+        <li style="margin-bottom:10px;">✓ Personal antiquarian</li>
+        <li style="margin-bottom:10px;">✓ Annual acquisition budget</li>
+        <li style="margin-bottom:10px;">✓ Private viewing events</li>
+        <li style="margin-bottom:10px;">✓ Concierge authentication</li>
+       </ul><a href="#buy" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 20px;border:1px solid #a89470;color:var(--text);font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:all 0.3s;margin-top:auto;">Contact Sales</a>
+      </div>
+     </div>
+     <div class="scroll-reveal" style="margin-top:48px;text-align:center;">
+      <p style="font-size:0.8rem;color:var(--muted);"><span class="font-mono">✓</span> All plans include 30-day satisfaction guarantee. Cancel anytime.</p>
+     </div>
+    </div>
+   </section><!-- BUY / BOTTOM CTA -->
+   <section id="buy" style="background:var(--surface);padding:100px 24px;text-align:center;">
+    <div style="max-width:600px;margin:0 auto;" class="scroll-reveal">
+     <svg width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#8b6914" stroke-width="1" style="margin-bottom:24px;">
+      <rect x="3" y="3" width="18" height="18" rx="1" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /><circle cx="12" cy="6" r="1" fill="#8b6914" /><circle cx="12" cy="12" r="1" fill="#8b6914" /><circle cx="12" cy="18" r="1" fill="#8b6914" />
+     </svg>
+     <h2 id="bottom-cta" class="font-display" style="font-size:clamp(2rem,5vw,3rem);font-weight:900;color:var(--text);margin:0 0 16px;line-height:1.1;">Turn products into artifacts.</h2>
+     <p style="font-size:0.95rem;color:var(--muted);margin:0 0 32px;line-height:1.6;">Begin your collection. Every piece tells a story worth preserving.</p><a href="#home" class="animate-pulse-cta" style="display:inline-flex;align-items:center;gap:8px;padding:16px 40px;background:var(--accent);color:var(--surface);font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;">
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+      </svg> Start Collecting </a>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="wood-bg" style="padding:32px 24px;text-align:center;border-top:1px solid #3d2e1a;"><span class="font-mono" style="font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#6b5d4f;">CurioCabinet Catalog — Curated with care</span>
+   </footer>
+  </div>
+  <script>
+// Drawer interactions
+const drawerData = [
+  { title: 'Optical Instruments', text: 'Brass loupes, field microscopes, and precision lenses from the 19th century.' },
+  { title: 'Cartography Tools', text: 'Dividers, compasses, and hand-drawn charts from maritime expeditions.' },
+  { title: 'Botanical Specimens', text: 'Pressed flora, seed catalogs, and herbarium sheets from alpine expeditions.' },
+  { title: 'Curiosities & Collectibles', text: 'A selection of extraordinary finds spanning three centuries of discovery.' }
+];
+
+document.querySelectorAll('.drawer-clickable').forEach(drawer => {
+  drawer.addEventListener('click', (e) => {
+    const idx = parseInt(drawer.dataset.drawer);
+    const modal = document.getElementById('drawerModal');
+    document.getElementById('modalTitle').textContent = drawerData[idx].title;
+    document.getElementById('modalText').textContent = drawerData[idx].text;
+    modal.classList.add('active');
+  });
+});
+
+// Close modal on escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('drawerModal').classList.remove('active');
+  }
+});
+
+// Close modal on overlay click
+document.getElementById('drawerModal').addEventListener('click', (e) => {
+  if (e.target.id === 'drawerModal') {
+    e.target.classList.remove('active');
+  }
+});
+const defaultConfig = {
+  hero_title: 'Open the cabinet.',
+  hero_subtitle: 'A catalog that feels discovered.',
+  cta_primary: 'Browse Drawers',
+  cta_secondary: 'Shop Collection',
+  bottom_cta_text: 'Turn products into artifacts.',
+  background_color: '#2c2418',
+  surface_color: '#f4ece1',
+  text_color: '#1a1410',
+  accent_color: '#8b6914',
+  muted_color: '#6b5d4f',
+  font_family: 'Playfair Display',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const el = (id) => document.getElementById(id);
+  const c = (k) => config[k] || defaultConfig[k];
+
+  // Text
+  if (el('hero-title')) el('hero-title').textContent = c('hero_title');
+  if (el('hero-subtitle')) el('hero-subtitle').textContent = c('hero_subtitle');
+  if (el('cta-primary-text')) el('cta-primary-text').textContent = c('cta_primary');
+  if (el('cta-secondary-text')) el('cta-secondary-text').textContent = c('cta_secondary');
+  if (el('bottom-cta')) el('bottom-cta').textContent = c('bottom_cta_text');
+
+  // Colors
+  document.documentElement.style.setProperty('--bg', c('background_color'));
+  document.documentElement.style.setProperty('--surface', c('surface_color'));
+  document.documentElement.style.setProperty('--text', c('text_color'));
+  document.documentElement.style.setProperty('--accent', c('accent_color'));
+  document.documentElement.style.setProperty('--muted', c('muted_color'));
+
+  // Update wood-bg sections
+  document.querySelectorAll('.wood-bg').forEach(s => {
+    s.style.background = `linear-gradient(135deg, ${lightenColor(c('background_color'), 15)} 0%, ${c('background_color')} 30%, ${lightenColor(c('background_color'), 12)} 60%, ${c('background_color')} 100%)`;
+  });
+
+  // Surfaces
+  document.querySelectorAll('section:not(.wood-bg)').forEach(s => {
+    if (s.id === 'buy' || s.id === 'drawers' || s.id === 'details') {
+      s.style.background = c('surface_color');
+    }
+  });
+
+  // Accent buttons
+  [el('cta-primary-btn')].filter(Boolean).forEach(b => {
+    b.style.background = c('accent_color');
+    b.style.color = c('surface_color');
+  });
+
+  // Font
+  const customFont = c('font_family');
+  const stack = `${customFont}, serif`;
+  document.querySelectorAll('.font-display').forEach(e => e.style.fontFamily = stack);
+
+  // Font size
+  const base = c('font_size');
+  document.querySelectorAll('p').forEach(e => {
+    const current = parseFloat(getComputedStyle(e).fontSize);
+    if (current <= 14) e.style.fontSize = `${base * 0.8}px`;
+    else e.style.fontSize = `${base}px`;
+  });
+}
+
+function lightenColor(hex, pct) {
+  const num = parseInt(hex.replace('#',''), 16);
+  const r = Math.min(255, (num >> 16) + Math.round(pct * 2.55));
+  const g = Math.min(255, ((num >> 8) & 0x00FF) + Math.round(pct * 2.55));
+  const b = Math.min(255, (num & 0x0000FF) + Math.round(pct * 2.55));
+  return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+}
+
+// Element SDK init
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['hero_title', config.hero_title || defaultConfig.hero_title],
+    ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+    ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+    ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+    ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+  ])
+});
+
+// Drawer toggle
+document.querySelectorAll('.drawer-content').forEach(dc => {
+  dc.style.maxHeight = '0px';
+});
+document.querySelectorAll('.drawer-panel[onclick]').forEach(panel => {
+  panel.removeAttribute('onclick');
+  panel.addEventListener('click', () => {
+    const content = panel.querySelector('.drawer-content');
+    if (content.classList.contains('open')) {
+      content.style.maxHeight = '0px';
+      content.classList.remove('open');
+    } else {
+      content.style.maxHeight = content.scrollHeight + 'px';
+      content.classList.add('open');
+    }
+  });
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+}, { threshold: 0.1 });
+document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+// Active nav
+const sections = ['home','drawers','featured','details','pricing','reviews','buy'];
+const wrapper = document.getElementById('app-wrapper');
+wrapper.addEventListener('scroll', () => {
+  let current = 'home';
+  sections.forEach(id => {
+    const s = document.getElementById(id);
+    if (s && s.getBoundingClientRect().top <= 80) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Responsive featured grid
+const fg = document.getElementById('featured-grid');
+function checkWidth() {
+  if (window.innerWidth < 700 && fg) fg.style.gridTemplateColumns = '1fr';
+  else if (fg) fg.style.gridTemplateColumns = '1fr 1fr';
+}
+checkWidth();
+window.addEventListener('resize', checkWidth);
+
+// Staggered hero animations
+document.querySelectorAll('[data-delay]').forEach(el => {
+  el.style.animationDelay = el.dataset.delay + 's';
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82734d57527c5',t:'MTc3NjczMDA5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

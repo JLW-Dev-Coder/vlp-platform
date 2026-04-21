@@ -1,1 +1,619 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/87b3c230-ed19-4eb6-bfba-96e0a8494de9 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cutaway Living</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+html { height: 100%; }
+body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #F0EDE8;
+  --surface: #FFFFFF;
+  --text: #1A1A1A;
+  --accent: #8B6F4E;
+  --accent2: #C4A882;
+}
+
+.font-display { font-family: 'DM Serif Display', serif; }
+.font-body { font-family: 'Instrument Sans', sans-serif; }
+
+/* Thin blueprint lines */
+.blueprint-line {
+  position: absolute;
+  background: var(--accent2);
+  opacity: 0.3;
+}
+
+/* Room reveal */
+.room-section {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 0.9s cubic-bezier(0.23,1,0.32,1), transform 0.9s cubic-bezier(0.23,1,0.32,1);
+}
+.room-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image zoom */
+.room-img-wrap {
+  overflow: hidden;
+  position: relative;
+}
+.room-img-wrap img {
+  transition: transform 8s cubic-bezier(0.23,1,0.32,1);
+  transform: scale(1.05);
+}
+.room-section.visible .room-img-wrap img {
+  transform: scale(1.15);
+}
+
+/* CTA pulse */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(139,111,78,0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(139,111,78,0); }
+  100% { box-shadow: 0 0 0 0 rgba(139,111,78,0); }
+}
+.cta-pulse { animation: pulse-ring 2.5s infinite; }
+
+/* Cutaway outline decoration */
+.cutaway-outline {
+  border: 1px solid var(--accent2);
+  opacity: 0.25;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Hero anim */
+@keyframes hero-fade {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-anim { animation: hero-fade 1s cubic-bezier(0.23,1,0.32,1) forwards; }
+.hero-anim-d1 { animation-delay: 0.15s; opacity: 0; }
+.hero-anim-d2 { animation-delay: 0.35s; opacity: 0; }
+.hero-anim-d3 { animation-delay: 0.55s; opacity: 0; }
+.hero-anim-d4 { animation-delay: 0.75s; opacity: 0; }
+
+/* Sticky nav */
+.nav-link {
+  position: relative;
+  transition: color 0.3s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* Star rating */
+.star-filled { fill: var(--accent); stroke: var(--accent); }
+.star-empty { fill: none; stroke: var(--accent2); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 3px; }
+
+.material-card {
+  transition: transform 0.4s, box-shadow 0.4s;
+}
+.material-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="font-body" style="background:var(--bg); color:var(--text); overflow-x:hidden;">
+  <div id="app-wrapper" style="width:100%; height:100%; overflow-y:auto; overflow-x:hidden;"><!-- Sticky Nav -->
+   <nav id="sticky-nav" style="position:sticky; top:0; z-index:100; background:rgba(240,237,232,0.92); backdrop-filter:blur(12px); border-bottom:1px solid rgba(196,168,130,0.2);">
+    <div style="max-width:1200px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; justify-content:space-between;"><a href="#hero" class="font-display" style="font-size:18px; color:var(--text); text-decoration:none; letter-spacing:-0.5px;">Cutaway Living</a>
+     <div style="display:flex; gap:28px; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:500;"><a href="#hero" class="nav-link" style="color:var(--text); text-decoration:none;">Home</a> <a href="#rooms" class="nav-link" style="color:var(--text); text-decoration:none;">Rooms</a> <a href="#highlights" class="nav-link" style="color:var(--text); text-decoration:none;">Highlights</a> <a href="#materials" class="nav-link" style="color:var(--text); text-decoration:none;">Materials</a> <a href="#reviews" class="nav-link" style="color:var(--text); text-decoration:none;">Reviews</a> <a href="#shop" class="nav-link" style="color:var(--text); text-decoration:none;">Shop</a>
+     </div>
+    </div>
+   </nav><!-- HERO -->
+   <section id="hero" style="position:relative; min-height:90%; display:flex; align-items:center; justify-content:center; padding:80px 24px; overflow:hidden;"><!-- Blueprint decorations -->
+    <div class="cutaway-outline" style="top:10%; left:5%; width:180px; height:260px;"></div>
+    <div class="cutaway-outline" style="bottom:8%; right:6%; width:220px; height:160px;"></div>
+    <div class="blueprint-line" style="top:20%; left:0; width:100%; height:1px;"></div>
+    <div class="blueprint-line" style="bottom:25%; left:0; width:100%; height:1px;"></div>
+    <div class="blueprint-line" style="top:0; left:15%; width:1px; height:100%;"></div>
+    <div class="blueprint-line" style="top:0; right:20%; width:1px; height:100%;"></div>
+    <div style="max-width:800px; text-align:center; position:relative; z-index:2;"><!-- Icon row -->
+     <div class="hero-anim" style="display:flex; justify-content:center; gap:20px; margin-bottom:40px; opacity:0.4;">
+      <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+      <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+       <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+      </svg>
+      <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+       <path d="M2 20h20M6 20V4h12v16" /><line x1="10" y1="8" x2="10" y2="8.01" /><line x1="14" y1="8" x2="14" y2="8.01" /><line x1="10" y1="12" x2="10" y2="12.01" /><line x1="14" y1="12" x2="14" y2="12.01" />
+      </svg>
+     </div>
+     <h1 id="hero-title" class="font-display hero-anim hero-anim-d1" style="font-size:clamp(36px,6vw,72px); line-height:1.05; margin:0 0 20px; letter-spacing:-1.5px;">Tour the design from the inside.</h1>
+     <p id="hero-subtitle" class="hero-anim hero-anim-d2" style="font-size:clamp(14px,1.8vw,18px); color:var(--accent); max-width:500px; margin:0 auto 40px; line-height:1.6;">A cutaway page built to make people keep scrolling.</p>
+     <div class="hero-anim hero-anim-d3" style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;"><a href="#highlights" id="cta-primary-btn" class="cta-pulse" style="display:inline-flex; align-items:center; gap:8px; padding:14px 32px; background:var(--accent); color:#fff; text-decoration:none; font-size:13px; letter-spacing:1px; text-transform:uppercase; font-weight:600;">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+       </svg><span>Shop Highlights</span> </a> <a href="#rooms" id="cta-secondary-btn" style="display:inline-flex; align-items:center; gap:8px; padding:14px 32px; border:1px solid var(--accent); color:var(--accent); text-decoration:none; font-size:13px; letter-spacing:1px; text-transform:uppercase; font-weight:600; transition:background 0.3s, color 0.3s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'"> <span>Enter the Rooms</span>
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" />
+       </svg></a>
+     </div>
+     <div class="hero-anim hero-anim-d4" style="margin-top:60px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent2);">
+      Scroll to explore — 4 rooms below
+     </div>
+    </div>
+   </section><!-- ROOMS -->
+   <section id="rooms" style="max-width:1100px; margin:0 auto; padding:40px 24px 80px;"><!-- Room 1 -->
+    <div class="room-section" style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; margin-bottom:100px; position:relative;" data-delay="0">
+     <div class="cutaway-outline" style="top:-20px; left:-20px; width:calc(50% + 10px); height:calc(100% + 40px);"></div>
+     <div style="position:relative;">
+      <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+       </svg> Floor 01
+      </div>
+      <h2 id="room1-title" class="font-display" style="font-size:clamp(28px,4vw,44px); margin:0 0 16px; letter-spacing:-1px;">The Living Room</h2>
+      <p style="color:var(--accent); line-height:1.7; font-size:15px; margin:0 0 24px;">Where light meets conversation. Anchored by a low-profile sofa and warm walnut tones, this space invites lingering.</p>
+      <div style="display:flex; gap:24px;">
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <path d="M9 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-4" /><path d="M3 15l4 4 4-4" /><path d="M13 15l4 4 4-4" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Sofa
+        </div>
+       </div>
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <path d="M9 21V3h6v18" /><path d="M3 21h18" /><path d="M9 8h6" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Table
+        </div>
+       </div>
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <path d="M9 18h6" /><path d="M10 22V18" /><path d="M14 22V18" /><path d="M12 2v4" /><circle cx="12" cy="9" r="3" /><path d="M8 9H4" /><path d="M20 9h-4" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Lamp
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="room-img-wrap" style="aspect-ratio:4/3; border:1px solid rgba(196,168,130,0.2);"><img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&amp;q=80" alt="Modern living room interior" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+     </div>
+    </div><!-- Room 2 -->
+    <div class="room-section" style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; margin-bottom:100px; position:relative;" data-delay="100">
+     <div class="cutaway-outline" style="top:-20px; right:-20px; width:calc(50% + 10px); height:calc(100% + 40px);"></div>
+     <div class="room-img-wrap" style="aspect-ratio:4/3; border:1px solid rgba(196,168,130,0.2);"><img src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&amp;q=80" alt="Bedroom interior" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+     </div>
+     <div style="position:relative;">
+      <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 12h20" />
+       </svg> Floor 02
+      </div>
+      <h2 id="room2-title" class="font-display" style="font-size:clamp(28px,4vw,44px); margin:0 0 16px; letter-spacing:-1px;">The Bedroom</h2>
+      <p style="color:var(--accent); line-height:1.7; font-size:15px; margin:0 0 24px;">A sanctuary of linen and shadow. Every surface is chosen for calm — from the matte bedframe to the hand-thrown ceramic lamp.</p>
+      <div style="display:flex; gap:24px;">
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 12h20" /><path d="M7 12v-4h10v4" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Bed
+        </div>
+       </div>
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <path d="M9 18h6" /><path d="M10 22V18" /><path d="M14 22V18" /><path d="M12 2v4" /><circle cx="12" cy="9" r="3" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Light
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Room 3 -->
+    <div class="room-section" style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; margin-bottom:100px; position:relative;" data-delay="200">
+     <div class="cutaway-outline" style="bottom:-20px; left:30%; width:40%; height:calc(100% + 40px);"></div>
+     <div style="position:relative;">
+      <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+       </svg> Floor 03
+      </div>
+      <h2 id="room3-title" class="font-display" style="font-size:clamp(28px,4vw,44px); margin:0 0 16px; letter-spacing:-1px;">The Dining Room</h2>
+      <p style="color:var(--accent); line-height:1.7; font-size:15px; margin:0 0 24px;">Where form becomes ritual. A solid oak table set beneath pendant lighting — designed for the slow meal.</p>
+      <div style="display:flex; gap:24px;">
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <path d="M5 3v18" /><path d="M19 3v18" /><path d="M5 12h14" /><path d="M5 7h14" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Chair
+        </div>
+       </div>
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <rect x="4" y="10" width="16" height="4" rx="1" /><path d="M6 14v6" /><path d="M18 14v6" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Table
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="room-img-wrap" style="aspect-ratio:4/3; border:1px solid rgba(196,168,130,0.2);"><img src="https://images.unsplash.com/photo-1617806118233-18e1de247200?w=800&amp;q=80" alt="Dining room interior" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+     </div>
+    </div><!-- Room 4 -->
+    <div class="room-section" style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; margin-bottom:60px; position:relative;" data-delay="300">
+     <div class="room-img-wrap" style="aspect-ratio:4/3; border:1px solid rgba(196,168,130,0.2);"><img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&amp;q=80" alt="Reading nook" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+     </div>
+     <div style="position:relative;">
+      <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+       </svg> Floor 04
+      </div>
+      <h2 id="room4-title" class="font-display" style="font-size:clamp(28px,4vw,44px); margin:0 0 16px; letter-spacing:-1px;">The Reading Nook</h2>
+      <p style="color:var(--accent); line-height:1.7; font-size:15px; margin:0 0 24px;">Tucked beneath the staircase. A single armchair, a brass reading lamp, and nowhere else to be.</p>
+      <div style="display:flex; gap:24px;">
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <path d="M5 3v18" /><path d="M19 3v18" /><path d="M5 12h14" /><path d="M5 7h14" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Chair
+        </div>
+       </div>
+       <div style="text-align:center;">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1">
+         <path d="M9 18h6" /><path d="M10 22V18" /><path d="M14 22V18" /><path d="M12 2v4" /><circle cx="12" cy="9" r="3" /><path d="M8 9H4" /><path d="M20 9h-4" />
+        </svg>
+        <div style="font-size:11px; margin-top:6px; color:var(--accent2);">
+         Lamp
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- HIGHLIGHTS -->
+   <section id="highlights" style="padding:80px 24px; position:relative;">
+    <div class="blueprint-line" style="top:0; left:0; width:100%; height:1px;"></div>
+    <div style="max-width:1100px; margin:0 auto;">
+     <div class="room-section" data-delay="0">
+      <div style="text-align:center; margin-bottom:60px;">
+       <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:12px;">
+        Curated Selection
+       </div>
+       <h2 class="font-display" style="font-size:clamp(28px,4vw,44px); margin:0; letter-spacing:-1px;">Highlights</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:24px;">
+       <div class="material-card" style="background:var(--surface); padding:24px; border:1px solid rgba(196,168,130,0.15);">
+        <div class="room-img-wrap" style="aspect-ratio:1; margin-bottom:16px;"><img src="https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=600&amp;q=80" alt="Lamp close up" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+        </div>
+        <div style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent2); margin-bottom:6px;">
+         Lighting
+        </div>
+        <div class="font-display" style="font-size:18px; margin-bottom:4px;">
+         Arc Floor Lamp
+        </div>
+        <div style="color:var(--accent); font-size:14px;">
+         $285
+        </div>
+       </div>
+       <div class="material-card" style="background:var(--surface); padding:24px; border:1px solid rgba(196,168,130,0.15);">
+        <div class="room-img-wrap" style="aspect-ratio:1; margin-bottom:16px;"><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&amp;q=80" alt="Sofa" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+        </div>
+        <div style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent2); margin-bottom:6px;">
+         Seating
+        </div>
+        <div class="font-display" style="font-size:18px; margin-bottom:4px;">
+         Linen Sofa
+        </div>
+        <div style="color:var(--accent); font-size:14px;">
+         $1,450
+        </div>
+       </div>
+       <div class="material-card" style="background:var(--surface); padding:24px; border:1px solid rgba(196,168,130,0.15);">
+        <div class="room-img-wrap" style="aspect-ratio:1; margin-bottom:16px;"><img src="https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=600&amp;q=80" alt="Minimal home decor" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+        </div>
+        <div style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent2); margin-bottom:6px;">
+         Decor
+        </div>
+        <div class="font-display" style="font-size:18px; margin-bottom:4px;">
+         Ceramic Vase Set
+        </div>
+        <div style="color:var(--accent); font-size:14px;">
+         $120
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- MATERIALS -->
+   <section id="materials" style="padding:80px 24px; position:relative;">
+    <div class="blueprint-line" style="top:0; left:0; width:100%; height:1px;"></div>
+    <div style="max-width:1100px; margin:0 auto;">
+     <div class="room-section" data-delay="0">
+      <div style="text-align:center; margin-bottom:60px;">
+       <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:12px;">
+        Sourced with care
+       </div>
+       <h2 class="font-display" style="font-size:clamp(28px,4vw,44px); margin:0; letter-spacing:-1px;">Materials</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+       <div class="material-card" style="background:var(--surface); overflow:hidden; border:1px solid rgba(196,168,130,0.15);">
+        <div style="aspect-ratio:3/2; overflow:hidden;"><img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=500&amp;q=80" alt="Wood texture" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+        </div>
+        <div style="padding:16px;">
+         <div class="font-display" style="font-size:16px; margin-bottom:4px;">
+          White Oak
+         </div>
+         <div style="font-size:12px; color:var(--accent2);">
+          FSC Certified
+         </div>
+        </div>
+       </div>
+       <div class="material-card" style="background:var(--surface); overflow:hidden; border:1px solid rgba(196,168,130,0.15);">
+        <div style="aspect-ratio:3/2; overflow:hidden; background:#d4c8b8;"><img src="https://images.unsplash.com/photo-1528459105426-b9548367069b?w=500&amp;q=80" alt="Linen texture" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+        </div>
+        <div style="padding:16px;">
+         <div class="font-display" style="font-size:16px; margin-bottom:4px;">
+          Belgian Linen
+         </div>
+         <div style="font-size:12px; color:var(--accent2);">
+          Stone-washed
+         </div>
+        </div>
+       </div>
+       <div class="material-card" style="background:var(--surface); overflow:hidden; border:1px solid rgba(196,168,130,0.15);">
+        <div style="aspect-ratio:3/2; overflow:hidden; background:#c4a882;"><img src="https://images.unsplash.com/photo-1590079541692-d811b2e18df0?w=500&amp;q=80" alt="Brass texture" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#c4a882';this.alt='Image unavailable';">
+        </div>
+        <div style="padding:16px;">
+         <div class="font-display" style="font-size:16px; margin-bottom:4px;">
+          Brushed Brass
+         </div>
+         <div style="font-size:12px; color:var(--accent2);">
+          Hand-finished
+         </div>
+        </div>
+       </div>
+       <div class="material-card" style="background:var(--surface); overflow:hidden; border:1px solid rgba(196,168,130,0.15);">
+        <div style="aspect-ratio:3/2; overflow:hidden; background:#8a8a8a;"><img src="https://images.unsplash.com/photo-1604147706283-d7119b5b822c?w=500&amp;q=80" alt="Concrete texture" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.background='#8a8a8a';this.alt='Image unavailable';">
+        </div>
+        <div style="padding:16px;">
+         <div class="font-display" style="font-size:16px; margin-bottom:4px;">
+          Micro-cement
+         </div>
+         <div style="font-size:12px; color:var(--accent2);">
+          Seamless finish
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" style="padding:80px 24px; position:relative;">
+    <div class="blueprint-line" style="top:0; left:0; width:100%; height:1px;"></div>
+    <div style="max-width:900px; margin:0 auto;">
+     <div class="room-section" data-delay="0">
+      <div style="text-align:center; margin-bottom:60px;">
+       <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:12px;">
+        What people say
+       </div>
+       <h2 class="font-display" style="font-size:clamp(28px,4vw,44px); margin:0; letter-spacing:-1px;">Reviews</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:24px;">
+       <div style="background:var(--surface); padding:32px; border:1px solid rgba(196,168,130,0.15);">
+        <div style="display:flex; gap:3px; margin-bottom:16px;">
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+        </div>
+        <p style="font-size:15px; line-height:1.7; margin:0 0 16px; font-style:italic;">"The sofa arrived and it looked exactly like the page made it feel. That never happens."</p>
+        <div style="font-size:12px; color:var(--accent2); letter-spacing:1px; text-transform:uppercase;">
+         — Clara M.
+        </div>
+       </div>
+       <div style="background:var(--surface); padding:32px; border:1px solid rgba(196,168,130,0.15);">
+        <div style="display:flex; gap:3px; margin-bottom:16px;">
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" class="star-empty">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+        </div>
+        <p style="font-size:15px; line-height:1.7; margin:0 0 16px; font-style:italic;">"I've never scrolled a furniture page this slowly. The reading nook sold me."</p>
+        <div style="font-size:12px; color:var(--accent2); letter-spacing:1px; text-transform:uppercase;">
+         — James K.
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- SHOP / BOTTOM CTA -->
+   <section id="shop" style="padding:100px 24px 120px; position:relative; text-align:center;">
+    <div class="blueprint-line" style="top:0; left:0; width:100%; height:1px;"></div>
+    <div class="cutaway-outline" style="top:30px; left:50%; transform:translateX(-50%); width:300px; height:200px;"></div>
+    <div class="room-section" data-delay="0" style="position:relative; z-index:2;">
+     <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--accent2); margin-bottom:16px;">
+      Begin your tour
+     </div>
+     <h2 id="bottom-cta-text" class="font-display" style="font-size:clamp(28px,5vw,56px); margin:0 0 32px; letter-spacing:-1px;">Make the page feel like a place.</h2><a href="#hero" class="cta-pulse" style="display:inline-flex; align-items:center; gap:10px; padding:16px 40px; background:var(--accent); color:#fff; text-decoration:none; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+      </svg> Shop the Collection </a>
+    </div>
+   </section><!-- Footer -->
+   <footer style="padding:40px 24px; border-top:1px solid rgba(196,168,130,0.2); text-align:center;">
+    <div style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent2);">
+     Cutaway Living — Architecture meets editorial
+    </div>
+   </footer>
+  </div>
+  <script>
+const defaultConfig = {
+  hero_title: "Tour the design from the inside.",
+  hero_subtitle: "A cutaway page built to make people keep scrolling.",
+  cta_primary: "Shop Highlights",
+  cta_secondary: "Enter the Rooms",
+  room1_title: "The Living Room",
+  room2_title: "The Bedroom",
+  room3_title: "The Dining Room",
+  room4_title: "The Reading Nook",
+  bottom_cta: "Make the page feel like a place.",
+  background_color: "#F0EDE8",
+  surface_color: "#FFFFFF",
+  text_color: "#1A1A1A",
+  accent_color: "#8B6F4E",
+  accent2_color: "#C4A882",
+  font_family: "DM Serif Display",
+  font_size: 16
+};
+
+function applyConfig(c) {
+  document.getElementById('hero-title').textContent = c.hero_title || defaultConfig.hero_title;
+  document.getElementById('hero-subtitle').textContent = c.hero_subtitle || defaultConfig.hero_subtitle;
+  document.querySelector('#cta-primary-btn span').textContent = c.cta_primary || defaultConfig.cta_primary;
+  document.querySelector('#cta-secondary-btn span').textContent = c.cta_secondary || defaultConfig.cta_secondary;
+  document.getElementById('room1-title').textContent = c.room1_title || defaultConfig.room1_title;
+  document.getElementById('room2-title').textContent = c.room2_title || defaultConfig.room2_title;
+  document.getElementById('room3-title').textContent = c.room3_title || defaultConfig.room3_title;
+  document.getElementById('room4-title').textContent = c.room4_title || defaultConfig.room4_title;
+  document.getElementById('bottom-cta-text').textContent = c.bottom_cta || defaultConfig.bottom_cta;
+
+  const bg = c.background_color || defaultConfig.background_color;
+  const surface = c.surface_color || defaultConfig.surface_color;
+  const text = c.text_color || defaultConfig.text_color;
+  const accent = c.accent_color || defaultConfig.accent_color;
+  const accent2 = c.accent2_color || defaultConfig.accent2_color;
+
+  document.documentElement.style.setProperty('--bg', bg);
+  document.documentElement.style.setProperty('--surface', surface);
+  document.documentElement.style.setProperty('--text', text);
+  document.documentElement.style.setProperty('--accent', accent);
+  document.documentElement.style.setProperty('--accent2', accent2);
+  document.body.style.color = text;
+  document.body.style.background = bg;
+
+  const font = c.font_family || defaultConfig.font_family;
+  document.querySelectorAll('.font-display').forEach(el => {
+    el.style.fontFamily = `${font}, serif`;
+  });
+
+  const base = c.font_size || defaultConfig.font_size;
+  document.querySelectorAll('.font-display').forEach(el => {
+    // Preserve clamp-based sizing, scale relatively
+  });
+}
+
+// Scroll reveal
+const wrapper = document.getElementById('app-wrapper');
+function checkReveal() {
+  document.querySelectorAll('.room-section:not(.visible)').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    if (rect.top < wrapperRect.bottom - 80) {
+      const delay = parseInt(el.dataset.delay || 0);
+      setTimeout(() => el.classList.add('visible'), delay);
+    }
+  });
+}
+wrapper.addEventListener('scroll', checkReveal);
+setTimeout(checkReveal, 200);
+
+// Active nav
+const sections = ['hero','rooms','highlights','materials','reviews','shop'];
+wrapper.addEventListener('scroll', () => {
+  let current = 'hero';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < 200) current = id;
+    }
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+  });
+});
+
+// Element SDK
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => { applyConfig(config); },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.accent2_color || defaultConfig.accent2_color, set: (v) => { config.accent2_color = v; window.elementSdk.setConfig({ accent2_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ["hero_title", config.hero_title || defaultConfig.hero_title],
+    ["hero_subtitle", config.hero_subtitle || defaultConfig.hero_subtitle],
+    ["cta_primary", config.cta_primary || defaultConfig.cta_primary],
+    ["cta_secondary", config.cta_secondary || defaultConfig.cta_secondary],
+    ["room1_title", config.room1_title || defaultConfig.room1_title],
+    ["room2_title", config.room2_title || defaultConfig.room2_title],
+    ["room3_title", config.room3_title || defaultConfig.room3_title],
+    ["room4_title", config.room4_title || defaultConfig.room4_title],
+    ["bottom_cta", config.bottom_cta || defaultConfig.bottom_cta]
+  ])
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef827cbd28327c5',t:'MTc3NjczMDExOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
