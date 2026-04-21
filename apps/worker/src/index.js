@@ -18132,8 +18132,8 @@ TTMP Support Team
 
         return json({ ok: true }, 200, request);
       } catch (e) {
-        console.error('WLVLP Stripe webhook error:', e);
-        return json({ ok: false, error: 'WEBHOOK_ERROR' }, 500, request);
+        console.error('WLVLP webhook error:', e?.message, e?.stack);
+        return json({ ok: false, error: 'WEBHOOK_ERROR', detail: e?.message }, 500, request);
       }
     },
   },
