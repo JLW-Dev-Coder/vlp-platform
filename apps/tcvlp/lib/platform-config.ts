@@ -26,7 +26,7 @@ export const tcvlpConfig: PlatformConfig = {
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Embed Link', href: '/dashboard/embed', icon: 'Link2' },
         { label: 'Submissions', href: '/dashboard/submissions', icon: 'ScrollText' },
-        { label: 'Form 843', href: '/what-is-form-843', icon: 'FileCheck' },
+        { label: 'Form 843', href: '/what-is-form-843', icon: 'FileCheck', external: true },
       ],
     },
     {

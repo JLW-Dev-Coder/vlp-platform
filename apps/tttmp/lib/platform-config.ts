@@ -24,8 +24,8 @@ export const tttmpConfig: PlatformConfig = {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/account', icon: 'LayoutDashboard' },
-        { label: 'Games', href: '/games', icon: 'Gamepad2' },
-        { label: 'Tokens', href: '/pricing', icon: 'Coins' },
+        { label: 'Games', href: '/games', icon: 'Gamepad2', external: true },
+        { label: 'Tokens', href: '/pricing', icon: 'Coins', external: true },
       ],
     },
     {
@@ -38,7 +38,7 @@ export const tttmpConfig: PlatformConfig = {
       title: 'SETTINGS',
       items: [
         { label: 'Account', href: '/account', icon: 'Settings' },
-        { label: 'Support', href: '/contact', icon: 'HelpCircle' },
+        { label: 'Support', href: '/contact', icon: 'HelpCircle', external: true },
       ],
     },
   ],

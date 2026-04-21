@@ -34,8 +34,8 @@ export const dvlpConfig: PlatformConfig = {
         { label: 'Tickets', href: '/operator/tickets', icon: 'Ticket' },
         { label: 'Canned Responses', href: '/operator/canned-responses', icon: 'FileText' },
         { label: 'Bulk Email', href: '/operator/bulk-email', icon: 'Mail' },
-        { label: 'Find Developers', href: '/developers', icon: 'Search' },
-        { label: 'Onboarding', href: '/onboarding', icon: 'UserPlus' },
+        { label: 'Find Developers', href: '/developers', icon: 'Search', external: true },
+        { label: 'Onboarding', href: '/onboarding', icon: 'UserPlus', external: true },
       ],
     },
     {
