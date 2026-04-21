@@ -18048,7 +18048,8 @@ TTMP Support Team
 
           if (platform === 'wlvlp' && slug && account_id) {
             const purchase_id = `PUR_${crypto.randomUUID()}`;
-            const monthly_price = Math.round(session.amount_total / 100);
+            const monthly_price = Math.round((session.amount_total ?? 0) / 100);
+            const acqType = acquisition_type || 'purchase';
 
             // Write receipt
             const receiptKey = `wlvlp/receipts/stripe/${eventId}.json`;
@@ -18058,10 +18059,10 @@ TTMP Support Team
               purchase_id,
               account_id,
               slug,
-              acquisition_type,
+              acquisition_type: acqType,
               monthly_price,
-              stripe_customer_id: session.customer,
-              stripe_subscription_id: session.subscription,
+              stripe_customer_id: session.customer ?? null,
+              stripe_subscription_id: session.subscription ?? null,
               timestamp
             };
             await r2Put(env.R2_VIRTUAL_LAUNCH, receiptKey, receipt);
@@ -18074,7 +18075,17 @@ TTMP Support Team
             // Create purchase record
             await env.DB.prepare(
               "INSERT INTO wlvlp_purchases (purchase_id, account_id, slug, acquisition_type, monthly_price, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)"
-            ).bind(purchase_id, account_id, slug, acquisition_type, monthly_price, session.customer, session.subscription, timestamp, timestamp).run();
+            ).bind(
+              purchase_id,
+              account_id,
+              slug,
+              acqType,
+              monthly_price,
+              session.customer ?? null,
+              session.subscription ?? null,
+              timestamp,
+              timestamp
+            ).run();
 
             // Seed site config
             await env.DB.prepare(
@@ -18142,7 +18153,7 @@ TTMP Support Team
         return json({ ok: true }, 200, request);
       } catch (e) {
         console.error('WLVLP webhook error:', e?.message, e?.stack);
-        return json({ ok: false, error: 'WEBHOOK_ERROR' }, 500, request);
+        return json({ ok: false, error: 'WEBHOOK_ERROR', detail: e?.message }, 500, request);
       }
     },
   },
