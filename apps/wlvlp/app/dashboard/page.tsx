@@ -2,7 +2,13 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAppShell } from '@vlp/member-ui';
-import { getMySites, type PurchasedSite } from '@/lib/api';
+import {
+  getMySites,
+  getScratchPrizes,
+  getMyBids,
+  getMyVotes,
+  type PurchasedSite,
+} from '@/lib/api';
 
 const MAIN = 'flex-1 w-full pb-16';
 const SECTION_TITLE = 'font-sora text-xs font-bold uppercase tracking-wider text-white/50 mb-3';
@@ -13,25 +19,32 @@ interface StatCardProps {
   value: string | number;
   href: string;
   color: 'blue' | 'yellow' | 'magenta' | 'cyan';
+  external?: boolean;
 }
 
-function StatCard({ icon, label, value, href, color }: StatCardProps) {
+function StatCard({ icon, label, value, href, color, external }: StatCardProps) {
   const accent = {
     blue: 'border-neon-blue/30 hover:border-neon-blue/60 text-neon-blue',
     yellow: 'border-neon-yellow/30 hover:border-neon-yellow/60 text-neon-yellow',
     magenta: 'border-neon-magenta/30 hover:border-neon-magenta/60 text-neon-magenta',
     cyan: 'border-neon-cyan/30 hover:border-neon-cyan/60 text-neon-cyan',
   }[color];
-  return (
-    <Link
-      href={href}
-      className={`glass-card rounded-2xl p-5 border flex flex-col gap-2 transition-all hover:-translate-y-0.5 no-underline ${accent}`}
-    >
+  const className = `glass-card rounded-2xl p-5 border flex flex-col gap-2 transition-all hover:-translate-y-0.5 no-underline ${accent}`;
+  const body = (
+    <>
       <div className="text-3xl leading-none">{icon}</div>
       <div className={`font-sora text-2xl font-extrabold ${accent}`}>{value}</div>
       <div className="text-white/60 text-[0.85rem] font-medium">{label}</div>
-    </Link>
+    </>
   );
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        {body}
+      </a>
+    );
+  }
+  return <Link href={href} className={className}>{body}</Link>;
 }
 
 export default function DashboardPage() {
@@ -41,13 +54,22 @@ export default function DashboardPage() {
     || (session as { name?: string }).name
     || '';
   const [sites, setSites] = useState<PurchasedSite[] | null>(null);
+  const [scratchCount, setScratchCount] = useState<number | null>(null);
+  const [voteCount, setVoteCount] = useState<number | null>(null);
+  const [bidCount, setBidCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (!accountId) return;
     getMySites(accountId).then(setSites).catch(() => setSites([]));
+    getScratchPrizes(accountId).then(p => setScratchCount(p.length)).catch(() => setScratchCount(0));
+    getMyVotes(accountId).then(v => setVoteCount(v.length)).catch(() => setVoteCount(0));
+    getMyBids(accountId)
+      .then(b => setBidCount(b.filter(x => x.template_status === 'auction').length))
+      .catch(() => setBidCount(0));
   }, [accountId]);
 
   const siteCount = sites?.length ?? 0;
+  const fmt = (n: number | null) => (n === null ? '—' : n);
 
   return (
     <main className={MAIN}>
@@ -64,9 +86,9 @@ export default function DashboardPage() {
         <h2 className={SECTION_TITLE}>Your Activity</h2>
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           <StatCard icon="🎰" label="My Sites" value={siteCount} href="/dashboard/sites" color="blue" />
-          <StatCard icon="🎫" label="Scratch Tickets" value="—" href="/dashboard/scratch" color="yellow" />
-          <StatCard icon="📊" label="Votes Cast" value="—" href="/dashboard/voting" color="magenta" />
-          <StatCard icon="💰" label="Active Bids" value="—" href="/dashboard/bidding" color="cyan" />
+          <StatCard icon="🎫" label="Scratch Tickets" value={fmt(scratchCount)} href="/scratch/" color="yellow" external />
+          <StatCard icon="📊" label="Votes Cast" value={fmt(voteCount)} href="/dashboard/voting" color="magenta" />
+          <StatCard icon="💰" label="Active Bids" value={fmt(bidCount)} href="/dashboard/bidding" color="cyan" />
         </div>
       </section>
 
@@ -82,7 +104,7 @@ export default function DashboardPage() {
             🎨 Browse Templates
           </a>
           <a
-            href="/launch"
+            href="/scratch/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[rgba(0,212,255,0.08)] border border-neon-blue/40 text-neon-blue font-bold text-[0.9rem] no-underline hover:-translate-y-0.5 transition-transform"
