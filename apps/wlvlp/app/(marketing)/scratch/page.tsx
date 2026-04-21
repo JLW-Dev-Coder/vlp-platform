@@ -94,7 +94,7 @@ function ScratchContent({ accountId }: { accountId: string }) {
       <div className="bokeh hidden md:block" style={{ top: '45%', left: '75%', width: '280px', height: '280px', background: 'radial-gradient(circle, #FF2D8A, transparent 70%)', animationDelay: '2s' }} />
       <div className="bokeh hidden md:block" style={{ top: '70%', left: '20%', width: '220px', height: '220px', background: 'radial-gradient(circle, #00D4FF, transparent 70%)', animationDelay: '4s' }} />
 
-      <div className="flex-1 flex flex-col items-center justify-center py-[60px] px-6 gap-6 text-center relative z-10">
+      <div className="flex-1 flex flex-col items-center justify-center pt-24 md:pt-32 pb-[60px] px-6 gap-6 text-center relative z-10">
         <h1 className="font-sora text-[clamp(2rem,5vw,3rem)] font-extrabold text-neon-yellow tracking-tight glow-yellow">
           Scratch to Win
         </h1>
