@@ -72,6 +72,7 @@ export interface PlatformConfig {
     account: string;
     profile: string;
     support: string;
+    notifications?: string;
   };
   apiBaseUrl: string;          // e.g., "https://api.taxmonitor.pro"
   calcomReferralLink?: string;

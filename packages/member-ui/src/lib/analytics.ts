@@ -65,6 +65,15 @@ async function loadPostHog(cfg: PostHogAnalyticsConfig): Promise<PostHogClient |
         persistence: 'localStorage+cookie',
         loaded: (ph: PostHogClient) => {
           ph.__loaded = true
+          try {
+            const meta = document.querySelector('meta[name="x-vlp-platform"]')
+            const platform = meta?.getAttribute('content')
+            if (platform && typeof (ph as unknown as { register?: (p: Record<string, unknown>) => void }).register === 'function') {
+              ;(ph as unknown as { register: (p: Record<string, unknown>) => void }).register({ platform })
+            }
+          } catch {
+            // ignore
+          }
         },
       })
       client.__loaded = true

@@ -57,6 +57,7 @@ export const wlvlpConfig: PlatformConfig = {
     account: '/dashboard/account',
     profile: '/dashboard/profile',
     support: '/dashboard/support',
+    notifications: '/dashboard/notifications',
   },
   businessInfo: {
     legalEntity: 'Lenore, Inc.',

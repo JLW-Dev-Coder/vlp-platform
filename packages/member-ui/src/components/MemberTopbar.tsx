@@ -36,7 +36,7 @@ export function MemberTopbar({ config, session, onSignOut, unreadNotifications =
       {/* Right actions */}
       <div className="flex items-center gap-1">
         <Link
-          href="/notifications"
+          href={config.routes.notifications ?? '/notifications'}
           className="relative rounded-lg p-2.5 text-white/40 transition hover:bg-white/[0.04] hover:text-white"
           aria-label="Notifications"
         >

@@ -35,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${sora.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
       <head>
+        <meta name="x-vlp-platform" content="ttmp" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="shortcut icon" href="/favicon.svg" />
       </head>

@@ -43,6 +43,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sora.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
+      <head>
+        <meta name="x-vlp-platform" content="tcvlp" />
+      </head>
       <body style={{ fontFamily: 'var(--font-body)' }}>
         <BusinessJsonLd
           name="TaxClaim Pro"

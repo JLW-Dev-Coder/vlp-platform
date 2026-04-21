@@ -44,6 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sora.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
       <head>
+        <meta name="x-vlp-platform" content="tmp" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
       <body>

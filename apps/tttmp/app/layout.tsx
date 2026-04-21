@@ -46,6 +46,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sora.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
+      <head>
+        <meta name="x-vlp-platform" content="tttmp" />
+      </head>
       <body>
         <BusinessJsonLd
           name="Tax Tools Arcade"

@@ -44,6 +44,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sora.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
+      <head>
+        <meta name="x-vlp-platform" content="wlvlp" />
+      </head>
       <body>
         <BusinessJsonLd
           name="Website Lotto"
