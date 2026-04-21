@@ -1,1 +1,367 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/dae7ac9c-2582-4a3b-844d-fecd3bccb7ec -->
+<!doctype html>
+<html lang="en" class="h-full" style="scroll-behavior:smooth;">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MirrorCorridor Reveal</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&amp;family=Libre+Franklin:wght@200;300;400;500&amp;display=swap" rel="stylesheet">
+  <style>
+html,body{margin:0;padding:0;height:100%;overflow-x:hidden;}
+*{box-sizing:border-box;}
+:root{
+--bg:#0a0a0a;--surface:#141414;--text:#e8e4df;--accent:#c9b99a;--secondary:#6b6560;
+--font-heading:'Cormorant Garamond',serif;--font-body:'Libre Franklin',sans-serif;
+--base-size:16;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);}
+
+/* Shimmer overlay */
+.shimmer{position:relative;overflow:hidden;}
+.shimmer::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(201,185,154,0.08),transparent);animation:shimmerSlide 4s ease-in-out infinite;}
+@keyframes shimmerSlide{0%{left:-100%}50%{left:100%}100%{left:100%}}
+
+/* Mirror pair reveal */
+.mirror-left,.mirror-right{opacity:0;transform:translateX(-60px);transition:opacity 1s cubic-bezier(.25,.46,.45,.94),transform 1s cubic-bezier(.25,.46,.45,.94);}
+.mirror-right{transform:translateX(60px);}
+.mirror-left.revealed,.mirror-right.revealed{opacity:1;transform:translateX(0);}
+
+/* Fade up */
+.fade-up{opacity:0;transform:translateY(40px);transition:opacity .8s ease,transform .8s ease;}
+.fade-up.revealed{opacity:1;transform:translateY(0);}
+
+/* Hero zoom */
+@keyframes slowZoom{0%{transform:scale(1)}100%{transform:scale(1.08)}}
+.hero-zoom{animation:slowZoom 20s ease-in-out alternate infinite;}
+
+/* CTA pulse */
+@keyframes ctaPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,185,154,0.4)}50%{box-shadow:0 0 0 12px rgba(201,185,154,0)}}
+.cta-pulse{animation:ctaPulse 3s ease-in-out infinite;}
+
+/* Reflection line */
+.reflection-line{height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.3;}
+
+/* Nav */
+nav a{position:relative;}
+nav a::after{content:'';position:absolute;bottom:-2px;left:50%;width:0;height:1px;background:var(--accent);transition:width .3s,left .3s;}
+nav a:hover::after{width:100%;left:0;}
+
+/* Image reflection */
+.img-reflect{position:relative;}
+.img-reflect::after{content:'';position:absolute;bottom:-40%;left:0;width:100%;height:40%;background:inherit;transform:scaleY(-1);opacity:.12;mask-image:linear-gradient(to bottom,rgba(0,0,0,.5),transparent);-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.5),transparent);pointer-events:none;}
+
+/* Symmetry grid */
+.sym-grid{display:grid;grid-template-columns:1fr 1px 1fr;gap:0;}
+@media(max-width:768px){.sym-grid{grid-template-columns:1fr;}}
+
+.scroll-wrapper{height:100%;overflow-y:auto;overflow-x:hidden;}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="scroll-wrapper" id="scrollWrapper"><!-- SVG Icons (hidden) -->
+   <svg xmlns="http://www.w3.org/2000/svg" style="display:none;"><symbol id="ico-mirror" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+     <rect x="3" y="3" width="18" height="18" rx="2" />
+     <line x1="12" y1="3" x2="12" y2="21" />
+    </symbol> <symbol id="ico-frame" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+     <rect x="2" y="2" width="20" height="20" rx="1" />
+     <rect x="5" y="5" width="14" height="14" rx="1" />
+    </symbol> <symbol id="ico-camera" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+     <circle cx="12" cy="13" r="4" />
+    </symbol> <symbol id="ico-quote" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H5c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h2c0 4-2.5 6-5 6z" />
+     <path d="M14 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-3c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h2c0 4-2.5 6-5 6z" />
+    </symbol> <symbol id="ico-cart" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+     <circle cx="9" cy="21" r="1" />
+     <circle cx="20" cy="21" r="1" />
+     <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+    </symbol> <symbol id="ico-arrow" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+     <line x1="5" y1="12" x2="19" y2="12" />
+     <polyline points="12 5 19 12 12 19" />
+    </symbol>
+   </svg><!-- STICKY NAV -->
+   <nav id="mainNav" style="position:fixed;top:0;left:0;width:100%;z-index:100;backdrop-filter:blur(16px);background:rgba(10,10,10,.7);border-bottom:1px solid rgba(201,185,154,.1);transition:transform .3s;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;"><a href="#home" style="font-family:var(--font-heading);font-size:1.2rem;font-weight:300;color:var(--accent);text-decoration:none;letter-spacing:4px;text-transform:uppercase;">Mirror</a>
+     <div style="display:flex;gap:28px;align-items:center;"><a href="#home" style="color:var(--secondary);text-decoration:none;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:300;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--secondary)'">Home</a> <a href="#corridor" style="color:var(--secondary);text-decoration:none;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:300;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--secondary)'">Corridor</a> <a href="#highlights" style="color:var(--secondary);text-decoration:none;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:300;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--secondary)'">Highlights</a> <a href="#proof" style="color:var(--secondary);text-decoration:none;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:300;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--secondary)'">Proof</a> <a href="#faq" style="color:var(--secondary);text-decoration:none;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:300;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--secondary)'">FAQ</a> <a href="#buy" style="color:var(--secondary);text-decoration:none;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:300;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--secondary)'">Buy</a>
+     </div>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" style="position:relative;width:100%;height:100%;min-height:600px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+    <div style="position:absolute;inset:0;overflow:hidden;"><img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=1600&amp;q=80" alt="Mirrored luxury corridor" class="hero-zoom" style="width:100%;height:100%;object-fit:cover;opacity:.35;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#141414,#1a1a1a)';this.alt='Image unavailable';">
+    </div>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.6) 0%,rgba(10,10,10,.9) 100%);"></div><!-- Symmetry axis line -->
+    <div style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent,rgba(201,185,154,.15),transparent);"></div>
+    <div style="position:relative;z-index:2;text-align:center;padding:0 24px;max-width:800px;">
+     <div class="fade-up" style="transition-delay:.2s;">
+      <svg width="32" height="32" style="color:var(--accent);margin:0 auto 32px;opacity:.6;">
+       <use href="#ico-mirror" />
+      </svg>
+     </div>
+     <h1 id="heroTitle" class="fade-up" style="font-family:var(--font-heading);font-weight:300;font-size:clamp(2.5rem,6vw,5rem);line-height:1.05;margin:0 0 20px;letter-spacing:-1px;transition-delay:.4s;">A page with reflection.</h1>
+     <p id="heroSubtitle" class="fade-up" style="font-family:var(--font-body);font-weight:200;font-size:clamp(.9rem,1.5vw,1.15rem);color:var(--secondary);margin:0 0 48px;letter-spacing:2px;text-transform:uppercase;transition-delay:.6s;">Symmetry that holds attention.</p>
+     <div class="fade-up" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;transition-delay:.8s;"><a id="ctaPrimary" href="#buy" class="cta-pulse" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--accent);color:var(--bg);font-size:.75rem;letter-spacing:3px;text-transform:uppercase;text-decoration:none;font-weight:500;transition:background .3s;" onmouseover="this.style.background='#b8a888'" onmouseout="this.style.background='var(--accent)'">Get Template + License 
+       <svg width="14" height="14">
+        <use href="#ico-arrow" />
+       </svg></a> <a id="ctaSecondary" href="#corridor" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:1px solid rgba(201,185,154,.3);color:var(--text);font-size:.75rem;letter-spacing:3px;text-transform:uppercase;text-decoration:none;font-weight:300;transition:border-color .3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(201,185,154,.3)'">Walk the Corridor 
+       <svg width="14" height="14">
+        <use href="#ico-arrow" />
+       </svg></a>
+     </div>
+    </div>
+   </section><!-- CORRIDOR SECTION -->
+   <section id="corridor" style="padding:120px 24px;max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:80px;">
+     <div class="reflection-line fade-up" style="max-width:80px;margin:0 auto 32px;"></div>
+     <h2 id="corridorTitle" class="fade-up" style="font-family:var(--font-heading);font-weight:300;font-size:clamp(1.8rem,4vw,3rem);margin:0 0 16px;letter-spacing:2px;">The Corridor</h2>
+     <p class="fade-up" style="color:var(--secondary);font-weight:200;font-size:.8rem;letter-spacing:3px;text-transform:uppercase;">Mirrored panels, infinite depth</p>
+    </div>
+    <div class="sym-grid" style="max-width:1000px;margin:0 auto;">
+     <div class="mirror-left shimmer" style="padding:32px;"><img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&amp;q=80" alt="Modern corridor architecture" style="width:100%;aspect-ratio:3/4;object-fit:cover;filter:grayscale(.3);" loading="lazy" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+      <div style="margin-top:24px;">
+       <svg width="20" height="20" style="color:var(--accent);opacity:.5;margin-bottom:12px;">
+        <use href="#ico-frame" />
+       </svg>
+       <h3 style="font-family:var(--font-heading);font-weight:300;font-size:1.4rem;margin:0 0 8px;">Reflected Symmetry</h3>
+       <p style="color:var(--secondary);font-weight:200;font-size:.85rem;line-height:1.7;">Every element finds its twin. Layouts that mirror across an invisible axis, creating depth that pulls the eye inward.</p>
+      </div>
+     </div>
+     <div style="background:linear-gradient(180deg,transparent,var(--accent),transparent);opacity:.15;" class="fade-up"></div>
+     <div class="mirror-right shimmer" style="padding:32px;"><img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&amp;q=80" alt="Glass surface reflections" style="width:100%;aspect-ratio:3/4;object-fit:cover;filter:grayscale(.3);" loading="lazy" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+      <div style="margin-top:24px;">
+       <svg width="20" height="20" style="color:var(--accent);opacity:.5;margin-bottom:12px;">
+        <use href="#ico-camera" />
+       </svg>
+       <h3 style="font-family:var(--font-heading);font-weight:300;font-size:1.4rem;margin:0 0 8px;">Infinite Corridor</h3>
+       <p style="color:var(--secondary);font-weight:200;font-size:.85rem;line-height:1.7;">Scroll becomes a journey. Each section reveals itself in pairs, like walking through a hall of perfectly placed mirrors.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- HIGHLIGHTS -->
+   <section id="highlights" style="padding:120px 24px;background:var(--surface);">
+    <div style="max-width:1200px;margin:0 auto;">
+     <div style="text-align:center;margin-bottom:80px;">
+      <div class="reflection-line fade-up" style="max-width:80px;margin:0 auto 32px;"></div>
+      <h2 id="highlightsTitle" class="fade-up" style="font-family:var(--font-heading);font-weight:300;font-size:clamp(1.8rem,4vw,3rem);margin:0 0 16px;letter-spacing:2px;">Highlights</h2>
+      <p class="fade-up" style="color:var(--secondary);font-weight:200;font-size:.8rem;letter-spacing:3px;text-transform:uppercase;">What makes this different</p>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:48px;max-width:900px;margin:0 auto;">
+      <div class="fade-up" style="text-align:center;padding:40px 24px;border:1px solid rgba(201,185,154,.08);transition:border-color .4s;" onmouseover="this.style.borderColor='rgba(201,185,154,.25)'" onmouseout="this.style.borderColor='rgba(201,185,154,.08)'">
+       <svg width="28" height="28" style="color:var(--accent);opacity:.6;margin-bottom:20px;">
+        <use href="#ico-mirror" />
+       </svg>
+       <h3 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;margin:0 0 12px;">Mirror Layouts</h3>
+       <p style="color:var(--secondary);font-weight:200;font-size:.82rem;line-height:1.7;">Symmetrical grids that create visual harmony and cinematic depth across every viewport.</p>
+      </div>
+      <div class="fade-up" style="text-align:center;padding:40px 24px;border:1px solid rgba(201,185,154,.08);transition-delay:.15s;transition:border-color .4s;" onmouseover="this.style.borderColor='rgba(201,185,154,.25)'" onmouseout="this.style.borderColor='rgba(201,185,154,.08)'">
+       <svg width="28" height="28" style="color:var(--accent);opacity:.6;margin-bottom:20px;">
+        <use href="#ico-frame" />
+       </svg>
+       <h3 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;margin:0 0 12px;">Premium Type</h3>
+       <p style="color:var(--secondary);font-weight:200;font-size:.82rem;line-height:1.7;">High-contrast typography with generous spacing. Every letter breathes luxury.</p>
+      </div>
+      <div class="fade-up" style="text-align:center;padding:40px 24px;border:1px solid rgba(201,185,154,.08);transition-delay:.3s;transition:border-color .4s;" onmouseover="this.style.borderColor='rgba(201,185,154,.25)'" onmouseout="this.style.borderColor='rgba(201,185,154,.08)'">
+       <svg width="28" height="28" style="color:var(--accent);opacity:.6;margin-bottom:20px;">
+        <use href="#ico-camera" />
+       </svg>
+       <h3 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;margin:0 0 12px;">Reveal Motion</h3>
+       <p style="color:var(--secondary);font-weight:200;font-size:.82rem;line-height:1.7;">Mirrored animations that unveil content in pairs. Scroll triggers cinematic sequences.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- PROOF / TESTIMONIALS -->
+   <section id="proof" style="padding:120px 24px;max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:80px;">
+     <div class="reflection-line fade-up" style="max-width:80px;margin:0 auto 32px;"></div>
+     <h2 id="proofTitle" class="fade-up" style="font-family:var(--font-heading);font-weight:300;font-size:clamp(1.8rem,4vw,3rem);margin:0 0 16px;letter-spacing:2px;">Proof</h2>
+    </div>
+    <div class="sym-grid" style="max-width:900px;margin:0 auto;">
+     <div class="mirror-left" style="padding:40px;">
+      <svg width="24" height="24" style="color:var(--accent);opacity:.4;margin-bottom:20px;">
+       <use href="#ico-quote" />
+      </svg>
+      <p style="font-family:var(--font-heading);font-weight:300;font-size:1.3rem;line-height:1.6;font-style:italic;margin:0 0 24px;">"The symmetry creates an experience no other template delivers. Our conversion rate doubled."</p>
+      <p style="color:var(--secondary);font-size:.75rem;letter-spacing:2px;text-transform:uppercase;font-weight:300;">Maren S. — Creative Director</p>
+     </div>
+     <div style="background:linear-gradient(180deg,transparent,var(--accent),transparent);opacity:.15;" class="fade-up"></div>
+     <div class="mirror-right" style="padding:40px;">
+      <svg width="24" height="24" style="color:var(--accent);opacity:.4;margin-bottom:20px;">
+       <use href="#ico-quote" />
+      </svg>
+      <p style="font-family:var(--font-heading);font-weight:300;font-size:1.3rem;line-height:1.6;font-style:italic;margin:0 0 24px;">"Clients spend 3x longer on the page. The corridor effect is hypnotic. Never going back."</p>
+      <p style="color:var(--secondary);font-size:.75rem;letter-spacing:2px;text-transform:uppercase;font-weight:300;">Tobias K. — Studio Lead</p>
+     </div>
+    </div>
+   </section><!-- FAQ -->
+   <section id="faq" style="padding:120px 24px;background:var(--surface);">
+    <div style="max-width:700px;margin:0 auto;">
+     <div style="text-align:center;margin-bottom:64px;">
+      <div class="reflection-line fade-up" style="max-width:80px;margin:0 auto 32px;"></div>
+      <h2 class="fade-up" style="font-family:var(--font-heading);font-weight:300;font-size:clamp(1.8rem,4vw,3rem);margin:0;letter-spacing:2px;">FAQ</h2>
+     </div>
+     <div id="faqList"></div>
+    </div>
+   </section><!-- BUY / BOTTOM CTA -->
+   <section id="buy" style="padding:140px 24px;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;overflow:hidden;"><img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1600&amp;q=80" alt="Luxury minimalist interior" style="width:100%;height:100%;object-fit:cover;opacity:.15;" loading="lazy" onerror="this.style.background='#111';this.alt='Image unavailable';">
+    </div>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,var(--bg),rgba(10,10,10,.85));"></div>
+    <div style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent,rgba(201,185,154,.12),transparent);"></div>
+    <div style="position:relative;z-index:2;text-align:center;max-width:600px;margin:0 auto;">
+     <div class="fade-up">
+      <svg width="28" height="28" style="color:var(--accent);opacity:.5;margin:0 auto 28px;">
+       <use href="#ico-cart" />
+      </svg>
+     </div>
+     <p id="bottomCtaText" class="fade-up" style="font-family:var(--font-heading);font-weight:300;font-size:clamp(1.6rem,3.5vw,2.8rem);line-height:1.2;margin:0 0 40px;letter-spacing:1px;">Make the scroll feel endless.</p>
+     <div class="fade-up" style="transition-delay:.3s;"><a href="#" class="cta-pulse" style="display:inline-flex;align-items:center;gap:10px;padding:16px 40px;background:var(--accent);color:var(--bg);font-size:.75rem;letter-spacing:3px;text-transform:uppercase;text-decoration:none;font-weight:500;transition:background .3s;" onmouseover="this.style.background='#b8a888'" onmouseout="this.style.background='var(--accent)'" onclick="event.preventDefault();">Get Template + License 
+       <svg width="14" height="14">
+        <use href="#ico-arrow" />
+       </svg></a>
+     </div>
+     <p class="fade-up" style="margin-top:24px;color:var(--secondary);font-size:.7rem;letter-spacing:2px;font-weight:200;text-transform:uppercase;transition-delay:.5s;">One-time purchase. Lifetime access.</p>
+    </div>
+   </section><!-- FOOTER -->
+   <footer style="padding:40px 24px;border-top:1px solid rgba(201,185,154,.06);text-align:center;">
+    <p style="color:var(--secondary);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;font-weight:200;margin:0;">MirrorCorridor — Designed for those who see both sides.</p>
+   </footer>
+  </div><!-- end scroll-wrapper -->
+  <script>
+const defaultConfig = {
+  hero_title: 'A page with reflection.',
+  hero_subtitle: 'Symmetry that holds attention.',
+  cta_primary: 'Get Template + License',
+  cta_secondary: 'Walk the Corridor',
+  corridor_title: 'The Corridor',
+  highlights_title: 'Highlights',
+  proof_title: 'Proof',
+  bottom_cta_text: 'Make the scroll feel endless.',
+  background_color: '#0a0a0a',
+  surface_color: '#141414',
+  text_color: '#e8e4df',
+  accent_color: '#c9b99a',
+  secondary_color: '#6b6560',
+  font_family: 'Cormorant Garamond',
+  font_size: 16
+};
+
+// FAQ data
+const faqs = [
+  { q: 'What formats are included?', a: 'You receive fully responsive HTML/CSS ready for any platform—Canva, Webflow, Framer, or self-hosted.' },
+  { q: 'Can I customize the colors and fonts?', a: 'Every element is built with CSS variables. Change the palette in seconds to match your brand.' },
+  { q: 'Is this a one-time purchase?', a: 'Yes. Pay once, use forever. Includes all future updates to the template.' },
+  { q: 'Does it work on mobile?', a: 'Fully responsive. The mirror effect gracefully adapts to single-column layouts on smaller screens.' }
+];
+
+function buildFAQ() {
+  const list = document.getElementById('faqList');
+  list.innerHTML = '';
+  faqs.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'fade-up';
+    item.style.cssText = `border-bottom:1px solid rgba(201,185,154,.08);transition-delay:${i * .1}s;`;
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;display:flex;justify-content:space-between;align-items:center;padding:24px 0;background:none;border:none;cursor:pointer;color:var(--text);font-family:var(--font-heading);font-size:1.1rem;font-weight:300;text-align:left;letter-spacing:.5px;';
+    btn.innerHTML = f.q + '<svg width="16" height="16" style="color:var(--accent);opacity:.5;flex-shrink:0;margin-left:16px;transition:transform .3s;"><use href="#ico-arrow"/></svg>';
+    const ans = document.createElement('div');
+    ans.style.cssText = 'max-height:0;overflow:hidden;transition:max-height .4s ease,padding .4s;';
+    ans.innerHTML = `<p style="color:var(--secondary);font-size:.85rem;line-height:1.7;font-weight:200;padding:0 0 24px;">${f.a}</p>`;
+    let open = false;
+    btn.addEventListener('click', () => {
+      open = !open;
+      ans.style.maxHeight = open ? '200px' : '0';
+      btn.querySelector('svg').style.transform = open ? 'rotate(90deg)' : '';
+    });
+    item.appendChild(btn);
+    item.appendChild(ans);
+    list.appendChild(item);
+  });
+}
+buildFAQ();
+
+// Intersection Observer for reveals
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); observer.unobserve(e.target); }});
+}, { threshold: 0.15, root: document.getElementById('scrollWrapper') });
+
+document.querySelectorAll('.fade-up,.mirror-left,.mirror-right').forEach(el => observer.observe(el));
+
+// Element SDK
+async function onConfigChange(config) {
+  const c = { ...defaultConfig, ...config };
+  const r = document.documentElement;
+  r.style.setProperty('--bg', c.background_color);
+  r.style.setProperty('--surface', c.surface_color);
+  r.style.setProperty('--text', c.text_color);
+  r.style.setProperty('--accent', c.accent_color);
+  r.style.setProperty('--secondary', c.secondary_color);
+  r.style.setProperty('--font-heading', c.font_family + ', serif');
+  r.style.setProperty('--base-size', c.font_size);
+
+  const bs = c.font_size;
+  document.querySelectorAll('h1').forEach(el => el.style.fontSize = '');
+  document.querySelectorAll('h2').forEach(el => el.style.fontSize = `${bs * 1.9}px`);
+  document.querySelectorAll('h3').forEach(el => el.style.fontSize = `${bs * 1.2}px`);
+  document.querySelectorAll('p').forEach(el => { if (!el.closest('nav') && !el.closest('footer')) el.style.fontSize = `${bs * 0.85}px`; });
+
+  document.getElementById('heroTitle').textContent = c.hero_title;
+  document.getElementById('heroSubtitle').textContent = c.hero_subtitle;
+  document.getElementById('ctaPrimary').childNodes[0].textContent = c.cta_primary + ' ';
+  document.getElementById('ctaSecondary').childNodes[0].textContent = c.cta_secondary + ' ';
+  document.getElementById('corridorTitle').textContent = c.corridor_title;
+  document.getElementById('highlightsTitle').textContent = c.highlights_title;
+  document.getElementById('proofTitle').textContent = c.proof_title;
+  document.getElementById('bottomCtaText').textContent = c.bottom_cta_text;
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange,
+  mapToCapabilities: (config) => {
+    const c = { ...defaultConfig, ...config };
+    function color(key) {
+      return {
+        get: () => c[key] || defaultConfig[key],
+        set: (v) => { c[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+      };
+    }
+    return {
+      recolorables: [
+        color('background_color'),
+        color('surface_color'),
+        color('text_color'),
+        color('accent_color'),
+        color('secondary_color')
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => c.font_family || defaultConfig.font_family,
+        set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => c.font_size || defaultConfig.font_size,
+        set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    };
+  },
+  mapToEditPanelValues: (config) => {
+    const c = { ...defaultConfig, ...config };
+    return new Map([
+      ['hero_title', c.hero_title],
+      ['hero_subtitle', c.hero_subtitle],
+      ['cta_primary', c.cta_primary],
+      ['cta_secondary', c.cta_secondary],
+      ['corridor_title', c.corridor_title],
+      ['highlights_title', c.highlights_title],
+      ['proof_title', c.proof_title],
+      ['bottom_cta_text', c.bottom_cta_text]
+    ]);
+  }
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef830c01560a155',t:'MTc3NjczMDQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

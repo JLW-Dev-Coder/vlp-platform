@@ -1,1 +1,588 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/cf954328-740a-4397-99f1-bc09d0b8bff6 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PosterPulse Wall</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Barlow+Condensed:wght@300;400;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        heading: ['"Bebas Neue"', 'sans-serif'],
+        body: ['"Barlow Condensed"', 'sans-serif']
+      },
+      colors: {
+        neon: '#00ff87',
+        neonPink: '#ff2d7b',
+        neonBlue: '#00d4ff',
+        dark: '#0a0a0f',
+        darkCard: '#12121a'
+      }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+* { scrollbar-width: thin; scrollbar-color: #00ff87 #0a0a0f; }
+.app-root { height: 100%; overflow-y: auto; overflow-x: hidden; background: #0a0a0f; }
+
+/* Glow flicker */
+@keyframes glowFlicker {
+  0%, 100% { opacity: 1; text-shadow: 0 0 20px rgba(0,255,135,0.6), 0 0 60px rgba(0,255,135,0.2); }
+  50% { opacity: 0.92; text-shadow: 0 0 10px rgba(0,255,135,0.3), 0 0 30px rgba(0,255,135,0.1); }
+}
+.glow-flicker { animation: glowFlicker 3s ease-in-out infinite; }
+
+/* CTA pulse */
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,135,0.5); }
+  50% { box-shadow: 0 0 20px 6px rgba(0,255,135,0.15); }
+}
+.cta-pulse { animation: ctaPulse 2.5s ease-in-out infinite; }
+
+/* Poster tile reveal */
+@keyframes posterReveal {
+  from { opacity: 0; transform: translateY(40px) scale(0.95) rotate(-1deg); }
+  to { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+.poster-tile {
+  opacity: 0;
+  animation: posterReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Stagger classes */
+.stagger-1 { animation-delay: 0.08s; }
+.stagger-2 { animation-delay: 0.18s; }
+.stagger-3 { animation-delay: 0.28s; }
+.stagger-4 { animation-delay: 0.38s; }
+.stagger-5 { animation-delay: 0.48s; }
+.stagger-6 { animation-delay: 0.58s; }
+.stagger-7 { animation-delay: 0.68s; }
+.stagger-8 { animation-delay: 0.78s; }
+
+/* Scroll reveal */
+.scroll-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Badge sticker */
+.badge-sticker {
+  clip-path: polygon(50% 0%, 61% 11%, 98% 5%, 85% 38%, 100% 65%, 72% 68%, 50% 100%, 28% 68%, 0% 65%, 15% 38%, 2% 5%, 39% 11%);
+}
+
+/* Neon line */
+@keyframes neonSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.neon-line-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,255,135,0.6), transparent);
+  animation: neonSweep 3s ease-in-out infinite;
+}
+
+/* Nav active */
+.nav-link { position: relative; }
+.nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: #00ff87; transition: width 0.3s; }
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+/* Poster hover */
+.poster-card:hover .poster-img { transform: scale(1.08); }
+.poster-card:hover .poster-overlay { opacity: 1; }
+
+/* Star rating */
+.star-filled { color: #00ff87; }
+.star-empty { color: #333; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-root" id="appRoot"><!-- SVG Icons (thin line, consistent) -->
+   <svg style="display:none"><symbol id="icon-ticket" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+     <path d="M13 5v2" />
+     <path d="M13 17v2" />
+     <path d="M13 11v2" />
+    </symbol> <symbol id="icon-speaker" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+     <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+     <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </symbol> <symbol id="icon-calendar" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <rect x="3" y="4" width="18" height="18" rx="2" />
+     <line x1="16" y1="2" x2="16" y2="6" />
+     <line x1="8" y1="2" x2="8" y2="6" />
+     <line x1="3" y1="10" x2="21" y2="10" />
+    </symbol> <symbol id="icon-lightning" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </symbol> <symbol id="icon-mappin" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+     <circle cx="12" cy="10" r="3" />
+    </symbol> <symbol id="icon-share" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <circle cx="18" cy="5" r="3" />
+     <circle cx="6" cy="12" r="3" />
+     <circle cx="18" cy="19" r="3" />
+     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+    </symbol>
+   </svg><!-- STICKY NAV -->
+   <nav id="stickyNav" class="fixed top-0 left-0 w-full z-50 bg-dark/80 backdrop-blur-lg border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14"><a href="#home" class="font-heading text-2xl text-neon tracking-wider glow-flicker">PP</a>
+     <div class="hidden md:flex gap-6"><a href="#home" class="nav-link text-sm font-body font-light text-white/70 hover:text-neon transition-colors tracking-wide uppercase">Home</a> <a href="#posters" class="nav-link text-sm font-body font-light text-white/70 hover:text-neon transition-colors tracking-wide uppercase">Posters</a> <a href="#details" class="nav-link text-sm font-body font-light text-white/70 hover:text-neon transition-colors tracking-wide uppercase">Details</a> <a href="#lineup" class="nav-link text-sm font-body font-light text-white/70 hover:text-neon transition-colors tracking-wide uppercase">Lineup</a> <a href="#reviews" class="nav-link text-sm font-body font-light text-white/70 hover:text-neon transition-colors tracking-wide uppercase">Reviews</a> <a href="#download" class="nav-link text-sm font-body font-light text-white/70 hover:text-neon transition-colors tracking-wide uppercase">Download</a>
+     </div><button id="mobileMenuBtn" class="md:hidden text-white/70">
+      <svg class="w-6 h-6" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+      </svg></button>
+    </div>
+    <div id="mobileMenu" class="hidden md:hidden bg-dark/95 border-t border-white/5 pb-4"><a href="#home" class="block px-6 py-2 text-sm font-body text-white/70 hover:text-neon">Home</a> <a href="#posters" class="block px-6 py-2 text-sm font-body text-white/70 hover:text-neon">Posters</a> <a href="#details" class="block px-6 py-2 text-sm font-body text-white/70 hover:text-neon">Details</a> <a href="#lineup" class="block px-6 py-2 text-sm font-body text-white/70 hover:text-neon">Lineup</a> <a href="#reviews" class="block px-6 py-2 text-sm font-body text-white/70 hover:text-neon">Reviews</a> <a href="#download" class="block px-6 py-2 text-sm font-body text-white/70 hover:text-neon">Download</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative pt-14 min-h-[100%] flex items-center justify-center overflow-hidden"><!-- Animated bg grid -->
+    <div class="absolute inset-0" style="background-image: radial-gradient(circle at 20% 50%, rgba(0,255,135,0.04) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,45,123,0.04) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(0,212,255,0.03) 0%, transparent 50%);"></div>
+    <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 60px 60px;"></div><!-- Floating poster fragments -->
+    <div class="absolute top-[15%] left-[8%] w-20 h-28 rounded-sm overflow-hidden opacity-20 rotate-[-8deg]" style="animation: posterReveal 1.2s 0.3s both;"><img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=200&amp;q=60" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#1a1a2e';">
+    </div>
+    <div class="absolute top-[25%] right-[6%] w-16 h-24 rounded-sm overflow-hidden opacity-15 rotate-[5deg]" style="animation: posterReveal 1.2s 0.5s both;"><img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&amp;q=60" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#1a1a2e';">
+    </div>
+    <div class="absolute bottom-[20%] left-[12%] w-14 h-20 rounded-sm overflow-hidden opacity-15 rotate-[10deg]" style="animation: posterReveal 1.2s 0.7s both;"><img src="https://images.unsplash.com/photo-1504509546545-e000b4a62425?w=200&amp;q=60" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#1a1a2e';">
+    </div>
+    <div class="absolute bottom-[15%] right-[10%] w-18 h-24 rounded-sm overflow-hidden opacity-10 rotate-[-4deg]" style="animation: posterReveal 1.2s 0.9s both;"><img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&amp;q=60" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#1a1a2e';">
+    </div>
+    <div class="relative z-10 text-center px-4 max-w-4xl mx-auto"><!-- Sticker badge -->
+     <div class="inline-block mb-6">
+      <div class="badge-sticker bg-neonPink w-20 h-20 flex items-center justify-center mx-auto mb-2"><span class="font-heading text-white text-xs leading-none text-center" style="font-size:10px;">NEW<br>
+        DROP</span>
+      </div>
+     </div>
+     <h1 id="heroTitle" class="font-heading text-6xl sm:text-8xl md:text-[10rem] leading-[0.85] text-white glow-flicker tracking-wider mb-4">Your launch<br>
+      looks alive.</h1>
+     <p id="heroSubtitle" class="font-body font-light text-lg sm:text-xl text-white/50 max-w-xl mx-auto mb-10 tracking-wide">A motion-poster layout built for attention.</p>
+     <div class="flex flex-col sm:flex-row gap-4 justify-center"><a href="#download" id="ctaPrimary" class="cta-pulse inline-flex items-center gap-2 px-8 py-4 bg-neon text-dark font-body font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-white transition-colors">
+       <svg class="w-4 h-4">
+        <use href="#icon-lightning" />
+       </svg> Get Template + License </a> <a href="#posters" id="ctaSecondary" class="inline-flex items-center gap-2 px-8 py-4 border border-white/20 text-white/80 font-body font-light text-sm uppercase tracking-widest rounded-sm hover:border-neon hover:text-neon transition-colors"> See Posters </a>
+     </div>
+    </div><!-- Neon line accent at bottom -->
+    <div class="absolute bottom-0 left-0 w-full h-[1px] bg-white/5 neon-line-sweep overflow-hidden"></div>
+   </section><!-- POSTERS GRID -->
+   <section id="posters" class="relative py-24 px-4">
+    <div class="max-w-7xl mx-auto">
+     <div class="scroll-reveal mb-16 text-center"><span class="font-body text-neon text-xs uppercase tracking-[0.3em] block mb-2">The Wall</span>
+      <h2 class="font-heading text-5xl sm:text-7xl text-white tracking-wider">Poster Collection</h2>
+     </div>
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" id="posterGrid"><!-- Poster 1 -->
+      <div class="poster-tile stagger-1 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] cursor-pointer"><img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500&amp;q=75" alt="Concert crowd" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)'; this.alt='Image unavailable';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-4"><span class="font-heading text-2xl text-neon tracking-wider">NEON CROWDS</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">Concert Series</span>
+       </div>
+       <div class="absolute top-2 right-2 bg-neonPink text-white font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded-sm">
+        Live
+       </div>
+      </div><!-- Poster 2 -->
+      <div class="poster-tile stagger-2 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] cursor-pointer"><img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&amp;q=75" alt="Nightlife lights" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-4"><span class="font-heading text-2xl text-neonBlue tracking-wider">LIGHT WAVES</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">Festival Edit</span>
+       </div>
+      </div><!-- Poster 3 - tall -->
+      <div class="poster-tile stagger-3 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] md:row-span-2 md:aspect-auto cursor-pointer"><img src="https://images.unsplash.com/photo-1504509546545-e000b4a62425?w=600&amp;q=75" alt="Stage lights" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-5"><span class="font-heading text-3xl text-neon tracking-wider">STAGE FIRE</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">Headline Act</span>
+       </div>
+       <div class="absolute top-3 left-3">
+        <div class="badge-sticker bg-neon w-12 h-12 flex items-center justify-center"><span class="font-heading text-dark text-[9px] leading-none">HOT</span>
+        </div>
+       </div>
+      </div><!-- Poster 4 -->
+      <div class="poster-tile stagger-4 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] cursor-pointer"><img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&amp;q=75" alt="Festival posters" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-4"><span class="font-heading text-2xl text-neonPink tracking-wider">ECHO DROP</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">Underground</span>
+       </div>
+      </div><!-- Poster 5 -->
+      <div class="poster-tile stagger-5 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] cursor-pointer"><img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&amp;q=75" alt="Creative studio" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-4"><span class="font-heading text-2xl text-white tracking-wider">PULSE ROOM</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">Immersive</span>
+       </div>
+      </div><!-- Poster 6 -->
+      <div class="poster-tile stagger-6 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] cursor-pointer"><img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=500&amp;q=75" alt="Urban night" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-4"><span class="font-heading text-2xl text-neonBlue tracking-wider">MIDNIGHT RUN</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">After Hours</span>
+       </div>
+       <div class="absolute top-2 right-2 bg-neonBlue text-dark font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded-sm">
+        Sold Out
+       </div>
+      </div><!-- Poster 7 -->
+      <div class="poster-tile stagger-7 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] cursor-pointer"><img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&amp;q=75" alt="Street wall texture" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-4"><span class="font-heading text-2xl text-neon tracking-wider">WALL TALK</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">Street Art</span>
+       </div>
+      </div><!-- Poster 8 -->
+      <div class="poster-tile stagger-8 poster-card relative group rounded-sm overflow-hidden aspect-[3/4] cursor-pointer"><img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&amp;q=75" alt="Concert lights" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';">
+       <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent opacity-0 transition-opacity duration-500 flex flex-col justify-end p-4"><span class="font-heading text-2xl text-neonPink tracking-wider">FINAL ACT</span> <span class="font-body text-xs text-white/60 uppercase tracking-wider">Closing Night</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DETAILS -->
+   <section id="details" class="relative py-24 px-4">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at 30% 50%, rgba(0,255,135,0.03) 0%, transparent 60%);"></div>
+    <div class="max-w-5xl mx-auto relative z-10">
+     <div class="scroll-reveal mb-16 text-center"><span class="font-body text-neonPink text-xs uppercase tracking-[0.3em] block mb-2">What's Inside</span>
+      <h2 class="font-heading text-5xl sm:text-7xl text-white tracking-wider">Event Details</h2>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6 hover:border-neon/30 transition-colors group">
+       <svg class="w-8 h-8 text-neon mb-4 group-hover:drop-shadow-[0_0_8px_rgba(0,255,135,0.5)] transition-all">
+        <use href="#icon-calendar" />
+       </svg>
+       <h3 class="font-heading text-xl text-white tracking-wider mb-2">DATE &amp; TIME</h3>
+       <p class="font-body font-light text-white/40 text-sm leading-relaxed">December 14, 2025 — Doors at 8PM. Three stages, one unforgettable night.</p>
+      </div>
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6 hover:border-neonPink/30 transition-colors group">
+       <svg class="w-8 h-8 text-neonPink mb-4 group-hover:drop-shadow-[0_0_8px_rgba(255,45,123,0.5)] transition-all">
+        <use href="#icon-mappin" />
+       </svg>
+       <h3 class="font-heading text-xl text-white tracking-wider mb-2">LOCATION</h3>
+       <p class="font-body font-light text-white/40 text-sm leading-relaxed">Warehouse District, Block C — the raw concrete venue with the best acoustics in the city.</p>
+      </div>
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6 hover:border-neonBlue/30 transition-colors group">
+       <svg class="w-8 h-8 text-neonBlue mb-4 group-hover:drop-shadow-[0_0_8px_rgba(0,212,255,0.5)] transition-all">
+        <use href="#icon-ticket" />
+       </svg>
+       <h3 class="font-heading text-xl text-white tracking-wider mb-2">TICKETS</h3>
+       <p class="font-body font-light text-white/40 text-sm leading-relaxed">Early bird from $45. VIP includes backstage access and exclusive merch drop.</p>
+      </div>
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6 hover:border-neon/30 transition-colors group">
+       <svg class="w-8 h-8 text-neon mb-4 group-hover:drop-shadow-[0_0_8px_rgba(0,255,135,0.5)] transition-all">
+        <use href="#icon-speaker" />
+       </svg>
+       <h3 class="font-heading text-xl text-white tracking-wider mb-2">SOUND</h3>
+       <p class="font-body font-light text-white/40 text-sm leading-relaxed">140dB Funktion-One rig. Subwoofer arrays tuned for chest-rattling bass.</p>
+      </div>
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6 hover:border-neonPink/30 transition-colors group">
+       <svg class="w-8 h-8 text-neonPink mb-4 group-hover:drop-shadow-[0_0_8px_rgba(255,45,123,0.5)] transition-all">
+        <use href="#icon-lightning" />
+       </svg>
+       <h3 class="font-heading text-xl text-white tracking-wider mb-2">VISUALS</h3>
+       <p class="font-body font-light text-white/40 text-sm leading-relaxed">16K projection mapping. Real-time generative visuals synced to every beat.</p>
+      </div>
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6 hover:border-neonBlue/30 transition-colors group">
+       <svg class="w-8 h-8 text-neonBlue mb-4 group-hover:drop-shadow-[0_0_8px_rgba(0,212,255,0.5)] transition-all">
+        <use href="#icon-share" />
+       </svg>
+       <h3 class="font-heading text-xl text-white tracking-wider mb-2">SHARE</h3>
+       <p class="font-body font-light text-white/40 text-sm leading-relaxed">Built-in social templates. Download and post to get your crew there.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- LINEUP -->
+   <section id="lineup" class="relative py-24 px-4 overflow-hidden">
+    <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size: 40px 40px;"></div>
+    <div class="max-w-4xl mx-auto relative z-10">
+     <div class="scroll-reveal mb-16 text-center"><span class="font-body text-neonBlue text-xs uppercase tracking-[0.3em] block mb-2">Who's On</span>
+      <h2 class="font-heading text-5xl sm:text-7xl text-white tracking-wider">The Lineup</h2>
+     </div>
+     <div class="space-y-1">
+      <div class="scroll-reveal flex items-center justify-between py-5 px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors group cursor-pointer">
+       <div class="flex items-center gap-4"><span class="font-heading text-3xl sm:text-4xl text-white group-hover:text-neon transition-colors tracking-wider">KIRA NOVA</span>
+        <div class="hidden sm:block badge-sticker bg-neonPink w-8 h-8 flex items-center justify-center">
+         <span class="font-heading text-white text-[7px]">NEW</span>
+        </div>
+       </div><span class="font-body text-xs text-white/30 uppercase tracking-wider">Headliner</span>
+      </div>
+      <div class="scroll-reveal flex items-center justify-between py-5 px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors group cursor-pointer"><span class="font-heading text-3xl sm:text-4xl text-white group-hover:text-neonPink transition-colors tracking-wider">BASS THEORY</span> <span class="font-body text-xs text-white/30 uppercase tracking-wider">Main Stage</span>
+      </div>
+      <div class="scroll-reveal flex items-center justify-between py-5 px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors group cursor-pointer"><span class="font-heading text-3xl sm:text-4xl text-white group-hover:text-neonBlue transition-colors tracking-wider">PHANTOM FREQ</span> <span class="font-body text-xs text-white/30 uppercase tracking-wider">Stage B</span>
+      </div>
+      <div class="scroll-reveal flex items-center justify-between py-5 px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors group cursor-pointer"><span class="font-heading text-3xl sm:text-4xl text-white group-hover:text-neon transition-colors tracking-wider">VOID SIGNAL</span> <span class="font-body text-xs text-white/30 uppercase tracking-wider">Stage C</span>
+      </div>
+      <div class="scroll-reveal flex items-center justify-between py-5 px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors group cursor-pointer"><span class="font-heading text-3xl sm:text-4xl text-white group-hover:text-neonPink transition-colors tracking-wider">LUX PATTERN</span> <span class="font-body text-xs text-white/30 uppercase tracking-wider">Opening</span>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="relative py-24 px-4">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at 70% 50%, rgba(255,45,123,0.03) 0%, transparent 60%);"></div>
+    <div class="max-w-5xl mx-auto relative z-10">
+     <div class="scroll-reveal mb-16 text-center"><span class="font-body text-neon text-xs uppercase tracking-[0.3em] block mb-2">What They Say</span>
+      <h2 class="font-heading text-5xl sm:text-7xl text-white tracking-wider">Reviews</h2>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6">
+       <div class="flex gap-1 mb-3">
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="font-body font-light text-white/50 text-sm leading-relaxed mb-4">"The poster wall literally made people stop scrolling. Our launch got 3x the engagement."</p><span class="font-body font-semibold text-white text-xs uppercase tracking-wider">— MIKA T., Creative Director</span>
+      </div>
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6">
+       <div class="flex gap-1 mb-3">
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="font-body font-light text-white/50 text-sm leading-relaxed mb-4">"Never seen anything like this on Canva. The animations are insane and it works on every device."</p><span class="font-body font-semibold text-white text-xs uppercase tracking-wider">— JAX R., Event Producer</span>
+      </div>
+      <div class="scroll-reveal bg-darkCard border border-white/5 rounded-sm p-6">
+       <div class="flex gap-1 mb-3">
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="w-4 h-4 star-empty" viewbox="0 0 24 24" fill="currentColor">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="font-body font-light text-white/50 text-sm leading-relaxed mb-4">"Used this for our album release. The staggered reveals gave it that cinematic feel we needed."</p><span class="font-body font-semibold text-white text-xs uppercase tracking-wider">— SORA K., Artist Manager</span>
+      </div>
+     </div>
+    </div>
+   </section><!-- DOWNLOAD / BOTTOM CTA -->
+   <section id="download" class="relative py-32 px-4 overflow-hidden">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 50%, rgba(0,255,135,0.06) 0%, transparent 60%);"></div>
+    <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px); background-size: 80px 80px;"></div>
+    <div class="max-w-3xl mx-auto relative z-10 text-center">
+     <div class="scroll-reveal">
+      <div class="badge-sticker bg-neon w-16 h-16 flex items-center justify-center mx-auto mb-8">
+       <svg class="w-6 h-6 text-dark">
+        <use href="#icon-lightning" />
+       </svg>
+      </div>
+      <h2 id="bottomCtaText" class="font-heading text-5xl sm:text-7xl md:text-8xl text-white tracking-wider glow-flicker mb-6">Make people<br>
+       stop scrolling.</h2>
+      <p class="font-body font-light text-white/40 text-lg mb-10 max-w-md mx-auto">Download PosterPulse Wall. Customize everything. Launch something unforgettable.</p><a href="#" id="bottomCtaBtn" class="cta-pulse inline-flex items-center gap-3 px-10 py-5 bg-neon text-dark font-body font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-white transition-colors" onclick="event.preventDefault();">
+       <svg class="w-5 h-5">
+        <use href="#icon-ticket" />
+       </svg> Get Template + License </a>
+     </div>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="border-t border-white/5 py-8 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4"><span class="font-heading text-xl text-neon tracking-wider glow-flicker">POSTERPULSE</span> <span class="font-body font-light text-white/20 text-xs tracking-wider">© 2025 PosterPulse Wall. All rights reserved.</span>
+    </div>
+   </footer>
+  </div>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'Your launch\nlooks alive.',
+  hero_subtitle: 'A motion-poster layout built for attention.',
+  cta_primary: 'Get Template + License',
+  cta_secondary: 'See Posters',
+  bottom_cta_text: 'Make people\nstop scrolling.',
+  background_color: '#0a0a0f',
+  surface_color: '#12121a',
+  text_color: '#ffffff',
+  primary_action_color: '#00ff87',
+  secondary_action_color: '#ff2d7b',
+  font_family: 'Bebas Neue',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  // Hero
+  const heroEl = document.getElementById('heroTitle');
+  const heroText = config.hero_title || defaultConfig.hero_title;
+  heroEl.innerHTML = heroText.replace(/\n/g, '<br>');
+
+  document.getElementById('heroSubtitle').textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+
+  const ctaPrimEl = document.getElementById('ctaPrimary');
+  ctaPrimEl.childNodes[ctaPrimEl.childNodes.length - 1].textContent = '\n        ' + (config.cta_primary || defaultConfig.cta_primary) + '\n      ';
+
+  document.getElementById('ctaSecondary').textContent = config.cta_secondary || defaultConfig.cta_secondary;
+
+  const bottomEl = document.getElementById('bottomCtaText');
+  const bottomText = config.bottom_cta_text || defaultConfig.bottom_cta_text;
+  bottomEl.innerHTML = bottomText.replace(/\n/g, '<br>');
+
+  // Colors
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const text = config.text_color || defaultConfig.text_color;
+  const primary = config.primary_action_color || defaultConfig.primary_action_color;
+  const secondary = config.secondary_action_color || defaultConfig.secondary_action_color;
+
+  const root = document.getElementById('appRoot');
+  root.style.backgroundColor = bg;
+
+  // Nav
+  document.getElementById('stickyNav').style.backgroundColor = bg + 'cc';
+
+  // Surface cards
+  document.querySelectorAll('.bg-darkCard').forEach(el => el.style.backgroundColor = surface);
+
+  // Text color
+  heroEl.style.color = text;
+  bottomEl.style.color = text;
+  document.querySelectorAll('.font-heading').forEach(el => {
+    if (!el.classList.contains('text-neon') && !el.classList.contains('text-neonPink') && !el.classList.contains('text-neonBlue')) {
+      // Only set white heading text
+    }
+  });
+
+  // Primary action (neon)
+  const neonStyle = `
+    .cta-pulse { background-color: ${primary}; }
+    .cta-pulse:hover { background-color: ${text}; }
+    .text-neon, .glow-flicker { color: ${primary}; }
+    .star-filled { color: ${primary}; }
+    .glow-flicker { text-shadow: 0 0 20px ${primary}66, 0 0 60px ${primary}33; }
+    .badge-sticker.bg-neon { background-color: ${primary}; }
+  `;
+
+  // Secondary action
+  const secStyle = `
+    .text-neonPink { color: ${secondary}; }
+    .bg-neonPink, .badge-sticker.bg-neonPink { background-color: ${secondary}; }
+  `;
+
+  let dynStyle = document.getElementById('dynStyles');
+  if (!dynStyle) { dynStyle = document.createElement('style'); dynStyle.id = 'dynStyles'; document.head.appendChild(dynStyle); }
+  dynStyle.textContent = neonStyle + secStyle;
+
+  // CTA buttons direct style
+  document.querySelectorAll('.cta-pulse').forEach(el => {
+    el.style.backgroundColor = primary;
+    el.style.color = bg;
+  });
+
+  // Font
+  const font = config.font_family || defaultConfig.font_family;
+  const baseSize = config.font_size || defaultConfig.font_size;
+  document.querySelectorAll('.font-heading').forEach(el => {
+    el.style.fontFamily = `${font}, "Bebas Neue", sans-serif`;
+  });
+  document.querySelectorAll('.font-body').forEach(el => {
+    el.style.fontFamily = `${font}, "Barlow Condensed", sans-serif`;
+    // Scale relative to base
+  });
+}
+
+// Scroll reveal observer
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+// Poster re-animate on scroll
+const posterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = 'running';
+    }
+  });
+}, { threshold: 0.05 });
+
+document.querySelectorAll('.poster-tile').forEach(el => posterObserver.observe(el));
+
+// Mobile menu
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('hidden');
+});
+document.querySelectorAll('#mobileMenu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobileMenu').classList.add('hidden'));
+});
+
+// Active nav on scroll
+const sections = ['home','posters','details','lineup','reviews','download'];
+const appRoot = document.getElementById('appRoot');
+appRoot.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(id => {
+    const sec = document.getElementById(id);
+    if (sec && sec.offsetTop - 80 <= appRoot.scrollTop) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+  });
+});
+
+// Smooth scroll for anchor links within the app-root
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    const id = a.getAttribute('href').slice(1);
+    const target = document.getElementById(id);
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Element SDK
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => { applyConfig(config); },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+      { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family,
+      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: {
+      get: () => config.font_size || defaultConfig.font_size,
+      set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+    }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['hero_title', config.hero_title || defaultConfig.hero_title],
+    ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+    ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+    ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+    ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+  ])
+});
+
+applyConfig(defaultConfig);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef834d900d2a155',t:'MTc3NjczMDY1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

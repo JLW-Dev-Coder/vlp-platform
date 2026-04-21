@@ -1,1 +1,813 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/e5175fcc-2593-433d-a7d0-b14a46ab91ff -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StackStage One-Pager</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        outfit: ['Outfit', 'sans-serif'],
+        mono: ['DM Mono', 'monospace']
+      }
+    }
+  }
+}
+</script>
+  <style>
+html { height: 100%; }
+body { height: 100%; margin: 0; }
+
+.glass {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.glass-card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05) inset;
+}
+
+.glass-card-light {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+
+/* Card stack animations */
+.stack-card {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease;
+}
+
+.stack-card.revealed {
+  transform: translateY(0) rotate(0deg) scale(1) !important;
+  opacity: 1 !important;
+}
+
+/* Scroll reveal */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* CTA pulse */
+@keyframes cta-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 54, 0.5); }
+  50% { box-shadow: 0 0 0 12px rgba(255, 90, 54, 0); }
+}
+.cta-pulse { animation: cta-pulse 2.5s infinite; }
+
+/* Float animation for hero cards */
+@keyframes float-a {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-12px) rotate(-6deg); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0) rotate(3deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-15px) rotate(-2deg); }
+}
+
+.float-a { animation: float-a 5s ease-in-out infinite; }
+.float-b { animation: float-b 4.5s ease-in-out infinite 0.5s; }
+.float-c { animation: float-c 5.5s ease-in-out infinite 1s; }
+
+/* Nav active */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #FF5A36;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+.nav-link.active::after { width: 100%; }
+
+/* Accordion */
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+}
+.faq-answer.open {
+  max-height: 300px;
+  padding-top: 12px;
+  padding-bottom: 4px;
+}
+
+/* Smooth scroll behavior */
+* { scroll-behavior: smooth; }
+
+/* Image cover helper */
+.img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Gradient mesh bg */
+.mesh-bg {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(255,90,54,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(120,80,255,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(30,30,40,1) 0%, rgba(12,12,18,1) 100%);
+}
+
+.accent-gradient {
+  background: linear-gradient(135deg, #FF5A36 0%, #FF8A5C 100%);
+}
+
+/* Thin line icon style */
+.icon-thin svg { stroke-width: 1.5; }
+
+/* Counter animation */
+@keyframes count-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-animate { animation: count-in 0.6s ease forwards; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="w-full h-full overflow-auto mesh-bg font-outfit text-white"><!-- SVG Icon Definitions -->
+   <svg class="hidden" xmlns="http://www.w3.org/2000/svg"><defs>
+     <symbol id="icon-layers" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+     </symbol>
+     <symbol id="icon-arrow" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+     </symbol>
+     <symbol id="icon-grid" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+     </symbol>
+     <symbol id="icon-star" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+     </symbol>
+     <symbol id="icon-lock" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+     </symbol>
+     <symbol id="icon-download" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+     </symbol>
+     <symbol id="icon-chevron-down" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+     </symbol>
+    </defs>
+   </svg><!-- STICKY NAV -->
+   <nav id="sticky-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500" style="background: transparent;">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"><a href="#home" class="flex items-center gap-2 text-lg font-semibold tracking-tight">
+      <svg class="w-5 h-5 text-orange-500">
+       <use href="#icon-layers" />
+      </svg><span>StackStage</span> </a>
+     <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-sm font-medium text-white/70 hover:text-white transition active">Home</a> <a href="#stack" class="nav-link text-sm font-medium text-white/70 hover:text-white transition">Stack</a> <a href="#features" class="nav-link text-sm font-medium text-white/70 hover:text-white transition">Features</a> <a href="#proof" class="nav-link text-sm font-medium text-white/70 hover:text-white transition">Proof</a> <a href="#faq" class="nav-link text-sm font-medium text-white/70 hover:text-white transition">FAQ</a> <a href="#download" class="nav-link text-sm font-medium text-white/70 hover:text-white transition">Download</a>
+     </div><button id="mobile-menu-btn" class="md:hidden text-white/70 hover:text-white">
+      <svg class="w-6 h-6">
+       <use href="#icon-grid" />
+      </svg></button>
+    </div><!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden glass mx-4 mb-4 rounded-2xl overflow-hidden">
+     <div class="flex flex-col p-4 gap-3"><a href="#home" class="text-sm font-medium text-white/70 hover:text-white transition" onclick="closeMobileMenu()">Home</a> <a href="#stack" class="text-sm font-medium text-white/70 hover:text-white transition" onclick="closeMobileMenu()">Stack</a> <a href="#features" class="text-sm font-medium text-white/70 hover:text-white transition" onclick="closeMobileMenu()">Features</a> <a href="#proof" class="text-sm font-medium text-white/70 hover:text-white transition" onclick="closeMobileMenu()">Proof</a> <a href="#faq" class="text-sm font-medium text-white/70 hover:text-white transition" onclick="closeMobileMenu()">FAQ</a> <a href="#download" class="text-sm font-medium text-white/70 hover:text-white transition" onclick="closeMobileMenu()">Download</a>
+     </div>
+    </div>
+   </nav><!-- HERO SECTION -->
+   <section id="home" class="relative w-full min-h-screen flex items-center pt-20 pb-16 overflow-hidden"><!-- Decorative floating cards behind hero -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+     <div class="float-a absolute top-[15%] left-[8%] w-48 h-32 rounded-2xl glass-card opacity-30" style="transform: rotate(-6deg);"></div>
+     <div class="float-b absolute top-[25%] right-[10%] w-40 h-56 rounded-2xl glass-card opacity-20" style="transform: rotate(3deg);"></div>
+     <div class="float-c absolute bottom-[20%] left-[15%] w-36 h-48 rounded-2xl glass-card opacity-15" style="transform: rotate(-2deg);"></div>
+     <div class="float-b absolute bottom-[15%] right-[20%] w-44 h-28 rounded-2xl glass-card opacity-25" style="transform: rotate(5deg);"></div>
+    </div>
+    <div class="relative z-10 max-w-6xl mx-auto px-6 w-full">
+     <div class="flex flex-col lg:flex-row items-center gap-16"><!-- Left copy -->
+      <div class="flex-1 text-center lg:text-left">
+       <div class="reveal-up inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-8">
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-layers" />
+        </svg><span class="text-xs font-mono text-white/60 tracking-wider uppercase">Card-Stack Layouts</span>
+       </div>
+       <h1 id="hero-title" class="reveal-up text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.05] tracking-tight mb-6">A page that<br>
+        performs.</h1>
+       <p id="hero-subtitle" class="reveal-up text-lg sm:text-xl text-white/50 font-light max-w-lg mb-10 leading-relaxed" style="transition-delay: 0.15s;">Card-stack storytelling that converts.</p>
+       <div class="reveal-up flex flex-col sm:flex-row items-center gap-4" style="transition-delay: 0.3s;"><a href="#download" id="hero-cta-primary" class="cta-pulse accent-gradient px-8 py-4 rounded-xl font-semibold text-sm tracking-wide hover:opacity-90 transition flex items-center gap-2"> Get Template + License 
+         <svg class="w-4 h-4">
+          <use href="#icon-arrow" />
+         </svg></a> <a href="#stack" id="hero-cta-secondary" class="glass px-8 py-4 rounded-xl font-medium text-sm text-white/70 hover:text-white transition flex items-center gap-2"> See the Stack 
+         <svg class="w-4 h-4">
+          <use href="#icon-chevron-down" />
+         </svg></a>
+       </div>
+      </div><!-- Right: Hero card stack preview -->
+      <div class="flex-1 relative w-full max-w-md h-[420px]">
+       <div class="absolute inset-0"><!-- Back card -->
+        <div class="stack-card absolute bottom-8 left-4 right-12 h-72 rounded-2xl glass-card overflow-hidden" style="transform: translateY(20px) rotate(-3deg) scale(0.92); opacity: 0;" data-stack-delay="0.4"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&amp;q=80" alt="Modern workspace" class="img-cover rounded-2xl" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#16213e)'; this.alt='Image unavailable';">
+        </div><!-- Middle card -->
+        <div class="stack-card absolute bottom-12 left-8 right-8 h-72 rounded-2xl glass-card-light overflow-hidden" style="transform: translateY(15px) rotate(1.5deg) scale(0.96); opacity: 0;" data-stack-delay="0.2"><img src="https://images.unsplash.com/photo-1586953208270-767fc4b82f96?w=500&amp;q=80" alt="Product flatlay" class="img-cover rounded-2xl" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#2d1b4e,#1a1a2e)'; this.alt='Image unavailable';">
+        </div><!-- Front card -->
+        <div class="stack-card absolute bottom-16 left-6 right-6 h-72 rounded-2xl overflow-hidden" style="transform: translateY(10px) rotate(0deg) scale(1); opacity: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15) inset;" data-stack-delay="0"><img src="https://images.unsplash.com/photo-1616400619175-5beda3a17896?w=500&amp;q=80" alt="Person using phone" class="img-cover rounded-2xl" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#FF5A36,#FF8A5C)'; this.alt='Image unavailable';">
+         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+         <div class="absolute bottom-0 left-0 right-0 p-6">
+          <div class="flex items-center gap-2 mb-2">
+           <svg class="w-4 h-4 text-orange-400">
+            <use href="#icon-star" />
+           </svg><span class="text-xs font-mono text-white/70">Featured</span>
+          </div>
+          <p class="text-sm font-medium text-white/90">Interactive card reveals</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- STACK SECTION -->
+   <section id="stack" class="relative w-full py-24 overflow-hidden">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="text-center mb-20">
+      <p class="reveal-up font-mono text-xs text-orange-400 tracking-widest uppercase mb-4">The Stack</p>
+      <h2 class="reveal-up text-4xl sm:text-5xl font-bold tracking-tight mb-4">Built to captivate</h2>
+      <p class="reveal-up text-white/40 text-lg max-w-xl mx-auto">Every card is a chapter. Every scroll is a reveal.</p>
+     </div><!-- Interactive card stack -->
+     <div class="relative max-w-3xl mx-auto" style="min-height: 480px;"><!-- Card 1 -->
+      <div class="stack-card reveal-scale glass-card rounded-3xl p-1 mb-6" style="transform: translateY(60px) rotate(-2deg) scale(0.95); opacity: 0;" data-stack-delay="0">
+       <div class="rounded-[20px] overflow-hidden relative h-56 sm:h-64"><img src="https://images.unsplash.com/photo-1542744094-24638eff58bb?w=700&amp;q=80" alt="Creative studio" class="img-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#0f0f1a)'; this.alt='Image unavailable';">
+        <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-8">
+         <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-orange-400">
+           <use href="#icon-grid" />
+          </svg><span class="font-mono text-xs text-white/60 uppercase tracking-wider">Layout System</span>
+         </div>
+         <h3 class="text-2xl font-bold mb-1">Modular Grid</h3>
+         <p class="text-sm text-white/50 max-w-xs">Snap-to-grid card placement with responsive breakpoints built in.</p>
+        </div>
+       </div>
+      </div><!-- Card 2 -->
+      <div class="stack-card reveal-scale glass-card rounded-3xl p-1 mb-6" style="transform: translateY(60px) rotate(1deg) scale(0.95); opacity: 0;" data-stack-delay="0.15">
+       <div class="rounded-[20px] overflow-hidden relative h-56 sm:h-64"><img src="https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=700&amp;q=80" alt="Minimal tech desk" class="img-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#2d1b4e,#1a1a2e)'; this.alt='Image unavailable';">
+        <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-8">
+         <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-orange-400">
+           <use href="#icon-layers" />
+          </svg><span class="font-mono text-xs text-white/60 uppercase tracking-wider">Depth Engine</span>
+         </div>
+         <h3 class="text-2xl font-bold mb-1">Layered Shadows</h3>
+         <p class="text-sm text-white/50 max-w-xs">Multi-level shadow system creates real depth without 3D.</p>
+        </div>
+       </div>
+      </div><!-- Card 3 -->
+      <div class="stack-card reveal-scale glass-card rounded-3xl p-1" style="transform: translateY(60px) rotate(-1deg) scale(0.95); opacity: 0;" data-stack-delay="0.3">
+       <div class="rounded-[20px] overflow-hidden relative h-56 sm:h-64"><img src="https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=700&amp;q=80" alt="Lifestyle product" class="img-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#FF5A36,#1a1a2e)'; this.alt='Image unavailable';">
+        <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-8">
+         <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-orange-400">
+           <use href="#icon-star" />
+          </svg><span class="font-mono text-xs text-white/60 uppercase tracking-wider">Motion</span>
+         </div>
+         <h3 class="text-2xl font-bold mb-1">Scroll Theater</h3>
+         <p class="text-sm text-white/50 max-w-xs">Cards reveal, lift, and settle — all triggered by natural scrolling.</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- FEATURES SECTION -->
+   <section id="features" class="relative w-full py-24">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="text-center mb-20">
+      <p class="reveal-up font-mono text-xs text-orange-400 tracking-widest uppercase mb-4">Features</p>
+      <h2 class="reveal-up text-4xl sm:text-5xl font-bold tracking-tight mb-4">Everything you need</h2>
+      <p class="reveal-up text-white/40 text-lg max-w-xl mx-auto">No compromises. No bloat. Just performance.</p>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"><!-- Feature cards -->
+      <div class="reveal-up glass-card rounded-2xl p-8 hover:border-orange-500/30 transition-all duration-500 group">
+       <div class="w-12 h-12 rounded-xl accent-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6 text-white">
+         <use href="#icon-layers" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Card Stacking</h3>
+       <p class="text-sm text-white/40 leading-relaxed">Overlapping cards with real depth, shadows, and glassmorphism effects.</p>
+      </div>
+      <div class="reveal-up glass-card rounded-2xl p-8 hover:border-orange-500/30 transition-all duration-500 group" style="transition-delay: 0.1s;">
+       <div class="w-12 h-12 rounded-xl accent-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6 text-white">
+         <use href="#icon-grid" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Responsive Grid</h3>
+       <p class="text-sm text-white/40 leading-relaxed">From mobile to ultra-wide, every card finds its place.</p>
+      </div>
+      <div class="reveal-up glass-card rounded-2xl p-8 hover:border-orange-500/30 transition-all duration-500 group" style="transition-delay: 0.2s;">
+       <div class="w-12 h-12 rounded-xl accent-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6 text-white">
+         <use href="#icon-star" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Scroll Reveals</h3>
+       <p class="text-sm text-white/40 leading-relaxed">Cards animate into view with staggered, theatrical timing.</p>
+      </div>
+      <div class="reveal-up glass-card rounded-2xl p-8 hover:border-orange-500/30 transition-all duration-500 group" style="transition-delay: 0.05s;">
+       <div class="w-12 h-12 rounded-xl accent-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6 text-white">
+         <use href="#icon-lock" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Secure by Default</h3>
+       <p class="text-sm text-white/40 leading-relaxed">Sandboxed environment with zero external dependencies.</p>
+      </div>
+      <div class="reveal-up glass-card rounded-2xl p-8 hover:border-orange-500/30 transition-all duration-500 group" style="transition-delay: 0.15s;">
+       <div class="w-12 h-12 rounded-xl accent-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6 text-white">
+         <use href="#icon-download" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">One-Click Export</h3>
+       <p class="text-sm text-white/40 leading-relaxed">Download and deploy instantly. No build step required.</p>
+      </div>
+      <div class="reveal-up glass-card rounded-2xl p-8 hover:border-orange-500/30 transition-all duration-500 group" style="transition-delay: 0.25s;">
+       <div class="w-12 h-12 rounded-xl accent-gradient flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6 text-white">
+         <use href="#icon-arrow" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">CTA Focused</h3>
+       <p class="text-sm text-white/40 leading-relaxed">Every section drives toward conversion with strategic placement.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- PROOF / SOCIAL PROOF -->
+   <section id="proof" class="relative w-full py-24">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="text-center mb-16">
+      <p class="reveal-up font-mono text-xs text-orange-400 tracking-widest uppercase mb-4">Proof</p>
+      <h2 class="reveal-up text-4xl sm:text-5xl font-bold tracking-tight mb-4">Numbers don't lie</h2>
+     </div><!-- Stats row -->
+     <div class="reveal-up grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+      <div class="glass-card rounded-2xl p-6 text-center">
+       <p class="text-3xl sm:text-4xl font-bold text-orange-400 counter" data-target="12">0</p>
+       <p class="text-xs font-mono text-white/40 mt-2 uppercase tracking-wider">Templates</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 text-center">
+       <p class="text-3xl sm:text-4xl font-bold text-orange-400 counter" data-target="4.9">0</p>
+       <p class="text-xs font-mono text-white/40 mt-2 uppercase tracking-wider">Avg Rating</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 text-center">
+       <p class="text-3xl sm:text-4xl font-bold text-orange-400 counter" data-target="98" data-suffix="%">0</p>
+       <p class="text-xs font-mono text-white/40 mt-2 uppercase tracking-wider">Satisfaction</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 text-center">
+       <p class="text-3xl sm:text-4xl font-bold text-orange-400 counter" data-target="2.4" data-suffix="k">0</p>
+       <p class="text-xs font-mono text-white/40 mt-2 uppercase tracking-wider">Downloads</p>
+      </div>
+     </div><!-- Testimonials -->
+     <div class="grid md:grid-cols-2 gap-6">
+      <div class="reveal-left glass-card rounded-2xl p-8">
+       <div class="flex items-center gap-1 mb-4">
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+       </div>
+       <p class="text-white/60 text-sm leading-relaxed mb-6">"The card-stack layout immediately elevated our product page. Bounce rate dropped 34% in the first week."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full accent-gradient flex items-center justify-center text-sm font-bold">
+         JL
+        </div>
+        <div>
+         <p class="text-sm font-medium">Jordan Lee</p>
+         <p class="text-xs text-white/30">Product Lead, Forma</p>
+        </div>
+       </div>
+      </div>
+      <div class="reveal-right glass-card rounded-2xl p-8">
+       <div class="flex items-center gap-1 mb-4">
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+        <svg class="w-4 h-4 text-orange-400">
+         <use href="#icon-star" />
+        </svg>
+       </div>
+       <p class="text-white/60 text-sm leading-relaxed mb-6">"Finally a template that doesn't look like every other SaaS landing page. The scroll animations are chefs kiss."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full accent-gradient flex items-center justify-center text-sm font-bold">
+         AS
+        </div>
+        <div>
+         <p class="text-sm font-medium">Ava Santos</p>
+         <p class="text-xs text-white/30">Designer, Craft Studio</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- FAQ -->
+   <section id="faq" class="relative w-full py-24">
+    <div class="max-w-3xl mx-auto px-6">
+     <div class="text-center mb-16">
+      <p class="reveal-up font-mono text-xs text-orange-400 tracking-widest uppercase mb-4">FAQ</p>
+      <h2 class="reveal-up text-4xl sm:text-5xl font-bold tracking-tight">Quick answers</h2>
+     </div>
+     <div class="space-y-4" id="faq-list">
+      <div class="reveal-up faq-item glass-card rounded-2xl overflow-hidden"><button class="faq-toggle w-full flex items-center justify-between p-6 text-left" onclick="toggleFaq(this)"> <span class="text-sm font-medium pr-4">Is this a one-time purchase?</span>
+        <svg class="w-5 h-5 text-white/40 shrink-0 transition-transform duration-300">
+         <use href="#icon-chevron-down" />
+        </svg></button>
+       <div class="faq-answer px-6 text-sm text-white/40 leading-relaxed">
+        Yes. Pay once and use it forever on unlimited projects. No subscriptions.
+       </div>
+      </div>
+      <div class="reveal-up faq-item glass-card rounded-2xl overflow-hidden" style="transition-delay: 0.1s;"><button class="faq-toggle w-full flex items-center justify-between p-6 text-left" onclick="toggleFaq(this)"> <span class="text-sm font-medium pr-4">Can I customize the colors and content?</span>
+        <svg class="w-5 h-5 text-white/40 shrink-0 transition-transform duration-300">
+         <use href="#icon-chevron-down" />
+        </svg></button>
+       <div class="faq-answer px-6 text-sm text-white/40 leading-relaxed">
+        Everything is fully editable. Change colors, fonts, images, and copy through the Canva editor.
+       </div>
+      </div>
+      <div class="reveal-up faq-item glass-card rounded-2xl overflow-hidden" style="transition-delay: 0.2s;"><button class="faq-toggle w-full flex items-center justify-between p-6 text-left" onclick="toggleFaq(this)"> <span class="text-sm font-medium pr-4">Do the animations work on mobile?</span>
+        <svg class="w-5 h-5 text-white/40 shrink-0 transition-transform duration-300">
+         <use href="#icon-chevron-down" />
+        </svg></button>
+       <div class="faq-answer px-6 text-sm text-white/40 leading-relaxed">
+        Absolutely. All animations are CSS-based and optimized for touch devices and smaller screens.
+       </div>
+      </div>
+      <div class="reveal-up faq-item glass-card rounded-2xl overflow-hidden" style="transition-delay: 0.3s;"><button class="faq-toggle w-full flex items-center justify-between p-6 text-left" onclick="toggleFaq(this)"> <span class="text-sm font-medium pr-4">What's included in the download?</span>
+        <svg class="w-5 h-5 text-white/40 shrink-0 transition-transform duration-300">
+         <use href="#icon-chevron-down" />
+        </svg></button>
+       <div class="faq-answer px-6 text-sm text-white/40 leading-relaxed">
+        A single self-contained HTML file with all styles, animations, and responsive layouts. Zero dependencies.
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DOWNLOAD / BOTTOM CTA -->
+   <section id="download" class="relative w-full py-32">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+     <div class="reveal-scale glass-card rounded-3xl p-12 sm:p-16 relative overflow-hidden"><!-- Decorative accent -->
+      <div class="absolute top-0 left-0 w-full h-1 accent-gradient"></div>
+      <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10" style="background: radial-gradient(circle, #FF5A36, transparent 70%);"></div>
+      <svg class="w-10 h-10 text-orange-400 mx-auto mb-6">
+       <use href="#icon-download" />
+      </svg>
+      <h2 id="bottom-cta-heading" class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">Make people stay.</h2>
+      <p class="text-white/40 text-lg mb-10 max-w-md mx-auto">Deploy a page that looks like it took a team weeks, in minutes.</p><a href="#" id="bottom-cta-btn" class="cta-pulse inline-flex items-center gap-3 accent-gradient px-10 py-5 rounded-xl font-semibold tracking-wide hover:opacity-90 transition text-base" onclick="event.preventDefault();"> Get Template + License 
+       <svg class="w-5 h-5">
+        <use href="#icon-arrow" />
+       </svg></a>
+      <p class="text-xs text-white/20 mt-6 font-mono">One-time purchase. No subscription.</p>
+     </div>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="w-full py-12 border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+     <div class="flex items-center gap-2 text-sm text-white/30">
+      <svg class="w-4 h-4 text-orange-500">
+       <use href="#icon-layers" />
+      </svg><span class="font-medium">StackStage</span>
+     </div>
+     <p class="text-xs text-white/20 font-mono">Built with depth. Designed to convert.</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+// ========== CONFIG & SDK INIT ==========
+const defaultConfig = {
+  hero_title: 'A page that\nperforms.',
+  hero_subtitle: 'Card-stack storytelling that converts.',
+  cta_primary: 'Get Template + License',
+  cta_secondary: 'See the Stack',
+  bottom_cta_text: 'Make people stay.',
+  background_color: '#0c0c12',
+  surface_color: '#1a1a26',
+  text_color: '#ffffff',
+  accent_color: '#FF5A36',
+  muted_color: '#6b6b80',
+  font_family: 'Outfit',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+
+  // Text content
+  const heroTitle = document.getElementById('hero-title');
+  if (heroTitle) heroTitle.innerHTML = (c.hero_title || defaultConfig.hero_title).replace(/\n/g, '<br>');
+
+  const heroSub = document.getElementById('hero-subtitle');
+  if (heroSub) heroSub.textContent = c.hero_subtitle || defaultConfig.hero_subtitle;
+
+  const ctaPrimary = document.getElementById('hero-cta-primary');
+  if (ctaPrimary) {
+    ctaPrimary.childNodes[0].textContent = (c.cta_primary || defaultConfig.cta_primary) + ' ';
+  }
+
+  const ctaSecondary = document.getElementById('hero-cta-secondary');
+  if (ctaSecondary) {
+    ctaSecondary.childNodes[0].textContent = (c.cta_secondary || defaultConfig.cta_secondary) + ' ';
+  }
+
+  const bottomHeading = document.getElementById('bottom-cta-heading');
+  if (bottomHeading) bottomHeading.textContent = c.bottom_cta_text || defaultConfig.bottom_cta_text;
+
+  // Colors
+  const root = document.documentElement;
+  const accent = c.accent_color || defaultConfig.accent_color;
+  const bg = c.background_color || defaultConfig.background_color;
+  const surface = c.surface_color || defaultConfig.surface_color;
+  const textCol = c.text_color || defaultConfig.text_color;
+  const muted = c.muted_color || defaultConfig.muted_color;
+
+  document.getElementById('app-wrapper').style.color = textCol;
+
+  // Update accent gradient elements
+  document.querySelectorAll('.accent-gradient').forEach(el => {
+    el.style.background = `linear-gradient(135deg, ${accent} 0%, ${lightenColor(accent, 40)} 100%)`;
+  });
+
+  // Update accent-colored text/icons
+  document.querySelectorAll('.text-orange-400, .text-orange-500').forEach(el => {
+    el.style.color = accent;
+  });
+
+  // CTA pulse
+  const style = document.getElementById('dynamic-cta-style');
+  if (style) {
+    style.textContent = `@keyframes cta-pulse { 0%,100% { box-shadow: 0 0 0 0 ${accent}80; } 50% { box-shadow: 0 0 0 12px ${accent}00; } }`;
+  }
+
+  // Counters accent
+  document.querySelectorAll('.counter').forEach(el => el.style.color = accent);
+
+  // Font
+  const font = c.font_family || defaultConfig.font_family;
+  const baseSize = c.font_size || defaultConfig.font_size;
+  const wrapper = document.getElementById('app-wrapper');
+  wrapper.style.fontFamily = `${font}, Outfit, sans-serif`;
+  wrapper.style.fontSize = `${baseSize}px`;
+
+  // Scale headings
+  document.querySelectorAll('h1').forEach(el => el.style.fontSize = '');
+  document.querySelectorAll('h2').forEach(el => el.style.fontSize = '');
+}
+
+function lightenColor(hex, amount) {
+  hex = hex.replace('#', '');
+  let r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
+  r = Math.min(255, r + amount); g = Math.min(255, g + amount); b = Math.min(255, b + amount);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+// Add dynamic style tag for CTA animation
+const dynamicStyle = document.createElement('style');
+dynamicStyle.id = 'dynamic-cta-style';
+document.head.appendChild(dynamicStyle);
+
+// Initialize Element SDK
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => { applyConfig(config); },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+        { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['hero_title', config.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+      ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+      ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+      ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+    ])
+  });
+}
+
+// Initial render
+applyConfig(defaultConfig);
+
+// ========== SCROLL REVEALS ==========
+const wrapper = document.getElementById('app-wrapper');
+
+function checkReveals() {
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const viewHeight = wrapperRect.height;
+
+  document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    const relativeTop = rect.top - wrapperRect.top;
+    if (relativeTop < viewHeight * 0.85) {
+      el.classList.add('visible');
+    }
+  });
+
+  // Stack card reveals
+  document.querySelectorAll('.stack-card:not(.revealed)').forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const relativeTop = rect.top - wrapperRect.top;
+    if (relativeTop < viewHeight * 0.8) {
+      const delay = parseFloat(card.dataset.stackDelay || 0) * 1000;
+      setTimeout(() => card.classList.add('revealed'), delay);
+    }
+  });
+
+  // Counter animation
+  document.querySelectorAll('.counter:not(.counted)').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    const relativeTop = rect.top - wrapperRect.top;
+    if (relativeTop < viewHeight * 0.85) {
+      el.classList.add('counted');
+      animateCounter(el);
+    }
+  });
+}
+
+function animateCounter(el) {
+  const target = parseFloat(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  const isFloat = target % 1 !== 0;
+  const duration = 1500;
+  const start = performance.now();
+
+  function update(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = target * eased;
+    el.textContent = (isFloat ? current.toFixed(1) : Math.round(current)) + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+wrapper.addEventListener('scroll', checkReveals);
+// Initial check
+setTimeout(checkReveals, 300);
+
+// ========== STICKY NAV ==========
+const nav = document.getElementById('sticky-nav');
+wrapper.addEventListener('scroll', () => {
+  if (wrapper.scrollTop > 80) {
+    nav.style.background = 'rgba(12,12,18,0.9)';
+    nav.style.backdropFilter = 'blur(20px)';
+    nav.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+  } else {
+    nav.style.background = 'transparent';
+    nav.style.backdropFilter = 'none';
+    nav.style.borderBottom = 'none';
+  }
+
+  // Active nav link
+  const sections = ['home','stack','features','proof','faq','download'];
+  let current = 'home';
+  sections.forEach(id => {
+    const section = document.getElementById(id);
+    if (section) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 150) current = id;
+    }
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+  });
+});
+
+// ========== MOBILE MENU ==========
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('hidden');
+}
+
+// ========== FAQ ACCORDION ==========
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const answer = item.querySelector('.faq-answer');
+  const icon = btn.querySelector('svg');
+  const isOpen = answer.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.faq-answer.open').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.faq-toggle svg.rotate-180').forEach(i => i.classList.remove('rotate-180'));
+
+  if (!isOpen) {
+    answer.classList.add('open');
+    icon.classList.add('rotate-180');
+  }
+}
+
+// Fix anchor scroll for the wrapper
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83894d354a155',t:'MTc3NjczMDgwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

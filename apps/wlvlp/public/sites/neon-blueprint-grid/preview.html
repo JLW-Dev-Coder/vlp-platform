@@ -1,1 +1,499 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/c833a485-e80a-44ec-bc84-5f85122e3b25 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeonBlueprint Grid</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        mono: ['IBM Plex Mono', 'monospace'],
+        display: ['Space Grotesk', 'sans-serif']
+      }
+    }
+  }
+}
+</script>
+  <style>
+  html, body { height: 100%; margin: 0; }
+
+  :root {
+    --bg-color: #0a0e1a;
+    --surface-color: rgba(15, 25, 50, 0.65);
+    --text-color: #c8d6e5;
+    --primary-color: #00e5ff;
+    --secondary-color: #b388ff;
+  }
+
+  * { scrollbar-width: thin; scrollbar-color: var(--primary-color) var(--bg-color); }
+
+  .blueprint-grid {
+    background-image:
+      linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px),
+      linear-gradient(rgba(0,229,255,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.08) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    animation: gridShift 30s linear infinite;
+  }
+
+  @keyframes gridShift {
+    0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+    100% { background-position: 100px 100px, 100px 100px, 20px 20px, 20px 20px; }
+  }
+
+  @keyframes drawLine {
+    from { stroke-dashoffset: 1000; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { filter: drop-shadow(0 0 4px var(--primary-color)); opacity: 0.7; }
+    50% { filter: drop-shadow(0 0 12px var(--primary-color)); opacity: 1; }
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+    50% { box-shadow: 0 0 30px rgba(0,229,255,0.5); }
+  }
+
+  .draw-line {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  .draw-line.animated { animation: drawLine 2s ease forwards; }
+
+  .glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
+
+  .reveal { opacity: 0; transform: translateY(30px); }
+  .reveal.visible { animation: fadeSlideUp 0.7s ease forwards; }
+
+  .cta-pulse { animation: ctaPulse 2.5s ease-in-out infinite; }
+
+  .glass-card {
+    background: var(--surface-color);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0,229,255,0.12);
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .glass-card:hover {
+    border-color: rgba(0,229,255,0.35);
+    box-shadow: 0 0 25px rgba(0,229,255,0.08);
+  }
+
+  .nav-link {
+    position: relative;
+    transition: color 0.3s;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 0; height: 1px;
+    background: var(--primary-color);
+    transition: width 0.3s;
+  }
+  .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+  .metric-value {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    opacity: 0.3;
+  }
+
+  .faq-item { border-bottom: 1px solid rgba(0,229,255,0.08); }
+  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; }
+  .faq-item.open .faq-answer { max-height: 300px; padding-top: 12px; }
+  .faq-chevron { transition: transform 0.3s; }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+  .img-wrapper {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0,229,255,0.1);
+  }
+  .img-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(179,136,255,0.05));
+    pointer-events: none;
+  }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full" style="background:var(--bg-color); color:var(--text-color);">
+  <div id="app-wrapper" class="h-full w-full overflow-auto blueprint-grid" style="font-family:'IBM Plex Mono',monospace;"><!-- SVG Blueprint Lines -->
+   <svg class="fixed inset-0 w-full h-full pointer-events-none" style="z-index:0;" aria-hidden="true"><line class="draw-line" x1="0" y1="15%" x2="100%" y2="15%" stroke="var(--primary-color)" stroke-width="0.5" opacity="0.15" /> <line class="draw-line" x1="10%" y1="0" x2="10%" y2="100%" stroke="var(--primary-color)" stroke-width="0.5" opacity="0.1" /> <line class="draw-line" x1="90%" y1="0" x2="90%" y2="100%" stroke="var(--primary-color)" stroke-width="0.5" opacity="0.1" /> <line class="draw-line" x1="0" y1="50%" x2="35%" y2="50%" stroke="var(--secondary-color)" stroke-width="0.5" opacity="0.08" /> <line class="draw-line" x1="65%" y1="75%" x2="100%" y2="75%" stroke="var(--secondary-color)" stroke-width="0.5" opacity="0.08" /> <circle cx="10%" cy="15%" r="3" fill="var(--primary-color)" opacity="0.3" class="glow-pulse" /> <circle cx="90%" cy="15%" r="3" fill="var(--primary-color)" opacity="0.3" class="glow-pulse" />
+   </svg><!-- NAV -->
+   <nav id="main-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300" style="background:rgba(10,14,26,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,229,255,0.08);">
+    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between" style="height:56px;"><a href="#home" class="flex items-center gap-2 text-sm font-semibold tracking-widest" style="color:var(--primary-color);">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+      </svg> NBG </a>
+     <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-xs tracking-wider uppercase" style="color:var(--text-color);">Home</a> <a href="#modules" class="nav-link text-xs tracking-wider uppercase" style="color:var(--text-color);">Modules</a> <a href="#blueprint" class="nav-link text-xs tracking-wider uppercase" style="color:var(--text-color);">Blueprint</a> <a href="#proof" class="nav-link text-xs tracking-wider uppercase" style="color:var(--text-color);">Proof</a> <a href="#faq" class="nav-link text-xs tracking-wider uppercase" style="color:var(--text-color);">FAQ</a> <a href="#download" class="nav-link text-xs tracking-wider uppercase" style="color:var(--text-color);">Download</a>
+     </div><button id="mobile-menu-btn" class="md:hidden" style="color:var(--primary-color);" aria-label="Menu"> <i data-lucide="menu" style="width:22px;height:22px;"></i> </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3"><a href="#home" class="text-xs tracking-wider uppercase py-1" style="color:var(--text-color);">Home</a> <a href="#modules" class="text-xs tracking-wider uppercase py-1" style="color:var(--text-color);">Modules</a> <a href="#blueprint" class="text-xs tracking-wider uppercase py-1" style="color:var(--text-color);">Blueprint</a> <a href="#proof" class="text-xs tracking-wider uppercase py-1" style="color:var(--text-color);">Proof</a> <a href="#faq" class="text-xs tracking-wider uppercase py-1" style="color:var(--text-color);">FAQ</a> <a href="#download" class="text-xs tracking-wider uppercase py-1" style="color:var(--text-color);">Download</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative flex items-center justify-center" style="min-height:100%;padding-top:80px;padding-bottom:60px;">
+    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+     <div class="reveal" style="animation-delay:0.1s;">
+      <p class="text-xs tracking-[0.35em] uppercase mb-6" style="color:var(--secondary-color);">// SYSTEM.INIT</p>
+     </div>
+     <h1 id="el-hero-title" class="reveal font-bold leading-tight mb-6" style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2.2rem,5vw,4.2rem);color:#fff;animation-delay:0.25s;">Designed like a system.</h1>
+     <p id="el-hero-subtitle" class="reveal text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed" style="color:var(--text-color);opacity:0.85;animation-delay:0.4s;">A blueprint page that keeps eyes locked.</p>
+     <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4" style="animation-delay:0.55s;"><a href="#download" id="el-cta-primary" class="cta-pulse px-7 py-3 text-sm font-semibold tracking-wider uppercase rounded" style="background:var(--primary-color);color:var(--bg-color);"> Get Template + License </a> <a href="#modules" id="el-cta-secondary" class="px-7 py-3 text-sm font-semibold tracking-wider uppercase rounded border transition-colors" style="border-color:var(--secondary-color);color:var(--secondary-color);"> See Modules </a>
+     </div><!-- Blueprint coordinate markers -->
+     <div class="reveal mt-16 flex items-center justify-center gap-12 text-xs" style="color:rgba(0,229,255,0.3);animation-delay:0.7s;"><span>X: 0.00</span><span>Y: 0.00</span><span>Z: 1.00</span><span>SCALE: 1:1</span>
+     </div>
+    </div>
+   </section><!-- MODULES -->
+   <section id="modules" class="relative z-10 py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+     <div class="section-line mb-12"></div>
+     <p class="reveal text-xs tracking-[0.3em] uppercase mb-3" style="color:var(--secondary-color);">// MODULES</p>
+     <h2 class="reveal font-bold text-2xl md:text-3xl mb-14" style="font-family:'Space Grotesk',sans-serif;color:#fff;">System Components</h2>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="reveal glass-card rounded-lg p-6" style="animation-delay:0.1s;">
+       <div class="mb-4 glow-pulse" style="color:var(--primary-color);">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+         <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+        </svg>
+       </div>
+       <h3 class="font-semibold text-sm mb-2" style="color:#fff;">Grid Engine</h3>
+       <p class="text-xs leading-relaxed" style="opacity:0.7;">Precision-aligned layout system with responsive breakpoints and modular spacing tokens.</p>
+       <p class="mt-4 metric-value text-2xl font-bold" style="font-family:'Space Grotesk',sans-serif;">12-COL</p>
+      </div>
+      <div class="reveal glass-card rounded-lg p-6" style="animation-delay:0.2s;">
+       <div class="mb-4 glow-pulse" style="color:var(--primary-color);">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+         <path d="M2 12h4l3-9 6 18 3-9h4" />
+        </svg>
+       </div>
+       <h3 class="font-semibold text-sm mb-2" style="color:#fff;">Signal Router</h3>
+       <p class="text-xs leading-relaxed" style="opacity:0.7;">Event-driven data flow architecture with real-time state synchronisation across nodes.</p>
+       <p class="mt-4 metric-value text-2xl font-bold" style="font-family:'Space Grotesk',sans-serif;">48ms</p>
+      </div>
+      <div class="reveal glass-card rounded-lg p-6" style="animation-delay:0.3s;">
+       <div class="mb-4 glow-pulse" style="color:var(--primary-color);">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+         <rect x="5" y="11" width="14" height="10" rx="2" /><path d="M12 3a4 4 0 0 0-4 4v4h8V7a4 4 0 0 0-4-4z" />
+        </svg>
+       </div>
+       <h3 class="font-semibold text-sm mb-2" style="color:#fff;">Vault Protocol</h3>
+       <p class="text-xs leading-relaxed" style="opacity:0.7;">End-to-end encryption layer with zero-knowledge proof verification and secure key rotation.</p>
+       <p class="mt-4 metric-value text-2xl font-bold" style="font-family:'Space Grotesk',sans-serif;">AES-256</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- BLUEPRINT -->
+   <section id="blueprint" class="relative z-10 py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+     <div class="section-line mb-12"></div>
+     <p class="reveal text-xs tracking-[0.3em] uppercase mb-3" style="color:var(--secondary-color);">// BLUEPRINT</p>
+     <h2 class="reveal font-bold text-2xl md:text-3xl mb-14" style="font-family:'Space Grotesk',sans-serif;color:#fff;">Architecture Overview</h2>
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <div class="reveal">
+       <div class="img-wrapper rounded-lg"><img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&amp;q=80" alt="Blueprint architectural drafting workspace" loading="lazy" class="w-full h-auto rounded-lg" style="filter:saturate(0.3) brightness(0.7) contrast(1.2);" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#0a1628,#1a1040)';this.alt='Image unavailable';this.style.height='300px';">
+       </div>
+      </div>
+      <div class="reveal" style="animation-delay:0.15s;">
+       <div class="space-y-5">
+        <div class="glass-card rounded-lg p-5 flex items-center gap-4">
+         <div style="color:var(--primary-color);">
+          <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+           <path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /><path d="M12 2L2 7l10 5 10-5L12 2z" />
+          </svg>
+         </div>
+         <div>
+          <p class="text-xs font-semibold" style="color:#fff;">Layered Composition</p>
+          <p class="text-xs mt-1" style="opacity:0.6;">Stackable component layers with isolated render contexts.</p>
+         </div>
+        </div>
+        <div class="glass-card rounded-lg p-5 flex items-center gap-4">
+         <div style="color:var(--primary-color);">
+          <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+           <circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+          </svg>
+         </div>
+         <div>
+          <p class="text-xs font-semibold" style="color:#fff;">Adaptive Scaling</p>
+          <p class="text-xs mt-1" style="opacity:0.6;">Fluid dimension system calibrated to viewport and density.</p>
+         </div>
+        </div>
+        <div class="glass-card rounded-lg p-5 flex items-center gap-4">
+         <div style="color:var(--secondary-color);">
+          <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+         </div>
+         <div>
+          <p class="text-xs font-semibold" style="color:#fff;">Performance Traces</p>
+          <p class="text-xs mt-1" style="opacity:0.6;">Built-in telemetry hooks for render timing and memory profiling.</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- PROOF / METRICS -->
+   <section id="proof" class="relative z-10 py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+     <div class="section-line mb-12"></div>
+     <p class="reveal text-xs tracking-[0.3em] uppercase mb-3" style="color:var(--secondary-color);">// PROOF</p>
+     <h2 class="reveal font-bold text-2xl md:text-3xl mb-14" style="font-family:'Space Grotesk',sans-serif;color:#fff;">By the Numbers</h2>
+     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="reveal glass-card rounded-lg p-6 text-center" style="animation-delay:0.05s;">
+       <p class="metric-value text-3xl md:text-4xl font-bold mb-2" style="font-family:'Space Grotesk',sans-serif;">99.9%</p>
+       <p class="text-xs uppercase tracking-wider" style="opacity:0.5;">Uptime SLA</p>
+      </div>
+      <div class="reveal glass-card rounded-lg p-6 text-center" style="animation-delay:0.15s;">
+       <p class="metric-value text-3xl md:text-4xl font-bold mb-2" style="font-family:'Space Grotesk',sans-serif;">12ms</p>
+       <p class="text-xs uppercase tracking-wider" style="opacity:0.5;">Avg Latency</p>
+      </div>
+      <div class="reveal glass-card rounded-lg p-6 text-center" style="animation-delay:0.25s;">
+       <p class="metric-value text-3xl md:text-4xl font-bold mb-2" style="font-family:'Space Grotesk',sans-serif;">4.2K</p>
+       <p class="text-xs uppercase tracking-wider" style="opacity:0.5;">Deployments</p>
+      </div>
+      <div class="reveal glass-card rounded-lg p-6 text-center" style="animation-delay:0.35s;">
+       <p class="metric-value text-3xl md:text-4xl font-bold mb-2" style="font-family:'Space Grotesk',sans-serif;">100</p>
+       <p class="text-xs uppercase tracking-wider" style="opacity:0.5;">Lighthouse</p>
+      </div>
+     </div><!-- Proof image -->
+     <div class="reveal mt-12 img-wrapper rounded-lg"><img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1000&amp;q=80" alt="Digital technology data visualization" loading="lazy" class="w-full h-auto rounded-lg" style="filter:saturate(0.4) brightness(0.6) contrast(1.1);max-height:320px;object-fit:cover;" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#0a1628,#1a1040)';this.alt='Image unavailable';this.style.height='200px';">
+     </div>
+    </div>
+   </section><!-- FAQ -->
+   <section id="faq" class="relative z-10 py-24 px-6">
+    <div class="max-w-3xl mx-auto">
+     <div class="section-line mb-12"></div>
+     <p class="reveal text-xs tracking-[0.3em] uppercase mb-3" style="color:var(--secondary-color);">// FAQ</p>
+     <h2 class="reveal font-bold text-2xl md:text-3xl mb-14" style="font-family:'Space Grotesk',sans-serif;color:#fff;">Common Queries</h2>
+     <div id="faq-container">
+      <div class="reveal faq-item py-5 cursor-pointer" onclick="toggleFaq(this)">
+       <div class="flex items-center justify-between">
+        <p class="text-sm font-medium" style="color:#fff;">What frameworks does this support?</p><i data-lucide="chevron-down" class="faq-chevron" style="width:16px;height:16px;color:var(--primary-color);"></i>
+       </div>
+       <div class="faq-answer text-xs leading-relaxed" style="opacity:0.7;">
+        Framework-agnostic by design. Works with React, Vue, Svelte, or vanilla HTML. The grid system and component tokens translate across any stack.
+       </div>
+      </div>
+      <div class="reveal faq-item py-5 cursor-pointer" style="animation-delay:0.1s;" onclick="toggleFaq(this)">
+       <div class="flex items-center justify-between">
+        <p class="text-sm font-medium" style="color:#fff;">Is the license perpetual?</p><i data-lucide="chevron-down" class="faq-chevron" style="width:16px;height:16px;color:var(--primary-color);"></i>
+       </div>
+       <div class="faq-answer text-xs leading-relaxed" style="opacity:0.7;">
+        Yes. One purchase grants lifetime access to the template, all future updates, and commercial usage rights for unlimited projects.
+       </div>
+      </div>
+      <div class="reveal faq-item py-5 cursor-pointer" style="animation-delay:0.2s;" onclick="toggleFaq(this)">
+       <div class="flex items-center justify-between">
+        <p class="text-sm font-medium" style="color:#fff;">Can I customise the neon colour scheme?</p><i data-lucide="chevron-down" class="faq-chevron" style="width:16px;height:16px;color:var(--primary-color);"></i>
+       </div>
+       <div class="faq-answer text-xs leading-relaxed" style="opacity:0.7;">
+        Absolutely. All accent colours are controlled through CSS custom properties. Swap cyan and violet for any palette in seconds.
+       </div>
+      </div>
+      <div class="reveal faq-item py-5 cursor-pointer" style="animation-delay:0.3s;" onclick="toggleFaq(this)">
+       <div class="flex items-center justify-between">
+        <p class="text-sm font-medium" style="color:#fff;">What about performance?</p><i data-lucide="chevron-down" class="faq-chevron" style="width:16px;height:16px;color:var(--primary-color);"></i>
+       </div>
+       <div class="faq-answer text-xs leading-relaxed" style="opacity:0.7;">
+        All animations use CSS transforms and opacity only—composited on the GPU. No layout thrashing. Lighthouse 100 on desktop and mobile.
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DOWNLOAD / BOTTOM CTA -->
+   <section id="download" class="relative z-10 py-28 px-6">
+    <div class="max-w-3xl mx-auto text-center">
+     <div class="section-line mb-16"></div>
+     <p class="reveal text-xs tracking-[0.3em] uppercase mb-6" style="color:var(--secondary-color);">// DOWNLOAD</p>
+     <h2 id="el-bottom-cta" class="reveal font-bold text-2xl md:text-4xl mb-8" style="font-family:'Space Grotesk',sans-serif;color:#fff;">Make precision look exciting.</h2>
+     <div class="reveal" style="animation-delay:0.15s;"><a href="#" id="el-download-btn" class="cta-pulse inline-flex items-center gap-3 px-8 py-4 text-sm font-semibold tracking-wider uppercase rounded" style="background:var(--primary-color);color:var(--bg-color);" onclick="event.preventDefault();">
+       <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+       </svg> Get Template + License </a>
+     </div>
+     <p class="reveal mt-10 text-xs" style="opacity:0.35;animation-delay:0.3s;">v2.4.1 · Last updated 2025 · MIT License</p>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="relative z-10 py-8 px-6" style="border-top:1px solid rgba(0,229,255,0.06);">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+     <p class="text-xs" style="opacity:0.3;">© 2025 NeonBlueprint Grid</p>
+     <div class="flex items-center gap-6"><a href="#home" class="text-xs transition-colors" style="opacity:0.3;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='0.3'">Home</a> <a href="#modules" class="text-xs transition-colors" style="opacity:0.3;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='0.3'">Modules</a> <a href="#faq" class="text-xs transition-colors" style="opacity:0.3;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='0.3'">FAQ</a>
+     </div>
+    </div>
+   </footer>
+  </div><!-- /app-wrapper -->
+  <script>
+  // Default config
+  const defaultConfig = {
+    background_color: '#0a0e1a',
+    surface_color: '#0f1932',
+    text_color: '#c8d6e5',
+    primary_color: '#00e5ff',
+    secondary_color: '#b388ff',
+    font_family: 'IBM Plex Mono',
+    font_size: 14,
+    hero_title: 'Designed like a system.',
+    hero_subtitle: 'A blueprint page that keeps eyes locked.',
+    cta_primary: 'Get Template + License',
+    cta_secondary: 'See Modules',
+    bottom_cta_text: 'Make precision look exciting.'
+  };
+
+  // FAQ toggle
+  function toggleFaq(el) {
+    el.classList.toggle('open');
+  }
+
+  // Mobile menu
+  document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+  });
+  document.querySelectorAll('#mobile-menu a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+  });
+
+  // Intersection observer for reveals
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Animate blueprint lines
+  setTimeout(() => {
+    document.querySelectorAll('.draw-line').forEach((l, i) => {
+      setTimeout(() => l.classList.add('animated'), i * 300);
+    });
+  }, 500);
+
+  // Active nav highlight
+  const sections = ['home','modules','blueprint','proof','faq','download'];
+  const navLinks = document.querySelectorAll('nav a.nav-link');
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`nav a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(id => { const s = document.getElementById(id); if (s) navObserver.observe(s); });
+
+  // Apply config to DOM
+  function applyConfig(config) {
+    const root = document.documentElement.style;
+    root.setProperty('--bg-color', config.background_color || defaultConfig.background_color);
+    root.setProperty('--surface-color', (config.surface_color || defaultConfig.surface_color) + 'a6');
+    root.setProperty('--text-color', config.text_color || defaultConfig.text_color);
+    root.setProperty('--primary-color', config.primary_color || defaultConfig.primary_color);
+    root.setProperty('--secondary-color', config.secondary_color || defaultConfig.secondary_color);
+
+    document.body.style.color = config.text_color || defaultConfig.text_color;
+    document.body.style.background = config.background_color || defaultConfig.background_color;
+
+    const ff = config.font_family || defaultConfig.font_family;
+    const baseStack = `${ff}, 'IBM Plex Mono', monospace`;
+    const displayStack = `${ff}, 'Space Grotesk', sans-serif`;
+    document.getElementById('app-wrapper').style.fontFamily = baseStack;
+
+    const baseSize = config.font_size || defaultConfig.font_size;
+    document.querySelectorAll('h1').forEach(el => { el.style.fontFamily = displayStack; });
+    document.querySelectorAll('h2').forEach(el => { el.style.fontFamily = displayStack; });
+    document.querySelectorAll('p, span, a, div').forEach(el => {
+      if (!el.closest('h1') && !el.closest('h2')) {
+        // don't override heading fonts
+      }
+    });
+
+    const heroTitle = document.getElementById('el-hero-title');
+    if (heroTitle) heroTitle.textContent = config.hero_title || defaultConfig.hero_title;
+
+    const heroSub = document.getElementById('el-hero-subtitle');
+    if (heroSub) heroSub.textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+
+    const ctaPrimary = document.getElementById('el-cta-primary');
+    if (ctaPrimary) ctaPrimary.textContent = config.cta_primary || defaultConfig.cta_primary;
+
+    const ctaSecondary = document.getElementById('el-cta-secondary');
+    if (ctaSecondary) ctaSecondary.textContent = config.cta_secondary || defaultConfig.cta_secondary;
+
+    const bottomCta = document.getElementById('el-bottom-cta');
+    if (bottomCta) bottomCta.textContent = config.bottom_cta_text || defaultConfig.bottom_cta_text;
+
+    const dlBtn = document.getElementById('el-download-btn');
+    if (dlBtn) {
+      const svgIcon = dlBtn.querySelector('svg');
+      const svgHTML = svgIcon ? svgIcon.outerHTML : '';
+      dlBtn.innerHTML = svgHTML + ' ' + (config.cta_primary || defaultConfig.cta_primary);
+    }
+
+    // Update CTA button colors
+    if (ctaPrimary) { ctaPrimary.style.background = config.primary_color || defaultConfig.primary_color; ctaPrimary.style.color = config.background_color || defaultConfig.background_color; }
+    if (ctaSecondary) { ctaSecondary.style.borderColor = config.secondary_color || defaultConfig.secondary_color; ctaSecondary.style.color = config.secondary_color || defaultConfig.secondary_color; }
+    if (dlBtn) { dlBtn.style.background = config.primary_color || defaultConfig.primary_color; dlBtn.style.color = config.background_color || defaultConfig.background_color; }
+  }
+
+  // Element SDK init
+  if (window.elementSdk) {
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => { applyConfig(config); },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }},
+          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }},
+          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }},
+          { get: () => config.primary_color || defaultConfig.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); }},
+          { get: () => config.secondary_color || defaultConfig.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); }}
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['hero_title', config.hero_title || defaultConfig.hero_title],
+        ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+        ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+        ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+        ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+      ])
+    });
+  }
+
+  // Init icons
+  lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83157d7c9a155',t:'MTc3NjczMDUxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,1 +1,561 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/32ebc328-7e39-4ecf-b216-6b533445c2c3 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiniVow Planner</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=Jost:wght@300;400;500&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['Jost', 'sans-serif']
+      }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes lightSweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes gentlePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(180,155,120,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(180,155,120,0); }
+}
+@keyframes shimmer {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+
+.anim-fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+.anim-fade-up.visible { opacity: 1; transform: translateY(0); }
+.anim-fade-in { opacity: 0; transition: opacity 1s ease; }
+.anim-fade-in.visible { opacity: 1; }
+
+.pulse-cta { animation: gentlePulse 2.5s infinite; }
+
+.light-sweep {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: lightSweep 4s ease-in-out infinite;
+}
+
+.nav-link { position: relative; }
+.nav-link::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; width: 0;
+  height: 1px; background: #b49b78; transition: width 0.3s ease;
+}
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+.timeline-line { position: relative; }
+.timeline-line::before {
+  content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 1px; background: #d4c5a9; transform: translateX(-50%);
+}
+@media (max-width: 768px) {
+  .timeline-line::before { left: 20px; }
+}
+
+.star-rating svg { transition: transform 0.2s; }
+.star-rating svg:hover { transform: scale(1.2); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1a1714; }
+::-webkit-scrollbar-thumb { background: #b49b78; border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="w-full h-full overflow-auto" style="background:#1a1714; color:#f0ebe3; font-family:'Jost',sans-serif;"><!-- Sticky Nav -->
+   <nav id="sticky-nav" style="position:sticky;top:0;z-index:50;background:rgba(26,23,20,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(180,155,120,0.15);">
+    <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;"><a href="#home" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#b49b78;text-decoration:none;letter-spacing:1px;">MiniVow</a> <button id="mobile-menu-btn" style="display:none;background:none;border:none;color:#f0ebe3;cursor:pointer;" aria-label="Menu">
+      <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+      </svg></button>
+     <div id="nav-links" style="display:flex;gap:28px;align-items:center;"><a href="#home" class="nav-link" style="color:#d4c5a9;text-decoration:none;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:400;">Home</a> <a href="#packages" class="nav-link" style="color:#d4c5a9;text-decoration:none;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:400;">Packages</a> <a href="#timeline" class="nav-link" style="color:#d4c5a9;text-decoration:none;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:400;">Timeline</a> <a href="#details" class="nav-link" style="color:#d4c5a9;text-decoration:none;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:400;">Details</a> <a href="#reviews" class="nav-link" style="color:#d4c5a9;text-decoration:none;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:400;">Reviews</a> <a href="#book" class="nav-link" style="color:#d4c5a9;text-decoration:none;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:400;">Book</a>
+     </div>
+    </div><!-- Mobile menu -->
+    <div id="mobile-nav" style="display:none;padding:0 24px 16px;flex-direction:column;gap:12px;"><a href="#home" class="mobile-nav-link" style="color:#d4c5a9;text-decoration:none;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;border-bottom:1px solid rgba(180,155,120,0.1);">Home</a> <a href="#packages" class="mobile-nav-link" style="color:#d4c5a9;text-decoration:none;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;border-bottom:1px solid rgba(180,155,120,0.1);">Packages</a> <a href="#timeline" class="mobile-nav-link" style="color:#d4c5a9;text-decoration:none;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;border-bottom:1px solid rgba(180,155,120,0.1);">Timeline</a> <a href="#details" class="mobile-nav-link" style="color:#d4c5a9;text-decoration:none;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;border-bottom:1px solid rgba(180,155,120,0.1);">Details</a> <a href="#reviews" class="mobile-nav-link" style="color:#d4c5a9;text-decoration:none;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;border-bottom:1px solid rgba(180,155,120,0.1);">Reviews</a> <a href="#book" class="mobile-nav-link" style="color:#d4c5a9;text-decoration:none;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;">Book</a>
+    </div>
+   </nav><!-- Hero -->
+   <section id="home" style="position:relative;overflow:hidden;min-height:90%;">
+    <div style="position:absolute;inset:0;"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&amp;q=80" alt="Intimate wedding ceremony" loading="lazy" style="width:100%;height:100%;object-fit:cover;opacity:0.35;" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#2a2520,#1a1714)';this.alt='Image unavailable';">
+     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,23,20,0.4) 0%,rgba(26,23,20,0.85) 70%,#1a1714 100%);"></div>
+     <div class="light-sweep" style="position:absolute;inset:0;pointer-events:none;"></div>
+    </div>
+    <div style="position:relative;z-index:2;max-width:800px;margin:0 auto;padding:120px 24px 80px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80%;">
+     <div style="width:60px;height:1px;background:#b49b78;margin-bottom:32px;" class="anim-fade-in"></div>
+     <h1 id="hero-title" class="anim-fade-up" style="font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,72px);font-weight:300;line-height:1.1;color:#f0ebe3;margin:0 0 20px;letter-spacing:-0.5px;">Small wedding, major feeling.</h1>
+     <p id="hero-subtitle" class="anim-fade-up" style="font-size:clamp(16px,2.2vw,20px);color:#d4c5a9;font-weight:300;margin:0 0 48px;line-height:1.6;max-width:500px;">A calm plan for a beautiful day.</p>
+     <div class="anim-fade-up" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;"><a href="#book" id="cta-primary-btn" class="pulse-cta" style="display:inline-block;padding:14px 36px;background:#b49b78;color:#1a1714;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500;border-radius:0;transition:background 0.3s;" onmouseover="this.style.background='#c8b08e'" onmouseout="this.style.background='#b49b78'">Book a Consult</a> <a href="#packages" id="cta-secondary-btn" style="display:inline-block;padding:14px 36px;border:1px solid #b49b78;color:#b49b78;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:400;transition:all 0.3s;" onmouseover="this.style.background='rgba(180,155,120,0.1)'" onmouseout="this.style.background='transparent'">See Packages</a>
+     </div>
+     <div style="margin-top:64px;opacity:0.4;">
+      <svg width="20" height="30" viewbox="0 0 20 30" fill="none" stroke="#b49b78" stroke-width="1">
+       <rect x="1" y="1" width="18" height="28" rx="9" /><line x1="10" y1="8" x2="10" y2="14" style="animation:shimmer 2s infinite;" />
+      </svg>
+     </div>
+    </div>
+   </section><!-- Packages -->
+   <section id="packages" style="padding:100px 24px;max-width:1100px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:64px;" class="anim-fade-up">
+     <p style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b49b78;margin:0 0 12px;">What's Included</p>
+     <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#f0ebe3;margin:0;">Packages</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;"><!-- Essential -->
+     <div class="anim-fade-up" style="border:1px solid rgba(180,155,120,0.2);padding:48px 32px;transition:border-color 0.3s,transform 0.3s;" onmouseover="this.style.borderColor='rgba(180,155,120,0.5)';this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='rgba(180,155,120,0.2)';this.style.transform='translateY(0)'">
+      <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+       <path d="M9 5H2v7l6.29 6.29c.94.94 2.48.94 3.42 0l4.58-4.58c.94-.94.94-2.48 0-3.42L9 5Z" /><path d="M6 9.01V9" />
+      </svg>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:#f0ebe3;margin:20px 0 8px;">Essential</h3>
+      <p style="font-size:32px;color:#b49b78;font-weight:300;margin:0 0 20px;font-family:'Cormorant Garamond',serif;">$297</p>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px;">
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Micro-wedding checklist</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>3-month timeline template</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Budget tracker layout</li>
+      </ul><a href="#book" style="display:block;text-align:center;margin-top:32px;padding:12px;border:1px solid rgba(180,155,120,0.3);color:#b49b78;text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase;transition:all 0.3s;" onmouseover="this.style.background='rgba(180,155,120,0.1)'" onmouseout="this.style.background='transparent'">Choose Essential</a>
+     </div><!-- Signature -->
+     <div class="anim-fade-up" style="border:1px solid #b49b78;padding:48px 32px;position:relative;transition:transform 0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#b49b78;color:#1a1714;padding:4px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;">
+       Most Popular
+      </div>
+      <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+       <circle cx="12" cy="12" r="3" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      </svg>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:#f0ebe3;margin:20px 0 8px;">Signature</h3>
+      <p style="font-size:32px;color:#b49b78;font-weight:300;margin:0 0 20px;font-family:'Cormorant Garamond',serif;">$597</p>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px;">
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Everything in Essential</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Vendor email scripts</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Ceremony script templates</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Moodboard templates</li>
+      </ul><a href="#book" style="display:block;text-align:center;margin-top:32px;padding:12px;background:#b49b78;color:#1a1714;text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:500;transition:background 0.3s;" onmouseover="this.style.background='#c8b08e'" onmouseout="this.style.background='#b49b78'">Choose Signature</a>
+     </div><!-- Luxe -->
+     <div class="anim-fade-up" style="border:1px solid rgba(180,155,120,0.2);padding:48px 32px;transition:border-color 0.3s,transform 0.3s;" onmouseover="this.style.borderColor='rgba(180,155,120,0.5)';this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='rgba(180,155,120,0.2)';this.style.transform='translateY(0)'">
+      <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:#f0ebe3;margin:20px 0 8px;">Luxe</h3>
+      <p style="font-size:32px;color:#b49b78;font-weight:300;margin:0 0 20px;font-family:'Cormorant Garamond',serif;">$997</p>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px;">
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Everything in Signature</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>1:1 planning consultation</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Custom day-of timeline</li>
+       <li style="color:#d4c5a9;font-size:14px;font-weight:300;display:flex;align-items:center;gap:10px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.5">
+         <polyline points="20 6 9 17 4 12" />
+        </svg>Priority email support</li>
+      </ul><a href="#book" style="display:block;text-align:center;margin-top:32px;padding:12px;border:1px solid rgba(180,155,120,0.3);color:#b49b78;text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase;transition:all 0.3s;" onmouseover="this.style.background='rgba(180,155,120,0.1)'" onmouseout="this.style.background='transparent'">Choose Luxe</a>
+     </div>
+    </div>
+   </section><!-- Divider Image -->
+   <div style="position:relative;height:300px;overflow:hidden;"><img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1600&amp;q=80" alt="Wedding bouquet" loading="lazy" style="width:100%;height:100%;object-fit:cover;opacity:0.3;" onerror="this.style.background='linear-gradient(135deg,#2a2520,#1a1714)';this.alt='Image unavailable';">
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,#1a1714 0%,transparent 30%,transparent 70%,#1a1714 100%);"></div>
+   </div><!-- Timeline -->
+   <section id="timeline" style="padding:100px 24px;max-width:900px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:72px;" class="anim-fade-up">
+     <p style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b49b78;margin:0 0 12px;">Your Planning Path</p>
+     <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#f0ebe3;margin:0;">3-Month Timeline</h2>
+    </div>
+    <div class="timeline-line" style="display:flex;flex-direction:column;gap:64px;padding:0 20px;"><!-- Month 1 -->
+     <div class="anim-fade-up" style="display:grid;grid-template-columns:1fr auto 1fr;gap:32px;align-items:center;">
+      <div style="text-align:right;padding-right:16px;">
+       <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#b49b78;margin:0 0 8px;">Month 1</p>
+       <h3 style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#f0ebe3;margin:0 0 8px;">Vision &amp; Venue</h3>
+       <p style="color:#a09585;font-size:14px;font-weight:300;line-height:1.6;margin:0;">Define your aesthetic, set your budget, and secure the perfect intimate venue for your celebration.</p>
+      </div>
+      <div style="width:48px;height:48px;border-radius:50%;border:1px solid #b49b78;display:flex;align-items:center;justify-content:center;background:#1a1714;z-index:2;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+       </svg>
+      </div>
+      <div></div>
+     </div><!-- Month 2 -->
+     <div class="anim-fade-up" style="display:grid;grid-template-columns:1fr auto 1fr;gap:32px;align-items:center;">
+      <div></div>
+      <div style="width:48px;height:48px;border-radius:50%;border:1px solid #b49b78;display:flex;align-items:center;justify-content:center;background:#1a1714;z-index:2;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+       </svg>
+      </div>
+      <div style="padding-left:16px;">
+       <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#b49b78;margin:0 0 8px;">Month 2</p>
+       <h3 style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#f0ebe3;margin:0 0 8px;">Details &amp; Vendors</h3>
+       <p style="color:#a09585;font-size:14px;font-weight:300;line-height:1.6;margin:0;">Curate your vendor team, finalize your ceremony script, and design the mood of every moment.</p>
+      </div>
+     </div><!-- Month 3 -->
+     <div class="anim-fade-up" style="display:grid;grid-template-columns:1fr auto 1fr;gap:32px;align-items:center;">
+      <div style="text-align:right;padding-right:16px;">
+       <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#b49b78;margin:0 0 8px;">Month 3</p>
+       <h3 style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#f0ebe3;margin:0 0 8px;">Refine &amp; Celebrate</h3>
+       <p style="color:#a09585;font-size:14px;font-weight:300;line-height:1.6;margin:0;">Final walkthrough, confirm every detail, then breathe deeply and enjoy the most beautiful day of your life.</p>
+      </div>
+      <div style="width:48px;height:48px;border-radius:50%;border:1px solid #b49b78;display:flex;align-items:center;justify-content:center;background:#1a1714;z-index:2;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+       </svg>
+      </div>
+      <div></div>
+     </div>
+    </div>
+   </section><!-- Details -->
+   <section id="details" style="padding:100px 24px;background:rgba(180,155,120,0.04);">
+    <div style="max-width:1100px;margin:0 auto;">
+     <div style="text-align:center;margin-bottom:64px;" class="anim-fade-up">
+      <p style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b49b78;margin:0 0 12px;">What You Get</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#f0ebe3;margin:0;">Digital Toolkit</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;">
+      <div class="anim-fade-up" style="text-align:center;padding:32px 20px;">
+       <svg width="36" height="36" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;">
+        <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+       </svg>
+       <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ebe3;margin:0 0 8px;">Checklist</h4>
+       <p style="color:#a09585;font-size:13px;font-weight:300;line-height:1.5;margin:0;">Every task, beautifully organized from "yes" to "I do."</p>
+      </div>
+      <div class="anim-fade-up" style="text-align:center;padding:32px 20px;">
+       <svg width="36" height="36" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;">
+        <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+       </svg>
+       <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ebe3;margin:0 0 8px;">Timeline</h4>
+       <p style="color:#a09585;font-size:13px;font-weight:300;line-height:1.5;margin:0;">Week-by-week planning so nothing gets missed.</p>
+      </div>
+      <div class="anim-fade-up" style="text-align:center;padding:32px 20px;">
+       <svg width="36" height="36" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" />
+       </svg>
+       <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ebe3;margin:0 0 8px;">Vendor Scripts</h4>
+       <p style="color:#a09585;font-size:13px;font-weight:300;line-height:1.5;margin:0;">Copy-paste email templates for every vendor conversation.</p>
+      </div>
+      <div class="anim-fade-up" style="text-align:center;padding:32px 20px;">
+       <svg width="36" height="36" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;">
+        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
+       </svg>
+       <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ebe3;margin:0 0 8px;">Budget Tracker</h4>
+       <p style="color:#a09585;font-size:13px;font-weight:300;line-height:1.5;margin:0;">Keep every dollar intentional with our clean tracker.</p>
+      </div>
+      <div class="anim-fade-up" style="text-align:center;padding:32px 20px;">
+       <svg width="36" height="36" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+       </svg>
+       <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ebe3;margin:0 0 8px;">Ceremony Scripts</h4>
+       <p style="color:#a09585;font-size:13px;font-weight:300;line-height:1.5;margin:0;">Words that feel like yours, ready to personalize.</p>
+      </div>
+      <div class="anim-fade-up" style="text-align:center;padding:32px 20px;">
+       <svg width="36" height="36" viewbox="0 0 24 24" fill="none" stroke="#b49b78" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+       </svg>
+       <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ebe3;margin:0 0 8px;">Moodboards</h4>
+       <p style="color:#a09585;font-size:13px;font-weight:300;line-height:1.5;margin:0;">Curate the visual world of your wedding day.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Reviews -->
+   <section id="reviews" style="padding:100px 24px;max-width:900px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:64px;" class="anim-fade-up">
+     <p style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b49b78;margin:0 0 12px;">Kind Words</p>
+     <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#f0ebe3;margin:0;">Reviews</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;">
+     <div class="anim-fade-up" style="border:1px solid rgba(180,155,120,0.15);padding:36px 28px;">
+      <div class="star-rating" style="display:flex;gap:4px;margin-bottom:16px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+      </div>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#d4c5a9;line-height:1.6;margin:0 0 20px;">"We planned our entire 20-person wedding in 6 weeks. The templates made everything feel effortless and intentional."</p>
+      <p style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#b49b78;margin:0;">Mara &amp; James</p>
+     </div>
+     <div class="anim-fade-up" style="border:1px solid rgba(180,155,120,0.15);padding:36px 28px;">
+      <div class="star-rating" style="display:flex;gap:4px;margin-bottom:16px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#b49b78" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+      </div>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#d4c5a9;line-height:1.6;margin:0 0 20px;">"The vendor email scripts alone saved us hours. Everything felt so polished and personal without the stress."</p>
+      <p style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#b49b78;margin:0;">Sofia &amp; Lena</p>
+     </div>
+    </div>
+   </section><!-- Book / Contact -->
+   <section id="book" style="padding:100px 24px;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&amp;q=80" alt="Candlelit dinner setting" loading="lazy" style="width:100%;height:100%;object-fit:cover;opacity:0.15;" onerror="this.style.background='linear-gradient(135deg,#2a2520,#1a1714)';this.alt='Image unavailable';">
+     <div style="position:absolute;inset:0;background:rgba(26,23,20,0.85);"></div>
+    </div>
+    <div style="position:relative;z-index:2;max-width:560px;margin:0 auto;text-align:center;">
+     <div class="anim-fade-up">
+      <p style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b49b78;margin:0 0 12px;">Start Here</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,48px);font-weight:300;color:#f0ebe3;margin:0 0 16px;">Book Your Consult</h2>
+      <p style="color:#a09585;font-size:15px;font-weight:300;margin:0 0 40px;line-height:1.6;">Tell us about your vision. We'll craft the perfect plan together.</p>
+     </div>
+     <form id="contact-form" class="anim-fade-up" style="display:flex;flex-direction:column;gap:16px;text-align:left;" onsubmit="return false;"><label for="form-name" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#b49b78;margin-bottom:-8px;">Your Names</label> <input id="form-name" type="text" placeholder="e.g. Mara &amp; James" style="padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,155,120,0.25);color:#f0ebe3;font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color 0.3s;" onfocus="this.style.borderColor='#b49b78'" onblur="this.style.borderColor='rgba(180,155,120,0.25)'"> <label for="form-email" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#b49b78;margin-bottom:-8px;">Email</label> <input id="form-email" type="email" placeholder="hello@example.com" style="padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,155,120,0.25);color:#f0ebe3;font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color 0.3s;" onfocus="this.style.borderColor='#b49b78'" onblur="this.style.borderColor='rgba(180,155,120,0.25)'"> <label for="form-date" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#b49b78;margin-bottom:-8px;">Ideal Date</label> <input id="form-date" type="text" placeholder="e.g. September 2025" style="padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,155,120,0.25);color:#f0ebe3;font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color 0.3s;" onfocus="this.style.borderColor='#b49b78'" onblur="this.style.borderColor='rgba(180,155,120,0.25)'"> <label for="form-guests" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#b49b78;margin-bottom:-8px;">Guest Count</label> <input id="form-guests" type="text" placeholder="e.g. 15-25" style="padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,155,120,0.25);color:#f0ebe3;font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color 0.3s;" onfocus="this.style.borderColor='#b49b78'" onblur="this.style.borderColor='rgba(180,155,120,0.25)'"> <button type="submit" id="submit-btn" class="pulse-cta" style="margin-top:8px;padding:16px;background:#b49b78;color:#1a1714;border:none;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500;cursor:pointer;transition:background 0.3s;" onmouseover="this.style.background='#c8b08e'" onmouseout="this.style.background='#b49b78'">Send Inquiry</button>
+      <div id="form-success" style="display:none;text-align:center;padding:16px;border:1px solid rgba(180,155,120,0.3);color:#b49b78;font-size:14px;margin-top:8px;">
+       Thank you! We'll be in touch within 24 hours.
+      </div>
+     </form>
+    </div>
+   </section><!-- Bottom CTA -->
+   <section style="padding:80px 24px;text-align:center;border-top:1px solid rgba(180,155,120,0.1);">
+    <div class="anim-fade-up" style="max-width:600px;margin:0 auto;">
+     <h2 id="bottom-cta-title" style="font-family:'Cormorant Garamond',serif;font-size:clamp(36px,6vw,56px);font-weight:300;color:#f0ebe3;margin:0 0 16px;line-height:1.1;">Plan less. Feel more.</h2>
+     <div style="width:40px;height:1px;background:#b49b78;margin:24px auto;"></div>
+     <p style="color:#a09585;font-size:14px;font-weight:300;margin:0 0 40px;line-height:1.6;">Your intimate celebration deserves a plan that feels as special as the day itself.</p><a href="#book" style="display:inline-block;padding:14px 40px;background:#b49b78;color:#1a1714;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500;transition:background 0.3s;" onmouseover="this.style.background='#c8b08e'" onmouseout="this.style.background='#b49b78'">Begin Planning</a> <!-- Vote + Comment Widget -->
+     <div style="margin-top:64px;padding:40px 28px;border:1px solid rgba(180,155,120,0.15);">
+      <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#b49b78;margin:0 0 20px;">Vote + Comment</p>
+      <div style="display:flex;justify-content:center;gap:24px;margin-bottom:24px;"><button id="vote-up" style="display:flex;align-items:center;gap:8px;padding:10px 20px;background:none;border:1px solid rgba(180,155,120,0.25);color:#b49b78;font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.borderColor='#b49b78'" onmouseout="this.style.borderColor='rgba(180,155,120,0.25)'">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <polyline points="18 15 12 9 6 15" />
+        </svg><span id="vote-count">0</span> </button> <button id="vote-down" style="display:flex;align-items:center;gap:8px;padding:10px 20px;background:none;border:1px solid rgba(180,155,120,0.25);color:#a09585;font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.borderColor='#b49b78'" onmouseout="this.style.borderColor='rgba(180,155,120,0.25)'">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <polyline points="6 9 12 15 18 9" />
+        </svg></button>
+      </div>
+      <div style="display:flex;gap:8px;"><input id="comment-input" type="text" placeholder="Leave a thought..." style="flex:1;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,155,120,0.2);color:#f0ebe3;font-family:'Jost',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='#b49b78'" onblur="this.style.borderColor='rgba(180,155,120,0.2)'"> <button id="comment-btn" style="padding:12px 20px;background:#b49b78;color:#1a1714;border:none;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:background 0.3s;" onmouseover="this.style.background='#c8b08e'" onmouseout="this.style.background='#b49b78'">Post</button>
+      </div>
+      <div id="comments-list" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;"></div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer style="padding:40px 24px;text-align:center;border-top:1px solid rgba(180,155,120,0.08);">
+    <p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#b49b78;margin:0 0 8px;">MiniVow Planner</p>
+    <p style="font-size:12px;color:#a09585;font-weight:300;margin:0;">Small wedding, major feeling.</p>
+   </footer>
+  </div>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'Small wedding, major feeling.',
+  hero_subtitle: 'A calm plan for a beautiful day.',
+  cta_primary: 'Book a Consult',
+  cta_secondary: 'See Packages',
+  bottom_cta_title: 'Plan less. Feel more.',
+  background_color: '#1a1714',
+  surface_color: '#b49b78',
+  text_color: '#f0ebe3',
+  accent_color: '#d4c5a9',
+  muted_color: '#a09585',
+  font_family: 'Cormorant Garamond',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const el = (id) => document.getElementById(id);
+  el('hero-title').textContent = config.hero_title || defaultConfig.hero_title;
+  el('hero-subtitle').textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+  el('cta-primary-btn').textContent = config.cta_primary || defaultConfig.cta_primary;
+  el('cta-secondary-btn').textContent = config.cta_secondary || defaultConfig.cta_secondary;
+  el('bottom-cta-title').textContent = config.bottom_cta_title || defaultConfig.bottom_cta_title;
+
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const text = config.text_color || defaultConfig.text_color;
+  const accent = config.accent_color || defaultConfig.accent_color;
+  const muted = config.muted_color || defaultConfig.muted_color;
+
+  document.getElementById('app-wrapper').style.background = bg;
+  document.getElementById('app-wrapper').style.color = text;
+
+  // Apply surface color to CTA buttons
+  el('cta-primary-btn').style.background = surface;
+  el('submit-btn').style.background = surface;
+  el('comment-btn').style.background = surface;
+
+  // Font
+  const font = config.font_family || defaultConfig.font_family;
+  const baseSize = config.font_size || defaultConfig.font_size;
+  document.querySelectorAll('[style*="Cormorant Garamond"]').forEach(e => {
+    e.style.fontFamily = `${font}, Georgia, serif`;
+  });
+  el('hero-title').style.fontFamily = `${font}, Georgia, serif`;
+  el('bottom-cta-title').style.fontFamily = `${font}, Georgia, serif`;
+  el('hero-subtitle').style.fontSize = `${baseSize * 1.25}px`;
+}
+
+// Element SDK init
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }},
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }},
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }},
+        { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }},
+        { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); }}
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['hero_title', config.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+      ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+      ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+      ['bottom_cta_title', config.bottom_cta_title || defaultConfig.bottom_cta_title]
+    ])
+  });
+}
+
+// Scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); }});
+}, { threshold: 0.15 });
+document.querySelectorAll('.anim-fade-up, .anim-fade-in').forEach(el => observer.observe(el));
+
+// Mobile nav
+const mobileBtn = document.getElementById('mobile-menu-btn');
+const mobileNav = document.getElementById('mobile-nav');
+const navLinks = document.getElementById('nav-links');
+function checkMobile() {
+  if (window.innerWidth < 768) {
+    mobileBtn.style.display = 'block';
+    navLinks.style.display = 'none';
+  } else {
+    mobileBtn.style.display = 'none';
+    navLinks.style.display = 'flex';
+    mobileNav.style.display = 'none';
+  }
+}
+checkMobile();
+window.addEventListener('resize', checkMobile);
+mobileBtn.addEventListener('click', () => {
+  mobileNav.style.display = mobileNav.style.display === 'none' ? 'flex' : 'none';
+});
+document.querySelectorAll('.mobile-nav-link').forEach(l => {
+  l.addEventListener('click', () => { mobileNav.style.display = 'none'; });
+});
+
+// Active nav on scroll
+const sections = ['home','packages','timeline','details','reviews','book'];
+const appWrapper = document.getElementById('app-wrapper');
+appWrapper.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(id => {
+    const s = document.getElementById(id);
+    if (s && s.getBoundingClientRect().top < 200) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+});
+
+// Form
+document.getElementById('contact-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  document.getElementById('form-success').style.display = 'block';
+  document.getElementById('submit-btn').textContent = 'Sent!';
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('submit-btn').style.opacity = '0.6';
+});
+
+// Vote + Comment
+let voteCount = 0;
+document.getElementById('vote-up').addEventListener('click', () => {
+  voteCount++;
+  document.getElementById('vote-count').textContent = voteCount;
+});
+document.getElementById('vote-down').addEventListener('click', () => {
+  voteCount = Math.max(0, voteCount - 1);
+  document.getElementById('vote-count').textContent = voteCount;
+});
+document.getElementById('comment-btn').addEventListener('click', () => {
+  const input = document.getElementById('comment-input');
+  if (!input.value.trim()) return;
+  const div = document.createElement('div');
+  div.style.cssText = 'padding:12px 16px;border:1px solid rgba(180,155,120,0.1);color:#d4c5a9;font-size:13px;font-weight:300;animation:fadeIn 0.4s ease;';
+  div.textContent = input.value.trim();
+  document.getElementById('comments-list').appendChild(div);
+  input.value = '';
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef8304d557fa155',t:'MTc3NjczMDQ2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

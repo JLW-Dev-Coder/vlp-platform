@@ -1,1 +1,728 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/f00fd6fd-811f-47f5-8078-cfae5681016e -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReelReady Studio</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body { height: 100%; margin: 0; }
+    * { box-sizing: border-box; }
+    .app-root { height: 100%; overflow-y: auto; overflow-x: hidden; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 72, 52, 0.4); }
+      50% { box-shadow: 0 0 20px 8px rgba(255, 72, 52, 0.15); }
+    }
+    @keyframes slide-bar {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes float-subtle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .anim-fade-up { opacity: 0; }
+    .anim-fade-up.visible { animation: fadeUp 0.7s ease forwards; }
+    .anim-fade-in { opacity: 0; }
+    .anim-fade-in.visible { animation: fadeIn 0.8s ease forwards; }
+    .pulse-cta { animation: pulse-glow 2.5s ease-in-out infinite; }
+    .float-icon { animation: float-subtle 3s ease-in-out infinite; }
+
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 0; height: 1.5px;
+      background: #FF4834;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    .ba-slider { position: relative; overflow: hidden; }
+    .ba-slider .ba-after { position: absolute; top: 0; left: 0; width: 50%; height: 100%; overflow: hidden; }
+    .ba-slider input[type=range] {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      -webkit-appearance: none; appearance: none;
+      background: transparent; cursor: ew-resize; z-index: 10;
+    }
+    .ba-slider input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 3px; height: 300px;
+      background: #FF4834;
+      cursor: ew-resize;
+    }
+
+    .package-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .package-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+
+    .step-line { height: 2px; background: #2a2a2a; position: relative; overflow: hidden; }
+    .step-line .fill { height: 100%; background: #FF4834; width: 0; transition: width 1s ease; }
+    .step-line.visible .fill { width: 100%; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    .review-card { backdrop-filter: blur(10px); }
+
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; }
+    .toast {
+      padding: 12px 20px; border-radius: 8px; color: #fff; font-size: 14px;
+      animation: fadeUp 0.4s ease forwards;
+      margin-top: 8px;
+    }
+    .toast-success { background: #1a7a3a; }
+    .toast-error { background: #a82020; }
+
+    .vote-btn { transition: all 0.2s ease; }
+    .vote-btn:hover { transform: scale(1.05); }
+    .vote-btn.voted { pointer-events: none; }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: '#0A0A0A',
+            surface: '#141414',
+            accent: '#FF4834',
+            txt: '#E8E4E0',
+            muted: '#888680'
+          },
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            mono: ['Space Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full bg-dark text-txt font-display">
+  <div class="app-root w-full" id="app-root"><!-- STICKY NAV -->
+   <nav id="main-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300" style="background:rgba(10,10,10,0.85);backdrop-filter:blur(12px);">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"><a href="#home" class="flex items-center gap-2">
+      <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="#FF4834" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="22" height="16" rx="2" /> <polygon points="11,10 19,14 11,18" />
+      </svg><span class="font-bold text-lg tracking-tight" id="nav-brand">ReelReady</span> </a>
+     <div class="hidden md:flex items-center gap-8 text-sm tracking-wide"><a href="#home" class="nav-link text-muted hover:text-txt">Home</a> <a href="#packages" class="nav-link text-muted hover:text-txt">Packages</a> <a href="#process" class="nav-link text-muted hover:text-txt">Process</a> <a href="#beforeafter" class="nav-link text-muted hover:text-txt">Before/After</a> <a href="#reviews" class="nav-link text-muted hover:text-txt">Reviews</a> <a href="#book" class="nav-link bg-accent text-white px-4 py-2 rounded-full hover:bg-red-600 transition">Book</a>
+     </div><button id="mobile-toggle" class="md:hidden text-txt" aria-label="Menu">
+      <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+       <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+      </svg></button>
+    </div>
+    <div id="mobile-menu" class="md:hidden hidden px-6 pb-4 flex-col gap-3 text-sm"><a href="#home" class="block py-2 text-muted hover:text-txt">Home</a> <a href="#packages" class="block py-2 text-muted hover:text-txt">Packages</a> <a href="#process" class="block py-2 text-muted hover:text-txt">Process</a> <a href="#beforeafter" class="block py-2 text-muted hover:text-txt">Before/After</a> <a href="#reviews" class="block py-2 text-muted hover:text-txt">Reviews</a> <a href="#book" class="block py-2 text-accent hover:text-red-400">Book a Call</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative w-full flex items-center justify-center overflow-hidden" style="min-height:100%;">
+    <div class="absolute inset-0" style="background:radial-gradient(ellipse at 60% 30%, rgba(255,72,52,0.08) 0%, transparent 60%);"></div>
+    <div class="absolute top-20 right-10 float-icon opacity-20">
+     <svg width="60" height="60" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1" stroke-linecap="round">
+      <circle cx="12" cy="12" r="10" /><polygon points="10,8 16,12 10,16" />
+     </svg>
+    </div>
+    <div class="absolute bottom-20 left-10 float-icon opacity-15" style="animation-delay:1.5s;">
+     <svg width="48" height="48" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1" stroke-linecap="round">
+      <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94L6.7 20.2a2.12 2.12 0 01-3-3l6.83-6.83a6 6 0 017.94-7.94l-3.77 3.77z" />
+     </svg>
+    </div>
+    <div class="relative z-10 text-center px-6 max-w-4xl mx-auto pt-24 pb-16">
+     <div class="anim-fade-up" style="animation-delay:0.1s;"><span class="inline-block font-mono text-xs tracking-[0.3em] text-accent uppercase mb-6 border border-accent/30 px-4 py-1.5 rounded-full">Short-Form Video Editing</span>
+     </div>
+     <h1 class="anim-fade-up text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.05] mb-6" id="hero-title" style="animation-delay:0.2s;">Turn raw clips into<br><span class="text-accent">scroll-stoppers.</span></h1>
+     <p class="anim-fade-up text-lg sm:text-xl text-muted max-w-xl mx-auto mb-10 font-mono" id="hero-subtitle" style="animation-delay:0.35s;">Editing that makes your content look expensive.</p>
+     <div class="anim-fade-up flex flex-col sm:flex-row items-center justify-center gap-4" style="animation-delay:0.5s;"><a href="#book" class="pulse-cta bg-accent text-white font-bold px-8 py-3.5 rounded-full hover:bg-red-600 transition text-sm tracking-wide">Book a Call</a> <a href="#packages" class="border border-white/20 text-txt font-bold px-8 py-3.5 rounded-full hover:border-accent hover:text-accent transition text-sm tracking-wide">See Packages</a>
+     </div>
+     <div class="anim-fade-up mt-16 flex items-center justify-center gap-8 text-muted font-mono text-xs" style="animation-delay:0.65s;"><span class="flex items-center gap-2">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+       </svg> 24hr turnaround</span> <span class="flex items-center gap-2">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+       </svg> Unlimited revisions</span> <span class="flex items-center gap-2">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+       </svg> 50+ creators trust us</span>
+     </div>
+    </div>
+   </section><!-- PACKAGES -->
+   <section id="packages" class="w-full py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+     <div class="text-center mb-16 anim-fade-up"><span class="font-mono text-xs tracking-[0.3em] text-accent uppercase">Pricing</span>
+      <h2 class="text-4xl sm:text-5xl font-extrabold mt-3" id="packages-heading">Choose Your Package</h2>
+      <p class="text-muted mt-4 font-mono text-sm max-w-lg mx-auto">Creators pay monthly. High-retainer potential. Clear packages convert.</p>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6"><!-- Starter -->
+      <div class="package-card bg-surface border border-white/5 rounded-2xl p-8 flex flex-col anim-fade-up" style="animation-delay:0.1s;">
+       <div class="flex items-center gap-3 mb-6">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1.5" stroke-linecap="round">
+         <polygon points="5,3 19,12 5,21" />
+        </svg>
+        <h3 class="font-bold text-xl">Starter</h3>
+       </div>
+       <div class="mb-6"><span class="text-4xl font-extrabold">$497</span><span class="text-muted font-mono text-sm">/mo</span>
+       </div>
+       <ul class="space-y-3 text-sm text-muted mb-8 flex-1">
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>4 reels/month</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Captions + trending audio</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>1 revision per reel</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>48hr delivery</li>
+       </ul><a href="#book" class="block text-center border border-accent text-accent font-bold py-3 rounded-full hover:bg-accent hover:text-white transition text-sm">Get Started</a>
+      </div><!-- Pro (Popular) -->
+      <div class="package-card bg-surface border-2 border-accent rounded-2xl p-8 flex flex-col relative anim-fade-up" style="animation-delay:0.25s;">
+       <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs font-bold px-4 py-1 rounded-full tracking-wide">
+        Most Popular
+       </div>
+       <div class="flex items-center gap-3 mb-6">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1.5" stroke-linecap="round">
+         <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94L6.7 20.2a2.12 2.12 0 01-3-3l6.83-6.83a6 6 0 017.94-7.94l-3.77 3.77z" />
+        </svg>
+        <h3 class="font-bold text-xl">Pro</h3>
+       </div>
+       <div class="mb-6"><span class="text-4xl font-extrabold">$997</span><span class="text-muted font-mono text-sm">/mo</span>
+       </div>
+       <ul class="space-y-3 text-sm text-muted mb-8 flex-1">
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>10 reels/month</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Custom thumbnails + covers</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Unlimited revisions</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>24hr delivery</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Content strategy call</li>
+       </ul><a href="#book" class="block text-center bg-accent text-white font-bold py-3 rounded-full hover:bg-red-600 transition text-sm">Get Started</a>
+      </div><!-- Studio -->
+      <div class="package-card bg-surface border border-white/5 rounded-2xl p-8 flex flex-col anim-fade-up" style="animation-delay:0.4s;">
+       <div class="flex items-center gap-3 mb-6">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1.5" stroke-linecap="round">
+         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+        <h3 class="font-bold text-xl">Studio</h3>
+       </div>
+       <div class="mb-6"><span class="text-4xl font-extrabold">$1,997</span><span class="text-muted font-mono text-sm">/mo</span>
+       </div>
+       <ul class="space-y-3 text-sm text-muted mb-8 flex-1">
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>20 reels/month</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Full brand kit integration</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Dedicated editor</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Same-day delivery</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>Monthly analytics report</li>
+        <li class="flex items-start gap-2">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+         </svg>30 reel cover templates</li>
+       </ul><a href="#book" class="block text-center border border-accent text-accent font-bold py-3 rounded-full hover:bg-accent hover:text-white transition text-sm">Get Started</a>
+      </div>
+     </div>
+    </div>
+   </section><!-- PROCESS -->
+   <section id="process" class="w-full py-24 px-6" style="background:linear-gradient(180deg, #0A0A0A 0%, #111 50%, #0A0A0A 100%);">
+    <div class="max-w-5xl mx-auto">
+     <div class="text-center mb-16 anim-fade-up"><span class="font-mono text-xs tracking-[0.3em] text-accent uppercase">Workflow</span>
+      <h2 class="text-4xl sm:text-5xl font-extrabold mt-3" id="process-heading">How It Works</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-0 items-start">
+      <div class="anim-fade-up text-center px-6 py-8" style="animation-delay:0.1s;">
+       <div class="w-16 h-16 rounded-full border border-accent/40 flex items-center justify-center mx-auto mb-5">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1.5" stroke-linecap="round">
+         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17,8 12,3 7,8" /><line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+       </div>
+       <div class="font-mono text-accent text-xs mb-2">
+        01
+       </div>
+       <h3 class="font-bold text-lg mb-2">Upload Your Clips</h3>
+       <p class="text-muted text-sm font-mono">Drop your raw footage into our shared drive. We accept any format, any length.</p>
+      </div>
+      <div class="anim-fade-up text-center px-6 py-8" style="animation-delay:0.25s;">
+       <div class="w-16 h-16 rounded-full border border-accent/40 flex items-center justify-center mx-auto mb-5">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1.5" stroke-linecap="round">
+         <circle cx="6" cy="6" r="3" /><path d="M6 21V9" /><circle cx="18" cy="18" r="3" /><path d="M18 15V3" />
+        </svg>
+       </div>
+       <div class="font-mono text-accent text-xs mb-2">
+        02
+       </div>
+       <h3 class="font-bold text-lg mb-2">We Edit the Magic</h3>
+       <p class="text-muted text-sm font-mono">Cuts, captions, transitions, trending audio. We handle every detail.</p>
+      </div>
+      <div class="anim-fade-up text-center px-6 py-8" style="animation-delay:0.4s;">
+       <div class="w-16 h-16 rounded-full border border-accent/40 flex items-center justify-center mx-auto mb-5">
+        <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="1.5" stroke-linecap="round">
+         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+       </div>
+       <div class="font-mono text-accent text-xs mb-2">
+        03
+       </div>
+       <h3 class="font-bold text-lg mb-2">Post &amp; Go Viral</h3>
+       <p class="text-muted text-sm font-mono">Get your polished reels back ready to post. Watch engagement skyrocket.</p>
+      </div>
+     </div>
+     <div class="step-line mt-4 mx-6 rounded-full">
+      <div class="fill rounded-full"></div>
+     </div>
+    </div>
+   </section><!-- BEFORE/AFTER -->
+   <section id="beforeafter" class="w-full py-24 px-6">
+    <div class="max-w-5xl mx-auto">
+     <div class="text-center mb-16 anim-fade-up"><span class="font-mono text-xs tracking-[0.3em] text-accent uppercase">Results</span>
+      <h2 class="text-4xl sm:text-5xl font-extrabold mt-3">Before &amp; After</h2>
+      <p class="text-muted mt-4 font-mono text-sm">Drag the slider to see the transformation.</p>
+     </div>
+     <div class="grid md:grid-cols-2 gap-8"><!-- BA 1 -->
+      <div class="ba-slider rounded-2xl overflow-hidden anim-fade-up" style="height:280px;animation-delay:0.1s;">
+       <div class="w-full h-full" style="background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <svg width="48" height="48" viewbox="0 0 24 24" fill="none" stroke="#333" stroke-width="1">
+         <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+        </svg><span class="text-muted/40 font-mono text-xs mt-3">RAW — No edits, shaky, poor audio</span>
+       </div>
+       <div class="ba-after" style="background:linear-gradient(135deg, #FF4834 0%, #ff6b4a 50%, #ff8f70 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <svg width="48" height="48" viewbox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+         <polygon points="5,3 19,12 5,21" />
+        </svg><span class="text-white/80 font-mono text-xs mt-3">EDITED — Polished, captioned, viral-ready</span>
+       </div><input type="range" min="0" max="100" value="50" oninput="this.parentElement.querySelector('.ba-after').style.width=this.value+'%'" aria-label="Before after slider">
+      </div><!-- BA 2 -->
+      <div class="ba-slider rounded-2xl overflow-hidden anim-fade-up" style="height:280px;animation-delay:0.25s;">
+       <div class="w-full h-full" style="background:linear-gradient(135deg, #1a1a1a 0%, #252525 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <svg width="48" height="48" viewbox="0 0 24 24" fill="none" stroke="#333" stroke-width="1">
+         <rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12" y2="18" />
+        </svg><span class="text-muted/40 font-mono text-xs mt-3">RAW — Phone footage, no structure</span>
+       </div>
+       <div class="ba-after" style="background:linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <svg width="48" height="48" viewbox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg><span class="text-white/80 font-mono text-xs mt-3">EDITED — Hook, story arc, CTA</span>
+       </div><input type="range" min="0" max="100" value="50" oninput="this.parentElement.querySelector('.ba-after').style.width=this.value+'%'" aria-label="Before after slider">
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="w-full py-24 px-6" style="background:linear-gradient(180deg, #0A0A0A 0%, #0f0f0f 50%, #0A0A0A 100%);">
+    <div class="max-w-5xl mx-auto">
+     <div class="text-center mb-16 anim-fade-up"><span class="font-mono text-xs tracking-[0.3em] text-accent uppercase">Testimonials</span>
+      <h2 class="text-4xl sm:text-5xl font-extrabold mt-3">Creator Love</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="review-card bg-white/5 border border-white/5 rounded-2xl p-6 anim-fade-up" style="animation-delay:0.1s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+       </div>
+       <p class="text-sm text-muted mb-4 font-mono leading-relaxed">"My reels went from 200 views to 15K average. The team just gets short-form content."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
+         JM
+        </div>
+        <div>
+         <div class="text-sm font-bold">
+          Jess M.
+         </div>
+         <div class="text-xs text-muted">
+          Fitness Creator
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="review-card bg-white/5 border border-white/5 rounded-2xl p-6 anim-fade-up" style="animation-delay:0.2s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+       </div>
+       <p class="text-sm text-muted mb-4 font-mono leading-relaxed">"I used to spend 6 hours editing one reel. Now I just film and send. Game changer."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
+         DK
+        </div>
+        <div>
+         <div class="text-sm font-bold">
+          Daniel K.
+         </div>
+         <div class="text-xs text-muted">
+          Tech Reviewer
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="review-card bg-white/5 border border-white/5 rounded-2xl p-6 anim-fade-up" style="animation-delay:0.3s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="#FF4834" stroke="none">
+         <polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9" />
+        </svg>
+       </div>
+       <p class="text-sm text-muted mb-4 font-mono leading-relaxed">"Professional, fast, and they actually understand hooks. My brand looks premium now."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
+         SR
+        </div>
+        <div>
+         <div class="text-sm font-bold">
+          Sophia R.
+         </div>
+         <div class="text-xs text-muted">
+          Lifestyle Brand
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- BOTTOM CTA + VOTE/COMMENT -->
+   <section id="book" class="w-full py-24 px-6 relative">
+    <div class="absolute inset-0" style="background:radial-gradient(ellipse at 40% 60%, rgba(255,72,52,0.06) 0%, transparent 60%);"></div>
+    <div class="max-w-3xl mx-auto relative z-10">
+     <div class="text-center mb-12 anim-fade-up">
+      <h2 class="text-4xl sm:text-5xl font-extrabold" id="bottom-cta-title">Post more. Stress less.</h2>
+      <p class="text-muted mt-4 font-mono text-sm max-w-md mx-auto">Let us handle the editing so you can focus on creating. Book your free strategy call today.</p><a href="#" class="pulse-cta inline-block mt-8 bg-accent text-white font-bold px-10 py-4 rounded-full hover:bg-red-600 transition text-sm tracking-wide" onclick="event.preventDefault();document.getElementById('book-form').scrollIntoView({behavior:'smooth'});">Book a Call</a>
+     </div><!-- Booking Form -->
+     <div id="book-form" class="bg-surface border border-white/5 rounded-2xl p-8 mb-12 anim-fade-up" style="animation-delay:0.15s;">
+      <h3 class="font-bold text-xl mb-6 text-center">Book Your Free Strategy Call</h3>
+      <form id="booking-form" class="space-y-4">
+       <div><label for="book-name" class="block text-xs text-muted mb-1 font-mono">Your Name</label> <input id="book-name" type="text" required class="w-full bg-dark border border-white/10 rounded-lg px-4 py-3 text-sm text-txt focus:border-accent focus:outline-none transition" placeholder="Full name">
+       </div>
+       <div><label for="book-email" class="block text-xs text-muted mb-1 font-mono">Email</label> <input id="book-email" type="email" required class="w-full bg-dark border border-white/10 rounded-lg px-4 py-3 text-sm text-txt focus:border-accent focus:outline-none transition" placeholder="you@example.com">
+       </div>
+       <div><label for="book-msg" class="block text-xs text-muted mb-1 font-mono">Tell us about your content</label> <textarea id="book-msg" rows="3" class="w-full bg-dark border border-white/10 rounded-lg px-4 py-3 text-sm text-txt focus:border-accent focus:outline-none transition resize-none" placeholder="Platform, niche, goals..."></textarea>
+       </div><button type="submit" id="booking-submit" class="w-full bg-accent text-white font-bold py-3 rounded-full hover:bg-red-600 transition text-sm">Submit Booking Request</button>
+      </form>
+      <div id="booking-success" class="hidden text-center py-6">
+       <svg class="mx-auto mb-3" width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#FF4834" stroke-width="2" stroke-linecap="round">
+        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22,4 12,14.01 9,11.01" />
+       </svg>
+       <p class="font-bold text-lg">Booking received!</p>
+       <p class="text-muted text-sm font-mono mt-1">We'll reach out within 24 hours.</p>
+      </div>
+     </div><!-- Vote + Comment Widget -->
+     <div class="bg-surface border border-white/5 rounded-2xl p-8 anim-fade-up" style="animation-delay:0.3s;">
+      <h3 class="font-bold text-xl mb-2 text-center">Vote + Comment</h3>
+      <p class="text-center text-muted text-xs font-mono mb-6">Would you use a short-form video editing service?</p>
+      <div class="flex justify-center gap-4 mb-8"><button id="vote-yes" class="vote-btn flex items-center gap-2 bg-accent/10 border border-accent/30 text-accent px-6 py-3 rounded-full font-bold text-sm hover:bg-accent hover:text-white transition">
+        <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+         <path d="M14 9V5a3 3 0 00-6 0v4" /><path d="M3 15a2 2 0 002 2h2.6a1 1 0 01.9.5l1 2a1 1 0 00.9.5h2.2a1 1 0 00.9-.5l1-2a1 1 0 01.9-.5H18a2 2 0 002-2v-1a2 2 0 00-2-2H6a2 2 0 00-2 2z" />
+        </svg> Yes <span id="yes-count" class="font-mono">(0)</span> </button> <button id="vote-no" class="vote-btn flex items-center gap-2 bg-white/5 border border-white/10 text-muted px-6 py-3 rounded-full font-bold text-sm hover:bg-white/10 hover:text-txt transition">
+        <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+         <path d="M10 15V19a3 3 0 006 0v-4" /><path d="M21 9a2 2 0 00-2-2h-2.6a1 1 0 01-.9-.5l-1-2a1 1 0 00-.9-.5H11.4a1 1 0 00-.9.5l-1 2a1 1 0 01-.9.5H6a2 2 0 00-2 2v1a2 2 0 002 2h12a2 2 0 002-2z" />
+        </svg> Nah <span id="no-count" class="font-mono">(0)</span> </button>
+      </div>
+      <form id="comment-form" class="flex gap-3"><label for="comment-input" class="sr-only">Leave a comment</label> <input id="comment-input" type="text" required placeholder="Leave a comment..." class="flex-1 bg-dark border border-white/10 rounded-full px-5 py-3 text-sm text-txt focus:border-accent focus:outline-none transition"> <button type="submit" id="comment-submit" class="bg-accent text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-red-600 transition">Post</button>
+      </form>
+      <div id="comments-list" class="mt-6 space-y-3 max-h-64 overflow-y-auto"></div>
+     </div>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="w-full py-8 px-6 border-t border-white/5">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted font-mono"><span>ReelReady Studio 2024</span> <span>Editing that makes your content look expensive.</span>
+    </div>
+   </footer>
+  </div>
+  <div class="toast-container" id="toast-container"></div>
+  <script>
+    // ---- CONFIG & SDK ----
+    const defaultConfig = {
+      background_color: '#0A0A0A',
+      surface_color: '#141414',
+      text_color: '#E8E4E0',
+      accent_color: '#FF4834',
+      muted_color: '#888680',
+      font_family: 'Syne',
+      font_size: 16,
+      hero_title: 'Turn raw clips into scroll-stoppers.',
+      hero_subtitle: 'Editing that makes your content look expensive.',
+      packages_heading: 'Choose Your Package',
+      process_heading: 'How It Works',
+      bottom_cta_title: 'Post more. Stress less.'
+    };
+
+    // Data state
+    let allData = [];
+    let hasVoted = false;
+
+    // Toast helper
+    function showToast(msg, type = 'success') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = 'toast toast-' + type;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    // Render comments
+    function renderData(data) {
+      allData = data;
+      const list = document.getElementById('comments-list');
+      const existingMap = new Map([...list.children].map(el => [el.dataset.id, el]));
+      const comments = data.filter(d => d.type === 'comment');
+      const yesVotes = data.filter(d => d.type === 'vote_yes').length;
+      const noVotes = data.filter(d => d.type === 'vote_no').length;
+
+      document.getElementById('yes-count').textContent = '(' + yesVotes + ')';
+      document.getElementById('no-count').textContent = '(' + noVotes + ')';
+
+      const newIds = new Set(comments.map(c => c.__backendId));
+      existingMap.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+
+      comments.forEach(c => {
+        if (existingMap.has(c.__backendId)) {
+          const el = existingMap.get(c.__backendId);
+          el.querySelector('.c-name').textContent = c.name || 'Anonymous';
+          el.querySelector('.c-msg').textContent = c.message;
+        } else {
+          const el = document.createElement('div');
+          el.dataset.id = c.__backendId;
+          el.className = 'flex items-start gap-3 p-3 bg-dark rounded-xl';
+          const initials = (c.name || 'A').substring(0, 2).toUpperCase();
+          el.innerHTML = '<div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-xs flex-shrink-0">' + initials + '</div><div><div class="c-name text-xs font-bold">' + (c.name || 'Anonymous') + '</div><div class="c-msg text-sm text-muted font-mono mt-0.5">' + (c.message || '') + '</div></div>';
+          list.appendChild(el);
+        }
+      });
+    }
+
+    // Data SDK init
+    (async () => {
+      const handler = { onDataChanged(data) { renderData(data); } };
+      const r = await window.dataSdk.init(handler);
+      if (!r.isOk) console.error('Data SDK init failed');
+    })();
+
+    // Element SDK init
+    window.elementSdk.init({
+      defaultConfig,
+      async onConfigChange(config) {
+        const bg = config.background_color || defaultConfig.background_color;
+        const sf = config.surface_color || defaultConfig.surface_color;
+        const tx = config.text_color || defaultConfig.text_color;
+        const ac = config.accent_color || defaultConfig.accent_color;
+        const mu = config.muted_color || defaultConfig.muted_color;
+        const ff = config.font_family || defaultConfig.font_family;
+        const fs = config.font_size || defaultConfig.font_size;
+
+        document.body.style.background = bg;
+        document.body.style.color = tx;
+        document.body.style.fontFamily = ff + ', sans-serif';
+
+        document.querySelectorAll('.bg-surface, .review-card, #book-form > div:first-of-type').forEach(el => { if (el.closest('.package-card') || el.classList.contains('review-card') || el.closest('#book-form')) el.style.background = sf; });
+        document.querySelectorAll('.package-card').forEach(el => el.style.background = sf);
+        document.querySelectorAll('[id$="-form"]').forEach(el => { if (el.closest('.bg-surface')) el.closest('.bg-surface').style.background = sf; });
+
+        const heroTitle = document.getElementById('hero-title');
+        if (heroTitle) {
+          const t = config.hero_title || defaultConfig.hero_title;
+          const parts = t.split(/(\bscroll-stoppers\b\.?)/i);
+          if (parts.length > 1) {
+            heroTitle.innerHTML = parts[0] + '<br><span class="text-accent" style="color:' + ac + '">' + parts[1] + '</span>' + (parts[2] || '');
+          } else {
+            heroTitle.textContent = t;
+          }
+          heroTitle.style.fontSize = (fs * 3.5) + 'px';
+        }
+
+        const heroSub = document.getElementById('hero-subtitle');
+        if (heroSub) { heroSub.textContent = config.hero_subtitle || defaultConfig.hero_subtitle; heroSub.style.fontSize = (fs * 1.15) + 'px'; heroSub.style.color = mu; }
+
+        const pkgH = document.getElementById('packages-heading');
+        if (pkgH) { pkgH.textContent = config.packages_heading || defaultConfig.packages_heading; pkgH.style.fontSize = (fs * 2.8) + 'px'; }
+
+        const procH = document.getElementById('process-heading');
+        if (procH) { procH.textContent = config.process_heading || defaultConfig.process_heading; procH.style.fontSize = (fs * 2.8) + 'px'; }
+
+        const btmCta = document.getElementById('bottom-cta-title');
+        if (btmCta) { btmCta.textContent = config.bottom_cta_title || defaultConfig.bottom_cta_title; btmCta.style.fontSize = (fs * 2.8) + 'px'; }
+
+        // Accent color on buttons
+        document.querySelectorAll('.pulse-cta, .bg-accent').forEach(el => { el.style.background = ac; });
+        document.querySelectorAll('.text-accent').forEach(el => { el.style.color = ac; });
+        document.querySelectorAll('.border-accent').forEach(el => { el.style.borderColor = ac; });
+      },
+      mapToCapabilities(config) {
+        return {
+          recolorables: [
+            { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+            { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+            { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+            { get: () => config.accent_color || defaultConfig.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+            { get: () => config.muted_color || defaultConfig.muted_color, set: v => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } }
+          ],
+          borderables: [],
+          fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+          fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+        };
+      },
+      mapToEditPanelValues(config) {
+        return new Map([
+          ['hero_title', config.hero_title || defaultConfig.hero_title],
+          ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+          ['packages_heading', config.packages_heading || defaultConfig.packages_heading],
+          ['process_heading', config.process_heading || defaultConfig.process_heading],
+          ['bottom_cta_title', config.bottom_cta_title || defaultConfig.bottom_cta_title]
+        ]);
+      }
+    });
+
+    // ---- MOBILE MENU ----
+    document.getElementById('mobile-toggle').addEventListener('click', () => {
+      const m = document.getElementById('mobile-menu');
+      m.classList.toggle('hidden');
+    });
+    document.querySelectorAll('#mobile-menu a').forEach(a => a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden')));
+
+    // ---- SCROLL ANIMATIONS ----
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.anim-fade-up, .anim-fade-in, .step-line').forEach(el => observer.observe(el));
+
+    // ---- BOOKING FORM ----
+    document.getElementById('booking-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('booking-submit');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+
+      if (allData.length >= 999) { showToast('Submission limit reached.', 'error'); btn.disabled = false; btn.textContent = 'Submit Booking Request'; return; }
+
+      const r = await window.dataSdk.create({
+        type: 'booking',
+        name: document.getElementById('book-name').value,
+        message: document.getElementById('book-email').value + ' | ' + document.getElementById('book-msg').value,
+        created_at: new Date().toISOString()
+      });
+
+      if (r.isOk) {
+        document.getElementById('booking-form').classList.add('hidden');
+        document.getElementById('booking-success').classList.remove('hidden');
+      } else {
+        showToast('Something went wrong. Try again.', 'error');
+      }
+      btn.disabled = false; btn.textContent = 'Submit Booking Request';
+    });
+
+    // ---- VOTES ----
+    document.getElementById('vote-yes').addEventListener('click', async () => {
+      if (hasVoted) return;
+      if (allData.length >= 999) { showToast('Limit reached.', 'error'); return; }
+      hasVoted = true;
+      document.getElementById('vote-yes').classList.add('voted', 'bg-accent', 'text-white');
+      document.getElementById('vote-no').classList.add('voted');
+      const r = await window.dataSdk.create({ type: 'vote_yes', name: '', message: '', created_at: new Date().toISOString() });
+      if (!r.isOk) { showToast('Vote failed.', 'error'); hasVoted = false; }
+    });
+    document.getElementById('vote-no').addEventListener('click', async () => {
+      if (hasVoted) return;
+      if (allData.length >= 999) { showToast('Limit reached.', 'error'); return; }
+      hasVoted = true;
+      document.getElementById('vote-no').classList.add('voted', 'bg-white/20', 'text-txt');
+      document.getElementById('vote-yes').classList.add('voted');
+      const r = await window.dataSdk.create({ type: 'vote_no', name: '', message: '', created_at: new Date().toISOString() });
+      if (!r.isOk) { showToast('Vote failed.', 'error'); hasVoted = false; }
+    });
+
+    // ---- COMMENTS ----
+    document.getElementById('comment-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('comment-input');
+      const btn = document.getElementById('comment-submit');
+      if (!input.value.trim()) return;
+      if (allData.length >= 999) { showToast('Comment limit reached.', 'error'); return; }
+      btn.disabled = true; btn.textContent = '...';
+      const r = await window.dataSdk.create({ type: 'comment', name: 'Visitor', message: input.value.trim(), created_at: new Date().toISOString() });
+      if (r.isOk) { input.value = ''; } else { showToast('Failed to post.', 'error'); }
+      btn.disabled = false; btn.textContent = 'Post';
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef8364305eda155',t:'MTc3NjczMDcxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

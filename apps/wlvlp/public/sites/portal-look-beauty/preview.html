@@ -1,1 +1,499 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/88abd25d-3e76-4e4f-8404-aeeb2f5a9863 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PortalLook Beauty</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&amp;family=Outfit:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+  html, body { height: 100%; margin: 0; }
+  * { box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0c;
+    --surface: #16161a;
+    --text: #f0ece2;
+    --accent: #c9a96e;
+    --accent2: #8b6cc7;
+  }
+
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); }
+
+  .font-display { font-family: 'Playfair Display', serif; }
+
+  /* Portal glow */
+  @keyframes portalPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(201,169,110,0.3), 0 0 40px rgba(139,108,199,0.15), inset 0 0 20px rgba(201,169,110,0.1); }
+    50% { box-shadow: 0 0 25px rgba(201,169,110,0.5), 0 0 60px rgba(139,108,199,0.3), inset 0 0 30px rgba(201,169,110,0.2); }
+  }
+
+  .portal-frame {
+    animation: portalPulse 3s ease-in-out infinite;
+    border: 1.5px solid rgba(201,169,110,0.4);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .portal-frame::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 18px;
+    background: conic-gradient(from 0deg, transparent, rgba(201,169,110,0.3), transparent, rgba(139,108,199,0.3), transparent);
+    z-index: 1;
+    pointer-events: none;
+    animation: portalSpin 6s linear infinite;
+  }
+
+  @keyframes portalSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  .portal-frame img {
+    transition: transform 8s ease;
+    will-change: transform;
+  }
+
+  .portal-frame:hover img {
+    transform: scale(1.08);
+  }
+
+  /* Staggered reveal */
+  .reveal-card {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Floating shop button */
+  @keyframes floatBtn {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .float-btn {
+    animation: floatBtn 2.5s ease-in-out infinite;
+  }
+
+  /* CTA pulse */
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201,169,110,0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(201,169,110,0); }
+  }
+  .cta-pulse { animation: ctaPulse 2s ease-in-out infinite; }
+
+  /* Nav */
+  .nav-link {
+    position: relative;
+    padding-bottom: 2px;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+  .hero-gradient {
+    background: radial-gradient(ellipse at 30% 50%, rgba(139,108,199,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(201,169,110,0.1) 0%, transparent 50%);
+  }
+
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,169,110,0.3), transparent);
+  }
+
+  /* Star rating */
+  .star-filled { color: var(--accent); }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full overflow-auto" style="background:var(--bg);"><!-- Sticky Nav -->
+   <nav id="main-nav" style="position:sticky;top:0;z-index:50;background:rgba(10,10,12,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,169,110,0.1);">
+    <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;"><a href="#home" class="font-display" style="font-size:20px;font-weight:700;color:var(--accent);text-decoration:none;letter-spacing:1px;">PortalLook</a>
+     <div style="display:flex;gap:24px;align-items:center;" id="nav-links"><a href="#home" class="nav-link" style="color:var(--text);text-decoration:none;font-size:13px;font-weight:400;letter-spacing:1px;text-transform:uppercase;">Home</a> <a href="#looks" class="nav-link" style="color:var(--text);text-decoration:none;font-size:13px;font-weight:400;letter-spacing:1px;text-transform:uppercase;">Looks</a> <a href="#shop" class="nav-link" style="color:var(--text);text-decoration:none;font-size:13px;font-weight:400;letter-spacing:1px;text-transform:uppercase;">Shop</a> <a href="#care" class="nav-link" style="color:var(--text);text-decoration:none;font-size:13px;font-weight:400;letter-spacing:1px;text-transform:uppercase;">Care Guide</a> <a href="#reviews" class="nav-link" style="color:var(--text);text-decoration:none;font-size:13px;font-weight:400;letter-spacing:1px;text-transform:uppercase;">Reviews</a> <a href="#buy" class="nav-link" style="color:var(--accent);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--accent);padding:6px 16px;border-radius:20px;">Buy</a>
+     </div>
+    </div>
+   </nav><!-- Hero -->
+   <section id="home" class="hero-gradient" style="min-height:90%;display:flex;align-items:center;justify-content:center;position:relative;padding:80px 24px;">
+    <div style="max-width:1200px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+     <div>
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;font-weight:500;">The Lookbook</p>
+      <h1 id="hero-title" class="font-display" style="font-size:clamp(40px,5.5vw,72px);font-weight:900;line-height:1.05;margin:0 0 20px;">Step into a new look.</h1>
+      <p id="hero-subtitle" style="font-size:18px;color:rgba(240,236,226,0.65);margin-bottom:36px;max-width:420px;line-height:1.6;">A lookbook built to convert.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;"><a href="#looks" id="cta-primary-btn" class="cta-pulse" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--accent);color:var(--bg);font-weight:600;border-radius:28px;text-decoration:none;font-size:14px;letter-spacing:0.5px;">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <path d="M12 3l1.5 4.5H18l-3.5 2.5L16 14.5 12 11.5 8 14.5l1.5-4.5L6 7.5h4.5z" />
+        </svg><span>Shop Looks</span> </a> <a href="#shop" id="cta-secondary-btn" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:1px solid rgba(201,169,110,0.4);color:var(--text);font-weight:500;border-radius:28px;text-decoration:none;font-size:14px;letter-spacing:0.5px;">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <path d="M15 4V2m0 2v2m0-2h-4.5M3 10v9a2 2 0 002 2h14a2 2 0 002-2v-9M3 10l2-6h14l2 6" /><circle cx="12" cy="15" r="2" />
+        </svg><span>Find Your Match</span> </a>
+      </div>
+     </div>
+     <div style="position:relative;">
+      <div class="portal-frame" style="aspect-ratio:3/4;max-width:420px;margin-left:auto;"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&amp;h=800&amp;fit=crop&amp;crop=face" alt="Beauty portrait" style="width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:0;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+      </div>
+      <div style="position:absolute;bottom:-20px;left:-20px;width:140px;height:180px;border-radius:12px;overflow:hidden;border:1px solid rgba(139,108,199,0.3);box-shadow:0 0 20px rgba(139,108,199,0.2);"><img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&amp;h=260&amp;fit=crop" alt="Makeup close up" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1520,#2a2232)';this.alt='Image unavailable';">
+      </div>
+     </div>
+    </div>
+   </section>
+   <div class="section-divider" style="max-width:800px;margin:0 auto;"></div><!-- Looks Section -->
+   <section id="looks" style="padding:100px 24px;">
+    <div style="max-width:1200px;margin:0 auto;">
+     <div style="text-align:center;margin-bottom:60px;">
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">Curated</p>
+      <h2 class="font-display" style="font-size:clamp(32px,4vw,52px);font-weight:700;margin:0;">Portal Looks</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;" id="looks-grid">
+      <div class="reveal-card" style="position:relative;">
+       <div class="portal-frame" style="aspect-ratio:3/4;"><img src="https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=500&amp;h=667&amp;fit=crop&amp;crop=face" alt="Hair model look 1" style="width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:0;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+       </div>
+       <div class="float-btn" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;"><button style="background:rgba(10,10,12,0.85);backdrop-filter:blur(8px);border:1px solid rgba(201,169,110,0.4);color:var(--accent);padding:10px 24px;border-radius:20px;font-size:12px;letter-spacing:1px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" />
+         </svg> Shop this look </button>
+       </div>
+       <p class="font-display" style="margin-top:14px;font-size:18px;font-weight:400;font-style:italic;text-align:center;">The Midnight Curl</p>
+      </div>
+      <div class="reveal-card" style="position:relative;">
+       <div class="portal-frame" style="aspect-ratio:3/4;animation-delay:0.5s;"><img src="https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=500&amp;h=667&amp;fit=crop&amp;crop=face" alt="Hair model look 2" style="width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:0;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+       </div>
+       <div class="float-btn" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;animation-delay:0.3s;"><button style="background:rgba(10,10,12,0.85);backdrop-filter:blur(8px);border:1px solid rgba(201,169,110,0.4);color:var(--accent);padding:10px 24px;border-radius:20px;font-size:12px;letter-spacing:1px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" />
+         </svg> Shop this look </button>
+       </div>
+       <p class="font-display" style="margin-top:14px;font-size:18px;font-weight:400;font-style:italic;text-align:center;">Golden Hour Glow</p>
+      </div>
+      <div class="reveal-card" style="position:relative;">
+       <div class="portal-frame" style="aspect-ratio:3/4;animation-delay:1s;"><img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=500&amp;h=667&amp;fit=crop&amp;crop=face" alt="Hair model look 3" style="width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:0;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+       </div>
+       <div class="float-btn" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;animation-delay:0.6s;"><button style="background:rgba(10,10,12,0.85);backdrop-filter:blur(8px);border:1px solid rgba(201,169,110,0.4);color:var(--accent);padding:10px 24px;border-radius:20px;font-size:12px;letter-spacing:1px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" />
+         </svg> Shop this look </button>
+       </div>
+       <p class="font-display" style="margin-top:14px;font-size:18px;font-weight:400;font-style:italic;text-align:center;">Salon Sleek</p>
+      </div>
+     </div>
+    </div>
+   </section>
+   <div class="section-divider" style="max-width:800px;margin:0 auto;"></div><!-- Shop Section -->
+   <section id="shop" style="padding:100px 24px;">
+    <div style="max-width:1200px;margin:0 auto;">
+     <div style="text-align:center;margin-bottom:60px;">
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">Collection</p>
+      <h2 class="font-display" style="font-size:clamp(32px,4vw,52px);font-weight:700;margin:0;">Shop the Edit</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;">
+      <div class="reveal-card" style="background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid rgba(201,169,110,0.08);">
+       <div style="aspect-ratio:1;overflow:hidden;position:relative;"><img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&amp;h=400&amp;fit=crop" alt="Luxury wig product" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+       </div>
+       <div style="padding:20px;">
+        <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin:0 0 6px;">Wigs</p>
+        <p class="font-display" style="font-size:17px;margin:0 0 4px;">The Duchess Wave</p>
+        <p style="color:rgba(240,236,226,0.5);font-size:13px;margin:0 0 14px;">24" Body Wave Lace Front</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:18px;color:var(--accent);">$189</span> <button style="background:var(--accent);color:var(--bg);border:none;padding:8px 18px;border-radius:16px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;">Add</button>
+        </div>
+       </div>
+      </div>
+      <div class="reveal-card" style="background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid rgba(201,169,110,0.08);">
+       <div style="aspect-ratio:1;overflow:hidden;"><img src="https://images.unsplash.com/photo-1571875257727-256c39da42af?w=400&amp;h=400&amp;fit=crop" alt="Cosmetics product" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+       </div>
+       <div style="padding:20px;">
+        <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin:0 0 6px;">Cosmetics</p>
+        <p class="font-display" style="font-size:17px;margin:0 0 4px;">Glow Primer Set</p>
+        <p style="color:rgba(240,236,226,0.5);font-size:13px;margin:0 0 14px;">Luminous Base + Setting Mist</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:18px;color:var(--accent);">$54</span> <button style="background:var(--accent);color:var(--bg);border:none;padding:8px 18px;border-radius:16px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;">Add</button>
+        </div>
+       </div>
+      </div>
+      <div class="reveal-card" style="background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid rgba(201,169,110,0.08);">
+       <div style="aspect-ratio:1;overflow:hidden;"><img src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=400&amp;h=400&amp;fit=crop" alt="Hair care product" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+       </div>
+       <div style="padding:20px;">
+        <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin:0 0 6px;">Hair Care</p>
+        <p class="font-display" style="font-size:17px;margin:0 0 4px;">Silk Repair Serum</p>
+        <p style="color:rgba(240,236,226,0.5);font-size:13px;margin:0 0 14px;">Bond-building treatment oil</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:18px;color:var(--accent);">$38</span> <button style="background:var(--accent);color:var(--bg);border:none;padding:8px 18px;border-radius:16px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;">Add</button>
+        </div>
+       </div>
+      </div>
+      <div class="reveal-card" style="background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid rgba(201,169,110,0.08);">
+       <div style="aspect-ratio:1;overflow:hidden;"><img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&amp;h=400&amp;fit=crop" alt="Styling tools" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+       </div>
+       <div style="padding:20px;">
+        <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin:0 0 6px;">Tools</p>
+        <p class="font-display" style="font-size:17px;margin:0 0 4px;">Edge Wand Pro</p>
+        <p style="color:rgba(240,236,226,0.5);font-size:13px;margin:0 0 14px;">Ceramic edge &amp; baby hair tool</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:18px;color:var(--accent);">$29</span> <button style="background:var(--accent);color:var(--bg);border:none;padding:8px 18px;border-radius:16px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;">Add</button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <div class="section-divider" style="max-width:800px;margin:0 auto;"></div><!-- Care Guide -->
+   <section id="care" style="padding:100px 24px;">
+    <div style="max-width:900px;margin:0 auto;">
+     <div style="text-align:center;margin-bottom:60px;">
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">Essentials</p>
+      <h2 class="font-display" style="font-size:clamp(32px,4vw,52px);font-weight:700;margin:0;">Care Guide</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;">
+      <div class="reveal-card" style="text-align:center;padding:32px 24px;background:var(--surface);border-radius:16px;border:1px solid rgba(201,169,110,0.08);">
+       <div style="width:48px;height:48px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(201,169,110,0.3);border-radius:12px;">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+         <path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z" /><circle cx="12" cy="9" r="2.5" />
+        </svg>
+       </div>
+       <h3 class="font-display" style="font-size:18px;margin:0 0 8px;">Wash &amp; Condition</h3>
+       <p style="color:rgba(240,236,226,0.5);font-size:14px;line-height:1.6;margin:0;">Use sulfate-free shampoo. Condition from mid-length to ends. Air dry on a wig stand.</p>
+      </div>
+      <div class="reveal-card" style="text-align:center;padding:32px 24px;background:var(--surface);border-radius:16px;border:1px solid rgba(201,169,110,0.08);">
+       <div style="width:48px;height:48px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(201,169,110,0.3);border-radius:12px;">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+         <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+        </svg>
+       </div>
+       <h3 class="font-display" style="font-size:18px;margin:0 0 8px;">Store Right</h3>
+       <p style="color:rgba(240,236,226,0.5);font-size:14px;line-height:1.6;margin:0;">Keep on a mannequin head or silk bag. Avoid direct sunlight and heat sources.</p>
+      </div>
+      <div class="reveal-card" style="text-align:center;padding:32px 24px;background:var(--surface);border-radius:16px;border:1px solid rgba(201,169,110,0.08);">
+       <div style="width:48px;height:48px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(201,169,110,0.3);border-radius:12px;">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+       </div>
+       <h3 class="font-display" style="font-size:18px;margin:0 0 8px;">Protect &amp; Style</h3>
+       <p style="color:rgba(240,236,226,0.5);font-size:14px;line-height:1.6;margin:0;">Always use heat protectant. Low-medium heat only. Detangle from ends first.</p>
+      </div>
+     </div>
+    </div>
+   </section>
+   <div class="section-divider" style="max-width:800px;margin:0 auto;"></div><!-- Reviews -->
+   <section id="reviews" style="padding:100px 24px;">
+    <div style="max-width:900px;margin:0 auto;">
+     <div style="text-align:center;margin-bottom:60px;">
+      <p style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">Voices</p>
+      <h2 class="font-display" style="font-size:clamp(32px,4vw,52px);font-weight:700;margin:0;">What They Say</h2>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;">
+      <div class="reveal-card" style="padding:28px;background:var(--surface);border-radius:16px;border:1px solid rgba(201,169,110,0.08);">
+       <div style="display:flex;gap:3px;margin-bottom:14px;">
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+       </div>
+       <p style="font-size:15px;line-height:1.7;margin:0 0 16px;color:rgba(240,236,226,0.8);font-style:italic;">"The Duchess Wave is unreal. I've never gotten so many compliments in one night."</p>
+       <p style="font-size:13px;color:var(--accent);margin:0;font-weight:500;">— Amara K.</p>
+      </div>
+      <div class="reveal-card" style="padding:28px;background:var(--surface);border-radius:16px;border:1px solid rgba(201,169,110,0.08);">
+       <div style="display:flex;gap:3px;margin-bottom:14px;">
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+       </div>
+       <p style="font-size:15px;line-height:1.7;margin:0 0 16px;color:rgba(240,236,226,0.8);font-style:italic;">"Best care guide I've followed. My unit lasted 8 months looking brand new."</p>
+       <p style="font-size:13px;color:var(--accent);margin:0;font-weight:500;">— Destiny R.</p>
+      </div>
+      <div class="reveal-card" style="padding:28px;background:var(--surface);border-radius:16px;border:1px solid rgba(201,169,110,0.08);">
+       <div style="display:flex;gap:3px;margin-bottom:14px;">
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+       </div>
+       <p style="font-size:15px;line-height:1.7;margin:0 0 16px;color:rgba(240,236,226,0.8);font-style:italic;">"The Glow Primer Set is the only base I use now. My skin has never looked this lit."</p>
+       <p style="font-size:13px;color:var(--accent);margin:0;font-weight:500;">— Jade L.</p>
+      </div>
+     </div>
+    </div>
+   </section>
+   <div class="section-divider" style="max-width:800px;margin:0 auto;"></div><!-- Buy / Bottom CTA -->
+   <section id="buy" style="padding:120px 24px;position:relative;">
+    <div class="hero-gradient" style="position:absolute;inset:0;pointer-events:none;"></div>
+    <div style="max-width:700px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+     <div class="portal-frame" style="width:120px;height:120px;border-radius:50%;margin:0 auto 32px;display:flex;align-items:center;justify-content:center;"><img src="https://images.unsplash.com/photo-1504703395950-b89145a5425b?w=200&amp;h=200&amp;fit=crop&amp;crop=face" alt="Neon fashion portrait" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:relative;z-index:0;" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#16161a,#2a2a32)';this.alt='Image unavailable';">
+     </div>
+     <h2 id="bottom-cta" class="font-display" style="font-size:clamp(36px,5vw,60px);font-weight:900;margin:0 0 16px;">Wear the vibe.</h2>
+     <p style="color:rgba(240,236,226,0.5);font-size:16px;margin:0 0 36px;line-height:1.6;">Your next signature look is one click away. Free shipping on all orders over $75.</p><a href="#shop" class="cta-pulse" style="display:inline-flex;align-items:center;gap:10px;padding:16px 40px;background:var(--accent);color:var(--bg);font-weight:600;border-radius:28px;text-decoration:none;font-size:15px;letter-spacing:0.5px;">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" />
+      </svg> Shop Now </a>
+    </div>
+   </section><!-- Footer -->
+   <footer style="border-top:1px solid rgba(201,169,110,0.1);padding:40px 24px;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+     <p class="font-display" style="font-size:16px;color:var(--accent);margin:0;font-weight:700;">PortalLook Beauty</p>
+     <p style="font-size:12px;color:rgba(240,236,226,0.3);margin:0;">Sample lookbook experience. All images via Unsplash.</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+  // Default config
+  const defaultConfig = {
+    hero_title: "Step into a new look.",
+    hero_subtitle: "A lookbook built to convert.",
+    cta_primary: "Shop Looks",
+    cta_secondary: "Find Your Match",
+    bottom_cta_text: "Wear the vibe.",
+    background_color: "#0a0a0c",
+    surface_color: "#16161a",
+    text_color: "#f0ece2",
+    accent_color: "#c9a96e",
+    accent2_color: "#8b6cc7",
+    font_family: "Playfair Display",
+    font_size: 16
+  };
+
+  function applyConfig(config) {
+    const c = { ...defaultConfig, ...config };
+
+    // Text
+    document.getElementById('hero-title').textContent = c.hero_title;
+    document.getElementById('hero-subtitle').textContent = c.hero_subtitle;
+    document.querySelector('#cta-primary-btn span').textContent = c.cta_primary;
+    document.querySelector('#cta-secondary-btn span').textContent = c.cta_secondary;
+    document.getElementById('bottom-cta').textContent = c.bottom_cta_text;
+
+    // Colors
+    document.documentElement.style.setProperty('--bg', c.background_color);
+    document.documentElement.style.setProperty('--surface', c.surface_color);
+    document.documentElement.style.setProperty('--text', c.text_color);
+    document.documentElement.style.setProperty('--accent', c.accent_color);
+    document.documentElement.style.setProperty('--accent2', c.accent2_color);
+    document.getElementById('app').style.background = c.background_color;
+
+    // Font
+    const displayFont = c.font_family + ", serif";
+    document.querySelectorAll('.font-display').forEach(el => {
+      el.style.fontFamily = displayFont;
+    });
+
+    // Font size
+    const base = c.font_size;
+    document.getElementById('hero-subtitle').style.fontSize = (base * 1.125) + 'px';
+  }
+
+  // Element SDK init
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => {
+      const c = { ...defaultConfig, ...config };
+      function colorMutable(key) {
+        return {
+          get: () => c[key] || defaultConfig[key],
+          set: (v) => { c[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+        };
+      }
+      return {
+        recolorables: [
+          colorMutable('background_color'),
+          colorMutable('surface_color'),
+          colorMutable('text_color'),
+          colorMutable('accent_color'),
+          colorMutable('accent2_color')
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => c.font_family || defaultConfig.font_family,
+          set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => c.font_size || defaultConfig.font_size,
+          set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      };
+    },
+    mapToEditPanelValues: (config) => {
+      const c = { ...defaultConfig, ...config };
+      return new Map([
+        ["hero_title", c.hero_title],
+        ["hero_subtitle", c.hero_subtitle],
+        ["cta_primary", c.cta_primary],
+        ["cta_secondary", c.cta_secondary],
+        ["bottom_cta_text", c.bottom_cta_text]
+      ]);
+    }
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 120);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal-card').forEach(el => observer.observe(el));
+
+  // Smooth scroll for nav
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef834424704a155',t:'MTc3NjczMDYyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

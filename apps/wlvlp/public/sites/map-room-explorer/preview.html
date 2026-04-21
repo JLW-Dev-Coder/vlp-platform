@@ -1,1 +1,622 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/c7f91802-98ec-4caf-a50f-60dc8d8b7080 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapRoom Explorer</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=DM+Sans:wght@300;400;500;600&amp;family=Courier+Prime&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        parchment: '#F5EDE0',
+        ink: '#2C2418',
+        brass: '#B8860B',
+        leather: '#6B4226',
+        chalk: '#FDFAF5'
+      }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+
+@keyframes drawLine {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes panZoom {
+  0% { transform: scale(1.05) translate(0,0); }
+  50% { transform: scale(1.12) translate(-2%,-1%); }
+  100% { transform: scale(1.05) translate(0,0); }
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184,134,11,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(184,134,11,0); }
+}
+@keyframes stampIn {
+  0% { transform: scale(2) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(0.95) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-3deg); opacity: 1; }
+}
+@keyframes drawerOpen {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 800px; opacity: 1; }
+}
+@keyframes compassSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.anim-fade { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16,1,0.3,1); }
+.anim-fade.visible { opacity: 1; transform: translateY(0); }
+.drawer-card { overflow: hidden; }
+.drawer-card .drawer-body { max-height: 0; opacity: 0; transition: max-height 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease; overflow: hidden; }
+.drawer-card.open .drawer-body { max-height: 800px; opacity: 1; }
+.drawer-card .drawer-chevron { transition: transform 0.3s ease; }
+.drawer-card.open .drawer-chevron { transform: rotate(180deg); }
+.pan-zoom { animation: panZoom 20s ease-in-out infinite; }
+.pulse-cta { animation: pulse 2s ease-in-out infinite; }
+.stamp { animation: stampIn 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity: 0; }
+.route-line { stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+.route-line.animate { animation: drawLine 2s ease-out forwards; }
+.nav-link { position: relative; }
+.nav-link::after { content:''; position:absolute; bottom:-2px; left:0; width:0; height:1px; background:#B8860B; transition: width 0.3s ease; }
+.nav-link:hover::after { width: 100%; }
+
+/* Topographic pattern */
+.topo-bg {
+  background-image:
+    repeating-conic-gradient(rgba(44,36,24,0.03) 0% 25%, transparent 0% 50%),
+    radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(107,66,38,0.05) 0%, transparent 50%);
+}
+
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(44,36,24,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(44,36,24,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F5EDE0; }
+::-webkit-scrollbar-thumb { background: #B8860B; border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-parchment text-ink overflow-auto" style="font-family:'DM Sans',sans-serif;"><!-- NAV -->
+  <nav id="main-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300" style="background:rgba(245,237,224,0.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(44,36,24,0.08);">
+   <div class="max-w-6xl mx-auto px-6 flex items-center justify-between" style="height:56px;"><a href="#home" class="flex items-center gap-2" style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#2C2418;">
+     <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+      <circle cx="12" cy="12" r="10" /><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />
+     </svg> MapRoom </a>
+    <div class="hidden md:flex items-center gap-6" style="font-size:13px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;"><a href="#home" class="nav-link text-ink hover:text-brass transition-colors">Home</a> <a href="#routes" class="nav-link text-ink hover:text-brass transition-colors">Routes</a> <a href="#kits" class="nav-link text-ink hover:text-brass transition-colors">Kits</a> <a href="#preview" class="nav-link text-ink hover:text-brass transition-colors">Preview</a> <a href="#reviews" class="nav-link text-ink hover:text-brass transition-colors">Reviews</a> <a href="#download" class="nav-link text-ink hover:text-brass transition-colors">Download</a>
+    </div><button id="mobile-menu-btn" class="md:hidden p-2" aria-label="Menu"> <i data-lucide="menu" style="width:20px;height:20px;color:#2C2418;"></i> </button>
+   </div>
+   <div id="mobile-menu" class="md:hidden hidden px-6 pb-4 flex flex-col gap-3" style="font-size:14px;font-weight:500;"><a href="#home" class="text-ink hover:text-brass">Home</a> <a href="#routes" class="text-ink hover:text-brass">Routes</a> <a href="#kits" class="text-ink hover:text-brass">Kits</a> <a href="#preview" class="text-ink hover:text-brass">Preview</a> <a href="#reviews" class="text-ink hover:text-brass">Reviews</a> <a href="#download" class="text-ink hover:text-brass">Download</a>
+   </div>
+  </nav><!-- HERO -->
+  <section id="home" class="relative w-full topo-bg grid-overlay" style="min-height:100%;padding-top:56px;">
+   <div class="max-w-6xl mx-auto px-6 flex flex-col justify-center items-center text-center" style="min-height:calc(100% - 56px);padding:80px 0;"><!-- Route SVG -->
+    <svg class="absolute" style="top:15%;left:8%;width:84%;height:70%;opacity:0.12;" viewbox="0 0 800 400" fill="none"><path class="route-line" d="M50 350 Q200 100 400 200 T750 50" stroke="#B8860B" stroke-width="2" fill="none" /> <circle cx="50" cy="350" r="5" fill="#B8860B" opacity="0.5" /> <circle cx="400" cy="200" r="5" fill="#B8860B" opacity="0.5" /> <circle cx="750" cy="50" r="5" fill="#B8860B" opacity="0.5" />
+    </svg>
+    <div class="relative z-10 anim-fade" style="animation-delay:0.2s;"><!-- Compass icon -->
+     <div class="mx-auto mb-8" style="width:64px;height:64px;">
+      <svg viewbox="0 0 64 64" fill="none" stroke="#B8860B" stroke-width="1.2"><circle cx="32" cy="32" r="28" /> <circle cx="32" cy="32" r="2" fill="#B8860B" /> <path d="M32 8v6M32 50v6M8 32h6M50 32h6" /> <polygon points="32,12 35,28 32,32 29,28" fill="#B8860B" opacity="0.7" /> <polygon points="32,52 35,36 32,32 29,36" fill="none" stroke="#B8860B" />
+      </svg>
+     </div><!-- Stamp label -->
+     <div class="stamp inline-block mb-6 px-4 py-1 border-2 border-brass rounded-sm" style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#B8860B;transform:rotate(-3deg);animation-delay:0.6s;">
+      Est. 2024 — Curated Expeditions
+     </div>
+     <h1 id="hero-title" style="font-family:'Playfair Display',serif;font-size:clamp(42px,7vw,80px);font-weight:700;line-height:1.05;color:#2C2418;margin-bottom:20px;">Open the map room.</h1>
+     <p id="hero-subtitle" class="mx-auto" style="font-family:'DM Sans',sans-serif;font-size:clamp(16px,2.2vw,20px);font-weight:300;color:#6B4226;max-width:480px;line-height:1.6;margin-bottom:40px;">Routes and kits curated like secrets.</p>
+     <div class="flex flex-wrap gap-4 justify-center"><a href="#kits" id="cta-primary" class="pulse-cta inline-flex items-center gap-2 px-7 py-3 bg-ink text-chalk rounded-sm transition-all hover:bg-leather" style="font-size:14px;font-weight:600;letter-spacing:0.5px;">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M2 4l3-1 3 1 3-1 3 1 3-1 3 1v16l-3-1-3 1-3-1-3 1-3-1-3 1z" />
+       </svg> Get the Kit </a> <a href="#routes" id="cta-secondary" class="inline-flex items-center gap-2 px-7 py-3 border border-ink text-ink rounded-sm transition-all hover:bg-ink hover:text-chalk" style="font-size:14px;font-weight:600;letter-spacing:0.5px;">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" />
+       </svg> Browse Routes </a>
+     </div>
+    </div><!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50" style="animation: fadeSlideUp 1s ease 1.5s both;"><span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:'Courier Prime',monospace;">Scroll</span>
+     <svg width="16" height="24" viewbox="0 0 16 24" fill="none" stroke="#2C2418" stroke-width="1.2">
+      <rect x="4" y="1" width="8" height="14" rx="4" /><line x1="8" y1="4" x2="8" y2="7" /><path d="M4 19l4 4 4-4" />
+     </svg>
+    </div>
+   </div>
+  </section><!-- ROUTES -->
+  <section id="routes" class="w-full bg-chalk" style="border-top:1px solid rgba(44,36,24,0.08);">
+   <div class="max-w-6xl mx-auto px-6 py-20">
+    <div class="anim-fade mb-12">
+     <div class="flex items-center gap-3 mb-3">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+       <path d="M3 7V5a2 2 0 012-2h6l2 2h6a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      </svg><span style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#B8860B;">Archive Drawer 01</span>
+     </div>
+     <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:700;color:#2C2418;">Featured Routes</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6"><!-- Route 1 -->
+     <div class="drawer-card anim-fade bg-parchment rounded-sm overflow-hidden cursor-pointer" style="border:1px solid rgba(44,36,24,0.1);" onclick="toggleDrawer(this)">
+      <div class="relative overflow-hidden" style="height:200px;"><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&amp;q=80" alt="Mountain trail aerial landscape" loading="lazy" class="w-full h-full object-cover pan-zoom" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#d4c5a9,#a89279)';this.alt='Image unavailable';">
+       <div class="absolute top-3 left-3 px-2 py-1 bg-chalk rounded-sm" style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:1px;color:#B8860B;border:1px solid #B8860B;">
+        VERIFIED
+       </div>
+      </div>
+      <div class="p-5">
+       <div class="flex items-center justify-between mb-2">
+        <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Ridge Line Traverse</h3>
+        <svg class="drawer-chevron" width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#2C2418" stroke-width="1.5">
+         <path d="M6 9l6 6 6-6" />
+        </svg>
+       </div>
+       <div class="flex items-center gap-4 mb-3" style="font-size:12px;color:#6B4226;"><span class="flex items-center gap-1">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" />
+         </svg> Colorado</span> <span class="flex items-center gap-1">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+         </svg> 3 Days</span>
+       </div>
+       <div class="drawer-body">
+        <div class="pt-3" style="border-top:1px dashed rgba(44,36,24,0.15);">
+         <p style="font-size:13px;line-height:1.7;color:#6B4226;margin-bottom:12px;">Above-treeline ridge walking through alpine meadows. Technical scramble on day two. Backcountry camping with permit.</p>
+         <div style="font-family:'Courier Prime',monospace;font-size:11px;color:#2C2418;">
+          <div class="flex items-center gap-2 mb-1">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> Topo map included
+          </div>
+          <div class="flex items-center gap-2 mb-1">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> Gear checklist
+          </div>
+          <div class="flex items-center gap-2">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> GPS waypoints
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Route 2 -->
+     <div class="drawer-card anim-fade bg-parchment rounded-sm overflow-hidden cursor-pointer" style="border:1px solid rgba(44,36,24,0.1);animation-delay:0.15s;" onclick="toggleDrawer(this)">
+      <div class="relative overflow-hidden" style="height:200px;"><img src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&amp;q=80" alt="Cabin in the woods" loading="lazy" class="w-full h-full object-cover pan-zoom" style="animation-delay:-5s;" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#a89279,#7a6652)';this.alt='Image unavailable';">
+       <div class="absolute top-3 left-3 px-2 py-1 bg-chalk rounded-sm" style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:1px;color:#B8860B;border:1px solid #B8860B;">
+        NEW
+       </div>
+      </div>
+      <div class="p-5">
+       <div class="flex items-center justify-between mb-2">
+        <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">River Cabin Circuit</h3>
+        <svg class="drawer-chevron" width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#2C2418" stroke-width="1.5">
+         <path d="M6 9l6 6 6-6" />
+        </svg>
+       </div>
+       <div class="flex items-center gap-4 mb-3" style="font-size:12px;color:#6B4226;"><span class="flex items-center gap-1">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" />
+         </svg> Montana</span> <span class="flex items-center gap-1">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+         </svg> 5 Days</span>
+       </div>
+       <div class="drawer-body">
+        <div class="pt-3" style="border-top:1px dashed rgba(44,36,24,0.15);">
+         <p style="font-size:13px;line-height:1.7;color:#6B4226;margin-bottom:12px;">Hut-to-hut river trail with two crossings. Fishing permitted. Resupply at mile 22 general store.</p>
+         <div style="font-family:'Courier Prime',monospace;font-size:11px;color:#2C2418;">
+          <div class="flex items-center gap-2 mb-1">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> River crossing guide
+          </div>
+          <div class="flex items-center gap-2 mb-1">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> Cabin reservations
+          </div>
+          <div class="flex items-center gap-2">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> Meal plan
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Route 3 -->
+     <div class="drawer-card anim-fade bg-parchment rounded-sm overflow-hidden cursor-pointer" style="border:1px solid rgba(44,36,24,0.1);animation-delay:0.3s;" onclick="toggleDrawer(this)">
+      <div class="relative overflow-hidden" style="height:200px;"><img src="https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=600&amp;q=80" alt="Backpacker on trail" loading="lazy" class="w-full h-full object-cover pan-zoom" style="animation-delay:-10s;" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#c4b896,#8a7a5e)';this.alt='Image unavailable';">
+       <div class="absolute top-3 left-3 px-2 py-1 bg-chalk rounded-sm" style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:1px;color:#B8860B;border:1px solid #B8860B;">
+        CLASSIC
+       </div>
+      </div>
+      <div class="p-5">
+       <div class="flex items-center justify-between mb-2">
+        <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Desert Basin Loop</h3>
+        <svg class="drawer-chevron" width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#2C2418" stroke-width="1.5">
+         <path d="M6 9l6 6 6-6" />
+        </svg>
+       </div>
+       <div class="flex items-center gap-4 mb-3" style="font-size:12px;color:#6B4226;"><span class="flex items-center gap-1">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" />
+         </svg> Utah</span> <span class="flex items-center gap-1">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+         </svg> 2 Days</span>
+       </div>
+       <div class="drawer-body">
+        <div class="pt-3" style="border-top:1px dashed rgba(44,36,24,0.15);">
+         <p style="font-size:13px;line-height:1.7;color:#6B4226;margin-bottom:12px;">Slot canyons and red rock arches. Night sky photography opportunities. Water cache system detailed.</p>
+         <div style="font-family:'Courier Prime',monospace;font-size:11px;color:#2C2418;">
+          <div class="flex items-center gap-2 mb-1">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> Water cache map
+          </div>
+          <div class="flex items-center gap-2 mb-1">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> Photo spot guide
+          </div>
+          <div class="flex items-center gap-2">
+           <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+           </svg> Permit info
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- KITS -->
+  <section id="kits" class="w-full bg-parchment topo-bg" style="border-top:1px solid rgba(44,36,24,0.08);">
+   <div class="max-w-6xl mx-auto px-6 py-20">
+    <div class="anim-fade mb-12">
+     <div class="flex items-center gap-3 mb-3">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+       <path d="M3 7V5a2 2 0 012-2h6l2 2h6a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      </svg><span style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#B8860B;">Archive Drawer 02</span>
+     </div>
+     <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:700;color:#2C2418;">Expedition Kits</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6"><!-- Kit 1 -->
+     <div class="anim-fade bg-chalk rounded-sm p-6 flex gap-5" style="border:1px solid rgba(44,36,24,0.1);">
+      <div class="flex-shrink-0 w-16 h-16 rounded-sm bg-parchment flex items-center justify-center" style="border:1px solid rgba(184,134,11,0.3);">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.2">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+       </svg>
+      </div>
+      <div>
+       <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:4px;">Weekend Basecamp</h3>
+       <p style="font-size:13px;line-height:1.6;color:#6B4226;margin-bottom:8px;">Two-night shelter setup, cook system, navigation tools. Fits one 45L pack.</p>
+       <div class="flex items-center gap-3" style="font-size:11px;font-family:'Courier Prime',monospace;color:#B8860B;"><span>14 items</span> <span style="color:rgba(44,36,24,0.2);">|</span> <span>3.2 kg base</span>
+       </div>
+      </div>
+     </div><!-- Kit 2 -->
+     <div class="anim-fade bg-chalk rounded-sm p-6 flex gap-5" style="border:1px solid rgba(44,36,24,0.1);animation-delay:0.1s;">
+      <div class="flex-shrink-0 w-16 h-16 rounded-sm bg-parchment flex items-center justify-center" style="border:1px solid rgba(184,134,11,0.3);">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.2">
+        <circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+       </svg>
+      </div>
+      <div>
+       <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:4px;">Navigation Essentials</h3>
+       <p style="font-size:13px;line-height:1.6;color:#6B4226;margin-bottom:8px;">Compass, topo set, route cards, waterproof case. Analog-first approach.</p>
+       <div class="flex items-center gap-3" style="font-size:11px;font-family:'Courier Prime',monospace;color:#B8860B;"><span>8 items</span> <span style="color:rgba(44,36,24,0.2);">|</span> <span>0.6 kg base</span>
+       </div>
+      </div>
+     </div><!-- Kit 3 -->
+     <div class="anim-fade bg-chalk rounded-sm p-6 flex gap-5" style="border:1px solid rgba(44,36,24,0.1);animation-delay:0.2s;">
+      <div class="flex-shrink-0 w-16 h-16 rounded-sm bg-parchment flex items-center justify-center" style="border:1px solid rgba(184,134,11,0.3);">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.2">
+        <path d="M14.5 4h-5L7 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
+       </svg>
+      </div>
+      <div>
+       <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:4px;">Trail Documentation</h3>
+       <p style="font-size:13px;line-height:1.6;color:#6B4226;margin-bottom:8px;">Photo journal templates, field notes, waterproof sketch pad. Record everything.</p>
+       <div class="flex items-center gap-3" style="font-size:11px;font-family:'Courier Prime',monospace;color:#B8860B;"><span>6 items</span> <span style="color:rgba(44,36,24,0.2);">|</span> <span>0.4 kg base</span>
+       </div>
+      </div>
+     </div><!-- Kit 4 -->
+     <div class="anim-fade bg-chalk rounded-sm p-6 flex gap-5" style="border:1px solid rgba(44,36,24,0.1);animation-delay:0.3s;">
+      <div class="flex-shrink-0 w-16 h-16 rounded-sm bg-parchment flex items-center justify-center" style="border:1px solid rgba(184,134,11,0.3);">
+       <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.2">
+        <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+       </svg>
+      </div>
+      <div>
+       <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:4px;">Safety Checklist</h3>
+       <p style="font-size:13px;line-height:1.6;color:#6B4226;margin-bottom:8px;">First aid, emergency protocol card, weather reading guide, signaling tools.</p>
+       <div class="flex items-center gap-3" style="font-size:11px;font-family:'Courier Prime',monospace;color:#B8860B;"><span>11 items</span> <span style="color:rgba(44,36,24,0.2);">|</span> <span>1.1 kg base</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- PREVIEW -->
+  <section id="preview" class="w-full bg-ink" style="border-top:1px solid rgba(184,134,11,0.2);">
+   <div class="max-w-6xl mx-auto px-6 py-20">
+    <div class="anim-fade mb-12 text-center">
+     <div class="flex items-center justify-center gap-3 mb-3">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+       <path d="M14.5 4h-5L7 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
+      </svg><span style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#B8860B;">Archive Drawer 03</span>
+     </div>
+     <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:700;color:#FDFAF5;">Field Preview</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+     <div class="anim-fade relative overflow-hidden rounded-sm" style="height:280px;"><img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&amp;q=80" alt="Aerial mountain landscape" loading="lazy" class="w-full h-full object-cover pan-zoom" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#3a3020,#1a1510)';this.alt='Image unavailable';">
+      <div class="absolute bottom-3 left-3 px-3 py-1 rounded-sm" style="background:rgba(245,237,224,0.9);font-family:'Courier Prime',monospace;font-size:10px;color:#2C2418;">
+       48.8566 N, 2.3522 E
+      </div>
+     </div>
+     <div class="anim-fade relative overflow-hidden rounded-sm" style="height:280px;animation-delay:0.15s;"><img src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?w=600&amp;q=80" alt="River crossing trail" loading="lazy" class="w-full h-full object-cover pan-zoom" style="animation-delay:-7s;" onerror="console.error('Image failed:',this.src);this.style.background='linear-gradient(135deg,#3a3020,#1a1510)';this.alt='Image unavailable';">
+      <div class="absolute bottom-3 left-3 px-3 py-1 rounded-sm" style="background:rgba(245,237,224,0.9);font-family:'Courier Prime',monospace;font-size:10px;color:#2C2418;">
+       46.2044 N, 6.1432 E
+      </div>
+     </div>
+    </div><!-- Route SVG overlay -->
+    <div class="anim-fade mt-6">
+     <svg width="100%" height="60" viewbox="0 0 800 60" fill="none" preserveaspectratio="none"><path class="route-line" d="M0 30 Q200 5 400 30 T800 30" stroke="#B8860B" stroke-width="1" stroke-dasharray="6 4" /> <circle cx="0" cy="30" r="3" fill="#B8860B" /> <circle cx="400" cy="30" r="3" fill="#B8860B" /> <circle cx="800" cy="30" r="3" fill="#B8860B" />
+     </svg>
+    </div>
+   </div>
+  </section><!-- REVIEWS -->
+  <section id="reviews" class="w-full bg-chalk" style="border-top:1px solid rgba(44,36,24,0.08);">
+   <div class="max-w-6xl mx-auto px-6 py-20">
+    <div class="anim-fade mb-12">
+     <div class="flex items-center gap-3 mb-3">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+       <path d="M3 7V5a2 2 0 012-2h6l2 2h6a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      </svg><span style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#B8860B;">Archive Drawer 04</span>
+     </div>
+     <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:700;color:#2C2418;">Field Reports</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+     <div class="anim-fade bg-parchment p-6 rounded-sm" style="border:1px solid rgba(44,36,24,0.1);">
+      <div class="flex items-center gap-1 mb-3">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+      </div>
+      <p style="font-size:14px;line-height:1.7;color:#2C2418;font-style:italic;margin-bottom:12px;">"The ridge route was immaculate. Every waypoint accurate, every campsite exactly as described."</p>
+      <div style="font-family:'Courier Prime',monospace;font-size:11px;color:#6B4226;"><span style="font-weight:700;">M. Chen</span> — Ridge Line Traverse
+      </div>
+     </div>
+     <div class="anim-fade bg-parchment p-6 rounded-sm" style="border:1px solid rgba(44,36,24,0.1);animation-delay:0.1s;">
+      <div class="flex items-center gap-1 mb-3">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+      </div>
+      <p style="font-size:14px;line-height:1.7;color:#2C2418;font-style:italic;margin-bottom:12px;">"Felt like someone handed me their personal field journal. The river crossing notes saved my boots."</p>
+      <div style="font-family:'Courier Prime',monospace;font-size:11px;color:#6B4226;"><span style="font-weight:700;">J. Olsen</span> — River Cabin Circuit
+      </div>
+     </div>
+     <div class="anim-fade bg-parchment p-6 rounded-sm" style="border:1px solid rgba(44,36,24,0.1);animation-delay:0.2s;">
+      <div class="flex items-center gap-1 mb-3">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#B8860B" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" />
+       </svg>
+      </div>
+      <p style="font-size:14px;line-height:1.7;color:#2C2418;font-style:italic;margin-bottom:12px;">"The desert night sky guide alone was worth it. Water cache locations were pinpoint."</p>
+      <div style="font-family:'Courier Prime',monospace;font-size:11px;color:#6B4226;"><span style="font-weight:700;">S. Patel</span> — Desert Basin Loop
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- DOWNLOAD / BOTTOM CTA -->
+  <section id="download" class="w-full bg-parchment topo-bg grid-overlay relative" style="border-top:1px solid rgba(44,36,24,0.08);">
+   <div class="max-w-6xl mx-auto px-6 py-24 text-center relative z-10">
+    <div class="anim-fade"><!-- Compass icon spinning subtly -->
+     <div class="mx-auto mb-6" style="width:48px;height:48px;">
+      <svg viewbox="0 0 64 64" fill="none" stroke="#B8860B" stroke-width="1"><circle cx="32" cy="32" r="28" /> <circle cx="32" cy="32" r="2" fill="#B8860B" /> <path d="M32 8v6M32 50v6M8 32h6M50 32h6" /> <polygon points="32,12 35,28 32,32 29,28" fill="#B8860B" opacity="0.7" /> <polygon points="32,52 35,36 32,32 29,36" fill="none" />
+      </svg>
+     </div>
+     <h2 id="bottom-cta-text" style="font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);font-weight:700;color:#2C2418;margin-bottom:16px;line-height:1.15;">Make weekends feel discovered.</h2>
+     <p style="font-family:'Courier Prime',monospace;font-size:12px;letter-spacing:1px;color:#6B4226;margin-bottom:32px;">ROUTES — KITS — FIELD NOTES — DELIVERED</p><a href="#home" class="pulse-cta inline-flex items-center gap-2 px-8 py-4 bg-ink text-chalk rounded-sm transition-all hover:bg-leather" style="font-size:15px;font-weight:600;letter-spacing:0.5px;">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+      </svg> Download the Kit </a>
+    </div>
+   </div><!-- Footer -->
+   <footer class="w-full py-6 text-center" style="border-top:1px solid rgba(44,36,24,0.08);">
+    <p style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:1.5px;color:#6B4226;text-transform:uppercase;">MapRoom Explorer — 2024 — All routes field-verified</p>
+   </footer>
+  </section>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'Open the map room.',
+  hero_subtitle: 'Routes and kits curated like secrets.',
+  cta_primary: 'Get the Kit',
+  cta_secondary: 'Browse Routes',
+  bottom_cta_text: 'Make weekends feel discovered.',
+  background_color: '#F5EDE0',
+  surface_color: '#FDFAF5',
+  text_color: '#2C2418',
+  accent_color: '#B8860B',
+  dark_color: '#2C2418',
+  font_family: 'Playfair Display',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  const font = c.font_family || defaultConfig.font_family;
+  const baseSize = c.font_size || defaultConfig.font_size;
+
+  // Text content
+  const heroTitle = document.getElementById('hero-title');
+  const heroSub = document.getElementById('hero-subtitle');
+  const ctaPrim = document.getElementById('cta-primary');
+  const ctaSec = document.getElementById('cta-secondary');
+  const bottomCta = document.getElementById('bottom-cta-text');
+
+  if (heroTitle) heroTitle.textContent = c.hero_title;
+  if (heroSub) heroSub.textContent = c.hero_subtitle;
+  if (ctaPrim) ctaPrim.lastChild.textContent = ' ' + c.cta_primary;
+  if (ctaSec) ctaSec.lastChild.textContent = ' ' + c.cta_secondary;
+  if (bottomCta) bottomCta.textContent = c.bottom_cta_text;
+
+  // Colors
+  document.body.style.backgroundColor = c.background_color;
+
+  document.querySelectorAll('section').forEach(s => {
+    if (s.classList.contains('bg-chalk') || s.id === 'reviews' || s.id === 'preview') {
+      if (s.id !== 'preview') s.style.backgroundColor = c.surface_color;
+    } else {
+      s.style.backgroundColor = c.background_color;
+    }
+  });
+
+  // Accent color on stamps, labels
+  document.querySelectorAll('[style*="color:#B8860B"], [style*="color: #B8860B"]').forEach(el => {
+    el.style.color = c.accent_color;
+  });
+
+  // Text color
+  heroTitle && (heroTitle.style.color = c.text_color);
+
+  // Fonts
+  const fontStack = `${font}, Playfair Display, serif`;
+  document.querySelectorAll('[style*="Playfair Display"]').forEach(el => {
+    el.style.fontFamily = fontStack;
+  });
+
+  // Font size scaling
+  if (heroTitle) heroTitle.style.fontSize = `clamp(${baseSize * 2.6}px, 7vw, ${baseSize * 5}px)`;
+  if (heroSub) heroSub.style.fontSize = `clamp(${baseSize}px, 2.2vw, ${baseSize * 1.25}px)`;
+}
+
+// Element SDK init
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.dark_color || defaultConfig.dark_color, set: (v) => { config.dark_color = v; window.elementSdk.setConfig({ dark_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['hero_title', config.hero_title || defaultConfig.hero_title],
+    ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+    ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+    ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+    ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+  ])
+});
+
+// Drawer toggle
+function toggleDrawer(el) {
+  el.classList.toggle('open');
+}
+
+// Mobile menu
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+document.querySelectorAll('#mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+});
+
+// Scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Animate route lines
+      e.target.querySelectorAll('.route-line').forEach(l => l.classList.add('animate'));
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.anim-fade').forEach(el => observer.observe(el));
+
+// Also observe route SVGs directly
+document.querySelectorAll('.route-line').forEach(el => {
+  const parent = el.closest('svg');
+  if (parent) observer.observe(parent);
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// Trigger initial animations
+setTimeout(() => {
+  document.querySelectorAll('#home .anim-fade').forEach(el => el.classList.add('visible'));
+  document.querySelectorAll('#home .route-line').forEach(l => l.classList.add('animate'));
+}, 300);
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82fdd7465a155',t:'MTc3NjczMDQ0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

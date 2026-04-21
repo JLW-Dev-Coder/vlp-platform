@@ -1,1 +1,524 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/15280f55-153d-4828-851f-157e6f14b7d3 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waterline Drift</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&amp;family=DM+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+html { height: 100%; }
+body { height: 100%; margin: 0; font-family: 'DM Sans', sans-serif; }
+
+.app-root {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.serif { font-family: 'Instrument Serif', serif; }
+
+/* Wave SVG animation */
+.wave-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+}
+.wave-path {
+  animation: waveShift 6s ease-in-out infinite;
+}
+.wave-path-2 {
+  animation: waveShift 8s ease-in-out infinite reverse;
+}
+@keyframes waveShift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-40px); }
+}
+
+/* Bubble animation */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(0,255,255,0.25), rgba(0,255,255,0.05));
+  border: 1px solid rgba(0,255,255,0.15);
+  animation: bubbleRise linear infinite;
+  pointer-events: none;
+}
+@keyframes bubbleRise {
+  0% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-500px) scale(0.4); opacity: 0; }
+}
+
+/* Section reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Glass card */
+.glass {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.glass-light {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* CTA pulse */
+.pulse-cta {
+  animation: ctaPulse 3s ease-in-out infinite;
+}
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,210,220,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(0,210,220,0); }
+}
+
+/* Nav */
+.nav-link {
+  position: relative;
+  transition: color 0.3s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: currentColor;
+  transition: width 0.3s;
+}
+.nav-link:hover::after, .nav-link.active::after {
+  width: 100%;
+}
+
+/* Image containers */
+.img-cover {
+  background-size: cover;
+  background-position: center;
+}
+
+/* Star rating */
+.star-filled { color: #00d4dc; }
+
+/* Sticky nav transitions */
+.nav-above { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); color: #0a1628; }
+.nav-below { background: rgba(10,22,40,0.9); backdrop-filter: blur(12px); color: #e0f7fa; }
+
+/* Scrollbar */
+.app-root::-webkit-scrollbar { width: 6px; }
+.app-root::-webkit-scrollbar-track { background: #0a1628; }
+.app-root::-webkit-scrollbar-thumb { background: #00d4dc; border-radius: 3px; }
+
+.gallery-item {
+  overflow: hidden;
+  border-radius: 12px;
+}
+.gallery-item img {
+  transition: transform 0.6s ease;
+}
+.gallery-item:hover img {
+  transform: scale(1.05);
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-root" id="appRoot"><!-- Sticky Nav -->
+   <nav id="mainNav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 nav-above" style="padding: 16px 0;">
+    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between"><a href="#home" class="flex items-center gap-2 font-medium text-sm tracking-wide">
+      <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <path d="M2 12c1.5-3 4.5-5 7-5s4 1 5 3c1-2 2.5-3 5-3s5.5 2 7 5c-1.5 3-4.5 5-7 5s-4-1-5-3c-1 2-2.5 3-5 3s-5.5-2-7-5z" />
+      </svg> WATERLINE </a>
+     <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-xs tracking-widest uppercase" data-section="home">Home</a> <a href="#surface" class="nav-link text-xs tracking-widest uppercase" data-section="surface">Surface</a> <a href="#dive" class="nav-link text-xs tracking-widest uppercase" data-section="dive">Dive</a> <a href="#gallery" class="nav-link text-xs tracking-widest uppercase" data-section="gallery">Gallery</a> <a href="#reviews" class="nav-link text-xs tracking-widest uppercase" data-section="reviews">Reviews</a> <a href="#download" class="nav-link text-xs tracking-widest uppercase" data-section="download">Download</a>
+     </div><button id="mobileMenuBtn" class="md:hidden" aria-label="Menu">
+      <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+      </svg></button>
+    </div>
+    <div id="mobileMenu" class="hidden md:hidden px-6 pt-4 pb-2 flex flex-col gap-3"><a href="#home" class="text-xs tracking-widest uppercase py-1">Home</a> <a href="#surface" class="text-xs tracking-widest uppercase py-1">Surface</a> <a href="#dive" class="text-xs tracking-widest uppercase py-1">Dive</a> <a href="#gallery" class="text-xs tracking-widest uppercase py-1">Gallery</a> <a href="#reviews" class="text-xs tracking-widest uppercase py-1">Reviews</a> <a href="#download" class="text-xs tracking-widest uppercase py-1">Download</a>
+    </div>
+   </nav><!-- ===== ABOVE WATER ===== --> <!-- Hero -->
+   <section id="home" class="relative w-full" style="min-height: 100%; background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 40%, #4dd0e1 100%);">
+    <div class="absolute inset-0 img-cover" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&amp;q=80'); opacity: 0.2;"></div>
+    <div class="relative flex flex-col items-center justify-center text-center px-6" style="min-height: 100%; padding-top: 120px; padding-bottom: 80px;">
+     <div class="reveal">
+      <p class="text-xs tracking-[0.3em] uppercase mb-6" style="color: #006064;">Ocean-Level Scroll Experience</p>
+      <h1 id="heroTitle" class="serif text-6xl md:text-8xl lg:text-9xl leading-none mb-6" style="color: #0a1628;">Cross the waterline.</h1>
+      <p id="heroSubtitle" class="text-lg md:text-xl max-w-lg mx-auto mb-10 font-light" style="color: #00363a;">A page that changes atmosphere as you scroll.</p>
+      <div class="flex flex-col sm:flex-row items-center gap-4"><a href="#download" id="ctaPrimary" class="pulse-cta inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-medium transition-all" style="background: #0a1628; color: #e0f7fa;">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+        </svg> Download the Pack </a> <a href="#dive" id="ctaSecondary" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-medium border transition-all hover:bg-white/30" style="border-color: #0a1628; color: #0a1628;">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M12 2v10m0 0l3-3m-3 3l-3-3" /><circle cx="12" cy="20" r="2" />
+        </svg> Enter the Depth </a>
+      </div>
+     </div><!-- Scroll indicator -->
+     <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
+      <p class="text-[10px] tracking-widest uppercase" style="color: #006064;">Scroll</p>
+      <div style="width:1px; height:40px; background: linear-gradient(to bottom, #006064, transparent);"></div>
+     </div>
+    </div>
+   </section><!-- Surface Section -->
+   <section id="surface" class="relative w-full" style="background: linear-gradient(180deg, #b2ebf2 0%, #80deea 100%); padding: 100px 0;">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="reveal grid md:grid-cols-2 gap-12 items-center">
+      <div>
+       <div class="flex items-center gap-3 mb-4">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#006064" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M2 12c1.5-3 4.5-5 7-5s4 1 5 3c1-2 2.5-3 5-3s5.5 2 7 5" />
+        </svg><span class="text-xs tracking-widest uppercase" style="color: #006064;">The Surface</span>
+       </div>
+       <h2 class="serif text-4xl md:text-5xl mb-6" style="color: #0a1628;">Where light meets water</h2>
+       <p class="font-light leading-relaxed mb-6" style="color: #004d40;">The surface is a threshold — the last touch of warmth before the cool unknown. Here, sunlight fractures into a thousand shimmering paths, each one an invitation to look deeper.</p>
+       <div class="grid grid-cols-2 gap-4">
+        <div class="glass-light rounded-xl p-5">
+         <p class="text-3xl serif mb-1" style="color: #006064;">71%</p>
+         <p class="text-xs" style="color: #004d40;">Earth covered by ocean</p>
+        </div>
+        <div class="glass-light rounded-xl p-5">
+         <p class="text-3xl serif mb-1" style="color: #006064;">200m</p>
+         <p class="text-xs" style="color: #004d40;">Sunlight zone depth</p>
+        </div>
+       </div>
+      </div>
+      <div class="rounded-2xl overflow-hidden shadow-2xl" style="aspect-ratio: 4/5;"><img src="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&amp;q=80" alt="Ocean surface with light refracting through gentle waves" loading="lazy" class="w-full h-full object-cover" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#80deea,#4dd0e1)'; this.alt='Image unavailable';">
+      </div>
+     </div>
+    </div>
+   </section><!-- ===== WAVE TRANSITION ===== -->
+   <div class="wave-container" style="background: linear-gradient(180deg, #80deea 0%, #0a1628 100%); margin-top: -1px;">
+    <svg class="absolute bottom-0 left-0 w-full" viewbox="0 0 1440 120" preserveaspectratio="none" style="height: 120px;"><path class="wave-path" d="M0,40 C240,100 480,0 720,60 C960,120 1200,20 1440,80 L1440,120 L0,120 Z" fill="#0a1628" opacity="0.7" /> <path class="wave-path-2" d="M0,60 C200,20 440,100 720,40 C1000,0 1240,90 1440,50 L1440,120 L0,120 Z" fill="#0a1628" opacity="0.9" /> <path d="M0,80 C360,40 720,110 1080,60 C1260,40 1380,70 1440,90 L1440,120 L0,120 Z" fill="#0a1628" />
+    </svg><!-- Transition text -->
+    <div class="absolute inset-0 flex items-center justify-center z-10">
+     <p class="text-xs tracking-[0.4em] uppercase font-medium" style="color: rgba(224,247,250,0.7);">Crossing the waterline</p>
+    </div>
+   </div><!-- ===== BELOW WATER ===== --> <!-- Bubble overlay container -->
+   <div id="bubbleZone" class="relative"><!-- Dive Section -->
+    <section id="dive" class="relative w-full" style="background: #0a1628; padding: 100px 0;">
+     <div class="max-w-6xl mx-auto px-6">
+      <div class="reveal grid md:grid-cols-2 gap-12 items-center">
+       <div class="order-2 md:order-1 rounded-2xl overflow-hidden shadow-2xl" style="aspect-ratio: 4/5;"><img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&amp;q=80" alt="Diver descending into deep blue ocean water" loading="lazy" class="w-full h-full object-cover" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#0d2137,#006064)'; this.alt='Image unavailable';">
+       </div>
+       <div class="order-1 md:order-2">
+        <div class="flex items-center gap-3 mb-4">
+         <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#00d4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="10" y="2" width="4" height="20" rx="1" /><line x1="8" y1="6" x2="10" y2="6" /><line x1="8" y1="10" x2="10" y2="10" /><line x1="8" y1="14" x2="10" y2="14" /><line x1="8" y1="18" x2="10" y2="18" />
+         </svg><span class="text-xs tracking-widest uppercase" style="color: #00d4dc;">The Dive</span>
+        </div>
+        <h2 class="serif text-4xl md:text-5xl mb-6" style="color: #e0f7fa;">Into the deep unknown</h2>
+        <p class="font-light leading-relaxed mb-8" style="color: rgba(224,247,250,0.6);">Below the waterline, pressure builds and colors shift. Blues deepen to indigo, and every movement becomes deliberate. This is where the ocean reveals what the surface only hints at.</p>
+        <div class="flex flex-col gap-3">
+         <div class="glass rounded-xl p-5 flex items-start gap-4">
+          <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#00d4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0">
+           <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+          <div>
+           <p class="text-sm font-medium mb-1" style="color: #e0f7fa;">Mesopelagic Zone</p>
+           <p class="text-xs" style="color: rgba(224,247,250,0.5);">200–1000m. The twilight layer where bioluminescence begins.</p>
+          </div>
+         </div>
+         <div class="glass rounded-xl p-5 flex items-start gap-4">
+          <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#00d4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0">
+           <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+          </svg>
+          <div>
+           <p class="text-sm font-medium mb-1" style="color: #e0f7fa;">Abyssal Pressure</p>
+           <p class="text-xs" style="color: rgba(224,247,250,0.5);">600 atmospheres at the deepest point — crushing, silent, alive.</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Gallery -->
+    <section id="gallery" class="relative w-full" style="background: linear-gradient(180deg, #0a1628 0%, #071120 100%); padding: 100px 0;">
+     <div class="max-w-6xl mx-auto px-6">
+      <div class="reveal text-center mb-12">
+       <div class="flex items-center justify-center gap-3 mb-4">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#00d4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
+        </svg><span class="text-xs tracking-widest uppercase" style="color: #00d4dc;">Gallery</span>
+       </div>
+       <h2 class="serif text-4xl md:text-5xl" style="color: #e0f7fa;">Captured in the current</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+       <div class="gallery-item reveal col-span-2 md:col-span-1 md:row-span-2" style="aspect-ratio:3/4;"><img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=600&amp;q=80" alt="Vibrant coral reef underwater with tropical fish" loading="lazy" class="w-full h-full object-cover" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#0d2137,#004d40)'; this.alt='Image unavailable';">
+       </div>
+       <div class="gallery-item reveal" style="aspect-ratio:4/3;"><img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&amp;q=80" alt="Ocean waves crashing with dramatic lighting" loading="lazy" class="w-full h-full object-cover" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#0d2137,#006064)'; this.alt='Image unavailable';">
+       </div>
+       <div class="gallery-item reveal" style="aspect-ratio:4/3;"><img src="https://images.unsplash.com/photo-1551244072-5d12893278ab?w=600&amp;q=80" alt="Underwater bubbles rising toward light surface" loading="lazy" class="w-full h-full object-cover" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#071120,#00838f)'; this.alt='Image unavailable';">
+       </div>
+       <div class="gallery-item reveal col-span-2" style="aspect-ratio:16/7;"><img src="https://images.unsplash.com/photo-1476673160081-cf065607f449?w=1200&amp;q=80" alt="Golden sunrise over calm coastline with gentle waves" loading="lazy" class="w-full h-full object-cover" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#0a1628,#00695c)'; this.alt='Image unavailable';">
+       </div>
+      </div>
+     </div>
+    </section><!-- Reviews -->
+    <section id="reviews" class="relative w-full" style="background: #071120; padding: 100px 0;">
+     <div class="max-w-4xl mx-auto px-6">
+      <div class="reveal text-center mb-12">
+       <h2 class="serif text-4xl md:text-5xl" style="color: #e0f7fa;">Voices from the deep</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+       <div class="reveal glass rounded-2xl p-6">
+        <div class="flex gap-1 mb-4">
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+        </div>
+        <p class="text-sm font-light mb-4 leading-relaxed" style="color: rgba(224,247,250,0.7);">"I've never experienced a scroll like this. It genuinely feels like sinking beneath the surface."</p>
+        <p class="text-xs font-medium" style="color: #00d4dc;">— Maren K., Designer</p>
+       </div>
+       <div class="reveal glass rounded-2xl p-6" style="animation-delay: 0.15s;">
+        <div class="flex gap-1 mb-4">
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+        </div>
+        <p class="text-sm font-light mb-4 leading-relaxed" style="color: rgba(224,247,250,0.7);">"The atmosphere transition is flawless. Showed it to my team and everyone wanted to know how it was made."</p>
+        <p class="text-xs font-medium" style="color: #00d4dc;">— Tomas R., Developer</p>
+       </div>
+       <div class="reveal glass rounded-2xl p-6" style="animation-delay: 0.3s;">
+        <div class="flex gap-1 mb-4">
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg class="star-filled" width="14" height="14" viewbox="0 0 24 24" fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#00d4dc" stroke-width="1.5">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+         </svg>
+        </div>
+        <p class="text-sm font-light mb-4 leading-relaxed" style="color: rgba(224,247,250,0.7);">"Beautiful, immersive, and completely unique. This is what web experiences should feel like."</p>
+        <p class="text-xs font-medium" style="color: #00d4dc;">— Aisha L., Art Director</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- Download / Bottom CTA -->
+    <section id="download" class="relative w-full" style="background: linear-gradient(180deg, #071120 0%, #040b14 100%); padding: 120px 0;">
+     <div class="max-w-3xl mx-auto px-6 text-center">
+      <div class="reveal">
+       <svg width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#00d4dc" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-8 opacity-50">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+       </svg>
+       <h2 id="bottomCtaText" class="serif text-4xl md:text-6xl mb-6" style="color: #e0f7fa;">Make people feel the scroll.</h2>
+       <p class="font-light mb-10 max-w-md mx-auto" style="color: rgba(224,247,250,0.5);">Get the full Waterline Drift resource pack — templates, assets, and the complete scroll experience.</p><button class="pulse-cta inline-flex items-center gap-2 px-10 py-4 rounded-full text-sm font-medium transition-all hover:scale-105" style="background: #00d4dc; color: #0a1628;" onclick="this.textContent='Coming Soon'; this.disabled=true; this.style.opacity='0.7';">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+        </svg> Download the Pack </button>
+      </div>
+     </div><!-- Footer -->
+     <div class="mt-20 text-center" style="color: rgba(224,247,250,0.2);">
+      <p class="text-xs tracking-widest">WATERLINE DRIFT — An ocean-level scroll experience</p>
+     </div>
+    </section>
+   </div><!-- end bubbleZone -->
+  </div><!-- end appRoot -->
+  <script>
+// Config & SDK
+const defaultConfig = {
+  hero_title: 'Cross the waterline.',
+  hero_subtitle: 'A page that changes atmosphere as you scroll.',
+  cta_primary: 'Download the Pack',
+  cta_secondary: 'Enter the Depth',
+  bottom_cta_text: 'Make people feel the scroll.',
+  background_color: '#e0f7fa',
+  surface_color: '#0a1628',
+  text_color: '#e0f7fa',
+  primary_action_color: '#00d4dc',
+  secondary_action_color: '#006064',
+  font_family: 'Instrument Serif',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const g = (k) => config[k] || defaultConfig[k];
+
+  // Text
+  const heroTitle = document.getElementById('heroTitle');
+  const heroSub = document.getElementById('heroSubtitle');
+  const ctaPri = document.getElementById('ctaPrimary');
+  const ctaSec = document.getElementById('ctaSecondary');
+  const bottomCta = document.getElementById('bottomCtaText');
+
+  if (heroTitle) heroTitle.textContent = g('hero_title');
+  if (heroSub) heroSub.textContent = g('hero_subtitle');
+  if (ctaPri) { ctaPri.lastChild.textContent = ' ' + g('cta_primary'); }
+  if (ctaSec) { ctaSec.lastChild.textContent = ' ' + g('cta_secondary'); }
+  if (bottomCta) bottomCta.textContent = g('bottom_cta_text');
+
+  // Font
+  const font = g('font_family');
+  const baseSize = g('font_size');
+  document.querySelectorAll('.serif').forEach(el => {
+    el.style.fontFamily = `${font}, Georgia, serif`;
+  });
+  if (heroTitle) heroTitle.style.fontSize = `${baseSize * 4}px`;
+  if (bottomCta) bottomCta.style.fontSize = `${baseSize * 3}px`;
+
+  // Colors
+  const bg = g('background_color');
+  const surface = g('surface_color');
+  const text = g('text_color');
+  const primary = g('primary_action_color');
+  const secondary = g('secondary_action_color');
+
+  document.getElementById('home').style.background = `linear-gradient(180deg, ${bg} 0%, ${bg}cc 40%, ${primary}66 100%)`;
+  if (ctaPri) { ctaPri.style.background = surface; ctaPri.style.color = text; }
+  if (ctaSec) { ctaSec.style.borderColor = surface; ctaSec.style.color = surface; }
+
+  document.querySelectorAll('.star-filled').forEach(el => el.style.color = primary);
+}
+
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => {
+      const g = (k) => config[k] || defaultConfig[k];
+      const make = (key) => ({
+        get: () => g(key),
+        set: (v) => { config[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+      });
+      return {
+        recolorables: [make('background_color'), make('surface_color'), make('text_color'), make('primary_action_color'), make('secondary_action_color')],
+        borderables: [],
+        fontEditable: make('font_family'),
+        fontSizeable: make('font_size')
+      };
+    },
+    mapToEditPanelValues: (config) => {
+      const g = (k) => config[k] || defaultConfig[k];
+      return new Map([
+        ['hero_title', g('hero_title')],
+        ['hero_subtitle', g('hero_subtitle')],
+        ['cta_primary', g('cta_primary')],
+        ['cta_secondary', g('cta_secondary')],
+        ['bottom_cta_text', g('bottom_cta_text')]
+      ]);
+    }
+  });
+}
+
+// Scroll-driven behaviors
+const appRoot = document.getElementById('appRoot');
+const nav = document.getElementById('mainNav');
+const sections = document.querySelectorAll('section[id]');
+
+// Intersection observer for reveals
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+  });
+}, { threshold: 0.15, root: appRoot });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// Nav state + active section
+appRoot.addEventListener('scroll', () => {
+  const scrollY = appRoot.scrollTop;
+  const waveSection = document.querySelector('.wave-container');
+  const waveTop = waveSection ? waveSection.offsetTop : 9999;
+
+  if (scrollY > waveTop - 200) {
+    nav.classList.remove('nav-above');
+    nav.classList.add('nav-below');
+  } else {
+    nav.classList.remove('nav-below');
+    nav.classList.add('nav-above');
+  }
+
+  // Active section
+  let current = '';
+  sections.forEach(s => {
+    if (s.offsetTop - 200 <= scrollY) current = s.id;
+  });
+  document.querySelectorAll('.nav-link').forEach(a => {
+    a.classList.toggle('active', a.dataset.section === current);
+  });
+});
+
+// Mobile menu
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('hidden');
+});
+document.querySelectorAll('#mobileMenu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobileMenu').classList.add('hidden'));
+});
+
+// Bubbles in the deep zone
+function createBubbles() {
+  const zone = document.getElementById('bubbleZone');
+  if (!zone) return;
+  for (let i = 0; i < 15; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 4 + Math.random() * 16;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.bottom = Math.random() * 30 + '%';
+    b.style.animationDuration = (8 + Math.random() * 12) + 's';
+    b.style.animationDelay = (Math.random() * 10) + 's';
+    zone.appendChild(b);
+  }
+}
+createBubbles();
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83b775752a155',t:'MTc3NjczMDkyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

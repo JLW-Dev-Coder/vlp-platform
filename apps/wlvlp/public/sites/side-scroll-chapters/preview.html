@@ -1,1 +1,546 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/604fbae7-2a38-4629-80f1-8c5790e834a6 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SideScroll Chapters</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=DM+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; }
+.font-serif { font-family: 'Instrument Serif', Georgia, serif; }
+
+/* Chapter slide animations */
+.chapter-panel { opacity: 0; transform: translateX(-120px); transition: opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1); }
+.chapter-panel.from-right { transform: translateX(120px); }
+.chapter-panel.visible { opacity: 1; transform: translateX(0); }
+
+/* Pan zoom on images */
+@keyframes slowPan { 0% { transform: scale(1.05) translate(0,0); } 50% { transform: scale(1.12) translate(-2%,-1%); } 100% { transform: scale(1.05) translate(0,0); } }
+.pan-zoom { animation: slowPan 20s ease-in-out infinite; }
+
+/* Glassmorphism */
+.glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); }
+
+/* Progress bar */
+#chapterProgress { transition: width 0.3s ease; }
+
+/* Staggered reveals */
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Hero text animation */
+@keyframes heroIn { from { opacity:0; transform: translateY(60px); } to { opacity:1; transform: translateY(0); } }
+.hero-anim { animation: heroIn 1s cubic-bezier(0.22,1,0.36,1) forwards; opacity: 0; }
+.hero-anim-d1 { animation-delay: 0.15s; }
+.hero-anim-d2 { animation-delay: 0.35s; }
+.hero-anim-d3 { animation-delay: 0.55s; }
+
+/* Nav active */
+.nav-link { position: relative; }
+.nav-link::after { content:''; position:absolute; bottom:-2px; left:0; width:0; height:1px; transition: width 0.3s ease; }
+.nav-link.active::after { width:100%; }
+
+/* Thin line icons inline */
+.icon-thin { stroke-width: 1.2; }
+
+/* Review cards */
+.review-card { transition: transform 0.4s ease, box-shadow 0.4s ease; }
+.review-card:hover { transform: translateY(-4px); }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full overflow-auto" style="background:#0a0a0a; color:#e8e4df;">
+   <!-- Progress Bar -->
+   <div style="position:fixed;top:0;left:0;width:100%;z-index:100;height:3px;background:rgba(255,255,255,0.06);">
+    <div id="chapterProgress" style="height:100%;width:0%;background:linear-gradient(90deg,#c8a46e,#e8c98a);"></div>
+   </div><!-- Sticky Nav -->
+   <nav id="stickyNav" style="position:fixed;top:3px;left:0;width:100%;z-index:90;transition:background 0.4s ease;padding:16px 0;">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;">
+     <a href="#hero" style="font-family:'Instrument Serif',serif;font-size:20px;color:#c8a46e;text-decoration:none;letter-spacing:1px;">SideScroll</a>
+     <div style="display:flex;gap:28px;align-items:center;" id="navLinks">
+      <a href="#hero" class="nav-link active" data-section="hero" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8e4df;text-decoration:none;">Home</a> <a href="#chapters" class="nav-link" data-section="chapters" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8e4df;text-decoration:none;">Chapters</a> <a href="#proof" class="nav-link" data-section="proof" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8e4df;text-decoration:none;">Proof</a> <a href="#details" class="nav-link" data-section="details" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8e4df;text-decoration:none;">Details</a> <a href="#reviews" class="nav-link" data-section="reviews" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8e4df;text-decoration:none;">Reviews</a> <a href="#pricing" class="nav-link" data-section="pricing" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8e4df;text-decoration:none;">Pricing</a> <a href="#download" class="nav-link" data-section="download" style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8e4df;text-decoration:none;">Download</a>
+     </div>
+    </div>
+   </nav><!-- HERO -->
+   <section id="hero" style="min-height:100%;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;overflow:hidden;">
+     <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1600&amp;q=80" alt="Cinematic city" loading="lazy" class="pan-zoom" style="width:100%;height:100%;object-fit:cover;opacity:0.25;" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+    </div>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,0.4) 0%,rgba(10,10,10,0.95) 100%);"></div>
+    <div style="position:relative;z-index:10;text-align:center;max-width:800px;padding:120px 24px 80px;">
+     <p class="hero-anim hero-anim-d1" style="font-size:11px;letter-spacing:6px;text-transform:uppercase;color:#c8a46e;margin-bottom:32px;"><!-- Arrow icon -->
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:8px;"><path d="M5 12h14M12 5l7 7-7 7" />
+      </svg> Chapter 00 — Origin</p>
+     <h1 id="heroTitle" class="font-serif hero-anim hero-anim-d2" style="font-size:clamp(48px,8vw,96px);line-height:1;margin-bottom:24px;color:#e8e4df;">A story you can feel.</h1>
+     <p id="heroSubtitle" class="hero-anim hero-anim-d2" style="font-size:clamp(18px,2.5vw,24px);color:rgba(232,228,223,0.6);margin-bottom:48px;font-weight:300;">Chapters that convert.</p>
+     <div class="hero-anim hero-anim-d3" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="#download" id="ctaPrimary" style="padding:16px 36px;background:#c8a46e;color:#0a0a0a;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;transition:background 0.3s;" onmouseover="this.style.background='#e8c98a'" onmouseout="this.style.background='#c8a46e'">Get Template + License</a> <a href="#chapters" id="ctaSecondary" style="padding:16px 36px;border:1px solid rgba(200,164,110,0.4);color:#c8a46e;font-size:13px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;transition:border-color 0.3s;" onmouseover="this.style.borderColor='#c8a46e'" onmouseout="this.style.borderColor='rgba(200,164,110,0.4)'">Enter Chapters</a>
+     </div>
+    </div><!-- Scroll indicator -->
+    <div style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0.4;">
+     <span style="font-size:10px;letter-spacing:3px;text-transform:uppercase;">Scroll</span>
+     <svg width="16" height="24" viewbox="0 0 16 24" fill="none" stroke="#e8e4df" stroke-width="1"><rect x="4" y="1" width="8" height="14" rx="4" /><line x1="8" y1="4" x2="8" y2="7" /><path d="M8 18v4M5 20l3 3 3-3" />
+     </svg>
+    </div>
+   </section><!-- CHAPTERS -->
+   <section id="chapters" style="padding:120px 24px;max-width:1200px;margin:0 auto;">
+    <!-- Chapter 01 -->
+    <div class="chapter-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-bottom:120px;" data-observe>
+     <div style="overflow:hidden;border-radius:4px;height:420px;">
+      <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&amp;q=80" alt="Creative studio" loading="lazy" class="pan-zoom" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+     </div>
+     <div>
+      <span class="font-serif" style="font-size:120px;line-height:1;color:rgba(200,164,110,0.12);display:block;">01</span>
+      <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c8a46e;margin:-40px 0 16px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="3" /><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+       </svg> The Vision</p>
+      <h2 class="font-serif" style="font-size:clamp(32px,4vw,48px);line-height:1.1;margin-bottom:20px;">Every brand has an untold chapter.</h2>
+      <p style="color:rgba(232,228,223,0.55);line-height:1.8;font-weight:300;">We build experiences where scrolling becomes storytelling. Each panel reveals context, trust, and momentum — converting passive readers into committed audiences.</p>
+     </div>
+    </div><!-- Chapter 02 -->
+    <div class="chapter-panel from-right" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-bottom:120px;" data-observe>
+     <div>
+      <span class="font-serif" style="font-size:120px;line-height:1;color:rgba(200,164,110,0.12);display:block;">02</span>
+      <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c8a46e;margin:-40px 0 16px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:6px;"><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
+       </svg> The Craft</p>
+      <h2 class="font-serif" style="font-size:clamp(32px,4vw,48px);line-height:1.1;margin-bottom:20px;">Side-scroll chapters. Vertical depth.</h2>
+      <p style="color:rgba(232,228,223,0.55);line-height:1.8;font-weight:300;">Panels slide from alternating directions, creating rhythm. Images breathe with subtle pan-zoom. Glassmorphism cards float above cinematic backdrops. Every pixel earns its place.</p>
+     </div>
+     <div style="overflow:hidden;border-radius:4px;height:420px;">
+      <img src="https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&amp;q=80" alt="Modern office" loading="lazy" class="pan-zoom" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+     </div>
+    </div><!-- Chapter 03 -->
+    <div class="chapter-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-bottom:40px;" data-observe>
+     <div style="overflow:hidden;border-radius:4px;height:420px;">
+      <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&amp;q=80" alt="Travel scenes" loading="lazy" class="pan-zoom" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+     </div>
+     <div>
+      <span class="font-serif" style="font-size:120px;line-height:1;color:rgba(200,164,110,0.12);display:block;">03</span>
+      <p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#c8a46e;margin:-40px 0 16px;">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+       </svg> The Journey</p>
+      <h2 class="font-serif" style="font-size:clamp(32px,4vw,48px);line-height:1.1;margin-bottom:20px;">Scroll becomes destination.</h2>
+      <p style="color:rgba(232,228,223,0.55);line-height:1.8;font-weight:300;">Users don't just read — they travel. Each chapter anchors a new emotional beat, guiding visitors from curiosity to conviction without a single page reload.</p>
+     </div>
+    </div>
+   </section><!-- PROOF (Glassmorphism Quote Cards) -->
+   <section id="proof" style="padding:100px 24px;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;overflow:hidden;">
+     <img src="https://images.unsplash.com/photo-1494587416117-f102a2ac0a8d?w=1600&amp;q=80" alt="Abstract architecture" loading="lazy" class="pan-zoom" style="width:100%;height:100%;object-fit:cover;opacity:0.15;" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+    </div>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,#0a0a0a 0%,rgba(10,10,10,0.85) 50%,#0a0a0a 100%);"></div>
+    <div style="position:relative;z-index:10;max-width:1000px;margin:0 auto;text-align:center;">
+     <p class="reveal" data-observe style="font-size:11px;letter-spacing:5px;text-transform:uppercase;color:#c8a46e;margin-bottom:16px;">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z" /><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+      </svg> Social Proof</p>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:48px;">
+      <div class="glass reveal" data-observe style="padding:40px 32px;border-radius:8px;text-align:left;">
+       <p class="font-serif" style="font-size:20px;line-height:1.6;font-style:italic;margin-bottom:24px;color:#e8e4df;">"This template turned our boring landing page into an experience people actually remember."</p>
+       <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#c8a46e,#8a6d3b);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#0a0a0a;">
+         M
+        </div>
+        <div>
+         <p style="font-size:13px;font-weight:500;">Maya Chen</p>
+         <p style="font-size:11px;color:rgba(232,228,223,0.4);">Creative Director, Opal Studio</p>
+        </div>
+       </div>
+      </div>
+      <div class="glass reveal" data-observe style="padding:40px 32px;border-radius:8px;text-align:left;transition-delay:0.15s;">
+       <p class="font-serif" style="font-size:20px;line-height:1.6;font-style:italic;margin-bottom:24px;color:#e8e4df;">"Conversion went up 34% after switching to the chapter scroll format. The data doesn't lie."</p>
+       <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#c8a46e,#8a6d3b);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#0a0a0a;">
+         J
+        </div>
+        <div>
+         <p style="font-size:13px;font-weight:500;">James Alder</p>
+         <p style="font-size:11px;color:rgba(232,228,223,0.4);">Head of Growth, Meridian</p>
+        </div>
+       </div>
+      </div>
+      <div class="glass reveal" data-observe style="padding:40px 32px;border-radius:8px;text-align:left;transition-delay:0.3s;">
+       <p class="font-serif" style="font-size:20px;line-height:1.6;font-style:italic;margin-bottom:24px;color:#e8e4df;">"Finally, a one-page site that feels like a journey. Our clients are obsessed."</p>
+       <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#c8a46e,#8a6d3b);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#0a0a0a;">
+         S
+        </div>
+        <div>
+         <p style="font-size:13px;font-weight:500;">Sofia Reyes</p>
+         <p style="font-size:11px;color:rgba(232,228,223,0.4);">Founder, Atlas Digital</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DETAILS -->
+   <section id="details" style="padding:120px 24px;max-width:1000px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:72px;">
+     <p class="reveal" data-observe style="font-size:11px;letter-spacing:5px;text-transform:uppercase;color:#c8a46e;margin-bottom:16px;">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+      </svg> What's Inside</p>
+     <h2 class="font-serif reveal" data-observe style="font-size:clamp(36px,5vw,56px);line-height:1.1;">Everything you need. Nothing you don't.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:40px;">
+     <div class="reveal" data-observe>
+      <div style="width:48px;height:48px;border:1px solid rgba(200,164,110,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" /><polyline points="14,2 14,8 20,8" />
+       </svg>
+      </div>
+      <h3 style="font-size:16px;font-weight:500;margin-bottom:8px;">6 Chapter Panels</h3>
+      <p style="font-size:14px;color:rgba(232,228,223,0.45);line-height:1.7;font-weight:300;">Alternating slide-in sections with cinematic imagery and editorial copy blocks.</p>
+     </div>
+     <div class="reveal" data-observe style="transition-delay:0.1s;">
+      <div style="width:48px;height:48px;border:1px solid rgba(200,164,110,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+       </svg>
+      </div>
+      <h3 style="font-size:16px;font-weight:500;margin-bottom:8px;">Unsplash Ready</h3>
+      <p style="font-size:14px;color:rgba(232,228,223,0.45);line-height:1.7;font-weight:300;">Pre-configured with free high-res imagery. Swap in your own or keep the defaults.</p>
+     </div>
+     <div class="reveal" data-observe style="transition-delay:0.2s;">
+      <div style="width:48px;height:48px;border:1px solid rgba(200,164,110,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+       </svg>
+      </div>
+      <h3 style="font-size:16px;font-weight:500;margin-bottom:8px;">Glassmorphism Cards</h3>
+      <p style="font-size:14px;color:rgba(232,228,223,0.45);line-height:1.7;font-weight:300;">Frosted-glass testimonial blocks with blur effects and translucent borders.</p>
+     </div>
+     <div class="reveal" data-observe style="transition-delay:0.3s;">
+      <div style="width:48px;height:48px;border:1px solid rgba(200,164,110,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+       </svg>
+      </div>
+      <h3 style="font-size:16px;font-weight:500;margin-bottom:8px;">Performance First</h3>
+      <p style="font-size:14px;color:rgba(232,228,223,0.45);line-height:1.7;font-weight:300;">CSS-only animations with IntersectionObserver. No heavy libraries, no jank.</p>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" style="padding:100px 24px;background:rgba(200,164,110,0.03);">
+    <div style="max-width:1000px;margin:0 auto;">
+     <p class="reveal" data-observe style="font-size:11px;letter-spacing:5px;text-transform:uppercase;color:#c8a46e;margin-bottom:16px;text-align:center;">Reviews</p>
+     <h2 class="font-serif reveal" data-observe style="font-size:clamp(32px,4vw,48px);line-height:1.1;text-align:center;margin-bottom:60px;">What people are saying.</h2>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
+      <div class="review-card reveal" data-observe style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:32px;">
+       <div style="display:flex;gap:4px;margin-bottom:16px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+       </div>
+       <p style="font-size:15px;line-height:1.7;color:rgba(232,228,223,0.7);margin-bottom:20px;">"Plug and play. I had this customized for my agency in under two hours. Clients think I hired a dev team."</p>
+       <p style="font-size:13px;font-weight:500;">Alex Drummond</p>
+       <p style="font-size:11px;color:rgba(232,228,223,0.35);">Freelance Brand Strategist</p>
+      </div>
+      <div class="review-card reveal" data-observe style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:32px;transition-delay:0.15s;">
+       <div style="display:flex;gap:4px;margin-bottom:16px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+       </div>
+       <p style="font-size:15px;line-height:1.7;color:rgba(232,228,223,0.7);margin-bottom:20px;">"The chapter-scroll concept is genuinely unique. Haven't seen anything like this in the template market."</p>
+       <p style="font-size:13px;font-weight:500;">Priya Nair</p>
+       <p style="font-size:11px;color:rgba(232,228,223,0.35);">UX Lead, Volta</p>
+      </div>
+      <div class="review-card reveal" data-observe style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:32px;transition-delay:0.3s;">
+       <div style="display:flex;gap:4px;margin-bottom:16px;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="#c8a46e" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+       </div>
+       <p style="font-size:15px;line-height:1.7;color:rgba(232,228,223,0.7);margin-bottom:20px;">"Our bounce rate dropped 22% after launch. People actually scroll to the bottom now."</p>
+       <p style="font-size:13px;font-weight:500;">Tom Bakker</p>
+       <p style="font-size:11px;color:rgba(232,228,223,0.35);">Marketing Director, Helix Co.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- PRICING -->
+   <section id="pricing" style="padding:120px 24px;max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:72px;">
+     <p class="reveal" data-observe style="font-size:11px;letter-spacing:5px;text-transform:uppercase;color:#c8a46e;margin-bottom:16px;">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5m-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11m3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+      </svg> Choose Your Plan</p>
+     <h2 class="font-serif reveal" data-observe style="font-size:clamp(36px,5vw,56px);line-height:1.1;">One-time, lifetime access.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;max-width:1100px;margin:0 auto;"><!-- Starter -->
+     <div class="reveal glass" data-observe style="padding:48px 40px;border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;transition:transform 0.3s ease,border-color 0.3s ease;">
+      <div>
+       <p style="font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#c8a46e;margin-bottom:16px;">Starter</p>
+       <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:24px;"><span style="font-size:48px;font-weight:600;color:#e8e4df;">$29</span> <span style="font-size:13px;color:rgba(232,228,223,0.4);">one-time</span>
+       </div>
+       <p style="font-size:14px;color:rgba(232,228,223,0.6);line-height:1.7;margin-bottom:32px;">Perfect for freelancers and small projects.</p>
+       <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">6 Chapter Template</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Figma Source File</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Unsplash Image License</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><line x1="4" y1="12" x2="20" y2="12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.4);">Premium Animations</span>
+        </div>
+       </div>
+      </div><button style="margin-top:32px;padding:14px 24px;background:transparent;border:1px solid rgba(200,164,110,0.4);color:#c8a46e;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border-radius:6px;cursor:pointer;transition:all 0.3s ease;" onmouseover="this.style.borderColor='#c8a46e';this.style.background='rgba(200,164,110,0.08)'" onmouseout="this.style.borderColor='rgba(200,164,110,0.4)';this.style.background='transparent'">Get Starter</button>
+     </div><!-- Pro (Featured) -->
+     <div class="reveal" data-observe style="padding:48px 40px;border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,rgba(200,164,110,0.15),rgba(200,164,110,0.05));border:1px solid rgba(200,164,110,0.3);transform:scale(1.04);position:relative;z-index:5;transition:transform 0.3s ease,border-color 0.3s ease;">
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#c8a46e;color:#0a0a0a;padding:6px 16px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border-radius:20px;">
+       Most Popular
+      </div>
+      <div>
+       <p style="font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#c8a46e;margin-bottom:16px;">Pro</p>
+       <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:24px;"><span style="font-size:48px;font-weight:600;color:#e8e4df;">$79</span> <span style="font-size:13px;color:rgba(232,228,223,0.4);">one-time</span>
+       </div>
+       <p style="font-size:14px;color:rgba(232,228,223,0.6);line-height:1.7;margin-bottom:32px;">For agencies and growing teams.</p>
+       <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Everything in Starter</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Premium Animations Pack</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">12 Bonus Component Kits</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Commercial License</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Email Support (30 days)</span>
+        </div>
+       </div>
+      </div><button style="margin-top:32px;padding:14px 24px;background:#c8a46e;color:#0a0a0a;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;transition:all 0.3s ease;" onmouseover="this.style.background='#e8c98a';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#c8a46e';this.style.transform='translateY(0)'">Get Pro</button>
+     </div><!-- Enterprise -->
+     <div class="reveal glass" data-observe style="padding:48px 40px;border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;transition:transform 0.3s ease,border-color 0.3s ease;">
+      <div>
+       <p style="font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#c8a46e;margin-bottom:16px;">Enterprise</p>
+       <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:24px;"><span style="font-size:48px;font-weight:600;color:#e8e4df;">$199</span> <span style="font-size:13px;color:rgba(232,228,223,0.4);">one-time</span>
+       </div>
+       <p style="font-size:14px;color:rgba(232,228,223,0.6);line-height:1.7;margin-bottom:32px;">For studios, enterprises &amp; resellers.</p>
+       <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Everything in Pro</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Resale License Included</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Unlimited Client Projects</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Priority Email &amp; Slack Support</span>
+        </div>
+        <div style="display:flex;align-items:start;gap:12px;">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12" />
+         </svg><span style="font-size:13px;color:rgba(232,228,223,0.7);">Future Updates + Lifetime</span>
+        </div>
+       </div>
+      </div><button style="margin-top:32px;padding:14px 24px;background:transparent;border:1px solid rgba(200,164,110,0.4);color:#c8a46e;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border-radius:6px;cursor:pointer;transition:all 0.3s ease;" onmouseover="this.style.borderColor='#c8a46e';this.style.background='rgba(200,164,110,0.08)'" onmouseout="this.style.borderColor='rgba(200,164,110,0.4)';this.style.background='transparent'">Contact Sales</button>
+     </div>
+    </div>
+   </section><!-- DOWNLOAD / BOTTOM CTA -->
+   <section id="download" style="padding:120px 24px;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;overflow:hidden;">
+     <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1600&amp;q=80" alt="Product flatlay" loading="lazy" class="pan-zoom" style="width:100%;height:100%;object-fit:cover;opacity:0.12;" onerror="this.style.background='#1a1a1a';this.alt='Image unavailable';">
+    </div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(200,164,110,0.08) 0%,rgba(10,10,10,0.98) 70%);"></div>
+    <div style="position:relative;z-index:10;max-width:700px;margin:0 auto;text-align:center;">
+     <p class="reveal" data-observe style="font-size:11px;letter-spacing:5px;text-transform:uppercase;color:#c8a46e;margin-bottom:24px;">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#c8a46e" stroke-width="1.2" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+      </svg> Final Chapter</p>
+     <h2 id="bottomCtaText" class="font-serif reveal" data-observe style="font-size:clamp(36px,5vw,60px);line-height:1.05;margin-bottom:32px;">Turn scrolling into commitment.</h2>
+     <p class="reveal" data-observe style="color:rgba(232,228,223,0.5);font-size:17px;line-height:1.7;margin-bottom:48px;font-weight:300;">One template. Six chapters. Infinite stories. Get the full SideScroll experience and start converting today.</p><a href="#hero" class="reveal" data-observe style="display:inline-block;padding:20px 52px;background:#c8a46e;color:#0a0a0a;font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:background 0.3s,transform 0.3s;" onmouseover="this.style.background='#e8c98a';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#c8a46e';this.style.transform='translateY(0)'">Get Template + License</a>
+    </div>
+   </section><!-- Footer -->
+   <footer style="padding:40px 24px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+    <p style="font-size:12px;color:rgba(232,228,223,0.25);letter-spacing:1px;">SideScroll Chapters — Built for brands that refuse to be boring.</p>
+   </footer>
+  </div>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'A story you can feel.',
+  hero_subtitle: 'Chapters that convert.',
+  cta_primary: 'Get Template + License',
+  cta_secondary: 'Enter Chapters',
+  bottom_cta_text: 'Turn scrolling into commitment.',
+  background_color: '#0a0a0a',
+  accent_color: '#c8a46e',
+  text_color: '#e8e4df',
+  surface_color: 'rgba(255,255,255,0.04)',
+  secondary_action_color: 'rgba(200,164,110,0.4)',
+  font_family: 'Instrument Serif',
+  font_size: 16
+};
+
+// Element SDK init
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const c = { ...defaultConfig, ...config };
+    document.getElementById('heroTitle').textContent = c.hero_title;
+    document.getElementById('heroSubtitle').textContent = c.hero_subtitle;
+    document.getElementById('ctaPrimary').textContent = c.cta_primary;
+    document.getElementById('ctaSecondary').textContent = c.cta_secondary;
+    document.getElementById('bottomCtaText').textContent = c.bottom_cta_text;
+
+    // Colors
+    document.getElementById('app').style.background = c.background_color;
+    document.getElementById('app').style.color = c.text_color;
+
+    // Accent color updates
+    const accentEls = document.querySelectorAll('[style*="color:#c8a46e"], [style*="color: #c8a46e"]');
+    // Update CTAs
+    document.getElementById('ctaPrimary').style.background = c.accent_color;
+    document.getElementById('chapterProgress').style.background = `linear-gradient(90deg,${c.accent_color},${c.accent_color}cc)`;
+
+    // Font
+    const serifEls = document.querySelectorAll('.font-serif');
+    serifEls.forEach(el => { el.style.fontFamily = `${c.font_family}, Georgia, serif`; });
+
+    // Font size
+    const base = c.font_size || 16;
+    document.getElementById('app').style.fontSize = `${base}px`;
+  },
+  mapToCapabilities: (config) => {
+    const c = { ...defaultConfig, ...config };
+    return {
+      recolorables: [
+        { get: () => c.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => c.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => c.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => c.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+        { get: () => c.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } },
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => c.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => c.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    };
+  },
+  mapToEditPanelValues: (config) => {
+    const c = { ...defaultConfig, ...config };
+    return new Map([
+      ['hero_title', c.hero_title],
+      ['hero_subtitle', c.hero_subtitle],
+      ['cta_primary', c.cta_primary],
+      ['cta_secondary', c.cta_secondary],
+      ['bottom_cta_text', c.bottom_cta_text],
+    ]);
+  }
+});
+
+// IntersectionObserver for chapter panels and reveals
+const scrollContainer = document.getElementById('app');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { root: scrollContainer, threshold: 0.15 });
+
+document.querySelectorAll('.chapter-panel, .reveal').forEach(el => observer.observe(el));
+
+// Progress bar
+scrollContainer.addEventListener('scroll', () => {
+  const scrollTop = scrollContainer.scrollTop;
+  const scrollHeight = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+  const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+  document.getElementById('chapterProgress').style.width = progress + '%';
+
+  // Nav background
+  const nav = document.getElementById('stickyNav');
+  nav.style.background = scrollTop > 80 ? 'rgba(10,10,10,0.9)' : 'transparent';
+  nav.style.backdropFilter = scrollTop > 80 ? 'blur(12px)' : 'none';
+
+  // Active nav link
+  const sections = ['hero','chapters','proof','details','reviews','pricing','download'];
+  let current = 'hero';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.offsetTop - 200 <= scrollTop) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.toggle('active', link.dataset.section === current);
+    link.style.setProperty('--after-bg', '#c8a46e');
+  });
+});
+
+// Style active nav link underlines
+const style = document.createElement('style');
+style.textContent = '.nav-link.active::after { background: #c8a46e; }';
+document.head.appendChild(style);
+
+// Smooth scroll for nav links within the container
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      scrollContainer.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+    }
+  });
+});
+
+// Responsive: stack grids on mobile
+const mq = window.matchMedia('(max-width: 768px)');
+function handleMobile(e) {
+  document.querySelectorAll('.chapter-panel').forEach(el => {
+    el.style.gridTemplateColumns = e.matches ? '1fr' : '1fr 1fr';
+  });
+  document.getElementById('navLinks').style.display = e.matches ? 'none' : 'flex';
+}
+mq.addEventListener('change', handleMobile);
+handleMobile(mq);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83747e74da155',t:'MTc3NjczMDc1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

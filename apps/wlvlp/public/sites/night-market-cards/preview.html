@@ -1,1 +1,460 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/34278bf4-66e9-4d7f-843e-070184042e10 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NightMarket Cards</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Dela Gothic One"', 'sans-serif'],
+        body: ['"DM Sans"', 'sans-serif']
+      },
+      colors: {
+        night: '#0d0b0e',
+        warmglow: '#f5a623',
+        ember: '#e8432a',
+        smoke: '#1a1720',
+        ash: '#b0a8b9'
+      }
+    }
+  }
+}
+</script>
+  <style>
+  html, body { height: 100%; margin: 0; }
+
+  .grain {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  @keyframes popIn {
+    0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .stall-card { opacity: 0; animation: popIn 0.6s ease-out forwards; }
+
+  @keyframes lightSweep {
+    0% { left: -60%; }
+    100% { left: 120%; }
+  }
+  .light-sweep::after {
+    content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(245,166,35,0.08), transparent);
+    animation: lightSweep 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes slowZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.08); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+    50% { box-shadow: 0 0 20px 4px rgba(245,166,35,0.15); }
+  }
+  .cta-pulse { animation: pulse 2.5s ease-in-out infinite; }
+
+  .nav-active { color: #f5a623; border-bottom: 2px solid #f5a623; }
+
+  .hero-img { animation: slowZoom 20s ease-in-out alternate infinite; }
+
+  .stall-card:hover .card-img { transform: scale(1.05); }
+  .card-img { transition: transform 0.5s ease; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0d0b0e; }
+  ::-webkit-scrollbar-thumb { background: #f5a623; border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-night text-white font-body">
+  <div id="app" class="w-full h-full overflow-auto">
+   <div class="grain"></div><!-- Sticky Nav -->
+   <nav id="sticky-nav" class="fixed top-0 left-0 w-full z-50 bg-night/90 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14"><a href="#home" class="font-display text-warmglow text-lg tracking-tight">NM</a>
+     <div class="hidden md:flex gap-6 text-sm font-medium"><a href="#home" class="nav-link py-1 text-ash hover:text-warmglow transition-colors" data-section="home">Home</a> <a href="#stalls" class="nav-link py-1 text-ash hover:text-warmglow transition-colors" data-section="stalls">Stalls</a> <a href="#best-picks" class="nav-link py-1 text-ash hover:text-warmglow transition-colors" data-section="best-picks">Best Picks</a> <a href="#details" class="nav-link py-1 text-ash hover:text-warmglow transition-colors" data-section="details">Details</a> <a href="#reviews" class="nav-link py-1 text-ash hover:text-warmglow transition-colors" data-section="reviews">Reviews</a> <a href="#buy" class="nav-link py-1 text-ash hover:text-warmglow transition-colors" data-section="buy">Buy</a>
+     </div><button id="mobile-menu-btn" class="md:hidden text-ash"><i data-lucide="menu" style="width:22px;height:22px;"></i></button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 flex flex-col gap-3 text-sm font-medium"><a href="#home" class="nav-link text-ash hover:text-warmglow">Home</a> <a href="#stalls" class="nav-link text-ash hover:text-warmglow">Stalls</a> <a href="#best-picks" class="nav-link text-ash hover:text-warmglow">Best Picks</a> <a href="#details" class="nav-link text-ash hover:text-warmglow">Details</a> <a href="#reviews" class="nav-link text-ash hover:text-warmglow">Reviews</a> <a href="#buy" class="nav-link text-ash hover:text-warmglow">Buy</a>
+    </div>
+   </nav><!-- Hero -->
+   <section id="home" class="relative w-full overflow-hidden" style="min-height: 90%;">
+    <div class="absolute inset-0 overflow-hidden"><img src="https://images.unsplash.com/photo-1504940892017-d23b9f12c1e0?w=1400&amp;q=80" alt="Night market scene" class="hero-img w-full h-full object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1720,#0d0b0e)';this.alt='Image unavailable';">
+     <div class="absolute inset-0 bg-gradient-to-b from-night/70 via-night/60 to-night"></div>
+    </div>
+    <div class="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-48" style="min-height: 90%;">
+     <div class="mb-16">
+      <svg width="48" height="48" viewbox="0 0 48 48" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <path d="M24 4C20 4 14 10 14 18c0 4 2 7 4 9l6 10 6-10c2-2 4-5 4-9C34 10 28 4 24 4z" /><circle cx="24" cy="17" r="3" />
+      </svg>
+     </div>
+     <h1 id="hero-title" class="font-display text-4xl sm:text-6xl lg:text-7xl text-white mb-4 leading-tight">Find your next favorite.</h1>
+     <p id="hero-subtitle" class="text-ash text-base sm:text-lg max-w-xl mb-8">A market-style page built for curiosity.</p>
+     <div class="flex flex-wrap gap-4 justify-center"><a href="#stalls" id="cta-primary-btn" class="cta-pulse bg-warmglow text-night font-bold px-7 py-3 rounded-full hover:bg-yellow-400 transition-colors">Browse Stalls</a> <a href="#best-picks" id="cta-secondary-btn" class="border border-warmglow/50 text-warmglow font-bold px-7 py-3 rounded-full hover:bg-warmglow/10 transition-colors">Shop Best Picks</a>
+     </div>
+    </div>
+   </section><!-- Stalls Section -->
+   <section id="stalls" class="relative w-full py-20 px-4 light-sweep">
+    <div class="max-w-7xl mx-auto">
+     <div class="flex items-center gap-3 mb-10">
+      <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <rect x="3" y="10" width="22" height="15" rx="2" /><path d="M3 10l3-6h16l3 6" /><line x1="14" y1="4" x2="14" y2="10" />
+      </svg>
+      <h2 class="font-display text-3xl sm:text-4xl text-white">The Stalls</h2>
+     </div>
+     <div id="stalls-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+     </div>
+    </div>
+   </section><!-- Best Picks -->
+   <section id="best-picks" class="relative w-full py-20 px-4 bg-smoke/50">
+    <div class="max-w-7xl mx-auto">
+     <div class="flex items-center gap-3 mb-10">
+      <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <polygon points="14 2 17.5 9.5 26 10.5 20 16 21.5 25 14 21 6.5 25 8 16 2 10.5 10.5 9.5" />
+      </svg>
+      <h2 class="font-display text-3xl sm:text-4xl text-white">Best Picks</h2>
+     </div>
+     <div id="picks-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
+    </div>
+   </section><!-- Details -->
+   <section id="details" class="relative w-full py-20 px-4">
+    <div class="max-w-4xl mx-auto">
+     <div class="flex items-center gap-3 mb-10">
+      <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <circle cx="14" cy="14" r="11" /><line x1="14" y1="12" x2="14" y2="20" /><circle cx="14" cy="8" r="0.5" fill="#f5a623" />
+      </svg>
+      <h2 class="font-display text-3xl sm:text-4xl text-white">Details</h2>
+     </div>
+     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div class="bg-smoke/80 rounded-2xl p-6 border border-white/5">
+       <div class="flex items-center gap-3 mb-3">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <h3 class="text-warmglow font-bold">Open Hours</h3>
+       </div>
+       <p class="text-ash text-sm leading-relaxed">Thursday through Sunday, 6 PM to midnight. Rain or shine, the stalls light up and the aromas take over.</p>
+      </div>
+      <div class="bg-smoke/80 rounded-2xl p-6 border border-white/5">
+       <div class="flex items-center gap-3 mb-3">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+        </svg>
+        <h3 class="text-warmglow font-bold">Location</h3>
+       </div>
+       <p class="text-ash text-sm leading-relaxed">Corner of Ratchada &amp; Soi 4, the old lantern district. Follow the glow and the sound of sizzling woks.</p>
+      </div>
+      <div class="bg-smoke/80 rounded-2xl p-6 border border-white/5">
+       <div class="flex items-center gap-3 mb-3">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+        </svg>
+        <h3 class="text-warmglow font-bold">What to Bring</h3>
+       </div>
+       <p class="text-ash text-sm leading-relaxed">Cash preferred. Small bills go faster. Bring a tote — you'll end up with more than you planned.</p>
+      </div>
+      <div class="bg-smoke/80 rounded-2xl p-6 border border-white/5">
+       <div class="flex items-center gap-3 mb-3">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M14 9V5a3 3 0 00-6 0v4" /><rect x="5" y="9" width="14" height="12" rx="2" />
+        </svg>
+        <h3 class="text-warmglow font-bold">Vendor Count</h3>
+       </div>
+       <p class="text-ash text-sm leading-relaxed">Over 60 rotating vendors each week. Regulars hold their spots, newcomers bring the surprises.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Reviews -->
+   <section id="reviews" class="relative w-full py-20 px-4 bg-smoke/50">
+    <div class="max-w-4xl mx-auto">
+     <div class="flex items-center gap-3 mb-10">
+      <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <path d="M21 15a2 2 0 01-2 2H9l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z" />
+      </svg>
+      <h2 class="font-display text-3xl sm:text-4xl text-white">Reviews</h2>
+     </div>
+     <div class="space-y-5" id="reviews-list">
+      <div class="bg-smoke/80 rounded-2xl p-6 border border-white/5">
+       <div class="flex items-center gap-1 mb-2">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+       </div>
+       <p class="text-white text-sm mb-2">"Went for the noodles, stayed for the whole vibe. The lantern-lit alleys feel like another world."</p>
+       <p class="text-ash text-xs">— Mira T., visited Oct 2024</p>
+      </div>
+      <div class="bg-smoke/80 rounded-2xl p-6 border border-white/5">
+       <div class="flex items-center gap-1 mb-2">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="rgba(245,166,35,0.3)" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+       </div>
+       <p class="text-white text-sm mb-2">"Best satay I've had outside of Penang. The vendor remembered my order the second week."</p>
+       <p class="text-ash text-xs">— Jonas K., visited Nov 2024</p>
+      </div>
+      <div class="bg-smoke/80 rounded-2xl p-6 border border-white/5">
+       <div class="flex items-center gap-1 mb-2">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.5">
+         <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5" />
+        </svg>
+       </div>
+       <p class="text-white text-sm mb-2">"Took my parents and they couldn't stop talking about it for weeks. The handmade dumplings are unreal."</p>
+       <p class="text-ash text-xs">— Priya S., visited Dec 2024</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Buy / Bottom CTA -->
+   <section id="buy" class="relative w-full py-24 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+     <svg width="40" height="40" viewbox="0 0 40 40" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-6">
+      <circle cx="15" cy="34" r="2" /><circle cx="30" cy="34" r="2" /><path d="M2 2h6l4 22h20l4-14H12" />
+     </svg>
+     <h2 id="bottom-cta" class="font-display text-3xl sm:text-5xl text-white mb-6">Turn browsing into discovery.</h2><a href="#stalls" class="cta-pulse inline-block bg-warmglow text-night font-bold px-10 py-4 rounded-full text-lg hover:bg-yellow-400 transition-colors">Explore Now</a>
+    </div>
+   </section><!-- Footer -->
+   <footer class="w-full py-8 px-4 border-t border-white/5 text-center">
+    <p class="text-ash text-xs">NightMarket Cards — Built for the curious.</p>
+   </footer>
+  </div>
+  <script>
+const stallsData = [
+  { name: "Auntie Lin's Dumplings", price: "$4", pitch: "Hand-folded pork and chive, steamed to order. The line is worth it.", img: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&q=80", tag: "Street Food" },
+  { name: "Lantern Satay Co.", price: "$6", pitch: "Charcoal-grilled skewers with house peanut sauce. Three is never enough.", img: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80", tag: "Grilled" },
+  { name: "Neon Noodle Bar", price: "$5", pitch: "Wok-tossed egg noodles under buzzing neon. Fast, loud, delicious.", img: "https://images.unsplash.com/photo-1555126634-323283e090fa?w=600&q=80", tag: "Noodles" },
+  { name: "The Mango Stand", price: "$3", pitch: "Sticky rice and ripe mango, drizzled with coconut cream. Pure comfort.", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80", tag: "Dessert" },
+  { name: "Smoke & Bone BBQ", price: "$8", pitch: "Low-and-slow ribs glazed with tamarind. Arrive early, sells out fast.", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80", tag: "BBQ" },
+  { name: "Jade Tea Corner", price: "$2", pitch: "Loose-leaf brews from the highlands. The jasmine oolong is legendary.", img: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&q=80", tag: "Drinks" },
+];
+
+const picksData = [
+  { name: "Auntie Lin's Dumplings", price: "$4", pitch: "The crowd favorite for three years running. Perfectly crimped, impossibly juicy.", img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=600&q=80", badge: "Fan Favorite" },
+  { name: "Smoke & Bone BBQ", price: "$8", pitch: "The tamarind glaze alone is worth the trip. Bring napkins.", img: "https://images.unsplash.com/photo-1558030006-450675393462?w=600&q=80", badge: "Editor's Pick" },
+];
+
+function createStallCard(stall, index) {
+  const card = document.createElement('div');
+  card.className = 'stall-card relative bg-smoke/80 rounded-2xl overflow-hidden border border-white/5 group cursor-pointer';
+  card.style.animationDelay = `${index * 0.1}s`;
+  card.innerHTML = `
+    <div class="relative overflow-hidden" style="height: 200px;">
+      <img src="${stall.img}" alt="${stall.name}" class="card-img w-full h-full object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1720,#2a2030)';this.alt='Image unavailable';">
+      <div class="absolute top-3 left-3 bg-night/80 backdrop-blur-sm text-warmglow text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        ${stall.tag}
+      </div>
+      <div class="absolute top-3 right-3 bg-ember text-white text-sm font-bold px-3 py-1 rounded-full">${stall.price}</div>
+    </div>
+    <div class="p-5">
+      <h3 class="font-display text-lg text-white mb-2">${stall.name}</h3>
+      <p class="text-ash text-sm leading-relaxed">${stall.pitch}</p>
+    </div>
+  `;
+  return card;
+}
+
+function createPickCard(pick, index) {
+  const card = document.createElement('div');
+  card.className = 'stall-card relative bg-smoke/80 rounded-2xl overflow-hidden border border-warmglow/20 group cursor-pointer';
+  card.style.animationDelay = `${index * 0.15 + 0.3}s`;
+  card.innerHTML = `
+    <div class="flex flex-col sm:flex-row">
+      <div class="relative overflow-hidden sm:w-2/5" style="min-height: 180px;">
+        <img src="${pick.img}" alt="${pick.name}" class="card-img w-full h-full object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1720,#2a2030)';this.alt='Image unavailable';">
+        <div class="absolute top-3 left-3 bg-warmglow text-night text-xs font-bold px-3 py-1 rounded-full">${pick.badge}</div>
+      </div>
+      <div class="p-6 flex flex-col justify-center sm:w-3/5">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-display text-xl text-white">${pick.name}</h3>
+          <span class="text-ember font-bold text-lg">${pick.price}</span>
+        </div>
+        <p class="text-ash text-sm leading-relaxed">${pick.pitch}</p>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+// Render cards
+const stallsGrid = document.getElementById('stalls-grid');
+stallsData.forEach((s, i) => stallsGrid.appendChild(createStallCard(s, i)));
+
+const picksGrid = document.getElementById('picks-grid');
+picksData.forEach((p, i) => picksGrid.appendChild(createPickCard(p, i)));
+
+// Mobile menu toggle
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+
+// Close mobile menu on link click
+document.querySelectorAll('#mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+});
+
+// Active nav highlight on scroll
+const sections = ['home','stalls','best-picks','details','reviews','buy'];
+const appEl = document.getElementById('app');
+appEl.addEventListener('scroll', () => {
+  let current = 'home';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 80) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.remove('nav-active');
+    if (link.getAttribute('data-section') === current) link.classList.add('nav-active');
+  });
+});
+
+// Intersection observer for card animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.animationPlayState = 'running';
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.stall-card').forEach(card => {
+  card.style.animationPlayState = 'paused';
+  observer.observe(card);
+});
+
+lucide.createIcons();
+
+// Element SDK
+const defaultConfig = {
+  hero_title: "Find your next favorite.",
+  hero_subtitle: "A market-style page built for curiosity.",
+  cta_primary: "Browse Stalls",
+  cta_secondary: "Shop Best Picks",
+  bottom_cta_text: "Turn browsing into discovery.",
+  background_color: "#0d0b0e",
+  surface_color: "#1a1720",
+  text_color: "#b0a8b9",
+  primary_action_color: "#f5a623",
+  secondary_action_color: "#e8432a",
+  font_family: "Dela Gothic One",
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  const font = c.font_family || defaultConfig.font_family;
+  const baseSize = c.font_size || defaultConfig.font_size;
+
+  document.getElementById('hero-title').textContent = c.hero_title;
+  document.getElementById('hero-subtitle').textContent = c.hero_subtitle;
+  document.getElementById('cta-primary-btn').textContent = c.cta_primary;
+  document.getElementById('cta-secondary-btn').textContent = c.cta_secondary;
+  document.getElementById('bottom-cta').textContent = c.bottom_cta_text;
+
+  // Colors
+  document.body.style.backgroundColor = c.background_color;
+  document.querySelectorAll('.bg-smoke\\/80, .bg-smoke\\/50').forEach(el => {
+    el.style.backgroundColor = c.surface_color + 'cc';
+  });
+  document.querySelectorAll('.text-ash').forEach(el => el.style.color = c.text_color);
+
+  document.querySelectorAll('.cta-pulse, .bg-warmglow').forEach(el => {
+    el.style.backgroundColor = c.primary_action_color;
+  });
+  document.querySelectorAll('.text-warmglow').forEach(el => el.style.color = c.primary_action_color);
+  document.querySelectorAll('.border-warmglow\\/50').forEach(el => el.style.borderColor = c.primary_action_color + '80');
+  document.querySelectorAll('.text-ember, .bg-ember').forEach(el => {
+    if (el.classList.contains('bg-ember')) el.style.backgroundColor = c.secondary_action_color;
+    else el.style.color = c.secondary_action_color;
+  });
+
+  // Font
+  document.querySelectorAll('.font-display').forEach(el => {
+    el.style.fontFamily = `${font}, sans-serif`;
+  });
+
+  // Font size
+  document.getElementById('hero-title').style.fontSize = `${baseSize * 3.5}px`;
+  document.getElementById('hero-subtitle').style.fontSize = `${baseSize}px`;
+  document.getElementById('bottom-cta').style.fontSize = `${baseSize * 2.5}px`;
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+      { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } },
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family,
+      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: {
+      get: () => config.font_size || defaultConfig.font_size,
+      set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+    }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ["hero_title", config.hero_title || defaultConfig.hero_title],
+    ["hero_subtitle", config.hero_subtitle || defaultConfig.hero_subtitle],
+    ["cta_primary", config.cta_primary || defaultConfig.cta_primary],
+    ["cta_secondary", config.cta_secondary || defaultConfig.cta_secondary],
+    ["bottom_cta_text", config.bottom_cta_text || defaultConfig.bottom_cta_text],
+  ])
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83256c69ba155',t:'MTc3NjczMDU1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

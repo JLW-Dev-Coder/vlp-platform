@@ -1,1 +1,588 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/bc529512-e669-4b33-bd7d-db15667b32ee -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rooftop Terrace Scroll</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&amp;family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+html { height: 100%; }
+body { height: 100%; margin: 0; font-family: 'Outfit', sans-serif; background: #0a0a0a; color: #f5f0e8; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: rgba(255,255,255,0.06);
+  --text: #f5f0e8;
+  --accent: #d4a44c;
+  --accent2: #8b7355;
+}
+
+.font-display { font-family: 'Cormorant Garamond', serif; }
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.glass-strong {
+  background: rgba(10,10,10,0.6);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Scroll animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+.reveal-right {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+/* Slow zoom on images */
+.img-zoom {
+  transition: transform 12s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.img-zoom.zoomed {
+  transform: scale(1.08);
+}
+
+/* Light sweep */
+@keyframes lightSweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+.light-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,164,76,0.08), transparent);
+  animation: lightSweep 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* CTA pulse */
+@keyframes softPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212,164,76,0.3); }
+  50% { box-shadow: 0 0 20px 4px rgba(212,164,76,0.15); }
+}
+.cta-pulse { animation: softPulse 3s ease-in-out infinite; }
+
+/* Sticky nav */
+.nav-link {
+  position: relative;
+  letter-spacing: 0.12em;
+  transition: color 0.3s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+.nav-link:hover, .nav-link.active { color: var(--accent); }
+
+/* Star rating */
+.star-filled { fill: var(--accent); stroke: var(--accent); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: rgba(212,164,76,0.3); border-radius: 3px; }
+
+.scene-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body>
+  <div id="app-wrapper" style="width:100%; height:100%; overflow-x:hidden; overflow-y:auto; background:#0a0a0a;"><!-- NAV -->
+   <nav id="main-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500" style="background:transparent;">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"><a href="#home" class="font-display text-xl tracking-widest" style="color:var(--accent);">TERRACE</a>
+     <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-xs uppercase" style="color:var(--text);">Home</a> <a href="#levels" class="nav-link text-xs uppercase" style="color:var(--text);">Levels</a> <a href="#highlights" class="nav-link text-xs uppercase" style="color:var(--text);">Highlights</a> <a href="#packages" class="nav-link text-xs uppercase" style="color:var(--text);">Packages</a> <a href="#reviews" class="nav-link text-xs uppercase" style="color:var(--text);">Reviews</a> <a href="#book" class="nav-link text-xs uppercase" style="color:var(--text);">Book</a>
+     </div><button id="mobile-menu-btn" class="md:hidden" style="color:var(--text);" aria-label="Menu">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <path d="M4 7h16M4 12h16M4 17h16" />
+      </svg></button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden glass-strong px-6 pb-4"><a href="#home" class="block py-2 text-xs uppercase tracking-widest" style="color:var(--text);">Home</a> <a href="#levels" class="block py-2 text-xs uppercase tracking-widest" style="color:var(--text);">Levels</a> <a href="#highlights" class="block py-2 text-xs uppercase tracking-widest" style="color:var(--text);">Highlights</a> <a href="#packages" class="block py-2 text-xs uppercase tracking-widest" style="color:var(--text);">Packages</a> <a href="#reviews" class="block py-2 text-xs uppercase tracking-widest" style="color:var(--text);">Reviews</a> <a href="#book" class="block py-2 text-xs uppercase tracking-widest" style="color:var(--text);">Book</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative w-full" style="height:100%; min-height:600px;">
+    <div class="absolute inset-0 overflow-hidden"><img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1920&amp;q=80" alt="Rooftop skyline at night" class="scene-img img-zoom" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#0a0a0a)';this.alt='Image unavailable';">
+     <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 60%, #0a0a0a 100%);"></div>
+    </div>
+    <div class="relative h-full flex flex-col items-center justify-center text-center px-6" style="min-height:600px;">
+     <div class="reveal" style="transition-delay:0.2s;">
+      <p class="text-xs uppercase tracking-[0.3em] mb-6" style="color:var(--accent);">Exclusive Rooftop Experience</p>
+     </div>
+     <h1 id="hero-title" class="font-display text-5xl md:text-7xl lg:text-8xl font-300 leading-none mb-6 reveal" style="transition-delay:0.4s; color:var(--text);">Meet me above the city.</h1>
+     <p id="hero-subtitle" class="text-lg md:text-xl font-200 max-w-lg mb-10 reveal" style="transition-delay:0.6s; color:rgba(245,240,232,0.7);">A page that feels like a rooftop night.</p>
+     <div class="flex flex-col sm:flex-row gap-4 reveal" style="transition-delay:0.8s;"><a href="#book" id="cta-primary-btn" class="cta-pulse px-8 py-3 text-sm uppercase tracking-widest font-500 rounded-sm transition-all duration-300 hover:brightness-110" style="background:var(--accent); color:#0a0a0a;">Book Now</a> <a href="#levels" id="cta-secondary-btn" class="px-8 py-3 text-sm uppercase tracking-widest font-300 rounded-sm border transition-all duration-300 hover:bg-white/5" style="border-color:rgba(245,240,232,0.2); color:var(--text);">Explore Levels</a>
+     </div>
+     <div class="absolute bottom-10 reveal" style="transition-delay:1s;">
+      <svg width="20" height="32" fill="none" stroke="currentColor" stroke-width="1" style="color:var(--accent); opacity:0.6;" class="animate-bounce">
+       <path d="M10 2v20M4 16l6 6 6-6" />
+      </svg>
+     </div>
+    </div>
+   </section><!-- LEVELS -->
+   <section id="levels" class="relative w-full py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center mb-20">
+      <p class="text-xs uppercase tracking-[0.3em] mb-4 reveal" style="color:var(--accent);">The Journey</p>
+      <h2 class="font-display text-4xl md:text-6xl font-300 reveal" style="color:var(--text);">Four Levels of Night</h2>
+     </div><!-- Level 1 - Entrance -->
+     <div class="grid md:grid-cols-2 gap-8 mb-20 items-center">
+      <div class="relative rounded-lg overflow-hidden reveal-left" style="height:400px;"><img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&amp;q=80" alt="Modern hotel lobby entrance" class="scene-img img-zoom" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#2a1a0a)';this.alt='Image unavailable';">
+       <div class="absolute inset-0" style="background:linear-gradient(to right, transparent 40%, rgba(10,10,10,0.8));"></div>
+       <div class="absolute top-6 left-6 glass rounded-full px-4 py-2 flex items-center gap-2">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);">
+         <rect x="2" y="5" width="12" height="8" rx="1" /><path d="M8 5V3a2 2 0 014 0v2" />
+        </svg><span class="text-xs uppercase tracking-wider" style="color:var(--text);">Level 01</span>
+       </div>
+      </div>
+      <div class="reveal-right">
+       <h3 class="font-display text-3xl md:text-4xl font-300 mb-4" style="color:var(--text);">The Entrance</h3>
+       <p class="font-200 leading-relaxed mb-6" style="color:rgba(245,240,232,0.6);">Step through the brass-framed doors into a world suspended between earth and sky. The lobby dissolves into warm stone and amber light—a threshold between the city below and the night above.</p>
+       <div class="flex items-center gap-3" style="color:var(--accent);">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5">
+         <path d="M12 2L2 8l10 6V2z" />
+        </svg><span class="text-xs uppercase tracking-widest">Private Keycard Access</span>
+       </div>
+      </div>
+     </div><!-- Level 2 - Lounge -->
+     <div class="grid md:grid-cols-2 gap-8 mb-20 items-center">
+      <div class="order-2 md:order-1 reveal-left">
+       <h3 class="font-display text-3xl md:text-4xl font-300 mb-4" style="color:var(--text);">The Lounge</h3>
+       <p class="font-200 leading-relaxed mb-6" style="color:rgba(245,240,232,0.6);">Velvet seating wraps around a central bar carved from black marble. The mixologists here don't follow recipes—they follow moods. Every glass is a conversation piece, every sip a slow revelation.</p>
+       <div class="flex items-center gap-3" style="color:var(--accent);">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5">
+         <path d="M3 2l2 10h6l2-10M8 12v4M5 16h6" /><path d="M4 2h8" stroke-linecap="round" />
+        </svg><span class="text-xs uppercase tracking-widest">Signature Cocktails</span>
+       </div>
+      </div>
+      <div class="order-1 md:order-2 relative rounded-lg overflow-hidden reveal-right" style="height:400px;"><img src="https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=900&amp;q=80" alt="Luxury cocktail lounge" class="scene-img img-zoom" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#2a1a0a,#0a0a0a)';this.alt='Image unavailable';">
+       <div class="absolute inset-0" style="background:linear-gradient(to left, transparent 40%, rgba(10,10,10,0.8));"></div>
+       <div class="absolute top-6 right-6 glass rounded-full px-4 py-2 flex items-center gap-2">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);">
+         <path d="M3 2l2 10h6l2-10M8 12v4M5 16h6" />
+        </svg><span class="text-xs uppercase tracking-wider" style="color:var(--text);">Level 02</span>
+       </div>
+      </div>
+     </div><!-- Level 3 - Skyline -->
+     <div class="grid md:grid-cols-2 gap-8 mb-20 items-center">
+      <div class="relative rounded-lg overflow-hidden reveal-left" style="height:400px;"><img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=900&amp;q=80" alt="City sunset skyline" class="scene-img img-zoom" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#2a1a0a,#1a1a2e)';this.alt='Image unavailable';">
+       <div class="absolute inset-0" style="background:linear-gradient(to right, transparent 40%, rgba(10,10,10,0.8));"></div>
+       <div class="absolute top-6 left-6 glass rounded-full px-4 py-2 flex items-center gap-2">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);">
+         <path d="M2 14h12M3 14V8l3-3 3 3v6M11 14V5l3-3v12" />
+        </svg><span class="text-xs uppercase tracking-wider" style="color:var(--text);">Level 03</span>
+       </div>
+      </div>
+      <div class="reveal-right">
+       <h3 class="font-display text-3xl md:text-4xl font-300 mb-4" style="color:var(--text);">The Skyline View</h3>
+       <p class="font-200 leading-relaxed mb-6" style="color:rgba(245,240,232,0.6);">Open air meets open sky. The terrace unfolds into a panoramic stage where the city performs its nightly opera of light. Golden hour bleeds into deep indigo, and the skyline becomes your only wall.</p>
+       <div class="flex items-center gap-3" style="color:var(--accent);">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5">
+         <path d="M2 14h12M3 14V8l3-3 3 3v6M11 14V5l3-3v12" />
+        </svg><span class="text-xs uppercase tracking-widest">360° Panorama</span>
+       </div>
+      </div>
+     </div><!-- Level 4 - After Dark -->
+     <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div class="order-2 md:order-1 reveal-left">
+       <h3 class="font-display text-3xl md:text-4xl font-300 mb-4" style="color:var(--text);">After Dark</h3>
+       <p class="font-200 leading-relaxed mb-6" style="color:rgba(245,240,232,0.6);">When the city quiets, the terrace transforms. Deep house pulses beneath the stars, ambient light traces the edges of every surface, and the night becomes something you wear, not just witness.</p>
+       <div class="flex items-center gap-3" style="color:var(--accent);">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5">
+         <circle cx="8" cy="8" r="3" /><path d="M1 8h2M13 8h2M8 1v2M8 13v2M3 3l1.5 1.5M11.5 11.5L13 13M3 13l1.5-1.5M11.5 4.5L13 3" />
+        </svg><span class="text-xs uppercase tracking-widest">Live Sessions Nightly</span>
+       </div>
+      </div>
+      <div class="order-1 md:order-2 relative rounded-lg overflow-hidden reveal-right" style="height:400px;"><img src="https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=900&amp;q=80" alt="Night lights rooftop bar" class="scene-img img-zoom" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#0a0a2e,#0a0a0a)';this.alt='Image unavailable';">
+       <div class="absolute inset-0" style="background:linear-gradient(to left, transparent 40%, rgba(10,10,10,0.8));"></div>
+       <div class="absolute top-6 right-6 glass rounded-full px-4 py-2 flex items-center gap-2">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);">
+         <path d="M9 2v4l3 3M3.5 12.5a7 7 0 1110-10" />
+        </svg><span class="text-xs uppercase tracking-wider" style="color:var(--text);">Level 04</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- HIGHLIGHTS -->
+   <section id="highlights" class="relative w-full py-24 md:py-32" style="background:linear-gradient(180deg, #0a0a0a 0%, #0f0d09 50%, #0a0a0a 100%);">
+    <div class="max-w-7xl mx-auto px-6">
+     <div class="text-center mb-16">
+      <p class="text-xs uppercase tracking-[0.3em] mb-4 reveal" style="color:var(--accent);">What Awaits</p>
+      <h2 class="font-display text-4xl md:text-6xl font-300 reveal" style="color:var(--text);">Highlights</h2>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="glass rounded-lg p-8 relative overflow-hidden light-sweep reveal" style="transition-delay:0.1s;">
+       <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" class="mb-6" style="color:var(--accent);">
+        <path d="M6 4l4 20h12l4-20M16 24v6M10 30h12" /><path d="M8 4h16" stroke-linecap="round" />
+       </svg>
+       <h3 class="font-display text-2xl font-400 mb-3" style="color:var(--text);">Craft Cocktails</h3>
+       <p class="text-sm font-200 leading-relaxed" style="color:rgba(245,240,232,0.5);">Hand-crafted by award-winning mixologists using rare spirits and seasonal botanicals.</p>
+      </div>
+      <div class="glass rounded-lg p-8 relative overflow-hidden light-sweep reveal" style="transition-delay:0.2s;">
+       <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" class="mb-6" style="color:var(--accent);">
+        <path d="M4 28h24M6 28V16l5-5 5 5v12M18 28V10l5-5 5 5v18" /><rect x="10" y="20" width="3" height="4" rx="0.5" /><rect x="21" y="14" width="3" height="4" rx="0.5" />
+       </svg>
+       <h3 class="font-display text-2xl font-400 mb-3" style="color:var(--text);">Skyline Dining</h3>
+       <p class="text-sm font-200 leading-relaxed" style="color:rgba(245,240,232,0.5);">A curated tasting menu served against an ever-changing panoramic canvas of city light.</p>
+      </div>
+      <div class="glass rounded-lg p-8 relative overflow-hidden light-sweep reveal" style="transition-delay:0.3s;">
+       <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" class="mb-6" style="color:var(--accent);">
+        <circle cx="16" cy="16" r="6" /><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.8 7.8l2.8 2.8M21.4 21.4l2.8 2.8M7.8 24.2l2.8-2.8M21.4 10.6l2.8-2.8" />
+       </svg>
+       <h3 class="font-display text-2xl font-400 mb-3" style="color:var(--text);">Live Sessions</h3>
+       <p class="text-sm font-200 leading-relaxed" style="color:rgba(245,240,232,0.5);">Deep house to jazz — curated sets from resident DJs and guest artists every weekend.</p>
+      </div>
+      <div class="glass rounded-lg p-8 relative overflow-hidden light-sweep reveal" style="transition-delay:0.4s;">
+       <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" class="mb-6" style="color:var(--accent);">
+        <rect x="4" y="6" width="24" height="22" rx="2" /><path d="M4 12h24M10 2v6M22 2v6" />
+       </svg>
+       <h3 class="font-display text-2xl font-400 mb-3" style="color:var(--text);">Private Events</h3>
+       <p class="text-sm font-200 leading-relaxed" style="color:rgba(245,240,232,0.5);">Reserve the terrace for intimate gatherings of 20 to 200 under an open sky.</p>
+      </div>
+      <div class="glass rounded-lg p-8 relative overflow-hidden light-sweep reveal" style="transition-delay:0.5s;">
+       <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" class="mb-6" style="color:var(--accent);">
+        <path d="M16 4C10 4 4 10 4 16s12 14 12 14 12-8 12-14S22 4 16 4z" /><circle cx="16" cy="16" r="4" />
+       </svg>
+       <h3 class="font-display text-2xl font-400 mb-3" style="color:var(--text);">Prime Location</h3>
+       <p class="text-sm font-200 leading-relaxed" style="color:rgba(245,240,232,0.5);">Perched 42 floors above the arts district, minutes from the city's cultural heartbeat.</p>
+      </div>
+      <div class="glass rounded-lg p-8 relative overflow-hidden light-sweep reveal" style="transition-delay:0.6s;">
+       <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" class="mb-6" style="color:var(--accent);">
+        <rect x="2" y="8" width="20" height="14" rx="2" /><path d="M22 12l8 4-8 4V12z" />
+       </svg>
+       <h3 class="font-display text-2xl font-400 mb-3" style="color:var(--text);">VIP Suites</h3>
+       <p class="text-sm font-200 leading-relaxed" style="color:rgba(245,240,232,0.5);">Secluded cabanas with dedicated service, temperature control, and cinematic city views.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- PACKAGES -->
+   <section id="packages" class="relative w-full py-24 md:py-32">
+    <div class="max-w-5xl mx-auto px-6">
+     <div class="text-center mb-16">
+      <p class="text-xs uppercase tracking-[0.3em] mb-4 reveal" style="color:var(--accent);">Choose Your Night</p>
+      <h2 class="font-display text-4xl md:text-6xl font-300 reveal" style="color:var(--text);">Packages</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6"><!-- Sunset -->
+      <div class="glass rounded-lg p-8 flex flex-col reveal" style="transition-delay:0.1s;">
+       <p class="text-xs uppercase tracking-[0.2em] mb-2" style="color:var(--accent);">Sunset</p>
+       <h3 class="font-display text-3xl font-400 mb-1" style="color:var(--text);">$120</h3>
+       <p class="text-xs mb-6" style="color:rgba(245,240,232,0.4);">per person</p>
+       <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Golden hour terrace access</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Welcome cocktail</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Small plates selection</li>
+       </ul><a href="#book" class="block text-center py-3 text-xs uppercase tracking-widest border rounded-sm transition-all duration-300 hover:bg-white/5" style="border-color:rgba(245,240,232,0.15); color:var(--text);">Select</a>
+      </div><!-- Skyline -->
+      <div class="rounded-lg p-8 flex flex-col relative overflow-hidden reveal" style="transition-delay:0.2s; background:linear-gradient(135deg, rgba(212,164,76,0.15), rgba(212,164,76,0.05)); border:1px solid rgba(212,164,76,0.3);">
+       <div class="absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] uppercase tracking-widest" style="background:var(--accent); color:#0a0a0a;">
+        Popular
+       </div>
+       <p class="text-xs uppercase tracking-[0.2em] mb-2" style="color:var(--accent);">Skyline</p>
+       <h3 class="font-display text-3xl font-400 mb-1" style="color:var(--text);">$280</h3>
+       <p class="text-xs mb-6" style="color:rgba(245,240,232,0.4);">per person</p>
+       <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Full evening access</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>3-course tasting menu</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Premium cocktail pairing</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Priority seating</li>
+       </ul><a href="#book" class="cta-pulse block text-center py-3 text-xs uppercase tracking-widest rounded-sm transition-all duration-300 hover:brightness-110" style="background:var(--accent); color:#0a0a0a;">Select</a>
+      </div><!-- After Dark -->
+      <div class="glass rounded-lg p-8 flex flex-col reveal" style="transition-delay:0.3s;">
+       <p class="text-xs uppercase tracking-[0.2em] mb-2" style="color:var(--accent);">After Dark</p>
+       <h3 class="font-display text-3xl font-400 mb-1" style="color:var(--text);">$450</h3>
+       <p class="text-xs mb-6" style="color:rgba(245,240,232,0.4);">per person</p>
+       <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>All Skyline inclusions</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Private cabana suite</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Bottle service</li>
+        <li class="flex items-start gap-3 text-sm font-200" style="color:rgba(245,240,232,0.7);">
+         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" class="mt-0.5 flex-shrink-0" style="color:var(--accent);">
+          <path d="M2 7l4 4 6-8" />
+         </svg>Late-night DJ set</li>
+       </ul><a href="#book" class="block text-center py-3 text-xs uppercase tracking-widest border rounded-sm transition-all duration-300 hover:bg-white/5" style="border-color:rgba(245,240,232,0.15); color:var(--text);">Select</a>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="relative w-full py-24 md:py-32" style="background:linear-gradient(180deg, #0a0a0a 0%, #0f0d09 50%, #0a0a0a 100%);">
+    <div class="max-w-5xl mx-auto px-6">
+     <div class="text-center mb-16">
+      <p class="text-xs uppercase tracking-[0.3em] mb-4 reveal" style="color:var(--accent);">Voices</p>
+      <h2 class="font-display text-4xl md:text-6xl font-300 reveal" style="color:var(--text);">What They Say</h2>
+     </div>
+     <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-lg p-8 reveal" style="transition-delay:0.1s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+       </div>
+       <p class="font-display text-lg italic leading-relaxed mb-6" style="color:rgba(245,240,232,0.8);">"The kind of place that makes you forget your phone exists. We stayed until the last song and still didn't want to leave."</p>
+       <p class="text-xs uppercase tracking-widest" style="color:var(--accent);">Elena V. — Milan</p>
+      </div>
+      <div class="glass rounded-lg p-8 reveal" style="transition-delay:0.2s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+       </div>
+       <p class="font-display text-lg italic leading-relaxed mb-6" style="color:rgba(245,240,232,0.8);">"I've been to rooftops in Dubai, Tokyo, and New York. This is the one I keep coming back to. The attention to atmosphere is unmatched."</p>
+       <p class="text-xs uppercase tracking-widest" style="color:var(--accent);">James K. — London</p>
+      </div>
+      <div class="glass rounded-lg p-8 reveal md:col-span-2" style="transition-delay:0.3s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 14 14">
+         <polygon points="7,1 9,5 13,5.5 10,8.5 11,13 7,10.5 3,13 4,8.5 1,5.5 5,5" class="star-filled" stroke-width="0.5" />
+        </svg>
+       </div>
+       <p class="font-display text-lg italic leading-relaxed mb-6" style="color:rgba(245,240,232,0.8);">"We hosted our anniversary here. The cabana, the cocktails, the skyline at midnight — it felt like the city was celebrating with us."</p>
+       <p class="text-xs uppercase tracking-widest" style="color:var(--accent);">Sofia &amp; Marco R. — Barcelona</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- BOOK / BOTTOM CTA -->
+   <section id="book" class="relative w-full py-32 md:py-40">
+    <div class="absolute inset-0 overflow-hidden"><img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=1920&amp;q=80" alt="City night lights" class="scene-img img-zoom" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#0a0a0a)';this.alt='Image unavailable';">
+     <div class="absolute inset-0" style="background: linear-gradient(180deg, #0a0a0a 0%, rgba(10,10,10,0.5) 50%, #0a0a0a 100%);"></div>
+    </div>
+    <div class="relative text-center px-6">
+     <p class="text-xs uppercase tracking-[0.3em] mb-6 reveal" style="color:var(--accent);">Reserve Your Night</p>
+     <h2 id="bottom-cta" class="font-display text-4xl md:text-6xl lg:text-7xl font-300 mb-10 reveal" style="color:var(--text);">Turn the view into demand.</h2><a href="#book" class="cta-pulse inline-block px-12 py-4 text-sm uppercase tracking-widest font-500 rounded-sm transition-all duration-300 hover:brightness-110 reveal" style="background:var(--accent); color:#0a0a0a;">Book Your Experience</a>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="w-full py-12 border-t" style="border-color:rgba(245,240,232,0.06);">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6"><span class="font-display text-lg tracking-widest" style="color:var(--accent);">TERRACE</span>
+     <p class="text-xs font-200" style="color:rgba(245,240,232,0.3);">© 2025 Rooftop Terrace. All rights reserved.</p>
+     <div class="flex gap-6"><a href="#" class="text-xs uppercase tracking-widest transition-colors hover:opacity-70" style="color:rgba(245,240,232,0.4);">Privacy</a> <a href="#" class="text-xs uppercase tracking-widest transition-colors hover:opacity-70" style="color:rgba(245,240,232,0.4);">Terms</a>
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+const defaultConfig = {
+  background_color: '#0a0a0a',
+  surface_color: 'rgba(255,255,255,0.05)',
+  text_color: '#f5f0e8',
+  accent_color: '#d4a44c',
+  accent2_color: '#8b7355',
+  font_family: 'Cormorant Garamond',
+  font_size: 16,
+  hero_title: 'Meet me above the city.',
+  hero_subtitle: 'A page that feels like a rooftop night.',
+  cta_primary: 'Book Now',
+  cta_secondary: 'Explore Levels',
+  bottom_cta_text: 'Turn the view into demand.'
+};
+
+function applyConfig(config) {
+  const root = document.documentElement;
+  root.style.setProperty('--bg', config.background_color || defaultConfig.background_color);
+  root.style.setProperty('--surface', config.surface_color || defaultConfig.surface_color);
+  root.style.setProperty('--text', config.text_color || defaultConfig.text_color);
+  root.style.setProperty('--accent', config.accent_color || defaultConfig.accent_color);
+  root.style.setProperty('--accent2', config.accent2_color || defaultConfig.accent2_color);
+
+  document.body.style.background = config.background_color || defaultConfig.background_color;
+
+  const font = config.font_family || defaultConfig.font_family;
+  document.querySelectorAll('.font-display').forEach(el => {
+    el.style.fontFamily = `${font}, serif`;
+  });
+
+  const baseSize = config.font_size || defaultConfig.font_size;
+  document.getElementById('hero-title').style.fontSize = '';
+  document.body.style.fontSize = `${baseSize}px`;
+
+  document.getElementById('hero-title').textContent = config.hero_title || defaultConfig.hero_title;
+  document.getElementById('hero-subtitle').textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+  document.getElementById('cta-primary-btn').textContent = config.cta_primary || defaultConfig.cta_primary;
+  document.getElementById('cta-secondary-btn').textContent = config.cta_secondary || defaultConfig.cta_secondary;
+  document.getElementById('bottom-cta').textContent = config.bottom_cta_text || defaultConfig.bottom_cta_text;
+}
+
+// Element SDK
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => { applyConfig(config); },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+        { get: () => config.accent2_color || defaultConfig.accent2_color, set: (v) => { config.accent2_color = v; window.elementSdk.setConfig({ accent2_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['hero_title', config.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+      ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+      ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+      ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+    ])
+  });
+}
+
+// Scroll reveal
+const wrapper = document.getElementById('app-wrapper');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      if (e.target.classList.contains('img-zoom')) e.target.classList.add('zoomed');
+    }
+  });
+}, { threshold: 0.15, root: wrapper });
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .img-zoom').forEach(el => observer.observe(el));
+
+// Nav background on scroll
+wrapper.addEventListener('scroll', () => {
+  const nav = document.getElementById('main-nav');
+  if (wrapper.scrollTop > 80) {
+    nav.style.background = 'rgba(10,10,10,0.9)';
+    nav.style.backdropFilter = 'blur(20px)';
+  } else {
+    nav.style.background = 'transparent';
+    nav.style.backdropFilter = 'none';
+  }
+});
+
+// Mobile menu
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      document.getElementById('mobile-menu').classList.add('hidden');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Active nav link
+const sections = ['home','levels','highlights','packages','reviews','book'];
+wrapper.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top < 200) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+  });
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef836cf96f8a155',t:'MTc3NjczMDczNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

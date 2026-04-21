@@ -1,1 +1,458 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/f8b6a671-2d40-4b85-8254-a614665d64ac -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TextureOrchestra Atelier</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&amp;family=Outfit:wght@200;300;400;500&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        body: ['"Outfit"', 'sans-serif']
+      }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+
+@keyframes slowPan {
+  0% { transform: scale(1.08) translate(0,0); }
+  50% { transform: scale(1.12) translate(-2%, -1%); }
+  100% { transform: scale(1.08) translate(0,0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(28,28,28,0.15); }
+  50% { box-shadow: 0 0 0 12px rgba(28,28,28,0); }
+}
+
+.anim-pan { animation: slowPan 20s ease-in-out infinite; }
+.anim-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 4s ease-in-out infinite;
+}
+.anim-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.8s ease forwards;
+}
+.anim-pulse { animation: pulse-soft 2.5s ease-in-out infinite; }
+
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.45s; }
+.delay-4 { animation-delay: 0.6s; }
+.delay-5 { animation-delay: 0.75s; }
+
+.macro-card { overflow: hidden; position: relative; }
+.macro-card img { transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+.macro-card:hover img { transform: scale(1.06); }
+
+.nav-link { position: relative; }
+.nav-link::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px;
+  background: currentColor; transition: width 0.3s ease;
+}
+.nav-link:hover::after { width: 100%; }
+
+.scroll-reveal { opacity: 0; transform: translateY(24px); transition: all 0.7s ease; }
+.scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto" style="background-color: #FAFAF8; color: #1C1C1C;">
+  <!-- Sticky Nav -->
+  <nav id="main-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500" style="background: rgba(250,250,248,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(28,28,28,0.06);">
+   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#home" class="font-display text-xl tracking-wider" style="font-weight: 300;" id="nav-brand">TextureOrchestra</a>
+    <div class="hidden md:flex items-center gap-8">
+     <a href="#home" class="nav-link font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Home</a> <a href="#materials" class="nav-link font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Materials</a> <a href="#collection" class="nav-link font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Collection</a> <a href="#craft" class="nav-link font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Craft</a> <a href="#reviews" class="nav-link font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Reviews</a> <a href="#buy" class="nav-link font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Buy</a>
+    </div><button id="mobile-menu-btn" class="md:hidden p-2" aria-label="Open menu">
+     <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+     </svg></button>
+   </div>
+   <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3">
+    <a href="#home" class="font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Home</a> <a href="#materials" class="font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Materials</a> <a href="#collection" class="font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Collection</a> <a href="#craft" class="font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Craft</a> <a href="#reviews" class="font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Reviews</a> <a href="#buy" class="font-body text-xs tracking-widest uppercase" style="font-weight: 300;">Buy</a>
+   </div>
+  </nav><!-- HERO -->
+  <section id="home" class="relative w-full overflow-hidden" style="min-height: 100%; padding-top: 80px;">
+   <div class="absolute inset-0 grid grid-cols-2"><!-- Left: Image with macro pan -->
+    <div class="relative overflow-hidden h-full">
+     <img src="https://images.unsplash.com/photo-1515562141589-67f0d889b4a6?w=900&amp;q=90" alt="Jewelry macro" class="w-full h-full object-cover anim-pan" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#c8b898,#d4c4a8)'; this.alt='Image unavailable';">
+     <div class="absolute inset-0 anim-shimmer pointer-events-none"></div>
+    </div><!-- Right: Subtle texture overlay -->
+    <div class="relative h-full" style="background: linear-gradient(135deg, #FAFAF8 0%, #F5F3EF 100%);">
+     <div class="absolute inset-0" style="background: radial-gradient(circle at 30% 20%, rgba(28,28,28,0.02), transparent 60%);"></div>
+     <div class="absolute bottom-0 right-0 w-96 h-96 opacity-8" style="background: radial-gradient(circle, #1C1C1C 1px, transparent 1px); background-size: 40px 40px;"></div>
+    </div>
+   </div><!-- Content overlay -->
+   <div class="relative z-10 h-full flex flex-col justify-center px-6 md:px-12 lg:px-16">
+    <div class="max-w-2xl">
+     <div class="anim-fade-up mb-8">
+      <div class="flex items-center gap-4 mb-8">
+       <div style="width: 32px; height: 1px; background: #1C1C1C;"></div>
+       <p class="font-body text-xs tracking-[0.35em] uppercase" style="font-weight: 300; color: #6B6560;">TextureOrchestra Atelier</p>
+      </div>
+     </div>
+     <h1 id="hero-title" class="font-display leading-tight mb-8 anim-fade-up delay-1" style="font-weight: 300; font-size: clamp(2.5rem, 7vw, 5rem); letter-spacing: -0.02em;">Luxury is what you can see up close.</h1>
+     <p id="hero-subtitle" class="font-body text-base md:text-lg mb-12 anim-fade-up delay-2 max-w-md" style="font-weight: 200; color: #6B6560; line-height: 1.7;">A page that sells texture.</p>
+     <div class="flex flex-col sm:flex-row gap-5 anim-fade-up delay-3"><a href="#collection" id="btn-cta-primary" class="anim-pulse font-body text-xs tracking-widest uppercase px-10 py-4 border transition-all duration-300 hover:tracking-[0.3em]" style="font-weight: 400; background: #1C1C1C; color: #FAFAF8; border-color: #1C1C1C;">Shop Collection</a> <a href="#materials" id="btn-cta-secondary" class="font-body text-xs tracking-widest uppercase px-10 py-4 border transition-all duration-300 hover:tracking-[0.3em]" style="font-weight: 300; border-color: #1C1C1C; color: #1C1C1C;">See Materials</a>
+     </div>
+    </div><!-- Bottom accent line -->
+    <div class="absolute bottom-12 left-6 md:left-12 anim-fade-up delay-4" style="width: 3px; height: 40px; background: linear-gradient(to bottom, #1C1C1C, transparent);"></div>
+   </div>
+  </section><!-- MATERIALS -->
+  <section id="materials" class="w-full py-24 md:py-32 px-6">
+   <div class="max-w-7xl mx-auto">
+    <div class="scroll-reveal mb-16 md:mb-24">
+     <div class="flex items-center gap-3 mb-4">
+      <!-- pattern grid icon -->
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#8A8578" stroke-width="1.2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+      </svg><span class="font-body text-xs tracking-[0.3em] uppercase" style="font-weight: 300; color: #8A8578;">Raw Materials</span>
+     </div>
+     <h2 class="font-display text-4xl md:text-6xl" style="font-weight: 300;">Every surface<br>
+       tells a story.</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+     <div class="macro-card col-span-2 row-span-2 scroll-reveal" style="aspect-ratio: 1;">
+      <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&amp;q=80" alt="Marble surface macro" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#d4d0c8'; this.alt='Image unavailable';">
+      <div class="absolute bottom-0 left-0 right-0 p-5" style="background: linear-gradient(transparent, rgba(28,28,28,0.6));">
+       <span class="font-body text-xs tracking-widest uppercase" style="color: #FAFAF8; font-weight: 300;">Carrara Marble</span>
+      </div>
+     </div>
+     <div class="macro-card scroll-reveal delay-1" style="aspect-ratio: 1;">
+      <img src="https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=600&amp;q=80" alt="Fabric texture close up" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#c8c0b8'; this.alt='Image unavailable';">
+      <div class="absolute bottom-0 left-0 right-0 p-4" style="background: linear-gradient(transparent, rgba(28,28,28,0.6));">
+       <span class="font-body text-[10px] tracking-widest uppercase" style="color: #FAFAF8; font-weight: 300;">Raw Linen</span>
+      </div>
+     </div>
+     <div class="macro-card scroll-reveal delay-2" style="aspect-ratio: 1;">
+      <img src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&amp;q=80" alt="Ceramic glaze macro" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#b8c0c8'; this.alt='Image unavailable';">
+      <div class="absolute bottom-0 left-0 right-0 p-4" style="background: linear-gradient(transparent, rgba(28,28,28,0.6));">
+       <span class="font-body text-[10px] tracking-widest uppercase" style="color: #FAFAF8; font-weight: 300;">Celadon Glaze</span>
+      </div>
+     </div>
+     <div class="macro-card scroll-reveal delay-3" style="aspect-ratio: 1;">
+      <img src="https://images.unsplash.com/photo-1531685250784-7569952593d2?w=600&amp;q=80" alt="Leather texture macro" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#a09080'; this.alt='Image unavailable';">
+      <div class="absolute bottom-0 left-0 right-0 p-4" style="background: linear-gradient(transparent, rgba(28,28,28,0.6));">
+       <span class="font-body text-[10px] tracking-widest uppercase" style="color: #FAFAF8; font-weight: 300;">Tuscan Leather</span>
+      </div>
+     </div>
+     <div class="macro-card scroll-reveal delay-4" style="aspect-ratio: 1;">
+      <img src="https://images.unsplash.com/photo-1515562141589-67f0d889b4a6?w=600&amp;q=80" alt="Jewelry macro close up" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#c8b898'; this.alt='Image unavailable';">
+      <div class="absolute bottom-0 left-0 right-0 p-4" style="background: linear-gradient(transparent, rgba(28,28,28,0.6));">
+       <span class="font-body text-[10px] tracking-widest uppercase" style="color: #FAFAF8; font-weight: 300;">Brushed Gold</span>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- COLLECTION -->
+  <section id="collection" class="w-full py-24 md:py-32 px-6" style="background: #1C1C1C; color: #FAFAF8;">
+   <div class="max-w-7xl mx-auto">
+    <div class="scroll-reveal mb-16 md:mb-24 text-center">
+     <span class="font-body text-xs tracking-[0.3em] uppercase mb-4 block" style="font-weight: 200; color: #8A8578;">The Collection</span>
+     <h2 class="font-display text-4xl md:text-6xl" style="font-weight: 300;">Curated for<br>
+       the connoisseur.</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
+     <div class="scroll-reveal group">
+      <div class="macro-card mb-5" style="aspect-ratio: 3/4;">
+       <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&amp;q=80" alt="Minimalist product flatlay" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#333'; this.alt='Image unavailable';">
+       <div class="absolute inset-0 anim-shimmer pointer-events-none"></div>
+      </div>
+      <div class="flex justify-between items-start">
+       <div>
+        <h3 class="font-display text-xl mb-1" style="font-weight: 400;">Marble Vessel</h3>
+        <p class="font-body text-xs" style="color: #8A8578; font-weight: 200;">Hand-carved Carrara</p>
+       </div><!-- tag icon -->
+       <div class="flex items-center gap-2">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8A8578" stroke-width="1.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+        </svg><span class="font-body text-sm" style="font-weight: 300;">$420</span>
+       </div>
+      </div>
+     </div>
+     <div class="scroll-reveal delay-1 group">
+      <div class="macro-card mb-5" style="aspect-ratio: 3/4;">
+       <img src="https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=600&amp;q=80" alt="Ceramic product" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#333'; this.alt='Image unavailable';">
+       <div class="absolute inset-0 anim-shimmer pointer-events-none"></div>
+      </div>
+      <div class="flex justify-between items-start">
+       <div>
+        <h3 class="font-display text-xl mb-1" style="font-weight: 400;">Linen Throw</h3>
+        <p class="font-body text-xs" style="color: #8A8578; font-weight: 200;">Belgian flax weave</p>
+       </div>
+       <div class="flex items-center gap-2">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8A8578" stroke-width="1.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+        </svg><span class="font-body text-sm" style="font-weight: 300;">$285</span>
+       </div>
+      </div>
+     </div>
+     <div class="scroll-reveal delay-2 group">
+      <div class="macro-card mb-5" style="aspect-ratio: 3/4;">
+       <img src="https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=600&amp;q=80" alt="Gold jewelry piece" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#333'; this.alt='Image unavailable';">
+       <div class="absolute inset-0 anim-shimmer pointer-events-none"></div>
+      </div>
+      <div class="flex justify-between items-start">
+       <div>
+        <h3 class="font-display text-xl mb-1" style="font-weight: 400;">Gilt Cuff</h3>
+        <p class="font-body text-xs" style="color: #8A8578; font-weight: 200;">18k hammered finish</p>
+       </div>
+       <div class="flex items-center gap-2">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8A8578" stroke-width="1.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+        </svg><span class="font-body text-sm" style="font-weight: 300;">$1,200</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- CRAFT -->
+  <section id="craft" class="w-full py-24 md:py-32 px-6">
+   <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+    <div class="macro-card scroll-reveal" style="aspect-ratio: 4/5;">
+     <img src="https://images.unsplash.com/photo-1509281373149-e957c6296406?w=800&amp;q=80" alt="Coffee beans macro texture" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#4a3728'; this.alt='Image unavailable';">
+     <div class="absolute inset-0 anim-shimmer pointer-events-none"></div>
+    </div>
+    <div class="scroll-reveal delay-1">
+     <!-- magnifier icon -->
+     <div class="flex items-center gap-3 mb-6">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#8A8578" stroke-width="1.2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg><span class="font-body text-xs tracking-[0.3em] uppercase" style="font-weight: 300; color: #8A8578;">The Craft</span>
+     </div>
+     <h2 class="font-display text-4xl md:text-5xl mb-8" style="font-weight: 300; line-height: 1.1;">Obsession with the invisible.</h2>
+     <p class="font-body text-sm leading-relaxed mb-6" style="font-weight: 200; color: #6B6560; max-width: 420px;">Every piece begins with a material dialogue. Our artisans spend weeks selecting, testing, and refining surfaces before a single design decision is made. The result is texture you can feel through your eyes.</p>
+     <div class="grid grid-cols-3 gap-6 mt-10">
+      <div>
+       <p class="font-display text-3xl mb-1" style="font-weight: 300;">47</p>
+       <p class="font-body text-[10px] tracking-widest uppercase" style="color: #8A8578; font-weight: 300;">Artisans</p>
+      </div>
+      <div>
+       <p class="font-display text-3xl mb-1" style="font-weight: 300;">12</p>
+       <p class="font-body text-[10px] tracking-widest uppercase" style="color: #8A8578; font-weight: 300;">Countries</p>
+      </div>
+      <div>
+       <p class="font-display text-3xl mb-1" style="font-weight: 300;">200+</p>
+       <p class="font-body text-[10px] tracking-widest uppercase" style="color: #8A8578; font-weight: 300;">Hours per piece</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- REVIEWS -->
+  <section id="reviews" class="w-full py-24 md:py-32 px-6" style="background: #F2F0EC;">
+   <div class="max-w-5xl mx-auto text-center">
+    <div class="scroll-reveal mb-16">
+     <span class="font-body text-xs tracking-[0.3em] uppercase mb-4 block" style="font-weight: 300; color: #8A8578;">Testimonials</span>
+     <h2 class="font-display text-4xl md:text-5xl" style="font-weight: 300;">What collectors say.</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+     <div class="scroll-reveal p-8" style="background: #FAFAF8;">
+      <p class="font-display text-lg italic mb-6" style="font-weight: 300; line-height: 1.6;">"The marble vessel feels like holding a cloud made of stone."</p>
+      <p class="font-body text-xs tracking-widest uppercase" style="font-weight: 400;">Elena V.</p>
+      <p class="font-body text-[10px] tracking-wider" style="color: #8A8578; font-weight: 200;">Milan, Italy</p>
+     </div>
+     <div class="scroll-reveal delay-1 p-8" style="background: #FAFAF8;">
+      <p class="font-display text-lg italic mb-6" style="font-weight: 300; line-height: 1.6;">"I've never experienced packaging that made me pause and just... look."</p>
+      <p class="font-body text-xs tracking-widest uppercase" style="font-weight: 400;">James K.</p>
+      <p class="font-body text-[10px] tracking-wider" style="color: #8A8578; font-weight: 200;">New York, USA</p>
+     </div>
+     <div class="scroll-reveal delay-2 p-8" style="background: #FAFAF8;">
+      <p class="font-display text-lg italic mb-6" style="font-weight: 300; line-height: 1.6;">"Texture is their language. Every piece speaks fluently."</p>
+      <p class="font-body text-xs tracking-widest uppercase" style="font-weight: 400;">Hana M.</p>
+      <p class="font-body text-[10px] tracking-wider" style="color: #8A8578; font-weight: 200;">Tokyo, Japan</p>
+     </div>
+    </div>
+   </div>
+  </section><!-- BUY / BOTTOM CTA -->
+  <section id="buy" class="w-full py-32 md:py-40 px-6 relative overflow-hidden">
+   <div class="absolute inset-0">
+    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1400&amp;q=80" alt="Texture background" class="w-full h-full object-cover anim-pan" loading="lazy" onerror="this.style.background='#d4d0c8';">
+    <div class="absolute inset-0" style="background: rgba(250,250,248,0.88);"></div>
+    <div class="absolute inset-0 anim-shimmer pointer-events-none"></div>
+   </div>
+   <div class="relative z-10 max-w-3xl mx-auto text-center">
+    <div class="scroll-reveal">
+     <h2 id="bottom-cta-heading" class="font-display text-4xl md:text-6xl lg:text-7xl mb-8" style="font-weight: 300;">Let details close the sale.</h2><a href="#collection" class="anim-pulse inline-block font-body text-xs tracking-widest uppercase px-12 py-5 border transition-all duration-300 hover:tracking-[0.3em]" style="font-weight: 400; background: #1C1C1C; color: #FAFAF8; border-color: #1C1C1C;"> <!-- cart icon --> <span class="inline-flex items-center gap-3">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+       </svg> Shop Now </span> </a>
+    </div>
+   </div>
+  </section><!-- FOOTER -->
+  <footer class="w-full py-12 px-6" style="background: #1C1C1C; color: #FAFAF8;">
+   <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+    <span class="font-display text-sm tracking-wider" style="font-weight: 300;">TextureOrchestra Atelier</span>
+    <div class="flex items-center gap-8">
+     <!-- shield icon -->
+     <div class="flex items-center gap-2">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8A8578" stroke-width="1.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg><span class="font-body text-[10px] tracking-wider uppercase" style="color: #8A8578; font-weight: 200;">Secure Checkout</span>
+     </div><!-- truck icon -->
+     <div class="flex items-center gap-2">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8A8578" stroke-width="1.2"><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+      </svg><span class="font-body text-[10px] tracking-wider uppercase" style="color: #8A8578; font-weight: 200;">Worldwide Shipping</span>
+     </div>
+    </div>
+    <p class="font-body text-[10px]" style="color: #6B6560; font-weight: 200;">2024 TextureOrchestra. All rights reserved.</p>
+   </div>
+  </footer>
+  <script>
+// Default config
+const defaultConfig = {
+  background_color: '#FAFAF8',
+  surface_color: '#1C1C1C',
+  text_color: '#1C1C1C',
+  primary_action_color: '#1C1C1C',
+  secondary_action_color: '#8A8578',
+  font_family: 'Cormorant Garamond',
+  font_size: 16,
+  hero_title: 'Luxury is what you can see up close.',
+  hero_subtitle: 'A page that sells texture.',
+  cta_primary: 'Shop Collection',
+  cta_secondary: 'See Materials',
+  bottom_cta_text: 'Let details close the sale.'
+};
+
+// Element SDK init
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const c = { ...defaultConfig, ...config };
+    const font = c.font_family || defaultConfig.font_family;
+    const baseSize = c.font_size || defaultConfig.font_size;
+    const displayStack = `${font}, Georgia, serif`;
+    const bodyStack = `Outfit, sans-serif`;
+
+    // Background
+    document.body.style.backgroundColor = c.background_color;
+
+    // Text color
+    document.body.style.color = c.text_color;
+
+    // Hero text
+    const heroTitle = document.getElementById('hero-title');
+    if (heroTitle) {
+      heroTitle.textContent = c.hero_title;
+      heroTitle.style.fontFamily = displayStack;
+      heroTitle.style.fontSize = `${baseSize * 4}px`;
+    }
+    const heroSub = document.getElementById('hero-subtitle');
+    if (heroSub) {
+      heroSub.textContent = c.hero_subtitle;
+      heroSub.style.fontSize = `${baseSize}px`;
+    }
+
+    // CTAs
+    const btnPrimary = document.getElementById('btn-cta-primary');
+    if (btnPrimary) {
+      btnPrimary.textContent = c.cta_primary;
+      btnPrimary.style.backgroundColor = c.primary_action_color;
+      btnPrimary.style.borderColor = c.primary_action_color;
+      btnPrimary.style.color = c.background_color;
+    }
+    const btnSecondary = document.getElementById('btn-cta-secondary');
+    if (btnSecondary) {
+      btnSecondary.textContent = c.cta_secondary;
+      btnSecondary.style.borderColor = c.text_color;
+      btnSecondary.style.color = c.text_color;
+    }
+
+    // Bottom CTA
+    const bottomH = document.getElementById('bottom-cta-heading');
+    if (bottomH) {
+      bottomH.textContent = c.bottom_cta_text;
+      bottomH.style.fontFamily = displayStack;
+    }
+
+    // Apply display font to all display elements
+    document.querySelectorAll('.font-display').forEach(el => {
+      el.style.fontFamily = displayStack;
+    });
+
+    // Font size scaling for body text
+    document.querySelectorAll('.font-body').forEach(el => {
+      // Keep relative sizing via CSS, just update base
+    });
+
+    // Surface color (dark sections)
+    const collectionSection = document.getElementById('collection');
+    if (collectionSection) collectionSection.style.backgroundColor = c.surface_color;
+    document.querySelector('footer').style.backgroundColor = c.surface_color;
+
+    // Secondary action color for accent text
+    document.querySelectorAll('[style*="color: #8A8578"]').forEach(el => {
+      el.style.color = c.secondary_action_color;
+    });
+  },
+  mapToCapabilities: (config) => {
+    const c = { ...defaultConfig, ...config };
+    return {
+      recolorables: [
+        { get: () => c.background_color || defaultConfig.background_color, set: (v) => { c.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => c.surface_color || defaultConfig.surface_color, set: (v) => { c.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => c.text_color || defaultConfig.text_color, set: (v) => { c.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => c.primary_action_color || defaultConfig.primary_action_color, set: (v) => { c.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+        { get: () => c.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { c.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => c.font_family || defaultConfig.font_family,
+        set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => c.font_size || defaultConfig.font_size,
+        set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    };
+  },
+  mapToEditPanelValues: (config) => {
+    const c = { ...defaultConfig, ...config };
+    return new Map([
+      ['hero_title', c.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', c.hero_subtitle || defaultConfig.hero_subtitle],
+      ['cta_primary', c.cta_primary || defaultConfig.cta_primary],
+      ['cta_secondary', c.cta_secondary || defaultConfig.cta_secondary],
+      ['bottom_cta_text', c.bottom_cta_text || defaultConfig.bottom_cta_text]
+    ]);
+  }
+});
+
+// Mobile menu
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+document.querySelectorAll('#mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+// Smooth scroll for anchors
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83a10c619a155',t:'MTc3NjczMDg2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

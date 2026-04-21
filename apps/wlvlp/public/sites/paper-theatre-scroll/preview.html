@@ -1,1 +1,609 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/911c2a3d-d282-4de2-93bc-a97b9367f641 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaperTheatre Scroll</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&amp;family=DM+Sans:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #f4efe6;
+  --surface: #ffffff;
+  --text: #2a2118;
+  --primary: #c45d3e;
+  --secondary: #7a6b5d;
+}
+
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
+
+.font-display { font-family: var(--custom-font, 'Playfair Display'), 'Playfair Display', Georgia, serif; }
+.font-body { font-family: var(--custom-font, 'DM Sans'), 'DM Sans', Arial, sans-serif; }
+
+/* Paper texture overlay */
+.paper-texture {
+  position: relative;
+}
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Cutout shapes */
+.cutout-arch {
+  clip-path: ellipse(50% 60% at 50% 55%);
+}
+.cutout-wave {
+  clip-path: polygon(0% 15%, 5% 12%, 10% 10%, 15% 9%, 20% 8%, 25% 8.5%, 30% 10%, 35% 12%, 40% 11%, 45% 9%, 50% 8%, 55% 9%, 60% 11%, 65% 13%, 70% 12%, 75% 10%, 80% 9%, 85% 10%, 90% 12%, 95% 14%, 100% 15%, 100% 100%, 0% 100%);
+}
+.cutout-circle { clip-path: circle(45% at 50% 50%); }
+.cutout-diamond { clip-path: polygon(50% 5%, 90% 50%, 50% 95%, 10% 50%); }
+.cutout-trapezoid { clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%); }
+
+/* Shadow layers */
+.paper-shadow {
+  filter: drop-shadow(0 8px 24px rgba(42,33,24,0.12)) drop-shadow(0 2px 6px rgba(42,33,24,0.08));
+}
+.paper-shadow-deep {
+  filter: drop-shadow(0 16px 40px rgba(42,33,24,0.18)) drop-shadow(0 4px 12px rgba(42,33,24,0.1));
+}
+
+/* Parallax layers */
+.parallax-layer {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* Reveal animations */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(60px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes revealScale {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes driftLeft {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-8px); }
+}
+@keyframes driftRight {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(196,93,62,0.3); }
+  50% { transform: scale(1.04); box-shadow: 0 6px 28px rgba(196,93,62,0.45); }
+}
+
+.animate-reveal { animation: revealUp 0.8s ease-out both; }
+.animate-reveal-scale { animation: revealScale 0.9s ease-out both; }
+.animate-fade { animation: fadeIn 1s ease-out both; }
+.animate-drift-l { animation: driftLeft 6s ease-in-out infinite; }
+.animate-drift-r { animation: driftRight 7s ease-in-out infinite; }
+.animate-pulse-cta { animation: pulse 2.5s ease-in-out infinite; }
+
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.45s; }
+.delay-4 { animation-delay: 0.6s; }
+.delay-5 { animation-delay: 0.75s; }
+
+/* Scroll reveal */
+.scroll-hidden { opacity: 0; transform: translateY(40px); }
+.scroll-visible { opacity: 1; transform: translateY(0); transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Nav */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 1.5px;
+  background: var(--primary);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+/* Torn edge */
+.torn-bottom {
+  position: relative;
+}
+.torn-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: inherit;
+  clip-path: polygon(0% 0%, 3% 60%, 5% 20%, 8% 70%, 11% 30%, 14% 65%, 17% 15%, 20% 55%, 23% 25%, 26% 70%, 29% 10%, 32% 60%, 35% 20%, 38% 75%, 41% 30%, 44% 65%, 47% 15%, 50% 55%, 53% 25%, 56% 70%, 59% 10%, 62% 60%, 65% 20%, 68% 75%, 71% 30%, 74% 65%, 77% 15%, 80% 55%, 83% 25%, 86% 70%, 89% 10%, 92% 60%, 95% 20%, 98% 65%, 100% 0%);
+}
+
+/* Stitch line */
+.stitch-line {
+  background-image: repeating-linear-gradient(90deg, var(--secondary) 0px, var(--secondary) 8px, transparent 8px, transparent 16px);
+  height: 1.5px;
+  opacity: 0.4;
+}
+
+/* Stage curtain */
+.curtain-left, .curtain-right {
+  position: absolute;
+  top: 0;
+  width: 80px;
+  height: 100%;
+  z-index: 2;
+}
+.curtain-left {
+  left: 0;
+  background: linear-gradient(90deg, rgba(196,93,62,0.08) 0%, transparent 100%);
+}
+.curtain-right {
+  right: 0;
+  background: linear-gradient(-90deg, rgba(196,93,62,0.08) 0%, transparent 100%);
+}
+
+/* Image styling */
+.img-paper {
+  border: 3px solid var(--surface);
+  box-shadow: 2px 3px 12px rgba(42,33,24,0.1), inset 0 0 20px rgba(42,33,24,0.03);
+}
+
+/* Review cards */
+.review-card {
+  background: var(--surface);
+  border: 1px solid rgba(42,33,24,0.08);
+  position: relative;
+}
+.review-card::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  border-left: 1px solid rgba(42,33,24,0.08);
+  border-top: 1px solid rgba(42,33,24,0.08);
+  transform: rotate(45deg);
+}
+
+.smooth-scroll { scroll-behavior: smooth; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto smooth-scroll" id="app-body"><!-- Sticky Nav -->
+  <nav id="main-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300" style="background: rgba(244,239,230,0.92); backdrop-filter: blur(8px);">
+   <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between"><a href="#home" class="font-display font-bold text-lg tracking-wide" style="color: var(--text);">
+     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="inline-block mr-1 -mt-1">
+      <rect x="3" y="3" width="18" height="18" rx="1" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="9" x2="9" y2="21" />
+     </svg> PaperTheatre </a>
+    <div class="hidden md:flex items-center gap-6"><a href="#home" class="nav-link font-body text-sm tracking-wide" style="color: var(--secondary);">Home</a> <a href="#scenes" class="nav-link font-body text-sm tracking-wide" style="color: var(--secondary);">Scenes</a> <a href="#collection" class="nav-link font-body text-sm tracking-wide" style="color: var(--secondary);">Collection</a> <a href="#details" class="nav-link font-body text-sm tracking-wide" style="color: var(--secondary);">Details</a> <a href="#reviews" class="nav-link font-body text-sm tracking-wide" style="color: var(--secondary);">Reviews</a> <a href="#buy" class="nav-link font-body text-sm tracking-wide px-4 py-1.5 rounded-full border" style="color: var(--primary); border-color: var(--primary);">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="inline -mt-0.5 mr-1">
+       <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+      </svg> Buy </a>
+    </div><button id="mobile-menu-btn" class="md:hidden p-2" aria-label="Menu">
+     <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+     </svg></button>
+   </div>
+   <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3"><a href="#home" class="font-body text-sm py-1" style="color: var(--secondary);">Home</a> <a href="#scenes" class="font-body text-sm py-1" style="color: var(--secondary);">Scenes</a> <a href="#collection" class="font-body text-sm py-1" style="color: var(--secondary);">Collection</a> <a href="#details" class="font-body text-sm py-1" style="color: var(--secondary);">Details</a> <a href="#reviews" class="font-body text-sm py-1" style="color: var(--secondary);">Reviews</a> <a href="#buy" class="font-body text-sm py-1" style="color: var(--primary);">Buy</a>
+   </div>
+   <div class="stitch-line w-full"></div>
+  </nav><!-- HERO SECTION -->
+  <section id="home" class="relative w-full paper-texture overflow-hidden" style="min-height: 100%; padding-top: 80px;">
+   <div class="curtain-left"></div>
+   <div class="curtain-right"></div><!-- Background scenery layer -->
+   <div class="absolute inset-0 parallax-layer" data-speed="0.02" style="z-index: 0;">
+    <div class="absolute top-12 left-8 w-40 h-40 opacity-20 cutout-circle animate-drift-l"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&amp;q=80" alt="Scenic landscape" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#d4c5b0';this.alt='Image unavailable';">
+    </div>
+    <div class="absolute bottom-20 right-12 w-48 h-36 opacity-15 cutout-diamond animate-drift-r"><img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&amp;q=80" alt="City skyline" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#b8c4d0';this.alt='Image unavailable';">
+    </div>
+   </div><!-- Mid scenery layer -->
+   <div class="absolute inset-0 parallax-layer" data-speed="0.05" style="z-index: 1;">
+    <div class="absolute top-24 right-16 w-32 h-44 opacity-25 paper-shadow" style="clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%); transform: rotate(-3deg);"><img src="https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400&amp;q=80" alt="Flowers close up" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#e0c8b8';this.alt='Image unavailable';">
+    </div>
+    <div class="absolute bottom-32 left-16 w-36 h-28 opacity-20 paper-shadow" style="clip-path: ellipse(50% 45% at 50% 50%); transform: rotate(2deg);"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&amp;q=80" alt="Interior decor" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='#d0c4b8';this.alt='Image unavailable';">
+    </div>
+   </div><!-- Main stage content -->
+   <div class="relative z-10 flex flex-col items-center justify-center text-center px-6" style="min-height: calc(100% - 80px); padding: 60px 24px;"><!-- Stage frame top arch -->
+    <div class="animate-reveal-scale mb-8">
+     <div class="cutout-arch paper-shadow-deep mx-auto" style="width: min(500px, 85vw); height: min(320px, 50vw);"><img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&amp;q=80" alt="Paper texture macro" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#e8ddd0,#d4c5b0)';this.alt='Image unavailable';">
+     </div>
+    </div><!-- Scissors icon -->
+    <div class="animate-fade delay-1 mb-4">
+     <svg width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--secondary); opacity: 0.5;">
+      <circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
+     </svg>
+    </div>
+    <h1 id="hero-title" class="font-display font-900 animate-reveal delay-2" style="font-size: clamp(2.2rem, 6vw, 4.5rem); line-height: 1.1; letter-spacing: -0.02em; color: var(--text);">A page built like a stage.</h1>
+    <p id="hero-subtitle" class="font-body animate-reveal delay-3 mt-4 max-w-md" style="font-size: clamp(0.95rem, 2vw, 1.15rem); color: var(--secondary); letter-spacing: 0.02em;">Scroll through scenes, not sections.</p>
+    <div class="flex flex-wrap gap-4 mt-8 justify-center animate-reveal delay-4"><a href="#scenes" id="cta-primary-btn" class="font-body font-medium px-7 py-3 rounded-full text-sm tracking-wide transition-all animate-pulse-cta" style="background: var(--primary); color: var(--surface);"> Enter the Theatre </a> <a href="#collection" id="cta-secondary-btn" class="font-body font-medium px-7 py-3 rounded-full text-sm tracking-wide border transition-all hover:opacity-80" style="border-color: var(--text); color: var(--text);"> Shop Collection </a>
+    </div><!-- Downward arrow -->
+    <div class="mt-12 animate-fade delay-5">
+     <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--secondary); opacity: 0.4;">
+      <line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" />
+     </svg>
+    </div>
+   </div>
+   <div class="torn-bottom" style="background: var(--bg);"></div>
+  </section><!-- SCENES SECTION -->
+  <section id="scenes" class="relative w-full paper-texture px-6 py-24" style="background: var(--bg);">
+   <div class="max-w-5xl mx-auto">
+    <div class="scroll-hidden text-center mb-16">
+     <div class="stitch-line w-16 mx-auto mb-6"></div>
+     <h2 class="font-display font-bold" style="font-size: clamp(1.8rem, 4vw, 3rem); color: var(--text);">The Scenes</h2>
+     <p class="font-body mt-3" style="color: var(--secondary); font-size: 0.95rem;">Each layer tells a different story</p>
+    </div><!-- Scene 1 -->
+    <div class="scroll-hidden grid md:grid-cols-2 gap-12 items-center mb-20">
+     <div class="paper-shadow-deep cutout-trapezoid"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&amp;q=80" alt="Scenic mountain landscape" class="w-full aspect-[4/3] object-cover" loading="lazy" onerror="this.style.background='#c8d8c8';this.alt='Image unavailable';">
+     </div>
+     <div class="px-4">
+      <div class="flex items-center gap-2 mb-3">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--primary);">
+        <rect x="2" y="2" width="20" height="20" rx="2" /><line x1="2" y1="8" x2="22" y2="8" /><line x1="2" y1="14" x2="22" y2="14" />
+       </svg><span class="font-body text-xs tracking-widest uppercase" style="color: var(--primary);">Scene I</span>
+      </div>
+      <h3 class="font-display font-bold text-2xl mb-3" style="color: var(--text);">The Distant Horizon</h3>
+      <p class="font-body leading-relaxed" style="color: var(--secondary); font-size: 0.9rem;">The furthest layer sets the mood — rolling hills and open sky, cut from handmade paper and backlit with a warm glow. Every edge is intentionally imperfect.</p>
+     </div>
+    </div><!-- Scene 2 -->
+    <div class="scroll-hidden grid md:grid-cols-2 gap-12 items-center mb-20">
+     <div class="md:order-2 paper-shadow-deep cutout-arch"><img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=700&amp;q=80" alt="City skyline at dusk" class="w-full aspect-[4/3] object-cover" loading="lazy" onerror="this.style.background='#b8c0d0';this.alt='Image unavailable';">
+     </div>
+     <div class="px-4 md:order-1">
+      <div class="flex items-center gap-2 mb-3">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--primary);">
+        <rect x="2" y="2" width="20" height="20" rx="2" /><line x1="2" y1="8" x2="22" y2="8" /><line x1="2" y1="14" x2="22" y2="14" />
+       </svg><span class="font-body text-xs tracking-widest uppercase" style="color: var(--primary);">Scene II</span>
+      </div>
+      <h3 class="font-display font-bold text-2xl mb-3" style="color: var(--text);">The Urban Silhouette</h3>
+      <p class="font-body leading-relaxed" style="color: var(--secondary); font-size: 0.9rem;">The mid-layer introduces depth — cityscape profiles cut with precision, casting long shadows across the stage floor. Light filters through the gaps.</p>
+     </div>
+    </div><!-- Scene 3 -->
+    <div class="scroll-hidden grid md:grid-cols-2 gap-12 items-center">
+     <div class="paper-shadow-deep cutout-circle"><img src="https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=700&amp;q=80" alt="Delicate flowers close up" class="w-full aspect-square object-cover" loading="lazy" onerror="this.style.background='#e0c8c0';this.alt='Image unavailable';">
+     </div>
+     <div class="px-4">
+      <div class="flex items-center gap-2 mb-3">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--primary);">
+        <rect x="2" y="2" width="20" height="20" rx="2" /><line x1="2" y1="8" x2="22" y2="8" /><line x1="2" y1="14" x2="22" y2="14" />
+       </svg><span class="font-body text-xs tracking-widest uppercase" style="color: var(--primary);">Scene III</span>
+      </div>
+      <h3 class="font-display font-bold text-2xl mb-3" style="color: var(--text);">The Intimate Detail</h3>
+      <p class="font-body leading-relaxed" style="color: var(--secondary); font-size: 0.9rem;">The foreground layer pulls you close — petals rendered in paper, translucent and trembling. This is where craft becomes art.</p>
+     </div>
+    </div>
+   </div>
+  </section><!-- COLLECTION SECTION -->
+  <section id="collection" class="relative w-full px-6 py-24" style="background: var(--surface);">
+   <div class="max-w-5xl mx-auto">
+    <div class="scroll-hidden text-center mb-14">
+     <div class="stitch-line w-16 mx-auto mb-6"></div>
+     <h2 class="font-display font-bold" style="font-size: clamp(1.8rem, 4vw, 3rem); color: var(--text);">The Collection</h2>
+     <p class="font-body mt-3" style="color: var(--secondary); font-size: 0.95rem;">Four theatre kits, each a world of its own</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+     <div class="scroll-hidden group cursor-pointer">
+      <div class="overflow-hidden rounded-sm img-paper mb-4 transition-transform duration-300 group-hover:-translate-y-1"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&amp;q=80" alt="Interior scene" class="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onerror="this.style.background='#d4c8b8';this.alt='Image unavailable';">
+      </div>
+      <div class="flex items-center gap-1.5 mb-1">
+       <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--secondary);">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+       </svg><span class="font-body text-xs" style="color: var(--secondary);">Limited Edition</span>
+      </div>
+      <h4 class="font-display font-bold" style="color: var(--text);">The Parlour</h4>
+      <p class="font-body text-sm mt-1" style="color: var(--secondary);">$48</p>
+     </div>
+     <div class="scroll-hidden group cursor-pointer">
+      <div class="overflow-hidden rounded-sm img-paper mb-4 transition-transform duration-300 group-hover:-translate-y-1"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&amp;q=80" alt="Mountain landscape" class="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onerror="this.style.background='#c0d0c0';this.alt='Image unavailable';">
+      </div>
+      <div class="flex items-center gap-1.5 mb-1">
+       <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--secondary);">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+       </svg><span class="font-body text-xs" style="color: var(--secondary);">Bestseller</span>
+      </div>
+      <h4 class="font-display font-bold" style="color: var(--text);">The Wilderness</h4>
+      <p class="font-body text-sm mt-1" style="color: var(--secondary);">$42</p>
+     </div>
+     <div class="scroll-hidden group cursor-pointer">
+      <div class="overflow-hidden rounded-sm img-paper mb-4 transition-transform duration-300 group-hover:-translate-y-1"><img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&amp;q=80" alt="City skyline" class="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onerror="this.style.background='#b8c0d0';this.alt='Image unavailable';">
+      </div>
+      <div class="flex items-center gap-1.5 mb-1">
+       <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--secondary);">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+       </svg><span class="font-body text-xs" style="color: var(--secondary);">New</span>
+      </div>
+      <h4 class="font-display font-bold" style="color: var(--text);">The Metropolis</h4>
+      <p class="font-body text-sm mt-1" style="color: var(--secondary);">$52</p>
+     </div>
+     <div class="scroll-hidden group cursor-pointer">
+      <div class="overflow-hidden rounded-sm img-paper mb-4 transition-transform duration-300 group-hover:-translate-y-1"><img src="https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400&amp;q=80" alt="Floral arrangement" class="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onerror="this.style.background='#e0c0c0';this.alt='Image unavailable';">
+      </div>
+      <div class="flex items-center gap-1.5 mb-1">
+       <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--secondary);">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+       </svg><span class="font-body text-xs" style="color: var(--secondary);">Popular</span>
+      </div>
+      <h4 class="font-display font-bold" style="color: var(--text);">The Garden</h4>
+      <p class="font-body text-sm mt-1" style="color: var(--secondary);">$45</p>
+     </div>
+    </div>
+   </div>
+   <div class="torn-bottom" style="background: var(--surface);"></div>
+  </section><!-- DETAILS SECTION -->
+  <section id="details" class="relative w-full px-6 py-28" style="background: var(--bg);">
+   <div class="max-w-4xl mx-auto">
+    <div class="scroll-hidden text-center mb-14">
+     <div class="stitch-line w-16 mx-auto mb-6"></div>
+     <h2 class="font-display font-bold" style="font-size: clamp(1.8rem, 4vw, 3rem); color: var(--text);">Craft Details</h2>
+    </div>
+    <div class="scroll-hidden grid sm:grid-cols-3 gap-8 text-center">
+     <div class="p-6">
+      <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background: rgba(196,93,62,0.08);">
+       <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--primary);">
+        <rect x="2" y="2" width="20" height="20" rx="2" /><line x1="2" y1="8" x2="22" y2="8" /><line x1="2" y1="14" x2="22" y2="14" />
+       </svg>
+      </div>
+      <h4 class="font-display font-bold mb-2" style="color: var(--text);">5 Layers Deep</h4>
+      <p class="font-body text-sm leading-relaxed" style="color: var(--secondary);">Each kit contains five precision-cut paper layers that create genuine parallax depth when assembled.</p>
+     </div>
+     <div class="p-6">
+      <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background: rgba(196,93,62,0.08);">
+       <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--primary);">
+        <circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
+       </svg>
+      </div>
+      <h4 class="font-display font-bold mb-2" style="color: var(--text);">Hand-Cut Paper</h4>
+      <p class="font-body text-sm leading-relaxed" style="color: var(--secondary);">Premium 300gsm cotton paper, scored and cut with intention. No two edges are exactly alike.</p>
+     </div>
+     <div class="p-6">
+      <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background: rgba(196,93,62,0.08);">
+       <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--primary);">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+       </svg>
+      </div>
+      <h4 class="font-display font-bold mb-2" style="color: var(--text);">Studio Made</h4>
+      <p class="font-body text-sm leading-relaxed" style="color: var(--secondary);">Designed and assembled in our small studio. Each piece is inspected, signed, and shipped with care.</p>
+     </div>
+    </div><!-- Process image -->
+    <div class="scroll-hidden mt-16 paper-shadow-deep cutout-wave mx-auto" style="max-width: 700px;"><img src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800&amp;q=80" alt="Hands crafting paper" class="w-full aspect-[16/7] object-cover" loading="lazy" onerror="this.style.background='#d8d0c4';this.alt='Image unavailable';">
+    </div>
+   </div>
+  </section><!-- REVIEWS SECTION -->
+  <section id="reviews" class="relative w-full px-6 py-24" style="background: var(--surface);">
+   <div class="max-w-4xl mx-auto">
+    <div class="scroll-hidden text-center mb-14">
+     <div class="stitch-line w-16 mx-auto mb-6"></div>
+     <h2 class="font-display font-bold" style="font-size: clamp(1.8rem, 4vw, 3rem); color: var(--text);">What They Say</h2>
+    </div>
+    <div class="scroll-hidden grid md:grid-cols-3 gap-6">
+     <div class="review-card rounded-md p-6">
+      <div class="flex gap-1 mb-3">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+      </div>
+      <p class="font-body text-sm leading-relaxed mb-4" style="color: var(--secondary);">"I've never seen anything like this. The layering is extraordinary — it genuinely feels like looking into a tiny world."</p>
+      <p class="font-display font-bold text-sm" style="color: var(--text);">— Clara M.</p>
+     </div>
+     <div class="review-card rounded-md p-6">
+      <div class="flex gap-1 mb-3">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+      </div>
+      <p class="font-body text-sm leading-relaxed mb-4" style="color: var(--secondary);">"Bought 'The Wilderness' as a gift. The recipient actually gasped. The craftsmanship is museum-quality."</p>
+      <p class="font-display font-bold text-sm" style="color: var(--text);">— Tomás R.</p>
+     </div>
+     <div class="review-card rounded-md p-6">
+      <div class="flex gap-1 mb-3">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--primary);">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--secondary); opacity:0.3;">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+      </div>
+      <p class="font-body text-sm leading-relaxed mb-4" style="color: var(--secondary);">"The paper quality alone is worth the price. Assembling it was meditative. It now lives on my shelf permanently."</p>
+      <p class="font-display font-bold text-sm" style="color: var(--text);">— Mei L.</p>
+     </div>
+    </div>
+   </div>
+   <div class="torn-bottom" style="background: var(--surface);"></div>
+  </section><!-- BUY / BOTTOM CTA SECTION -->
+  <section id="buy" class="relative w-full px-6 py-28 paper-texture" style="background: var(--bg);">
+   <div class="max-w-3xl mx-auto text-center">
+    <div class="scroll-hidden"><!-- Pin icon -->
+     <div class="mb-6">
+      <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="mx-auto" style="color: var(--primary);">
+       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+      </svg>
+     </div>
+     <h2 id="bottom-cta" class="font-display font-bold mb-6" style="font-size: clamp(1.8rem, 4.5vw, 3.2rem); color: var(--text); line-height: 1.15;">Make the scroll feel handcrafted.</h2>
+     <p class="font-body mb-8 max-w-md mx-auto" style="color: var(--secondary); font-size: 0.95rem;">Each PaperTheatre kit ships flat, assembles in minutes, and transforms any shelf into a stage.</p><a href="#collection" class="inline-block font-body font-medium px-8 py-3.5 rounded-full text-sm tracking-wide animate-pulse-cta" style="background: var(--primary); color: var(--surface);">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="inline -mt-0.5 mr-1.5">
+       <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+      </svg> Shop the Collection </a>
+    </div>
+   </div>
+  </section><!-- FOOTER -->
+  <footer class="w-full px-6 py-8" style="background: var(--text);">
+   <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4"><span class="font-display font-bold text-sm" style="color: var(--bg); opacity: 0.7;">PaperTheatre</span> <span class="font-body text-xs" style="color: var(--bg); opacity: 0.4;">Handcrafted with care. All rights reserved.</span>
+   </div>
+  </footer>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: "A page built like a stage.",
+  hero_subtitle: "Scroll through scenes, not sections.",
+  cta_primary: "Enter the Theatre",
+  cta_secondary: "Shop Collection",
+  bottom_cta_text: "Make the scroll feel handcrafted.",
+  background_color: "#f4efe6",
+  surface_color: "#ffffff",
+  text_color: "#2a2118",
+  primary_color: "#c45d3e",
+  secondary_color: "#7a6b5d",
+  font_family: "Playfair Display",
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+
+  // Colors
+  document.documentElement.style.setProperty('--bg', c.background_color);
+  document.documentElement.style.setProperty('--surface', c.surface_color);
+  document.documentElement.style.setProperty('--text', c.text_color);
+  document.documentElement.style.setProperty('--primary', c.primary_color);
+  document.documentElement.style.setProperty('--secondary', c.secondary_color);
+  document.documentElement.style.setProperty('--custom-font', c.font_family);
+
+  // Text content
+  const heroTitle = document.getElementById('hero-title');
+  if (heroTitle) heroTitle.textContent = c.hero_title;
+  const heroSub = document.getElementById('hero-subtitle');
+  if (heroSub) heroSub.textContent = c.hero_subtitle;
+  const ctaPrimary = document.getElementById('cta-primary-btn');
+  if (ctaPrimary) ctaPrimary.textContent = c.cta_primary;
+  const ctaSecondary = document.getElementById('cta-secondary-btn');
+  if (ctaSecondary) ctaSecondary.textContent = c.cta_secondary;
+  const bottomCta = document.getElementById('bottom-cta');
+  if (bottomCta) bottomCta.textContent = c.bottom_cta_text;
+
+  // Font
+  const baseFont = c.font_family + ", Georgia, serif";
+  const bodyFont = c.font_family + ", 'DM Sans', Arial, sans-serif";
+  document.querySelectorAll('.font-display').forEach(el => el.style.fontFamily = baseFont);
+  document.querySelectorAll('.font-body').forEach(el => el.style.fontFamily = bodyFont);
+
+  // Font size
+  const bs = c.font_size;
+  if (heroTitle) heroTitle.style.fontSize = `clamp(${bs * 2.2 / 16}rem, 6vw, ${bs * 4.5 / 16}rem)`;
+  document.querySelectorAll('.font-body').forEach(el => {
+    if (!el.classList.contains('text-xs') && !el.classList.contains('text-sm')) {
+      el.style.fontSize = `${bs * 0.95 / 16}rem`;
+    }
+  });
+}
+
+// Element SDK
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.primary_color || defaultConfig.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+        { get: () => config.secondary_color || defaultConfig.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ["hero_title", config.hero_title || defaultConfig.hero_title],
+      ["hero_subtitle", config.hero_subtitle || defaultConfig.hero_subtitle],
+      ["cta_primary", config.cta_primary || defaultConfig.cta_primary],
+      ["cta_secondary", config.cta_secondary || defaultConfig.cta_secondary],
+      ["bottom_cta_text", config.bottom_cta_text || defaultConfig.bottom_cta_text]
+    ])
+  });
+}
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.remove('scroll-hidden');
+      entry.target.classList.add('scroll-visible');
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.scroll-hidden').forEach(el => observer.observe(el));
+
+// Parallax on scroll
+const body = document.getElementById('app-body');
+body.addEventListener('scroll', () => {
+  const scrollY = body.scrollTop;
+  document.querySelectorAll('.parallax-layer').forEach(layer => {
+    const speed = parseFloat(layer.dataset.speed) || 0.03;
+    layer.style.transform = `translateY(${scrollY * speed}px)`;
+  });
+});
+
+// Mobile menu
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+
+// Close mobile menu on link click
+document.querySelectorAll('#mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef833bf418aa155',t:'MTc3NjczMDYwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

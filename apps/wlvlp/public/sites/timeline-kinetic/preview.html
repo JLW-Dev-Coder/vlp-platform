@@ -1,1 +1,705 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/2b8c000e-4bad-41a5-ae3a-10c7f7c12fbc -->
+<!doctype html>
+<html lang="en" class="h-full" style="scroll-behavior:smooth;">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimelineKinetic</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        outfit: ['Outfit', 'sans-serif'],
+        mono: ['Space Mono', 'monospace']
+      }
+    }
+  }
+}
+</script>
+  <style>
+  html, body { height: 100%; margin: 0; }
+  * { box-sizing: border-box; }
+
+  /* Timeline draw-on */
+  .timeline-track {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+  }
+  .timeline-track-bg {
+    background: rgba(255,255,255,0.06);
+    height: 100%;
+    width: 100%;
+  }
+  .timeline-track-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    transition: height 0.1s linear;
+  }
+
+  /* Milestone dot */
+  .milestone-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease;
+  }
+  .milestone-dot.active {
+    transform: translateX(-50%) scale(1.4);
+  }
+
+  /* Chapter cards */
+  .chapter-card {
+    opacity: 0;
+    transform: translateY(60px);
+    transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+  }
+  .chapter-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .chapter-card:nth-child(even) {
+    transform: translateY(60px) translateX(20px);
+  }
+  .chapter-card:nth-child(even).visible {
+    transform: translateY(0) translateX(0);
+  }
+  .chapter-card:nth-child(odd) {
+    transform: translateY(60px) translateX(-20px);
+  }
+  .chapter-card:nth-child(odd).visible {
+    transform: translateY(0) translateX(0);
+  }
+
+  /* Light sweep */
+  .light-sweep {
+    position: relative;
+    overflow: hidden;
+  }
+  .light-sweep::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    animation: sweep 4s ease-in-out infinite;
+  }
+  @keyframes sweep {
+    0% { left: -60%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+  }
+
+  /* CTA pulse */
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 12px rgba(var(--accent-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  }
+  .cta-pulse { animation: pulse-ring 2.5s infinite; }
+
+  /* Hero anim */
+  @keyframes hero-rise {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-anim { animation: hero-rise 1s cubic-bezier(0.22,1,0.36,1) forwards; }
+  .hero-anim-d1 { animation-delay: 0.15s; opacity: 0; }
+  .hero-anim-d2 { animation-delay: 0.35s; opacity: 0; }
+  .hero-anim-d3 { animation-delay: 0.55s; opacity: 0; }
+
+  /* Proof counter */
+  .proof-card {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.6s cubic-bezier(0.22,1,0.36,1);
+  }
+  .proof-card.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* FAQ */
+  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; }
+  .faq-answer.open { max-height: 300px; }
+
+  /* Nav */
+  .nav-link {
+    position: relative;
+    padding-bottom: 2px;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 1.5px;
+    transition: width 0.3s ease;
+  }
+  .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+  /* Deliverable card */
+  .deliv-card {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  .deliv-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Image shimmer load */
+  .img-shimmer {
+    background: linear-gradient(110deg, #1a1a2e 30%, #25254a 50%, #1a1a2e 70%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @media (max-width: 768px) {
+    .timeline-track { left: 24px; }
+    .milestone-dot { left: 24px; }
+  }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="w-full h-full overflow-auto" style="background:#0a0a14; color:#e8e8f0; font-family:'Outfit',sans-serif;"><!-- NAV -->
+   <nav id="main-nav" style="position:fixed; top:0; left:0; right:0; z-index:50; backdrop-filter:blur(16px); background:rgba(10,10,20,0.85); border-bottom:1px solid rgba(255,255,255,0.05); transition: all 0.3s ease;">
+    <div style="max-width:1200px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; justify-content:space-between;"><a href="#home" style="font-family:'Space Mono',monospace; font-weight:700; font-size:15px; letter-spacing:-0.5px; text-decoration:none;" id="nav-logo"> <span style="opacity:0.5;">Timeline</span><span id="nav-accent">Kinetic</span> </a>
+     <div id="nav-links" style="display:flex; gap:24px; font-size:13px; font-weight:500; letter-spacing:0.3px;"><a href="#home" class="nav-link" style="text-decoration:none;">Home</a> <a href="#chapters" class="nav-link" style="text-decoration:none;">Chapters</a> <a href="#deliverables" class="nav-link" style="text-decoration:none;">Deliverables</a> <a href="#proof" class="nav-link" style="text-decoration:none;">Proof</a> <a href="#faq" class="nav-link" style="text-decoration:none;">FAQ</a> <a href="#get-template" class="nav-link" style="text-decoration:none;">Get Template</a>
+     </div><button id="mobile-menu-btn" style="display:none; background:none; border:none; color:#e8e8f0; cursor:pointer;" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" />
+      </svg></button>
+    </div>
+    <div id="mobile-nav" class="hidden" style="padding:0 24px 16px; display:flex; flex-direction:column; gap:12px; font-size:14px;"><a href="#home" class="nav-link" style="text-decoration:none;" onclick="this.parentElement.classList.add('hidden')">Home</a> <a href="#chapters" class="nav-link" style="text-decoration:none;" onclick="this.parentElement.classList.add('hidden')">Chapters</a> <a href="#deliverables" class="nav-link" style="text-decoration:none;" onclick="this.parentElement.classList.add('hidden')">Deliverables</a> <a href="#proof" class="nav-link" style="text-decoration:none;" onclick="this.parentElement.classList.add('hidden')">Proof</a> <a href="#faq" class="nav-link" style="text-decoration:none;" onclick="this.parentElement.classList.add('hidden')">FAQ</a> <a href="#get-template" class="nav-link" style="text-decoration:none;" onclick="this.parentElement.classList.add('hidden')">Get Template</a>
+    </div>
+   </nav>
+   <style>
+  @media (max-width: 768px) {
+    #nav-links { display: none !important; }
+    #mobile-menu-btn { display: block !important; }
+    #mobile-nav:not(.hidden) { display: flex !important; }
+  }
+</style><!-- HERO -->
+   <section id="home" style="min-height:100%; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; padding:120px 24px 80px;"><!-- BG grid -->
+    <div style="position:absolute; inset:0; background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px); background-size:40px 40px;"></div><!-- BG glow -->
+    <div id="hero-glow" style="position:absolute; top:20%; left:50%; width:600px; height:600px; border-radius:50%; transform:translateX(-50%); filter:blur(120px); opacity:0.15;"></div>
+    <div style="position:relative; z-index:2; text-align:center; max-width:800px;">
+     <div class="hero-anim" style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:3px; text-transform:uppercase; opacity:0.4; margin-bottom:24px;"><!-- Clock icon -->
+      <svg style="display:inline-block; vertical-align:middle; margin-right:8px;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+       <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+      </svg> Project Story Template
+     </div>
+     <h1 id="hero-title" class="hero-anim hero-anim-d1" style="font-size:clamp(42px,7vw,86px); font-weight:900; line-height:0.95; letter-spacing:-3px; margin-bottom:24px;">Make progress<br>
+      feel visible.</h1>
+     <p id="hero-sub" class="hero-anim hero-anim-d2" style="font-size:clamp(16px,2vw,20px); font-weight:300; opacity:0.6; max-width:500px; margin:0 auto 40px; line-height:1.6;">A one-page story that sells the work.</p>
+     <div class="hero-anim hero-anim-d3" style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;"><a href="#get-template" id="hero-cta-primary" class="cta-pulse" style="display:inline-block; padding:16px 32px; border-radius:60px; font-weight:600; font-size:15px; text-decoration:none; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"> Get Template + License </a> <a href="#chapters" id="hero-cta-secondary" style="display:inline-block; padding:16px 32px; border-radius:60px; font-weight:600; font-size:15px; text-decoration:none; border:1.5px solid rgba(255,255,255,0.15); transition:all 0.3s ease;" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)'"> View Chapters </a>
+     </div>
+    </div><!-- Scroll indicator -->
+    <div style="position:absolute; bottom:32px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; opacity:0.3;"><span style="font-size:11px; font-family:'Space Mono',monospace; letter-spacing:2px;">SCROLL</span>
+     <div style="width:1px; height:32px; position:relative; overflow:hidden;">
+      <div style="width:100%; height:100%; background:white; animation: scrollDown 1.5s ease-in-out infinite;"></div>
+     </div>
+    </div>
+    <style>
+    @keyframes scrollDown { 0%{transform:translateY(-100%)} 50%{transform:translateY(0)} 100%{transform:translateY(100%)} }
+  </style>
+   </section><!-- CHAPTERS / TIMELINE -->
+   <section id="chapters" style="position:relative; padding:100px 24px 120px; max-width:1100px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:80px;"><span style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.4;">The Journey</span>
+     <h2 style="font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-2px; margin-top:12px;">Project Chapters</h2>
+    </div>
+    <div id="timeline-container" style="position:relative; padding:0 0 40px;"><!-- Track -->
+     <div class="timeline-track">
+      <div class="timeline-track-bg"></div>
+      <div class="timeline-track-fill" id="timeline-fill"></div>
+     </div><!-- Chapter 1 -->
+     <div class="chapter-node" style="position:relative; padding-bottom:100px;">
+      <div class="milestone-dot" id="dot-0" style="top:20px;"></div>
+      <div class="chapter-card light-sweep" style="width:calc(50% - 50px); margin-left:auto; padding-left:0;" data-side="right">
+       <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+        <div style="height:200px; position:relative; overflow:hidden;"><img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&amp;q=80" alt="Team planning session" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentElement.classList.add('img-shimmer');">
+         <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(10,10,20,0.9) 0%, transparent 60%);"></div><span style="position:absolute; bottom:12px; left:16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; opacity:0.5;">CHAPTER 01</span>
+        </div>
+        <div style="padding:24px;">
+         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+          </svg><span style="font-size:12px; opacity:0.4; font-family:'Space Mono',monospace;">Week 1-2</span>
+         </div>
+         <h3 style="font-size:22px; font-weight:700; letter-spacing:-0.5px; margin-bottom:8px;">Discovery &amp; Strategy</h3>
+         <p style="font-size:14px; line-height:1.7; opacity:0.5;">Stakeholder interviews, competitive analysis, and strategic roadmap definition. We mapped every constraint before moving a pixel.</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Chapter 2 -->
+     <div class="chapter-node" style="position:relative; padding-bottom:100px;">
+      <div class="milestone-dot" id="dot-1" style="top:20px;"></div>
+      <div class="chapter-card light-sweep" style="width:calc(50% - 50px); margin-right:auto;" data-side="left">
+       <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+        <div style="height:200px; position:relative; overflow:hidden;"><img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&amp;q=80" alt="Planning board with sticky notes" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentElement.classList.add('img-shimmer');">
+         <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(10,10,20,0.9) 0%, transparent 60%);"></div><span style="position:absolute; bottom:12px; left:16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; opacity:0.5;">CHAPTER 02</span>
+        </div>
+        <div style="padding:24px;">
+         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+           <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+          </svg><span style="font-size:12px; opacity:0.4; font-family:'Space Mono',monospace;">Week 3-5</span>
+         </div>
+         <h3 style="font-size:22px; font-weight:700; letter-spacing:-0.5px; margin-bottom:8px;">Design &amp; Prototyping</h3>
+         <p style="font-size:14px; line-height:1.7; opacity:0.5;">Wireframes evolved into high-fidelity prototypes. Three rounds of testing refined every interaction to feel effortless.</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Chapter 3 -->
+     <div class="chapter-node" style="position:relative; padding-bottom:100px;">
+      <div class="milestone-dot" id="dot-2" style="top:20px;"></div>
+      <div class="chapter-card light-sweep" style="width:calc(50% - 50px); margin-left:auto;" data-side="right">
+       <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+        <div style="height:200px; position:relative; overflow:hidden;"><img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&amp;q=80" alt="Development in progress" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentElement.classList.add('img-shimmer');">
+         <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(10,10,20,0.9) 0%, transparent 60%);"></div><span style="position:absolute; bottom:12px; left:16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; opacity:0.5;">CHAPTER 03</span>
+        </div>
+        <div style="padding:24px;">
+         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg><span style="font-size:12px; opacity:0.4; font-family:'Space Mono',monospace;">Week 6-9</span>
+         </div>
+         <h3 style="font-size:22px; font-weight:700; letter-spacing:-0.5px; margin-bottom:8px;">Build &amp; Iterate</h3>
+         <p style="font-size:14px; line-height:1.7; opacity:0.5;">Sprint-based development with weekly demos. Every feature shipped with documentation and quality gates passed.</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Chapter 4 -->
+     <div class="chapter-node" style="position:relative; padding-bottom:100px;">
+      <div class="milestone-dot" id="dot-3" style="top:20px;"></div>
+      <div class="chapter-card light-sweep" style="width:calc(50% - 50px); margin-right:auto;" data-side="left">
+       <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+        <div style="height:200px; position:relative; overflow:hidden;"><img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&amp;q=80" alt="Behind the scenes setup" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentElement.classList.add('img-shimmer');">
+         <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(10,10,20,0.9) 0%, transparent 60%);"></div><span style="position:absolute; bottom:12px; left:16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; opacity:0.5;">CHAPTER 04</span>
+        </div>
+        <div style="padding:24px;">
+         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+           <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+          </svg><span style="font-size:12px; opacity:0.4; font-family:'Space Mono',monospace;">Week 10-11</span>
+         </div>
+         <h3 style="font-size:22px; font-weight:700; letter-spacing:-0.5px; margin-bottom:8px;">Testing &amp; Refinement</h3>
+         <p style="font-size:14px; line-height:1.7; opacity:0.5;">User acceptance testing across devices. Performance optimization brought load times under 1.2 seconds globally.</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Chapter 5 -->
+     <div class="chapter-node" style="position:relative; padding-bottom:40px;">
+      <div class="milestone-dot" id="dot-4" style="top:20px;"></div>
+      <div class="chapter-card light-sweep" style="width:calc(50% - 50px); margin-left:auto;" data-side="right">
+       <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+        <div style="height:200px; position:relative; overflow:hidden;"><img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&amp;q=80" alt="Product launch event" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentElement.classList.add('img-shimmer');">
+         <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(10,10,20,0.9) 0%, transparent 60%);"></div><span style="position:absolute; bottom:12px; left:16px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; opacity:0.5;">CHAPTER 05</span>
+        </div>
+        <div style="padding:24px;">
+         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+           <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" />
+          </svg><span style="font-size:12px; opacity:0.4; font-family:'Space Mono',monospace;">Week 12</span>
+         </div>
+         <h3 style="font-size:22px; font-weight:700; letter-spacing:-0.5px; margin-bottom:8px;">Launch &amp; Handoff</h3>
+         <p style="font-size:14px; line-height:1.7; opacity:0.5;">Coordinated go-live with monitoring dashboards. Full documentation, training sessions, and 30-day support handover.</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Mobile timeline fix -->
+   <style>
+  @media (max-width: 768px) {
+    .chapter-card { width: calc(100% - 56px) !important; margin-left: 56px !important; margin-right: 0 !important; }
+    .chapter-card:nth-child(odd), .chapter-card:nth-child(even) {
+      transform: translateY(60px) translateX(0) !important;
+    }
+    .chapter-card:nth-child(odd).visible, .chapter-card:nth-child(even).visible {
+      transform: translateY(0) translateX(0) !important;
+    }
+  }
+</style><!-- DELIVERABLES -->
+   <section id="deliverables" style="padding:100px 24px; max-width:1100px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:60px;"><span style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.4;">What's Included</span>
+     <h2 style="font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-2px; margin-top:12px;">Deliverables</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+     <div class="deliv-card" style="border-radius:16px; padding:32px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" style="margin-bottom:16px;">
+       <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" />
+      </svg>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">Strategy Document</h3>
+      <p style="font-size:13px; line-height:1.7; opacity:0.45;">Research findings, competitive landscape, and the strategic framework that guided every decision.</p>
+     </div>
+     <div class="deliv-card" style="border-radius:16px; padding:32px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" style="margin-bottom:16px;">
+       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+      </svg>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">Design System</h3>
+      <p style="font-size:13px; line-height:1.7; opacity:0.45;">Component library, typography scale, color tokens, and spacing guidelines for consistent output.</p>
+     </div>
+     <div class="deliv-card" style="border-radius:16px; padding:32px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" style="margin-bottom:16px;">
+       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">Analytics Dashboard</h3>
+      <p style="font-size:13px; line-height:1.7; opacity:0.45;">Real-time metrics, conversion funnels, and custom reports tracking every KPI that matters.</p>
+     </div>
+     <div class="deliv-card" style="border-radius:16px; padding:32px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" style="margin-bottom:16px;">
+       <polyline points="20 6 9 17 4 12" />
+      </svg>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">QA Report</h3>
+      <p style="font-size:13px; line-height:1.7; opacity:0.45;">Full test coverage report, accessibility audit results, and performance benchmarks across all devices.</p>
+     </div>
+    </div>
+   </section><!-- PROOF -->
+   <section id="proof" style="padding:100px 24px; position:relative;">
+    <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.015) 50%, transparent 100%);"></div>
+    <div style="max-width:1100px; margin:0 auto; position:relative; z-index:2;">
+     <div style="text-align:center; margin-bottom:60px;"><span style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.4;">Results</span>
+      <h2 style="font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-2px; margin-top:12px;">Proof of Impact</h2>
+     </div>
+     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:24px;">
+      <div class="proof-card" style="text-align:center; padding:40px 24px; border-radius:16px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+       <div class="counter" data-target="312" style="font-size:48px; font-weight:900; letter-spacing:-2px;">
+        0
+       </div><span style="font-size:13px; opacity:0.4; font-family:'Space Mono',monospace;">% ROI Increase</span>
+      </div>
+      <div class="proof-card" style="text-align:center; padding:40px 24px; border-radius:16px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+       <div class="counter" data-target="47" style="font-size:48px; font-weight:900; letter-spacing:-2px;">
+        0
+       </div><span style="font-size:13px; opacity:0.4; font-family:'Space Mono',monospace;">Deliverables Shipped</span>
+      </div>
+      <div class="proof-card" style="text-align:center; padding:40px 24px; border-radius:16px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+       <div class="counter" data-target="12" style="font-size:48px; font-weight:900; letter-spacing:-2px;">
+        0
+       </div><span style="font-size:13px; opacity:0.4; font-family:'Space Mono',monospace;">Weeks to Launch</span>
+      </div>
+      <div class="proof-card" style="text-align:center; padding:40px 24px; border-radius:16px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
+       <div class="counter" data-target="98" style="font-size:48px; font-weight:900; letter-spacing:-2px;">
+        0
+       </div><span style="font-size:13px; opacity:0.4; font-family:'Space Mono',monospace;">% Satisfaction Score</span>
+      </div>
+     </div>
+    </div>
+   </section><!-- FAQ -->
+   <section id="faq" style="padding:100px 24px; max-width:800px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:60px;"><span style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.4;">Questions</span>
+     <h2 style="font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-2px; margin-top:12px;">FAQ</h2>
+    </div>
+    <div id="faq-list" style="display:flex; flex-direction:column; gap:8px;">
+     <div class="faq-item" style="border:1px solid rgba(255,255,255,0.06); border-radius:12px; overflow:hidden;"><button onclick="toggleFaq(this)" style="width:100%; text-align:left; padding:20px 24px; background:none; border:none; color:inherit; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:600; font-family:'Outfit',sans-serif;"> Who is this template for? 
+       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" style="transition:transform 0.3s;">
+        <polyline points="6 9 12 15 18 9" />
+       </svg></button>
+      <div class="faq-answer" style="padding:0 24px; font-size:14px; line-height:1.7; opacity:0.5;">
+       <p style="padding-bottom:20px;">Agencies, freelancers, and in-house teams who want to showcase project timelines as compelling visual stories for clients and stakeholders.</p>
+      </div>
+     </div>
+     <div class="faq-item" style="border:1px solid rgba(255,255,255,0.06); border-radius:12px; overflow:hidden;"><button onclick="toggleFaq(this)" style="width:100%; text-align:left; padding:20px 24px; background:none; border:none; color:inherit; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:600; font-family:'Outfit',sans-serif;"> Can I customize the chapters? 
+       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" style="transition:transform 0.3s;">
+        <polyline points="6 9 12 15 18 9" />
+       </svg></button>
+      <div class="faq-answer" style="padding:0 24px; font-size:14px; line-height:1.7; opacity:0.5;">
+       <p style="padding-bottom:20px;">Absolutely. Add, remove, or reorder chapters. Replace images, text, and metrics with your own project data. The timeline adapts automatically.</p>
+      </div>
+     </div>
+     <div class="faq-item" style="border:1px solid rgba(255,255,255,0.06); border-radius:12px; overflow:hidden;"><button onclick="toggleFaq(this)" style="width:100%; text-align:left; padding:20px 24px; background:none; border:none; color:inherit; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:600; font-family:'Outfit',sans-serif;"> What license is included? 
+       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" style="transition:transform 0.3s;">
+        <polyline points="6 9 12 15 18 9" />
+       </svg></button>
+      <div class="faq-answer" style="padding:0 24px; font-size:14px; line-height:1.7; opacity:0.5;">
+       <p style="padding-bottom:20px;">A single commercial license allowing unlimited client projects. Use it for your agency or business without additional fees per project.</p>
+      </div>
+     </div>
+     <div class="faq-item" style="border:1px solid rgba(255,255,255,0.06); border-radius:12px; overflow:hidden;"><button onclick="toggleFaq(this)" style="width:100%; text-align:left; padding:20px 24px; background:none; border:none; color:inherit; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:600; font-family:'Outfit',sans-serif;"> Is it mobile responsive? 
+       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" style="transition:transform 0.3s;">
+        <polyline points="6 9 12 15 18 9" />
+       </svg></button>
+      <div class="faq-answer" style="padding:0 24px; font-size:14px; line-height:1.7; opacity:0.5;">
+       <p style="padding-bottom:20px;">Fully responsive. The timeline, cards, and animations adapt seamlessly across desktop, tablet, and mobile viewports.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- BOTTOM CTA -->
+   <section id="get-template" style="padding:120px 24px; text-align:center; position:relative; overflow:hidden;">
+    <div style="position:absolute; inset:0; background-image: radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px); background-size:32px 32px;"></div>
+    <div id="bottom-glow" style="position:absolute; bottom:-100px; left:50%; width:500px; height:500px; border-radius:50%; transform:translateX(-50%); filter:blur(120px); opacity:0.12;"></div>
+    <div style="position:relative; z-index:2; max-width:600px; margin:0 auto;">
+     <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" style="margin-bottom:20px; opacity:0.4;">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" />
+     </svg>
+     <h2 id="bottom-heading" style="font-size:clamp(36px,6vw,64px); font-weight:900; letter-spacing:-2.5px; line-height:1; margin-bottom:20px;">Turn process into persuasion.</h2>
+     <p style="font-size:16px; opacity:0.45; margin-bottom:36px; line-height:1.7;">Get the full template with editable chapters, custom timeline, and commercial license.</p><a href="#" id="bottom-cta-btn" class="cta-pulse" style="display:inline-block; padding:18px 40px; border-radius:60px; font-weight:700; font-size:16px; text-decoration:none; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="event.preventDefault()"> Get Template + License </a>
+    </div>
+   </section><!-- FOOTER -->
+   <footer style="padding:40px 24px; text-align:center; border-top:1px solid rgba(255,255,255,0.04);">
+    <p style="font-family:'Space Mono',monospace; font-size:12px; opacity:0.25;">TimelineKinetic — Make progress feel visible.</p>
+   </footer>
+  </div>
+  <script>
+// ---- CONFIG & SDK ----
+const defaultConfig = {
+  background_color: '#0a0a14',
+  surface_color: '#15152a',
+  text_color: '#e8e8f0',
+  accent_color: '#00e5a0',
+  secondary_action_color: '#2a2a4a',
+  font_family: 'Outfit',
+  font_size: 16,
+  hero_tagline: 'Make progress feel visible.',
+  hero_subhead: 'A one-page story that sells the work.',
+  cta_primary: 'Get Template + License',
+  cta_secondary: 'View Chapters',
+  bottom_cta_text: 'Turn process into persuasion.'
+};
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+function applyConfig(config) {
+  const c = {...defaultConfig, ...config};
+  const wrapper = document.getElementById('app-wrapper');
+  wrapper.style.background = c.background_color;
+  wrapper.style.color = c.text_color;
+  wrapper.style.fontFamily = `${c.font_family}, Outfit, sans-serif`;
+
+  // CSS var for pulse
+  document.documentElement.style.setProperty('--accent-rgb', hexToRgb(c.accent_color));
+
+  // Nav
+  const navAccent = document.getElementById('nav-accent');
+  if (navAccent) navAccent.style.color = c.accent_color;
+
+  // Nav links
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.style.color = c.text_color;
+  });
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.querySelector(':scope')?.style && (l.style.setProperty('--after-bg', c.accent_color));
+  });
+  // Nav link underline color
+  const navStyle = document.getElementById('nav-link-style');
+  if (!navStyle) {
+    const s = document.createElement('style');
+    s.id = 'nav-link-style';
+    document.head.appendChild(s);
+  }
+  document.getElementById('nav-link-style').textContent = `.nav-link::after { background: ${c.accent_color}; }`;
+
+  // Hero glow
+  document.getElementById('hero-glow').style.background = c.accent_color;
+  document.getElementById('bottom-glow').style.background = c.accent_color;
+
+  // Timeline fill
+  document.getElementById('timeline-fill').style.background = `linear-gradient(to bottom, ${c.accent_color}, ${c.accent_color}44)`;
+
+  // Milestone dots
+  document.querySelectorAll('.milestone-dot').forEach(d => {
+    d.style.borderColor = c.accent_color;
+    d.style.background = c.background_color;
+  });
+  document.querySelectorAll('.milestone-dot.active').forEach(d => {
+    d.style.boxShadow = `0 0 20px ${c.accent_color}44`;
+    d.style.background = c.accent_color;
+  });
+
+  // Hero text
+  const heroTitle = document.getElementById('hero-title');
+  if (heroTitle) heroTitle.innerHTML = c.hero_tagline.replace(/(feel|progress)/gi, `<span style="color:${c.accent_color}">$1</span>`).replace(/\./,'.<br>') || c.hero_tagline;
+
+  const heroSub = document.getElementById('hero-sub');
+  if (heroSub) heroSub.textContent = c.hero_subhead;
+
+  // CTAs
+  const ctaPrimary = document.getElementById('hero-cta-primary');
+  if (ctaPrimary) {
+    ctaPrimary.textContent = c.cta_primary;
+    ctaPrimary.style.background = c.accent_color;
+    ctaPrimary.style.color = c.background_color;
+  }
+  const ctaSecondary = document.getElementById('hero-cta-secondary');
+  if (ctaSecondary) {
+    ctaSecondary.textContent = c.cta_secondary;
+    ctaSecondary.style.color = c.text_color;
+  }
+
+  // Bottom CTA
+  const bottomH = document.getElementById('bottom-heading');
+  if (bottomH) bottomH.textContent = c.bottom_cta_text;
+  const bottomBtn = document.getElementById('bottom-cta-btn');
+  if (bottomBtn) {
+    bottomBtn.style.background = c.accent_color;
+    bottomBtn.style.color = c.background_color;
+    bottomBtn.textContent = c.cta_primary;
+  }
+
+  // Proof counters accent
+  document.querySelectorAll('.counter').forEach(el => el.style.color = c.accent_color);
+
+  // Card borders
+  document.querySelectorAll('.deliv-card, .proof-card, .faq-item').forEach(el => {
+    el.style.borderColor = `rgba(255,255,255,0.06)`;
+  });
+
+  // Font size scaling
+  const base = c.font_size || 16;
+  document.querySelectorAll('p').forEach(p => { if (!p.closest('.faq-answer') && !p.closest('footer')) p.style.fontSize = `${base * 0.875}px`; });
+
+  // Nav bg
+  document.getElementById('main-nav').style.background = `rgba(${hexToRgb(c.background_color)},0.85)`;
+}
+
+// Element SDK init
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => { applyConfig(config); },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({background_color:v}); }},
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({surface_color:v}); }},
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({text_color:v}); }},
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({accent_color:v}); }},
+      { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({secondary_action_color:v}); }},
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({font_family:v}); }},
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({font_size:v}); }},
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['hero_tagline', config.hero_tagline || defaultConfig.hero_tagline],
+    ['hero_subhead', config.hero_subhead || defaultConfig.hero_subhead],
+    ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+    ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+    ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text],
+  ])
+});
+
+// ---- SCROLL ANIMATIONS ----
+const wrapper = document.getElementById('app-wrapper');
+
+function onScroll() {
+  const scrollTop = wrapper.scrollTop;
+  const wH = wrapper.clientHeight;
+
+  // Timeline fill
+  const tc = document.getElementById('timeline-container');
+  if (tc) {
+    const tcRect = tc.getBoundingClientRect();
+    const tcTop = tcRect.top;
+    const tcH = tcRect.height;
+    const progress = Math.max(0, Math.min(1, (wH * 0.5 - tcTop) / tcH));
+    document.getElementById('timeline-fill').style.height = (progress * 100) + '%';
+  }
+
+  // Milestone dots
+  document.querySelectorAll('.milestone-dot').forEach(dot => {
+    const r = dot.getBoundingClientRect();
+    const inView = r.top < wH * 0.6;
+    dot.classList.toggle('active', inView);
+    const cfg = window.elementSdk.config || defaultConfig;
+    const accent = cfg.accent_color || defaultConfig.accent_color;
+    if (inView) {
+      dot.style.background = accent;
+      dot.style.boxShadow = `0 0 20px ${accent}44`;
+    } else {
+      dot.style.background = cfg.background_color || defaultConfig.background_color;
+      dot.style.boxShadow = 'none';
+    }
+  });
+
+  // Chapter cards
+  document.querySelectorAll('.chapter-card').forEach(card => {
+    const r = card.getBoundingClientRect();
+    if (r.top < wH * 0.8) card.classList.add('visible');
+  });
+
+  // Deliverable cards
+  document.querySelectorAll('.deliv-card').forEach((card, i) => {
+    const r = card.getBoundingClientRect();
+    if (r.top < wH * 0.85) {
+      setTimeout(() => card.classList.add('visible'), i * 100);
+    }
+  });
+
+  // Proof cards + counter animation
+  document.querySelectorAll('.proof-card').forEach((card, i) => {
+    const r = card.getBoundingClientRect();
+    if (r.top < wH * 0.85 && !card.classList.contains('visible')) {
+      setTimeout(() => {
+        card.classList.add('visible');
+        const counter = card.querySelector('.counter');
+        if (counter && !counter.dataset.animated) {
+          counter.dataset.animated = 'true';
+          animateCounter(counter);
+        }
+      }, i * 150);
+    }
+  });
+}
+
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  let current = 0;
+  const dur = 1500;
+  const start = performance.now();
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / dur, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    current = Math.round(eased * target);
+    el.textContent = current;
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+wrapper.addEventListener('scroll', onScroll, {passive: true});
+setTimeout(onScroll, 100);
+
+// ---- FAQ ----
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const icon = btn.querySelector('svg');
+  const isOpen = answer.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.faq-item button svg').forEach(s => s.style.transform = 'rotate(0)');
+  if (!isOpen) {
+    answer.classList.add('open');
+    icon.style.transform = 'rotate(180deg)';
+  }
+}
+
+// Apply initial config
+applyConfig(defaultConfig);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83a7b574ea155',t:'MTc3NjczMDg4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

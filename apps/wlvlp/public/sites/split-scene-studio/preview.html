@@ -1,1 +1,443 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/b3675e79-9760-4d95-8951-21c5fb7b0585 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplitScene Studio</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=DM+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --text: #f0ece4;
+  --accent: #c8ff00;
+  --accent2: #5a5a5a;
+}
+
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+
+.font-serif { font-family: 'Instrument Serif', serif; }
+
+/* Split line */
+.split-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: var(--accent); z-index: 20; transform: translateX(-50%); }
+.split-line::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 40px; height: 40px; border: 2px solid var(--accent); border-radius: 50%; background: var(--bg); }
+.split-line::after { content: '⇔'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 14px; color: var(--accent); }
+
+/* Glassmorphism */
+.glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+
+/* Reveal animations */
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+.reveal.from-left { transform: translateX(-60px); }
+.reveal.from-right { transform: translateX(60px); }
+.reveal.visible { opacity: 1; transform: translate(0,0); }
+
+/* Photo slow zoom */
+.photo-zoom { transition: transform 8s ease; }
+.photo-zoom.active { transform: scale(1.08); }
+
+/* Pulse CTA */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,255,0,0.3); }
+  50% { box-shadow: 0 0 30px 10px rgba(200,255,0,0.15); }
+}
+.pulse-cta { animation: pulse-glow 3s infinite; }
+
+/* Nav */
+.nav-link { position: relative; }
+.nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px; background: var(--accent); transition: width 0.3s; }
+.nav-link:hover::after { width: 100%; }
+
+/* Sticky nav */
+.sticky-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; transition: background 0.3s, backdrop-filter 0.3s; }
+.sticky-nav.scrolled { background: rgba(10,10,10,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+/* Transformation cards */
+.transform-card { position: relative; overflow: hidden; border-radius: 12px; }
+.transform-card img { width: 100%; height: 100%; object-fit: cover; }
+.transform-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%); }
+
+/* FAQ */
+.faq-item { border-bottom: 1px solid rgba(255,255,255,0.08); }
+.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; }
+.faq-item.open .faq-answer { max-height: 300px; padding-top: 12px; }
+.faq-item .faq-chevron { transition: transform 0.3s; }
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto" id="app-body"><!-- NAV -->
+  <nav class="sticky-nav px-6 py-4" id="main-nav">
+   <div class="max-w-7xl mx-auto flex items-center justify-between"><a href="#home" class="flex items-center gap-2 text-lg font-semibold tracking-tight">
+     <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5">
+      <line x1="14" y1="2" x2="14" y2="26" stroke="var(--accent)" /><rect x="3" y="5" width="9" height="18" rx="2" /><rect x="16" y="5" width="9" height="18" rx="2" />
+     </svg> SplitScene </a>
+    <div class="hidden md:flex items-center gap-8 text-sm font-light tracking-wide"><a href="#home" class="nav-link">Home</a> <a href="#transformations" class="nav-link">Transformations</a> <a href="#method" class="nav-link">Method</a> <a href="#proof" class="nav-link">Proof</a> <a href="#faq" class="nav-link">FAQ</a> <a href="#get-template" class="px-4 py-2 border border-current rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition-all">Get Template</a>
+    </div><button class="md:hidden" id="mobile-toggle"><i data-lucide="menu" style="width:24px;height:24px;"></i></button>
+   </div>
+   <div class="hidden md:hidden flex-col gap-4 pt-4 pb-2 text-sm" id="mobile-menu"><a href="#home" class="py-2">Home</a> <a href="#transformations" class="py-2">Transformations</a> <a href="#method" class="py-2">Method</a> <a href="#proof" class="py-2">Proof</a> <a href="#faq" class="py-2">FAQ</a> <a href="#get-template" class="py-2">Get Template</a>
+   </div>
+  </nav><!-- HERO -->
+  <section id="home" class="relative min-h-screen flex items-center overflow-hidden" style="min-height:100%;"><!-- Split background -->
+   <div class="absolute inset-0 flex">
+    <div class="w-1/2 bg-cover bg-center photo-zoom" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&amp;q=80'); filter:grayscale(1) brightness(0.3);"></div>
+    <div class="w-1/2 bg-cover bg-center photo-zoom" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&amp;q=80'); filter:brightness(0.35);"></div>
+   </div>
+   <div class="split-line"></div><!-- Before/After labels -->
+   <div class="absolute top-24 left-8 z-20 text-xs tracking-[0.3em] uppercase opacity-40 reveal from-left">
+    Before
+   </div>
+   <div class="absolute top-24 right-8 z-20 text-xs tracking-[0.3em] uppercase opacity-40 reveal from-right" style="color:var(--accent);">
+    After
+   </div>
+   <div class="relative z-30 max-w-5xl mx-auto px-6 text-center">
+    <p class="text-xs tracking-[0.4em] uppercase mb-6 reveal" style="color:var(--accent);">SplitScene Studio</p>
+    <h1 class="font-serif text-5xl sm:text-7xl lg:text-8xl leading-none mb-6 reveal" id="hero-title">Two realities. One scroll.</h1>
+    <p class="text-lg sm:text-xl font-light opacity-60 max-w-2xl mx-auto mb-10 reveal" id="hero-subtitle">A conversion layout built for transformation stories.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center reveal"><a href="#get-template" class="pulse-cta px-8 py-4 rounded-full font-semibold text-sm tracking-wide transition-all" style="background:var(--accent);color:#0a0a0a;" id="cta-primary">Get Template + License</a> <a href="#transformations" class="px-8 py-4 rounded-full font-light text-sm tracking-wide border border-white/20 hover:border-white/50 transition-all" id="cta-secondary">See Transformations</a>
+    </div>
+   </div><!-- Scroll indicator -->
+   <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 opacity-40"><span class="text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+    <svg width="16" height="24" viewbox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="1">
+     <rect x="1" y="1" width="14" height="22" rx="7" /><line x1="8" y1="6" x2="8" y2="10" stroke-linecap="round">
+      <animate attributename="y1" values="6;8;6" dur="1.5s" repeatcount="indefinite" />
+      <animate attributename="y2" values="10;12;10" dur="1.5s" repeatcount="indefinite" />
+     </line>
+    </svg>
+   </div>
+  </section><!-- TRANSFORMATIONS -->
+  <section id="transformations" class="py-24 px-6">
+   <div class="max-w-7xl mx-auto">
+    <div class="flex items-center gap-4 mb-4 reveal">
+     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+      <path d="M12 3v18M3 12h18" /><circle cx="12" cy="12" r="9" />
+     </svg><span class="text-xs tracking-[0.3em] uppercase" style="color:var(--accent);">Portfolio</span>
+    </div>
+    <h2 class="font-serif text-4xl sm:text-6xl mb-16 reveal">Transformations</h2>
+    <div class="grid md:grid-cols-2 gap-6"><!-- Card 1 -->
+     <div class="reveal from-left">
+      <div class="relative rounded-xl overflow-hidden" style="aspect-ratio:4/3;">
+       <div class="absolute inset-0 flex">
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&amp;q=80');filter:grayscale(1) brightness(0.5);"></div>
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&amp;q=80');"></div>
+       </div>
+       <div class="absolute top-0 bottom-0 left-1/2 w-px" style="background:var(--accent);"></div>
+       <div class="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/80 to-transparent">
+        <div class="glass inline-block px-3 py-1 rounded-full text-xs mb-2">
+         Interior
+        </div>
+        <h3 class="font-serif text-xl">Modern Living Room</h3>
+       </div>
+      </div>
+     </div><!-- Card 2 -->
+     <div class="reveal from-right">
+      <div class="relative rounded-xl overflow-hidden" style="aspect-ratio:4/3;">
+       <div class="absolute inset-0 flex">
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&amp;q=80');filter:grayscale(1) brightness(0.5);"></div>
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&amp;q=80');"></div>
+       </div>
+       <div class="absolute top-0 bottom-0 left-1/2 w-px" style="background:var(--accent);"></div>
+       <div class="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/80 to-transparent">
+        <div class="glass inline-block px-3 py-1 rounded-full text-xs mb-2">
+         Fitness
+        </div>
+        <h3 class="font-serif text-xl">12-Week Program</h3>
+       </div>
+      </div>
+     </div><!-- Card 3 -->
+     <div class="reveal from-left">
+      <div class="relative rounded-xl overflow-hidden" style="aspect-ratio:4/3;">
+       <div class="absolute inset-0 flex">
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&amp;q=80');filter:grayscale(1) brightness(0.5);"></div>
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&amp;q=80');"></div>
+       </div>
+       <div class="absolute top-0 bottom-0 left-1/2 w-px" style="background:var(--accent);"></div>
+       <div class="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/80 to-transparent">
+        <div class="glass inline-block px-3 py-1 rounded-full text-xs mb-2">
+         Workspace
+        </div>
+        <h3 class="font-serif text-xl">Office Redesign</h3>
+       </div>
+      </div>
+     </div><!-- Card 4 -->
+     <div class="reveal from-right">
+      <div class="relative rounded-xl overflow-hidden" style="aspect-ratio:4/3;">
+       <div class="absolute inset-0 flex">
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&amp;q=80');filter:grayscale(1) brightness(0.5);"></div>
+        <div class="w-1/2 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&amp;q=80');"></div>
+       </div>
+       <div class="absolute top-0 bottom-0 left-1/2 w-px" style="background:var(--accent);"></div>
+       <div class="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/80 to-transparent">
+        <div class="glass inline-block px-3 py-1 rounded-full text-xs mb-2">
+         Beauty
+        </div>
+        <h3 class="font-serif text-xl">Glow-Up Series</h3>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- METHOD -->
+  <section id="method" class="py-24 px-6" style="background:var(--surface);">
+   <div class="max-w-7xl mx-auto">
+    <div class="flex items-center gap-4 mb-4 reveal">
+     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+      <path d="M12 2l3 7h7l-5.5 4.5 2 7L12 16l-6.5 4.5 2-7L2 9h7z" />
+     </svg><span class="text-xs tracking-[0.3em] uppercase" style="color:var(--accent);">How It Works</span>
+    </div>
+    <h2 class="font-serif text-4xl sm:text-6xl mb-16 reveal">The Method</h2>
+    <div class="grid sm:grid-cols-3 gap-8">
+     <div class="glass rounded-2xl p-8 reveal from-left" style="animation-delay:0.1s;">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center mb-6" style="background:var(--accent);color:#0a0a0a;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+       </svg>
+      </div>
+      <h3 class="font-serif text-2xl mb-3">Split Layout</h3>
+      <p class="text-sm font-light opacity-60 leading-relaxed">Side-by-side comparison with a clean divider. The eye naturally compares both halves.</p>
+     </div>
+     <div class="glass rounded-2xl p-8 reveal" style="animation-delay:0.2s;">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center mb-6" style="background:var(--accent);color:#0a0a0a;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7" />
+       </svg>
+      </div>
+      <h3 class="font-serif text-2xl mb-3">Scroll Reveal</h3>
+      <p class="text-sm font-light opacity-60 leading-relaxed">Staggered animations create drama. Each section transforms as it enters view.</p>
+     </div>
+     <div class="glass rounded-2xl p-8 reveal from-right" style="animation-delay:0.3s;">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center mb-6" style="background:var(--accent);color:#0a0a0a;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12" />
+       </svg>
+      </div>
+      <h3 class="font-serif text-2xl mb-3">Convert</h3>
+      <p class="text-sm font-light opacity-60 leading-relaxed">Proof drives action. Results speak and visitors become clients.</p>
+     </div>
+    </div>
+   </div>
+  </section><!-- PROOF -->
+  <section id="proof" class="py-24 px-6">
+   <div class="max-w-7xl mx-auto">
+    <div class="flex items-center gap-4 mb-4 reveal">
+     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+     </svg><span class="text-xs tracking-[0.3em] uppercase" style="color:var(--accent);">Results</span>
+    </div>
+    <h2 class="font-serif text-4xl sm:text-6xl mb-16 reveal">Proof</h2>
+    <div class="grid sm:grid-cols-4 gap-6 mb-16">
+     <div class="glass rounded-2xl p-6 text-center reveal" style="animation-delay:0s;">
+      <p class="font-serif text-4xl mb-1" style="color:var(--accent);">3.2x</p>
+      <p class="text-xs tracking-wider uppercase opacity-50">More engagement</p>
+     </div>
+     <div class="glass rounded-2xl p-6 text-center reveal" style="animation-delay:0.1s;">
+      <p class="font-serif text-4xl mb-1" style="color:var(--accent);">89%</p>
+      <p class="text-xs tracking-wider uppercase opacity-50">Scroll completion</p>
+     </div>
+     <div class="glass rounded-2xl p-6 text-center reveal" style="animation-delay:0.2s;">
+      <p class="font-serif text-4xl mb-1" style="color:var(--accent);">47s</p>
+      <p class="text-xs tracking-wider uppercase opacity-50">Avg. time on page</p>
+     </div>
+     <div class="glass rounded-2xl p-6 text-center reveal" style="animation-delay:0.3s;">
+      <p class="font-serif text-4xl mb-1" style="color:var(--accent);">2.8x</p>
+      <p class="text-xs tracking-wider uppercase opacity-50">Conversion lift</p>
+     </div>
+    </div><!-- Testimonials -->
+    <div class="grid md:grid-cols-2 gap-6">
+     <div class="glass rounded-2xl p-8 reveal from-left">
+      <p class="font-light opacity-70 leading-relaxed mb-6">"Our renovation portfolio went from boring grid to jaw-dropping. Inquiries doubled in the first month."</p>
+      <div class="flex items-center gap-3">
+       <div class="w-10 h-10 rounded-full" style="background:var(--accent);"></div>
+       <div>
+        <p class="text-sm font-medium">Sarah Chen</p>
+        <p class="text-xs opacity-40">Interior Studio</p>
+       </div>
+      </div>
+     </div>
+     <div class="glass rounded-2xl p-8 reveal from-right">
+      <p class="font-light opacity-70 leading-relaxed mb-6">"The split layout tells the story for us. Clients see results instantly and book without hesitation."</p>
+      <div class="flex items-center gap-3">
+       <div class="w-10 h-10 rounded-full" style="background:var(--accent);"></div>
+       <div>
+        <p class="text-sm font-medium">Marcus Rivera</p>
+        <p class="text-xs opacity-40">Fitness Coach</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- FAQ -->
+  <section id="faq" class="py-24 px-6" style="background:var(--surface);">
+   <div class="max-w-3xl mx-auto">
+    <h2 class="font-serif text-4xl sm:text-6xl mb-16 text-center reveal">FAQ</h2>
+    <div id="faq-list">
+     <div class="faq-item py-5 reveal"><button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)"> <span class="font-medium">What do I get with the template?</span> <i data-lucide="chevron-down" class="faq-chevron" style="width:18px;height:18px;flex-shrink:0;"></i> </button>
+      <div class="faq-answer text-sm font-light opacity-60 leading-relaxed">
+       A fully responsive split-screen layout with scroll animations, glassmorphism cards, before/after sections, and all the design tokens you need.
+      </div>
+     </div>
+     <div class="faq-item py-5 reveal"><button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)"> <span class="font-medium">Can I customize the colors and fonts?</span> <i data-lucide="chevron-down" class="faq-chevron" style="width:18px;height:18px;flex-shrink:0;"></i> </button>
+      <div class="faq-answer text-sm font-light opacity-60 leading-relaxed">
+       Absolutely. Everything is built with CSS variables and clean structure so you can make it your own in minutes.
+      </div>
+     </div>
+     <div class="faq-item py-5 reveal"><button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)"> <span class="font-medium">What niches does this work for?</span> <i data-lucide="chevron-down" class="faq-chevron" style="width:18px;height:18px;flex-shrink:0;"></i> </button>
+      <div class="faq-answer text-sm font-light opacity-60 leading-relaxed">
+       Interior design, fitness coaching, beauty transformations, renovations, workspace makeovers — any story with a before and after.
+      </div>
+     </div>
+     <div class="faq-item py-5 reveal"><button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)"> <span class="font-medium">Is this mobile-friendly?</span> <i data-lucide="chevron-down" class="faq-chevron" style="width:18px;height:18px;flex-shrink:0;"></i> </button>
+      <div class="faq-answer text-sm font-light opacity-60 leading-relaxed">
+       Yes. The split layout gracefully adapts on smaller screens while keeping the visual impact intact.
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- BOTTOM CTA -->
+  <section id="get-template" class="py-32 px-6 relative overflow-hidden">
+   <div class="absolute inset-0 flex">
+    <div class="w-1/2" style="background:linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);"></div>
+    <div class="w-1/2" style="background:linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);"></div>
+   </div>
+   <div class="absolute top-0 bottom-0 left-1/2 w-px" style="background:var(--accent); opacity:0.3;"></div>
+   <div class="relative z-10 max-w-3xl mx-auto text-center">
+    <h2 class="font-serif text-4xl sm:text-6xl lg:text-7xl mb-8 reveal" id="bottom-cta-text">Make results impossible to ignore.</h2>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center reveal"><a href="#" class="pulse-cta px-10 py-5 rounded-full font-semibold tracking-wide transition-all" style="background:var(--accent);color:#0a0a0a;" id="bottom-cta-btn">Get Template + License</a>
+    </div>
+   </div>
+  </section><!-- FOOTER -->
+  <footer class="py-12 px-6 border-t border-white/5">
+   <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+    <p class="text-xs opacity-30">SplitScene Studio</p>
+    <p class="text-xs opacity-30">Two realities. One scroll.</p>
+   </div>
+  </footer>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: "Two realities. One scroll.",
+  hero_subtitle: "A conversion layout built for transformation stories.",
+  cta_primary: "Get Template + License",
+  cta_secondary: "See Transformations",
+  bottom_cta_text: "Make results impossible to ignore.",
+  background_color: "#0a0a0a",
+  surface_color: "#161616",
+  text_color: "#f0ece4",
+  accent_color: "#c8ff00",
+  secondary_color: "#5a5a5a",
+  font_family: "Instrument Serif",
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = Object.assign({}, defaultConfig, config);
+
+  // Colors
+  document.documentElement.style.setProperty('--bg', c.background_color);
+  document.documentElement.style.setProperty('--surface', c.surface_color);
+  document.documentElement.style.setProperty('--text', c.text_color);
+  document.documentElement.style.setProperty('--accent', c.accent_color);
+  document.documentElement.style.setProperty('--accent2', c.secondary_color);
+  document.body.style.color = c.text_color;
+  document.body.style.background = c.background_color;
+
+  // Font
+  const serifStack = `${c.font_family}, 'Instrument Serif', Georgia, serif`;
+  document.querySelectorAll('.font-serif').forEach(el => el.style.fontFamily = serifStack);
+
+  // Font size
+  const base = c.font_size;
+  const heroTitle = document.getElementById('hero-title');
+  if (heroTitle) { heroTitle.textContent = c.hero_title; heroTitle.style.fontSize = `clamp(${base*2.5}px, 8vw, ${base*5}px)`; }
+  const heroSub = document.getElementById('hero-subtitle');
+  if (heroSub) { heroSub.textContent = c.hero_subtitle; heroSub.style.fontSize = `${base * 1.2}px`; }
+  const ctaP = document.getElementById('cta-primary');
+  if (ctaP) { ctaP.textContent = c.cta_primary; ctaP.style.fontSize = `${base * 0.875}px`; }
+  const ctaS = document.getElementById('cta-secondary');
+  if (ctaS) { ctaS.textContent = c.cta_secondary; ctaS.style.fontSize = `${base * 0.875}px`; }
+  const bottomH = document.getElementById('bottom-cta-text');
+  if (bottomH) { bottomH.textContent = c.bottom_cta_text; }
+  const bottomBtn = document.getElementById('bottom-cta-btn');
+  if (bottomBtn) { bottomBtn.textContent = c.cta_primary; }
+}
+
+// Element SDK
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.secondary_color || defaultConfig.secondary_color, set: v => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ["hero_title", config.hero_title || defaultConfig.hero_title],
+    ["hero_subtitle", config.hero_subtitle || defaultConfig.hero_subtitle],
+    ["cta_primary", config.cta_primary || defaultConfig.cta_primary],
+    ["cta_secondary", config.cta_secondary || defaultConfig.cta_secondary],
+    ["bottom_cta_text", config.bottom_cta_text || defaultConfig.bottom_cta_text]
+  ])
+});
+
+// FAQ toggle
+function toggleFaq(btn) {
+  btn.closest('.faq-item').classList.toggle('open');
+}
+
+// Mobile menu
+document.getElementById('mobile-toggle').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      if (e.target.classList.contains('photo-zoom')) e.target.classList.add('active');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal, .photo-zoom').forEach(el => observer.observe(el));
+
+// Nav scroll
+const appBody = document.getElementById('app-body');
+appBody.addEventListener('scroll', () => {
+  document.getElementById('main-nav').classList.toggle('scrolled', appBody.scrollTop > 50);
+});
+
+// Smooth scroll for anchors
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('mobile-menu').classList.add('hidden');
+  });
+});
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef83818b4c0a155',t:'MTc3NjczMDc4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
