@@ -4847,10 +4847,19 @@ const ROUTES = [
                      (purchase_id, account_id, slug, acquisition_type, monthly_price, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at, tier, purchased_at, hosting_expires_at, stripe_session_id)
                      VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?)`
                   ).bind(
-                    purchaseId, wlvlpAccountId, slug, acquisitionType,
+                    purchaseId,
+                    wlvlpAccountId ?? null,
+                    slug ?? null,
+                    acquisitionType ?? 'purchase',
                     Math.round((obj.amount_total || 0) / 100),
-                    obj.customer, obj.subscription || null,
-                    purchasedAt, purchasedAt, tier, purchasedAt, hostingExpiresAt, obj.id
+                    obj.customer ?? null,
+                    obj.subscription ?? null,
+                    purchasedAt,
+                    purchasedAt,
+                    tier ?? null,
+                    purchasedAt,
+                    hostingExpiresAt ?? null,
+                    obj.id ?? null
                   ).run();
                 } catch (e) {
                   console.error('WLVLP purchase INSERT failed:', e?.message, { slug, account: wlvlpAccountId, session: obj.id });
@@ -18133,7 +18142,7 @@ TTMP Support Team
         return json({ ok: true }, 200, request);
       } catch (e) {
         console.error('WLVLP webhook error:', e?.message, e?.stack);
-        return json({ ok: false, error: 'WEBHOOK_ERROR', detail: e?.message }, 500, request);
+        return json({ ok: false, error: 'WEBHOOK_ERROR' }, 500, request);
       }
     },
   },
