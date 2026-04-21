@@ -414,17 +414,59 @@ export function updateConfig(slug: string, config: Record<string, string>): Prom
   });
 }
 
+export interface SiteDataResponse {
+  ok: boolean;
+  fields: Record<string, string>;
+  error?: string;
+}
+
+export async function getSiteData(slug: string): Promise<SiteDataResponse> {
+  const res = await fetch(`${API_BASE}/v1/wlvlp/sites/${slug}/data`, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data?.error ?? `HTTP ${res.status}`) as Error & { status?: number; code?: string };
+    err.status = res.status;
+    err.code = data?.error;
+    throw err;
+  }
+  return { ok: true, fields: data?.fields ?? {} };
+}
+
+export async function saveSiteData(
+  slug: string,
+  fields: Record<string, string>
+): Promise<{ ok: boolean }> {
+  const res = await fetch(`${API_BASE}/v1/wlvlp/sites/${slug}/data`, {
+    credentials: 'include',
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data?.error ?? `HTTP ${res.status}`) as Error & { status?: number; code?: string };
+    err.status = res.status;
+    err.code = data?.error;
+    throw err;
+  }
+  return { ok: true };
+}
+
 export async function uploadLogo(slug: string, file: File): Promise<{ url: string }> {
   const form = new FormData();
-  form.append('logo', file);
+  form.append('file', file);
   form.append('slug', slug);
   const res = await fetch(`${API_BASE}/v1/wlvlp/upload-logo`, {
     credentials: 'include',
     method: 'POST',
     body: form,
   });
-  if (!res.ok) throw new Error(`uploadLogo → ${res.status}`);
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error ?? `uploadLogo → ${res.status}`);
+  return { url: data.logo_url ?? data.url };
 }
 
 export function logout(): Promise<{ ok: boolean }> {
