@@ -44,6 +44,7 @@ export interface Template {
   slug: string;
   title: string;
   category: string;
+  categories?: string[];
   description?: string;
   status: 'available' | 'auction' | 'sold';
   thumbnail_url?: string;
@@ -154,6 +155,7 @@ export function getTemplatesFromCatalog(): Template[] {
         slug: s.slug,
         title: s.title,
         category: CATEGORY_MAP[primary] ?? 'other',
+        categories: s.categories ?? [],
         status: (s.status as Template['status']) ?? 'available',
         vote_count: 0,
         price_monthly: 0,
@@ -179,6 +181,7 @@ export async function getTemplatesWithFallback(): Promise<Template[]> {
       if (!live) return t;
       return {
         ...t,
+        categories: t.categories ?? live.categories ?? [],
         status: live.status ?? t.status,
         vote_count: live.vote_count ?? t.vote_count,
         bid_count: live.bid_count ?? 0,

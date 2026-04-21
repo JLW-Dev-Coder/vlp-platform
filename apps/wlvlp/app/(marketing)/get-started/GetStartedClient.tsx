@@ -62,6 +62,23 @@ const LABEL_BY_KEY: Record<BusinessKey, string> = BUSINESS_TYPES.reduce(
   {} as Record<BusinessKey, string>,
 );
 
+const BUSINESS_TO_CATEGORIES: Record<BusinessKey, string[]> = {
+  service: ['Services'],
+  finance: ['Services'],
+  local: ['Services', 'Food', 'Beauty', 'Hair'],
+  ecommerce: ['Art'],
+  creative: ['Art', 'Photography'],
+  tech: ['Tech', 'Trending'],
+  realestate: ['Home'],
+  general: [],
+};
+
+function matchesBusiness(entry: TemplateEntry, key: BusinessKey): boolean {
+  const cats = BUSINESS_TO_CATEGORIES[key];
+  if (!cats.length) return true;
+  return entry.categories.some(c => cats.includes(c));
+}
+
 export default function GetStartedClient() {
   const [selected, setSelected] = useState<BusinessKey | null>(null);
   const [showResponse, setShowResponse] = useState(false);
@@ -80,10 +97,10 @@ export default function GetStartedClient() {
   }, [selected]);
 
   const recommended: TemplateEntry[] = selected
-    ? TEMPLATES.filter(t => t.category === selected).slice(0, 9)
+    ? TEMPLATES.filter(t => matchesBusiness(t, selected)).slice(0, 9)
     : [];
   const totalForCategory = selected
-    ? TEMPLATES.filter(t => t.category === selected).length
+    ? TEMPLATES.filter(t => matchesBusiness(t, selected)).length
     : 0;
 
   const handleSelect = (key: BusinessKey) => {

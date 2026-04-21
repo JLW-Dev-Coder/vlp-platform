@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const entry = TEMPLATES.find(t => t.slug === slug);
   const title = entry?.title ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  const category = entry ? getCategoryLabel(entry.category) : 'business';
+  const category = entry ? getCategoryLabel(entry.categories) : 'business';
 
   return {
     title: `${title} — Professional Website Template | Website Lotto`,

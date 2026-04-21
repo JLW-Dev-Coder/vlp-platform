@@ -1,1 +1,605 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/ba304952-d3d0-48ad-86a4-be254b176908 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuroraGlass Panels</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&amp;family=Syne:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+  html, body { height: 100%; margin: 0; }
+
+  @keyframes auroraDrift {
+    0% { background-position: 0% 50%; }
+    25% { background-position: 100% 25%; }
+    50% { background-position: 50% 100%; }
+    75% { background-position: 0% 75%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes shineSweep {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(400%) skewX(-15deg); }
+  }
+
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(60px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(120, 220, 255, 0.15), 0 0 60px rgba(160, 100, 255, 0.08); }
+    50% { box-shadow: 0 0 30px rgba(120, 220, 255, 0.3), 0 0 80px rgba(160, 100, 255, 0.15); }
+  }
+
+  @keyframes gentleFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .aurora-bg {
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2a 20%, #1a0a2e 40%, #0a1628 60%, #0d0d20 80%, #0a0a1a 100%);
+    background-size: 400% 400%;
+    animation: auroraDrift 20s ease infinite;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-4px);
+  }
+
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    animation: shineSweep 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .glass-card:nth-child(2)::after { animation-delay: 1s; }
+  .glass-card:nth-child(3)::after { animation-delay: 2s; }
+  .glass-card:nth-child(4)::after { animation-delay: 0.5s; }
+
+  .reveal { opacity: 0; transform: translateY(60px) scale(0.95); }
+  .reveal.visible { animation: floatIn 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+
+  .aurora-text {
+    background: linear-gradient(135deg, #78dcff, #a064ff, #ff6ec7, #78dcff);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: auroraDrift 8s ease infinite;
+  }
+
+  .aurora-border {
+    position: relative;
+  }
+  .aurora-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 14px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(120,220,255,0.4), rgba(160,100,255,0.4), rgba(255,110,199,0.4));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .cta-primary {
+    animation: pulseGlow 3s ease-in-out infinite;
+    transition: all 0.4s ease;
+  }
+  .cta-primary:hover {
+    transform: scale(1.04);
+  }
+
+  .nav-glass {
+    background: rgba(10, 10, 26, 0.7);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .star-field {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .star-field span {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+  }
+
+  .img-wrapper {
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  .img-wrapper img {
+    transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .img-wrapper:hover img {
+    transform: scale(1.05);
+  }
+
+  .review-card { animation: gentleFloat 6s ease-in-out infinite; }
+  .review-card:nth-child(2) { animation-delay: 1s; }
+  .review-card:nth-child(3) { animation-delay: 2s; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(0,0,0,0); }
+  ::-webkit-scrollbar-thumb { background: rgba(120,220,255,0.2); border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="aurora-bg h-full overflow-auto text-white" style="font-family: 'Outfit', sans-serif;">
+   <!-- Star field background -->
+   <div class="star-field" id="starField"></div><!-- Sticky Nav -->
+   <nav class="nav-glass fixed top-0 left-0 w-full z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+     <a href="#home" class="aurora-text text-xl font-bold tracking-wider" style="font-family: 'Syne', sans-serif;">AURORAGLASS</a>
+     <div class="hidden md:flex items-center gap-8">
+      <a href="#home" class="text-white/50 hover:text-white transition-colors text-sm tracking-widest uppercase">Home</a> <a href="#panels" class="text-white/50 hover:text-white transition-colors text-sm tracking-widest uppercase">Panels</a> <a href="#collection" class="text-white/50 hover:text-white transition-colors text-sm tracking-widest uppercase">Collection</a> <a href="#details" class="text-white/50 hover:text-white transition-colors text-sm tracking-widest uppercase">Details</a> <a href="#reviews" class="text-white/50 hover:text-white transition-colors text-sm tracking-widest uppercase">Reviews</a> <a href="#buy" class="text-white/50 hover:text-white transition-colors text-sm tracking-widest uppercase">Buy</a>
+     </div><button id="mobileMenuBtn" class="md:hidden text-white/60" aria-label="Menu"> <i data-lucide="menu" style="width:24px;height:24px;"></i> </button>
+    </div><!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3">
+     <a href="#home" class="text-white/50 hover:text-white text-sm tracking-widest uppercase">Home</a> <a href="#panels" class="text-white/50 hover:text-white text-sm tracking-widest uppercase">Panels</a> <a href="#collection" class="text-white/50 hover:text-white text-sm tracking-widest uppercase">Collection</a> <a href="#details" class="text-white/50 hover:text-white text-sm tracking-widest uppercase">Details</a> <a href="#reviews" class="text-white/50 hover:text-white text-sm tracking-widest uppercase">Reviews</a> <a href="#buy" class="text-white/50 hover:text-white text-sm tracking-widest uppercase">Buy</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+    <div class="relative z-10 text-center max-w-4xl mx-auto">
+     <div class="reveal" style="animation-delay: 0.1s;">
+      <p class="text-white/30 text-sm tracking-[0.4em] uppercase mb-6">Premium Experience</p>
+     </div>
+     <h1 id="heroTitle" class="reveal aurora-text text-5xl sm:text-7xl lg:text-8xl font-bold leading-[1.05] mb-8" style="font-family: 'Syne', sans-serif; animation-delay: 0.3s;">A page made of light.</h1>
+     <p id="heroSubtitle" class="reveal text-white/40 text-lg sm:text-xl max-w-xl mx-auto mb-12 font-light leading-relaxed" style="animation-delay: 0.5s;">Glass panels that make products feel premium.</p>
+     <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4" style="animation-delay: 0.7s;">
+      <a href="#collection" id="ctaPrimary" class="cta-primary aurora-border px-8 py-4 rounded-xl bg-white/5 text-white font-medium tracking-wider text-sm uppercase flex items-center gap-3">
+       <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+       </svg> Shop Collection </a> <a href="#panels" id="ctaSecondary" class="px-8 py-4 rounded-xl border border-white/10 text-white/50 hover:text-white hover:border-white/25 transition-all font-medium tracking-wider text-sm uppercase flex items-center gap-3">
+       <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+       </svg> See Panels </a>
+     </div>
+    </div><!-- Decorative aurora orbs -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+   </section><!-- PANELS -->
+   <section id="panels" class="relative px-6 py-24">
+    <div class="max-w-7xl mx-auto">
+     <div class="reveal text-center mb-16">
+      <p class="text-white/25 text-xs tracking-[0.5em] uppercase mb-4">Crafted with precision</p>
+      <h2 class="text-4xl sm:text-5xl font-bold aurora-text" style="font-family: 'Syne', sans-serif;">Glass Panels</h2>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Panel 1 -->
+      <div class="glass-card reveal p-8 flex flex-col items-center text-center" style="animation-delay: 0.2s;">
+       <div class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center mb-6">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="rgba(120,220,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />
+        </svg>
+       </div>
+       <div class="img-wrapper w-full h-44 mb-6">
+        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&amp;q=80" alt="Modern luxury interior" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#0d1b2a)';this.alt='Image unavailable';">
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Refracted Light</h3>
+       <p class="text-white/30 text-sm leading-relaxed">Multi-layered glass diffusion creates depth that flat design cannot achieve.</p>
+      </div><!-- Panel 2 -->
+      <div class="glass-card reveal p-8 flex flex-col items-center text-center" style="animation-delay: 0.4s;">
+       <div class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center mb-6">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="rgba(160,100,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+       </div>
+       <div class="img-wrapper w-full h-44 mb-6">
+        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&amp;q=80" alt="Neon gradient light" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#0d1b2a)';this.alt='Image unavailable';">
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Aurora Glow</h3>
+       <p class="text-white/30 text-sm leading-relaxed">Ambient gradients that shift and breathe, guiding the eye naturally.</p>
+      </div><!-- Panel 3 -->
+      <div class="glass-card reveal p-8 flex flex-col items-center text-center" style="animation-delay: 0.6s;">
+       <div class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center mb-6">
+        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="rgba(255,110,199,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+       </div>
+       <div class="img-wrapper w-full h-44 mb-6">
+        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&amp;q=80" alt="Clean desk setup" class="w-full h-full object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#0d1b2a)';this.alt='Image unavailable';">
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Edge Clarity</h3>
+       <p class="text-white/30 text-sm leading-relaxed">Pixel-perfect borders with variable opacity for maximum sophistication.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- COLLECTION -->
+   <section id="collection" class="relative px-6 py-24">
+    <div class="max-w-7xl mx-auto">
+     <div class="reveal text-center mb-16">
+      <p class="text-white/25 text-xs tracking-[0.5em] uppercase mb-4">Curated selection</p>
+      <h2 id="collectionTitle" class="text-4xl sm:text-5xl font-bold aurora-text" style="font-family: 'Syne', sans-serif;">The Collection</h2>
+     </div>
+     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="glass-card reveal group cursor-pointer" style="animation-delay: 0.15s;">
+       <div class="img-wrapper rounded-b-none" style="border-radius: 20px 20px 0 0;">
+        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&amp;q=80" alt="Product 1" class="w-full h-52 object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#0d1b2a)';this.alt='Image unavailable';">
+       </div>
+       <div class="p-5">
+        <div class="flex items-center justify-between mb-2">
+         <h4 class="font-medium text-sm">Prism Panel</h4>
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="rgba(120,220,255,0.5)" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+         </svg>
+        </div>
+        <p class="text-white/25 text-xs mb-3">Frosted glass diffusion</p>
+        <p class="aurora-text text-sm font-semibold">$249</p>
+       </div>
+      </div>
+      <div class="glass-card reveal group cursor-pointer" style="animation-delay: 0.3s;">
+       <div class="img-wrapper rounded-b-none" style="border-radius: 20px 20px 0 0;">
+        <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=500&amp;q=80" alt="Product 2" class="w-full h-52 object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#0d1b2a)';this.alt='Image unavailable';">
+       </div>
+       <div class="p-5">
+        <div class="flex items-center justify-between mb-2">
+         <h4 class="font-medium text-sm">Haze Layer</h4>
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="rgba(160,100,255,0.5)" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+         </svg>
+        </div>
+        <p class="text-white/25 text-xs mb-3">Ambient blur coating</p>
+        <p class="aurora-text text-sm font-semibold">$189</p>
+       </div>
+      </div>
+      <div class="glass-card reveal group cursor-pointer" style="animation-delay: 0.45s;">
+       <div class="img-wrapper rounded-b-none" style="border-radius: 20px 20px 0 0;">
+        <img src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=500&amp;q=80" alt="Product 3" class="w-full h-52 object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#0d1b2a)';this.alt='Image unavailable';">
+       </div>
+       <div class="p-5">
+        <div class="flex items-center justify-between mb-2">
+         <h4 class="font-medium text-sm">Spectrum Edge</h4>
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="rgba(255,110,199,0.5)" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+         </svg>
+        </div>
+        <p class="text-white/25 text-xs mb-3">Full-spectrum refraction</p>
+        <p class="aurora-text text-sm font-semibold">$329</p>
+       </div>
+      </div>
+      <div class="glass-card reveal group cursor-pointer" style="animation-delay: 0.6s;">
+       <div class="img-wrapper rounded-b-none" style="border-radius: 20px 20px 0 0;">
+        <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&amp;q=80" alt="Product 4" class="w-full h-52 object-cover" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#0d1b2a)';this.alt='Image unavailable';">
+       </div>
+       <div class="p-5">
+        <div class="flex items-center justify-between mb-2">
+         <h4 class="font-medium text-sm">Void Mirror</h4>
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="rgba(120,220,255,0.5)" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+         </svg>
+        </div>
+        <p class="text-white/25 text-xs mb-3">Deep reflection core</p>
+        <p class="aurora-text text-sm font-semibold">$399</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DETAILS -->
+   <section id="details" class="relative px-6 py-24">
+    <div class="max-w-6xl mx-auto">
+     <div class="reveal text-center mb-16">
+      <p class="text-white/25 text-xs tracking-[0.5em] uppercase mb-4">Why AuroraGlass</p>
+      <h2 class="text-4xl sm:text-5xl font-bold aurora-text" style="font-family: 'Syne', sans-serif;">The Details</h2>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="glass-card reveal p-10 flex gap-6" style="animation-delay: 0.15s;">
+       <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="rgba(120,220,255,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+       </div>
+       <div>
+        <h3 class="font-semibold mb-2">Tamper-Proof Glass</h3>
+        <p class="text-white/30 text-sm leading-relaxed">Military-grade borosilicate with anti-shatter coating. Built to endure.</p>
+       </div>
+      </div>
+      <div class="glass-card reveal p-10 flex gap-6" style="animation-delay: 0.3s;">
+       <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="rgba(160,100,255,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+        </svg>
+       </div>
+       <div>
+        <h3 class="font-semibold mb-2">Modular System</h3>
+        <p class="text-white/30 text-sm leading-relaxed">Snap-connect architecture lets you combine panels in infinite configurations.</p>
+       </div>
+      </div>
+      <div class="glass-card reveal p-10 flex gap-6" style="animation-delay: 0.45s;">
+       <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="rgba(255,110,199,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+       </div>
+       <div>
+        <h3 class="font-semibold mb-2">Adaptive Glow</h3>
+        <p class="text-white/30 text-sm leading-relaxed">Ambient sensors adjust luminosity based on surrounding light conditions.</p>
+       </div>
+      </div>
+      <div class="glass-card reveal p-10 flex gap-6" style="animation-delay: 0.6s;">
+       <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+        <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="rgba(120,220,255,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+        </svg>
+       </div>
+       <div>
+        <h3 class="font-semibold mb-2">Zero-Lag Rendering</h3>
+        <p class="text-white/30 text-sm leading-relaxed">Hardware-accelerated effects run at 120fps. No compromises.</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="relative px-6 py-24">
+    <div class="max-w-5xl mx-auto">
+     <div class="reveal text-center mb-16">
+      <p class="text-white/25 text-xs tracking-[0.5em] uppercase mb-4">Trusted worldwide</p>
+      <h2 class="text-4xl sm:text-5xl font-bold aurora-text" style="font-family: 'Syne', sans-serif;">Reviews</h2>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="glass-card review-card reveal p-8" style="animation-delay: 0.15s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(120,220,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(120,220,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(120,220,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(120,220,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(120,220,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="text-white/40 text-sm leading-relaxed mb-6">"The glass panels transformed our product showcase. Clients immediately perceive premium quality."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400/30 to-purple-400/30"></div>
+        <div>
+         <p class="text-xs font-medium">Elena Voss</p>
+         <p class="text-white/20 text-xs">Creative Director, Lume Studio</p>
+        </div>
+       </div>
+      </div>
+      <div class="glass-card review-card reveal p-8" style="animation-delay: 0.3s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(160,100,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(160,100,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(160,100,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(160,100,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(160,100,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="text-white/40 text-sm leading-relaxed mb-6">"Nothing else on the market comes close. The aurora effect is genuinely mesmerizing."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400/30 to-pink-400/30"></div>
+        <div>
+         <p class="text-xs font-medium">Marcus Hale</p>
+         <p class="text-white/20 text-xs">Head of Design, Apex Digital</p>
+        </div>
+       </div>
+      </div>
+      <div class="glass-card review-card reveal p-8" style="animation-delay: 0.45s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(255,110,199,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(255,110,199,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(255,110,199,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(255,110,199,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="rgba(255,110,199,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="text-white/40 text-sm leading-relaxed mb-6">"Our conversion rate jumped 34% after switching to AuroraGlass. The glow literally sells."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400/30 to-cyan-400/30"></div>
+        <div>
+         <p class="text-xs font-medium">Suki Tanaka</p>
+         <p class="text-white/20 text-xs">Founder, Nocturn Commerce</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- BUY / BOTTOM CTA -->
+   <section id="buy" class="relative px-6 py-32">
+    <div class="max-w-3xl mx-auto text-center">
+     <div class="reveal">
+      <h2 id="bottomCtaText" class="text-4xl sm:text-6xl font-bold aurora-text mb-8" style="font-family: 'Syne', sans-serif;">Let the glow do the selling.</h2>
+      <p class="text-white/30 text-lg mb-12 font-light">Start with a single panel. Scale to infinity.</p><a href="#collection" class="cta-primary aurora-border inline-flex items-center gap-3 px-10 py-5 rounded-xl bg-white/5 text-white font-medium tracking-wider text-sm uppercase">
+       <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+       </svg> Shop Now 
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+       </svg></a>
+     </div>
+    </div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-pink-500/5 rounded-full blur-3xl pointer-events-none"></div>
+   </section><!-- Footer -->
+   <footer class="border-t border-white/5 px-6 py-10">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+     <p class="aurora-text text-sm font-bold tracking-wider" style="font-family: 'Syne', sans-serif;">AURORAGLASS</p>
+     <p class="text-white/20 text-xs">© 2025 AuroraGlass Panels. All rights reserved.</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+  // Default config
+  const defaultConfig = {
+    background_color: '#0a0a1a',
+    surface_color: 'rgba(255,255,255,0.04)',
+    text_color: '#ffffff',
+    primary_action_color: '#78dcff',
+    secondary_action_color: '#a064ff',
+    font_family: 'Syne',
+    font_size: 16,
+    hero_title: 'A page made of light.',
+    hero_subtitle: 'Glass panels that make products feel premium.',
+    cta_primary: 'Shop Collection',
+    cta_secondary: 'See Panels',
+    collection_title: 'The Collection',
+    bottom_cta_text: 'Let the glow do the selling.'
+  };
+
+  // Element SDK init
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => {
+      const c = { ...defaultConfig, ...config };
+      const app = document.getElementById('app');
+
+      // Text updates
+      document.getElementById('heroTitle').textContent = c.hero_title;
+      document.getElementById('heroSubtitle').textContent = c.hero_subtitle;
+      document.getElementById('ctaPrimary').innerHTML =
+        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> ${c.cta_primary}`;
+      document.getElementById('ctaSecondary').innerHTML =
+        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> ${c.cta_secondary}`;
+      document.getElementById('collectionTitle').textContent = c.collection_title;
+      document.getElementById('bottomCtaText').textContent = c.bottom_cta_text;
+
+      // Font
+      const font = c.font_family || defaultConfig.font_family;
+      const baseFontStack = 'sans-serif';
+      document.querySelectorAll('h1, h2, .aurora-text, nav a:first-child').forEach(el => {
+        el.style.fontFamily = `${font}, ${baseFontStack}`;
+      });
+
+      // Font size
+      const baseSize = c.font_size || defaultConfig.font_size;
+      document.querySelectorAll('h1').forEach(el => el.style.fontSize = `${baseSize * 4}px`);
+      document.querySelectorAll('h2').forEach(el => el.style.fontSize = `${baseSize * 3}px`);
+      document.querySelectorAll('h3').forEach(el => el.style.fontSize = `${baseSize * 1.15}px`);
+      document.querySelectorAll('p').forEach(el => {
+        if (!el.classList.contains('aurora-text')) {
+          el.style.fontSize = `${baseSize}px`;
+        }
+      });
+
+      // Colors
+      app.style.background = `linear-gradient(135deg, ${c.background_color} 0%, ${c.background_color}ee 50%, ${c.background_color} 100%)`;
+      app.style.backgroundSize = '400% 400%';
+      app.style.color = c.text_color;
+
+      document.querySelectorAll('.glass-card').forEach(card => {
+        card.style.background = c.surface_color;
+      });
+    },
+    mapToCapabilities: (config) => {
+      const c = { ...defaultConfig, ...config };
+      return {
+        recolorables: [
+          { get: () => c.background_color, set: (v) => { c.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+          { get: () => c.surface_color.startsWith('rgba') ? '#1a1a2e' : c.surface_color, set: (v) => { c.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => c.text_color, set: (v) => { c.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => c.primary_action_color, set: (v) => { c.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+          { get: () => c.secondary_action_color, set: (v) => { c.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } },
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => c.font_family || defaultConfig.font_family,
+          set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => c.font_size || defaultConfig.font_size,
+          set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      };
+    },
+    mapToEditPanelValues: (config) => {
+      const c = { ...defaultConfig, ...config };
+      return new Map([
+        ['hero_title', c.hero_title],
+        ['hero_subtitle', c.hero_subtitle],
+        ['cta_primary', c.cta_primary],
+        ['cta_secondary', c.cta_secondary],
+        ['collection_title', c.collection_title],
+        ['bottom_cta_text', c.bottom_cta_text],
+      ]);
+    }
+  });
+
+  // Star field
+  const starField = document.getElementById('starField');
+  for (let i = 0; i < 60; i++) {
+    const star = document.createElement('span');
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.opacity = Math.random() * 0.5 + 0.1;
+    star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
+    starField.appendChild(star);
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Mobile menu
+  document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+    const menu = document.getElementById('mobileMenu');
+    menu.classList.toggle('hidden');
+  });
+
+  // Close mobile menu on link click
+  document.querySelectorAll('#mobileMenu a').forEach(a => {
+    a.addEventListener('click', () => {
+      document.getElementById('mobileMenu').classList.add('hidden');
+    });
+  });
+
+  // Active nav highlight on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav a[href^="#"]');
+  document.getElementById('app').addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      if (section.offsetTop - 120 <= document.getElementById('app').scrollTop) {
+        current = section.getAttribute('id');
+      }
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('text-white', link.getAttribute('href') === '#' + current);
+      if (link.getAttribute('href') !== '#' + current) {
+        link.classList.add('text-white/50');
+      } else {
+        link.classList.remove('text-white/50');
+      }
+    });
+  });
+
+  lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82390a37827c5',t:'MTc3NjcyOTk0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

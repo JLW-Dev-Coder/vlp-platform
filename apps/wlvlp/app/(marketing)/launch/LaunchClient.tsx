@@ -532,10 +532,10 @@ export default function LaunchClient() {
     const fallback: TemplateLite[] = TEMPLATES.map((t) => ({
       slug: t.slug,
       title: t.title,
-      category: t.category,
+      category: t.categories[0] ?? 'general',
     }));
     templatesRef.current = fallback;
-    newTemplatesRef.current = fallback.filter((t) => t.category === 'other');
+    newTemplatesRef.current = fallback.filter((t) => t.category === 'general');
 
     let cancelled = false;
     (async () => {

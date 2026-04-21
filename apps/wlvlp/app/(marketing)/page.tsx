@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import { getTemplatesWithFallback, getSession, voteTemplate, Template } from '@/lib/api';
 import { getPriceForSlug } from '@/lib/pricing';
 
-const CATEGORIES = ['All', 'Available', 'health', 'finance', 'legal', 'food/bev', 'creative', 'services', 'other'];
+const TOP_CATEGORIES = ['Services', 'Art', 'Hobby', 'Adventure', 'Trending', 'Home', 'Entertainment', 'Animals', 'Lifestyle', 'Holidays', 'Food', 'Cars'];
+const MORE_CATEGORIES = ['Beauty', 'Beverages', 'Brand', 'Cosmos', 'Cosmetics', 'Culture', 'Destinations', 'Events', 'Fame', 'Family', 'Fashion', 'Fitness', 'Hair', 'Jewelry', 'Learning', 'Legal', 'Mood', 'Movies', 'Mystery', 'Mystical', 'Photography', 'Prompts', 'Social', 'Sports', 'Stickers', 'Tech', 'Toys', 'Travel', 'Weather', 'Writing'];
 
 const SECTION = 'relative py-20 px-6';
 const SECTION_INNER = 'max-w-[1280px] mx-auto relative z-10';
@@ -28,6 +29,7 @@ export default function HomePage() {
   const router = useRouter();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [filter, setFilter] = useState('All');
+  const [moreOpen, setMoreOpen] = useState(false);
   const [sort, setSort] = useState<'votes' | 'newest' | 'price'>('votes');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -64,14 +66,13 @@ export default function HomePage() {
     return templates
       .filter(t => {
         if (filter === 'All') return true;
-        if (filter === 'Available') return normalizedStatus(t.status) === 'available';
-        return t.category === filter;
+        return (t.categories ?? []).includes(filter);
       })
       .filter(t => {
         if (!search) return true;
         return (
           t.title.toLowerCase().includes(search) ||
-          (t.category || '').toLowerCase().includes(search)
+          (t.categories ?? []).some(c => c.toLowerCase().includes(search))
         );
       })
       .sort((a, b) => {
@@ -226,8 +227,8 @@ export default function HomePage() {
             </label>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-4">
-            {CATEGORIES.map(cat => {
+          <div className="flex flex-wrap gap-2 mb-4 relative">
+            {['All', ...TOP_CATEGORIES].map(cat => {
               const active = filter === cat;
               return (
                 <button
@@ -237,12 +238,46 @@ export default function HomePage() {
                       ? 'category-filter-active'
                       : 'border-white/[0.12] bg-transparent text-white/60 hover:border-neon-blue/50 hover:text-neon-blue'
                   }`}
-                  onClick={() => setFilter(cat)}
+                  onClick={() => { setFilter(cat); setMoreOpen(false); }}
                 >
                   {cat}
                 </button>
               );
             })}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setMoreOpen(o => !o)}
+                className={`px-4 py-[7px] rounded-full text-[0.85rem] cursor-pointer transition-all border ${
+                  MORE_CATEGORIES.includes(filter)
+                    ? 'category-filter-active'
+                    : 'border-white/[0.12] bg-transparent text-white/60 hover:border-neon-blue/50 hover:text-neon-blue'
+                }`}
+                aria-expanded={moreOpen}
+              >
+                {MORE_CATEGORIES.includes(filter) ? filter : 'More'} ▾
+              </button>
+              {moreOpen && (
+                <div className="absolute z-20 mt-2 left-0 w-[260px] max-h-[340px] overflow-y-auto rounded-xl border border-glassBorder bg-[#0D0D15]/95 backdrop-blur-md p-2 shadow-2xl">
+                  <div className="grid grid-cols-2 gap-1">
+                    {MORE_CATEGORIES.map(cat => {
+                      const active = filter === cat;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => { setFilter(cat); setMoreOpen(false); }}
+                          className={`px-3 py-1.5 rounded-md text-[0.82rem] text-left transition-colors ${
+                            active ? 'bg-neon-blue/20 text-neon-blue' : 'text-white/70 hover:bg-white/5 hover:text-neon-blue'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center justify-between gap-4 mb-8 text-white/50 text-[0.85rem] flex-wrap">
@@ -607,7 +642,7 @@ function TemplateCard({ t, onVote, fadeIn, fadeDelayMs }: { t: Template; onVote:
           {status === 'available' ? 'Available' : status === 'auction' ? 'Auction' : 'Sold'}
         </div>
         <div className="font-sora text-[0.9rem] font-semibold text-white leading-snug">{t.title}</div>
-        <div className="text-[0.75rem] text-white/40 uppercase tracking-wider">{t.category}</div>
+        <div className="text-[0.75rem] text-white/40 uppercase tracking-wider">{(t.categories && t.categories[0]) || t.category}</div>
         <div className="font-sora text-[1.1rem] font-extrabold text-neon-blue glow-blue mt-1">
           ${getPriceForSlug(t.slug)}
         </div>

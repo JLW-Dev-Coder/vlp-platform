@@ -46,7 +46,7 @@ export default function SiteClient({ slug }: Props) {
           setTemplate({
             slug: entry.slug,
             title: entry.title,
-            category: getCategoryLabel(entry.category),
+            category: getCategoryLabel(entry.categories),
             status: 'available',
             vote_count: 0,
             price_monthly: 0,
