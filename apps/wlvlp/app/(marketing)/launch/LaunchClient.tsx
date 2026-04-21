@@ -327,6 +327,7 @@ function ScratchCard({
   const scratchingRef = useRef(false);
   const hasScratchedRef = useRef(false);
   const revealedRef = useRef(false);
+  const lastProgressCheckRef = useRef(0);
   const [showHint, setShowHint] = useState(false);
   const [fading, setFading] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
@@ -361,9 +362,10 @@ function ScratchCard({
   }, [onRevealed]);
 
   const checkProgress = useCallback((canvas: HTMLCanvasElement) => {
+    if (revealedRef.current) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const step = 8;
+    const step = 10;
     const { width, height } = canvas;
     const data = ctx.getImageData(0, 0, width, height).data;
     let cleared = 0;
@@ -375,7 +377,7 @@ function ScratchCard({
         total++;
       }
     }
-    if (cleared / total > 0.5) revealAll();
+    if (cleared / total > 0.35) revealAll();
   }, [revealAll]);
 
   useEffect(() => {
@@ -400,9 +402,14 @@ function ScratchCard({
       const y = clientY - rect.top;
       ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
-      ctx.arc(x, y, 22, 0, Math.PI * 2);
+      ctx.arc(x, y, 30, 0, Math.PI * 2);
       ctx.fill();
       hasScratchedRef.current = true;
+      const now = performance.now();
+      if (now - lastProgressCheckRef.current > 120) {
+        lastProgressCheckRef.current = now;
+        checkProgress(canvas);
+      }
     };
 
     const onDown = (e: MouseEvent) => {
@@ -1204,36 +1211,48 @@ export default function LaunchClient() {
                 )}
               </>
             ) : (
-              <>
+              <div className="prize-reveal">
                 <div
-                  className="mx-auto mb-6 rounded-xl border p-5"
+                  className="font-[var(--font-sora)] text-3xl md:text-4xl font-extrabold mb-2 prize-pop"
+                  style={{ color: NEON.cyan, textShadow: `0 0 20px ${NEON.cyan}88` }}
+                >
+                  You won! 🎉
+                </div>
+                <div
+                  className="mx-auto mb-6 rounded-xl border p-5 prize-pop"
                   style={{
                     background: `${NEON.cyan}12`,
-                    borderColor: `${NEON.cyan}55`,
-                    boxShadow: `0 0 32px ${NEON.cyan}33`,
+                    borderColor: `${NEON.cyan}66`,
+                    boxShadow: `0 0 40px ${NEON.cyan}44`,
                   }}
                 >
                   <div className="text-xs uppercase tracking-widest mb-2" style={{ color: NEON.cyan }}>
-                    You won
+                    Your prize
                   </div>
                   <div
                     className="font-[var(--font-sora)] text-2xl md:text-3xl font-extrabold"
-                    style={{ color: NEON.yellow }}
+                    style={{ color: NEON.yellow, textShadow: `0 0 18px ${NEON.yellow}66` }}
                   >
                     {scratchPrize}
                   </div>
                 </div>
-                <a
-                  href="/sign-in"
+                <Link
+                  href="/"
                   className="cta-glow-pulse block w-full rounded-xl px-6 py-4 text-lg font-extrabold"
                   style={{
                     background: NEON.yellow,
                     color: '#0a0a0a',
                   }}
                 >
-                  Claim Your Prize
-                </a>
-              </>
+                  {scratchPrize?.toLowerCase().includes('entire website')
+                    ? 'Claim Your Free Website — Browse Templates'
+                    : scratchPrize?.toLowerCase().includes('%')
+                      ? `Use Your ${scratchPrize} — Browse Templates`
+                      : scratchPrize?.toLowerCase().includes('$')
+                        ? `Use Your ${scratchPrize} — Browse Templates`
+                        : 'Claim Your Prize — Browse Templates'}
+                </Link>
+              </div>
             )}
 
             <button
@@ -1325,6 +1344,14 @@ export default function LaunchClient() {
         }
 
         @media (prefers-reduced-motion: no-preference) {
+          @keyframes prizePop {
+            0% { opacity: 0; transform: scale(0.6); }
+            60% { opacity: 1; transform: scale(1.08); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          .prize-pop {
+            animation: prizePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+          }
           @keyframes blobFloat1 {
             0%, 100% { transform: translate(0, 0) scale(1); }
             25% { transform: translate(5vw, 3vh) scale(1.1); }

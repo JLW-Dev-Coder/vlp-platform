@@ -16,13 +16,13 @@ const SCRATCH_PRIZE_CLASS = 'absolute inset-0 flex items-center justify-center t
 
 type PrizeKey = ScratchRevealResult['prize_type'];
 
-const PRIZE_CONFIG: Record<PrizeKey, { emoji: string; title: string; desc: string }> = {
-  free_month: { emoji: '🎉', title: 'You won a free template!', desc: 'Claim any available template at no cost — includes 12 months of hosting.' },
-  discount_50: { emoji: '🎊', title: '50% off your first month!', desc: 'Use your discount code at checkout.' },
-  discount_25: { emoji: '🎁', title: '25% off your first month!', desc: 'Use your discount code at checkout.' },
-  credit_9: { emoji: '💰', title: 'You won a $9 credit!', desc: 'Apply this credit toward any template purchase.' },
-  free_ticket: { emoji: '🎟️', title: 'Try again!', desc: 'You won another scratch ticket.' },
-  no_prize: { emoji: '😔', title: 'Better luck next time!', desc: 'Browse available templates and find your perfect site.' },
+const PRIZE_CONFIG: Record<PrizeKey, { emoji: string; title: string; desc: string; cta: string; isWin: boolean }> = {
+  free_month: { emoji: '🎉', title: 'You won a free template!', desc: 'Claim any available template at no cost — includes 12 months of hosting.', cta: 'Claim Your Free Template', isWin: true },
+  discount_50: { emoji: '🎊', title: '50% off your first month!', desc: 'Use your discount code at checkout.', cta: 'Use Your 50% Off — Browse Templates', isWin: true },
+  discount_25: { emoji: '🎁', title: '25% off your first month!', desc: 'Use your discount code at checkout.', cta: 'Use Your 25% Off — Browse Templates', isWin: true },
+  credit_9: { emoji: '💰', title: 'You won a $9 credit!', desc: 'Apply this credit toward any template purchase.', cta: 'Use Your $9 Credit — Browse Templates', isWin: true },
+  free_ticket: { emoji: '🎟️', title: 'Try again!', desc: 'You won another scratch ticket.', cta: 'Browse Templates', isWin: false },
+  no_prize: { emoji: '😔', title: 'Better luck next time!', desc: 'Browse available templates and find your perfect site.', cta: 'Browse Templates', isWin: false },
 };
 
 export default function ScratchPage() {
@@ -173,8 +173,13 @@ function ScratchContent({ accountId }: { accountId: string }) {
 
         {scratched && prize && reveal && (
           <div className="flex flex-col items-center gap-4 motion-safe:animate-[scale-in_0.5s_ease_forwards]">
-            <div className="text-[5rem] [filter:drop-shadow(0_0_30px_rgba(255,229,52,0.7))]">{prize.emoji}</div>
-            <h2 className="font-sora text-[1.8rem] font-bold text-neon-yellow tracking-tight glow-yellow">
+            <div className="text-[5rem] [filter:drop-shadow(0_0_30px_rgba(255,229,52,0.7))] motion-safe:animate-[float_3s_ease-in-out_infinite]">{prize.emoji}</div>
+            {prize.isWin && (
+              <div className="font-sora text-[2.2rem] md:text-[2.6rem] font-extrabold text-neon-cyan tracking-tight glow-cyan motion-safe:animate-[pulse-subtle_1.6s_ease-in-out_infinite]">
+                You won! 🎉
+              </div>
+            )}
+            <h2 className="font-sora text-[1.6rem] md:text-[1.9rem] font-bold text-neon-yellow tracking-tight glow-yellow">
               {prize.title}
             </h2>
             <p className="text-white/70 text-base leading-relaxed max-w-[400px]">{prize.desc}</p>
@@ -188,18 +193,18 @@ function ScratchContent({ accountId }: { accountId: string }) {
                 Expires {new Date(reveal.expires_at).toLocaleDateString()}
               </p>
             )}
-            <div className="mt-2 flex gap-3 flex-wrap justify-center">
+            <div className="mt-4 flex flex-col sm:flex-row gap-3 items-center justify-center w-full max-w-[520px]">
               <Link
                 href="/"
-                className="inline-block px-7 py-3 bg-[rgba(0,212,255,0.08)] neon-border rounded-lg text-neon-blue font-bold text-[0.9rem] no-underline transition-all hover:-translate-y-0.5"
+                className="block w-full sm:w-auto px-9 py-4 bg-neon-yellow text-[#07070A] font-extrabold text-base rounded-[10px] btn-glow-yellow transition-all hover:-translate-y-0.5 no-underline text-center"
               >
-                Browse Templates
+                {prize.cta}
               </Link>
               {reveal.new_ticket_id && (
                 <button
                   type="button"
                   onClick={handleScratchAgain}
-                  className="inline-block px-7 py-3 bg-neon-yellow text-[#07070A] font-extrabold text-[0.9rem] rounded-lg transition-all btn-glow-yellow hover:-translate-y-0.5"
+                  className="block w-full sm:w-auto px-7 py-3 bg-[rgba(0,212,255,0.08)] neon-border rounded-lg text-neon-blue font-bold text-[0.9rem] transition-all hover:-translate-y-0.5"
                 >
                   Scratch Again
                 </button>
