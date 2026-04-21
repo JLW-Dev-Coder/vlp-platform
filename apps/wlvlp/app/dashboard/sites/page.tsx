@@ -54,7 +54,7 @@ export default function MySitesPage() {
       )}
 
       {!loading && !error && sites && sites.length > 0 && (
-        <div className="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
+        <div className="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(380px,1fr))]">
           {sites.map((s) => (
             <SiteCard key={s.slug} site={s} />
           ))}
@@ -73,9 +73,11 @@ function SiteCard({ site }: { site: PurchasedSite }) {
   const [domainError, setDomainError] = useState('');
   const [savedDomain, setSavedDomain] = useState<string | undefined>(site.custom_domain);
 
-  const purchased = new Date(site.purchased_at).toLocaleDateString(undefined, {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
+  const purchasedDate = site.purchased_at ? new Date(site.purchased_at) : null;
+  const purchasedValid = purchasedDate && !isNaN(purchasedDate.getTime()) && purchasedDate.getFullYear() >= 2020;
+  const purchased = purchasedValid
+    ? purchasedDate!.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    : '—';
   const expiresDate = site.hosting_expires_at ? new Date(site.hosting_expires_at) : null;
   const expires = expiresDate
     ? expiresDate.toLocaleDateString(undefined, {
