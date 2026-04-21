@@ -1,1 +1,444 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/f490e60c-05c0-4273-8d4d-d8288e5f13a6 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DetailZoom Atelier</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&amp;family=Outfit:wght@200;300;400;500&amp;display=swap" rel="stylesheet">
+  <style>
+  html, body { height: 100%; margin: 0; }
+  * { box-sizing: border-box; }
+
+  .font-display { font-family: 'Cormorant Garamond', serif; }
+  .font-body { font-family: 'Outfit', sans-serif; }
+
+  /* Slow zoom animation on images */
+  @keyframes slowZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.12); }
+  }
+  @keyframes slowPan {
+    0% { transform: scale(1.1) translate(0, 0); }
+    50% { transform: scale(1.15) translate(-2%, -1%); }
+    100% { transform: scale(1.1) translate(0, 0); }
+  }
+  .zoom-img { animation: slowZoom 18s ease-in-out infinite alternate; }
+  .pan-img { animation: slowPan 22s ease-in-out infinite; }
+
+  /* Shimmer overlay */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer-overlay {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 55%, transparent 60%);
+    background-size: 200% 100%;
+    animation: shimmer 6s ease-in-out infinite;
+  }
+
+  /* CTA pulse */
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,125,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(212,175,125,0); }
+  }
+  .cta-pulse { animation: ctaPulse 3s ease-in-out infinite; }
+
+  /* Fade-in on scroll */
+  .fade-section { opacity: 0; transform: translateY(40px); transition: opacity 0.9s ease, transform 0.9s ease; }
+  .fade-section.visible { opacity: 1; transform: translateY(0); }
+
+  /* Crossfade between sections */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Nav */
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px;
+    background: currentColor; transition: width 0.3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  /* Thin line icons */
+  .icon-thin svg { stroke-width: 1 !important; }
+
+  /* Scroll smooth */
+  html { scroll-behavior: smooth; }
+
+  /* Image containers */
+  .img-container { overflow: hidden; position: relative; }
+
+  /* Star rating */
+  .star-line { stroke-width: 1; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full font-body" style="background-color: #0a0a0a; color: #e8e4de;">
+  <div id="app" class="w-full h-full overflow-auto" style="background-color: #0a0a0a;"><!-- Sticky Nav -->
+   <nav id="stickyNav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500" style="background: rgba(10,10,10,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212,175,125,0.1);">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"><a href="#home" class="font-display text-xl tracking-widest" style="color: #d4af7d; font-weight: 300;">DETAILZOOM</a>
+     <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Home</a> <a href="#details" class="nav-link text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Details</a> <a href="#collection" class="nav-link text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Collection</a> <a href="#craft" class="nav-link text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Craft</a> <a href="#reviews" class="nav-link text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Reviews</a> <a href="#buy" class="nav-link text-xs tracking-widest uppercase font-light" style="color: #d4af7d;">Buy</a>
+     </div><button id="mobileMenuBtn" class="md:hidden icon-thin" style="color: #e8e4de;" aria-label="Menu"> <i data-lucide="menu" style="width:20px;height:20px;"></i> </button>
+    </div><!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3"><a href="#home" class="text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Home</a> <a href="#details" class="text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Details</a> <a href="#collection" class="text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Collection</a> <a href="#craft" class="text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Craft</a> <a href="#reviews" class="text-xs tracking-widest uppercase font-light" style="color: #e8e4de;">Reviews</a> <a href="#buy" class="text-xs tracking-widest uppercase font-light" style="color: #d4af7d;">Buy</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative w-full" style="height: 100%; min-height: 600px;">
+    <div class="img-container absolute inset-0"><img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1600&amp;q=80" alt="Macro leather texture" loading="lazy" class="zoom-img w-full h-full object-cover" onerror="this.style.background='#1a1612';this.alt='Image unavailable';" style="filter: brightness(0.35) contrast(1.1);">
+     <div class="shimmer-overlay"></div>
+    </div>
+    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center px-6" style="padding-top: 80px;">
+     <p class="text-xs tracking-[0.35em] uppercase mb-6 font-light" style="color: #d4af7d;">DetailZoom Atelier</p>
+     <h1 id="heroTitle" class="font-display text-6xl md:text-8xl lg:text-9xl font-light leading-none mb-6" style="color: #e8e4de; letter-spacing: -0.02em;">Sell the details.</h1>
+     <p id="heroSubtitle" class="font-light text-base md:text-lg max-w-lg mb-10" style="color: rgba(232,228,222,0.6);">A page built to make products feel expensive.</p>
+     <div class="flex flex-col sm:flex-row gap-4"><a href="#collection" id="ctaPrimary" class="cta-pulse px-10 py-3.5 text-xs tracking-widest uppercase font-medium transition-all duration-300 hover:brightness-110" style="background: #d4af7d; color: #0a0a0a;">Shop Collection</a> <a href="#details" id="ctaSecondary" class="px-10 py-3.5 text-xs tracking-widest uppercase font-light transition-all duration-300 hover:bg-white hover:bg-opacity-5" style="border: 1px solid rgba(212,175,125,0.4); color: #d4af7d;">See Details</a>
+     </div>
+    </div><!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 opacity-50">
+     <div style="width:1px; height:40px; background: linear-gradient(to bottom, #d4af7d, transparent);"></div>
+    </div>
+   </section><!-- DETAILS - Macro Zoom Section -->
+   <section id="details" class="w-full py-24 md:py-32 px-6">
+    <div class="max-w-7xl mx-auto">
+     <div class="fade-section text-center mb-20">
+      <div class="flex items-center justify-center gap-3 mb-6">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#d4af7d" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+       </svg><span class="text-xs tracking-[0.3em] uppercase font-light" style="color: #d4af7d;">Zoom Into Craft</span>
+      </div>
+      <h2 class="font-display text-4xl md:text-6xl font-light" style="color: #e8e4de;">Every surface tells a story</h2>
+     </div><!-- Alternating macro/wide grid -->
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"><!-- Macro: Fabric -->
+      <div class="fade-section img-container aspect-square"><img src="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=900&amp;q=80" alt="Fabric macro texture" loading="lazy" class="pan-img w-full h-full object-cover" onerror="this.style.background='#1a1612';this.alt='Image unavailable';">
+       <div class="shimmer-overlay"></div>
+       <div class="absolute bottom-0 left-0 right-0 p-6" style="background: linear-gradient(to top, rgba(10,10,10,0.8), transparent);">
+        <p class="text-xs tracking-widest uppercase font-light" style="color: #d4af7d;">01 — Fabric</p>
+        <p class="font-display text-xl font-light mt-1" style="color: #e8e4de;">Raw silk weave at 40×</p>
+       </div>
+      </div><!-- Wide: Lifestyle -->
+      <div class="fade-section img-container aspect-square"><img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=900&amp;q=80" alt="Product lifestyle flatlay" loading="lazy" class="zoom-img w-full h-full object-cover" onerror="this.style.background='#1a1612';this.alt='Image unavailable';" style="filter: brightness(0.7);">
+       <div class="absolute bottom-0 left-0 right-0 p-6" style="background: linear-gradient(to top, rgba(10,10,10,0.8), transparent);">
+        <p class="text-xs tracking-widest uppercase font-light" style="color: #d4af7d;">02 — Context</p>
+        <p class="font-display text-xl font-light mt-1" style="color: #e8e4de;">The wider view</p>
+       </div>
+      </div><!-- Macro: Ceramic -->
+      <div class="fade-section img-container aspect-[16/10] md:col-span-2"><img src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1400&amp;q=80" alt="Ceramic texture macro" loading="lazy" class="pan-img w-full h-full object-cover" onerror="this.style.background='#1a1612';this.alt='Image unavailable';">
+       <div class="shimmer-overlay"></div>
+       <div class="absolute bottom-0 left-0 right-0 p-8" style="background: linear-gradient(to top, rgba(10,10,10,0.8), transparent);">
+        <p class="text-xs tracking-widest uppercase font-light" style="color: #d4af7d;">03 — Ceramic</p>
+        <p class="font-display text-2xl md:text-3xl font-light mt-1" style="color: #e8e4de;">Glazed imperfections at 60×</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- COLLECTION -->
+   <section id="collection" class="w-full py-24 md:py-32 px-6" style="background: #0f0d0a;">
+    <div class="max-w-7xl mx-auto">
+     <div class="fade-section text-center mb-20">
+      <div class="flex items-center justify-center gap-3 mb-6">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#d4af7d" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+       </svg><span class="text-xs tracking-[0.3em] uppercase font-light" style="color: #d4af7d;">The Collection</span>
+      </div>
+      <h2 class="font-display text-4xl md:text-6xl font-light" style="color: #e8e4de;">Curated materials</h2>
+     </div>
+     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"><!-- Product cards -->
+      <div class="fade-section group cursor-pointer">
+       <div class="img-container aspect-[3/4] mb-5" style="background: #161411;"><img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=600&amp;q=80" alt="Coffee beans macro" loading="lazy" class="zoom-img w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" onerror="this.style.background='#1a1612';this.alt='Image unavailable';">
+        <div class="shimmer-overlay"></div>
+       </div>
+       <div class="flex justify-between items-start">
+        <div>
+         <p class="font-display text-xl font-light" style="color: #e8e4de;">Ethiopian Yirgacheffe</p>
+         <p class="text-xs font-light mt-1" style="color: rgba(232,228,222,0.5);">Single origin · 250g</p>
+        </div>
+        <div class="flex items-center gap-1" style="color: #d4af7d;">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+         </svg><span class="font-display text-lg">48</span>
+        </div>
+       </div>
+      </div>
+      <div class="fade-section group cursor-pointer">
+       <div class="img-container aspect-[3/4] mb-5" style="background: #161411;"><img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=600&amp;q=80" alt="Jewelry macro detail" loading="lazy" class="zoom-img w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" onerror="this.style.background='#1a1612';this.alt='Image unavailable';">
+        <div class="shimmer-overlay"></div>
+       </div>
+       <div class="flex justify-between items-start">
+        <div>
+         <p class="font-display text-xl font-light" style="color: #e8e4de;">Hand-Set Pavé Ring</p>
+         <p class="text-xs font-light mt-1" style="color: rgba(232,228,222,0.5);">18k gold · Size 7</p>
+        </div>
+        <div class="flex items-center gap-1" style="color: #d4af7d;">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+         </svg><span class="font-display text-lg">2,400</span>
+        </div>
+       </div>
+      </div>
+      <div class="fade-section group cursor-pointer">
+       <div class="img-container aspect-[3/4] mb-5" style="background: #161411;"><img src="https://images.unsplash.com/photo-1531685250784-7569952593d2?w=600&amp;q=80" alt="Leather texture close up" loading="lazy" class="zoom-img w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" onerror="this.style.background='#1a1612';this.alt='Image unavailable';">
+        <div class="shimmer-overlay"></div>
+       </div>
+       <div class="flex justify-between items-start">
+        <div>
+         <p class="font-display text-xl font-light" style="color: #e8e4de;">Vegetable-Tanned Folio</p>
+         <p class="text-xs font-light mt-1" style="color: rgba(232,228,222,0.5);">Full-grain · Cognac</p>
+        </div>
+        <div class="flex items-center gap-1" style="color: #d4af7d;">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+         </svg><span class="font-display text-lg">320</span>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- CRAFT -->
+   <section id="craft" class="w-full py-24 md:py-32 px-6">
+    <div class="max-w-7xl mx-auto">
+     <div class="fade-section text-center mb-20">
+      <h2 class="font-display text-4xl md:text-6xl font-light" style="color: #e8e4de;">The craft behind the close-up</h2>
+      <p class="font-light text-base mt-4 max-w-lg mx-auto" style="color: rgba(232,228,222,0.5);">Every product in our collection is photographed at extreme magnification to reveal the quality you can feel.</p>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+      <div class="fade-section text-center">
+       <div class="flex justify-center mb-6">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border: 1px solid rgba(212,175,125,0.3);">
+         <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="#d4af7d" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
+         </svg>
+        </div>
+       </div>
+       <h3 class="font-display text-2xl font-light mb-3" style="color: #e8e4de;">40× Magnification</h3>
+       <p class="text-sm font-light leading-relaxed" style="color: rgba(232,228,222,0.5);">Every texture shot at extreme macro to reveal grain, weave, and finish invisible to the naked eye.</p>
+      </div>
+      <div class="fade-section text-center">
+       <div class="flex justify-center mb-6">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border: 1px solid rgba(212,175,125,0.3);">
+         <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="#d4af7d" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+         </svg>
+        </div>
+       </div>
+       <h3 class="font-display text-2xl font-light mb-3" style="color: #e8e4de;">Verified Artisans</h3>
+       <p class="text-sm font-light leading-relaxed" style="color: rgba(232,228,222,0.5);">Each maker vetted for technique, sustainability, and material integrity. No compromises.</p>
+      </div>
+      <div class="fade-section text-center">
+       <div class="flex justify-center mb-6">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border: 1px solid rgba(212,175,125,0.3);">
+         <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="#d4af7d" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+         </svg>
+        </div>
+       </div>
+       <h3 class="font-display text-2xl font-light mb-3" style="color: #e8e4de;">Climate-Neutral Shipping</h3>
+       <p class="text-sm font-light leading-relaxed" style="color: rgba(232,228,222,0.5);">Carbon-offset delivery in recycled packaging. Arrives in 3–5 days worldwide.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="w-full py-24 md:py-32 px-6" style="background: #0f0d0a;">
+    <div class="max-w-5xl mx-auto">
+     <div class="fade-section text-center mb-16">
+      <h2 class="font-display text-4xl md:text-5xl font-light" style="color: #e8e4de;">What they're saying</h2>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="fade-section p-8" style="border: 1px solid rgba(212,175,125,0.12);">
+       <div class="flex gap-1 mb-4">
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="font-light text-sm leading-relaxed mb-6" style="color: rgba(232,228,222,0.7);">"The macro shots sold me before I even read the description. When the leather arrived, it looked exactly like the close-up. That's trust."</p>
+       <p class="text-xs tracking-widest uppercase font-light" style="color: #d4af7d;">— Maren S., Copenhagen</p>
+      </div>
+      <div class="fade-section p-8" style="border: 1px solid rgba(212,175,125,0.12);">
+       <div class="flex gap-1 mb-4">
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg class="star-line" width="14" height="14" viewbox="0 0 24 24" fill="#d4af7d" stroke="#d4af7d" stroke-width="1">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="font-light text-sm leading-relaxed mb-6" style="color: rgba(232,228,222,0.7);">"I've never seen a product page that made me want to touch my screen. The zoom detail on the ceramic glaze was extraordinary."</p>
+       <p class="text-xs tracking-widest uppercase font-light" style="color: #d4af7d;">— James T., Brooklyn</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- BUY - Bottom CTA -->
+   <section id="buy" class="relative w-full py-32 md:py-40 px-6">
+    <div class="img-container absolute inset-0"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&amp;q=80" alt="Macro texture detail" loading="lazy" class="pan-img w-full h-full object-cover" onerror="this.style.background='#1a1612';this.alt='Image unavailable';" style="filter: brightness(0.2) contrast(1.1);">
+     <div class="shimmer-overlay"></div>
+    </div>
+    <div class="relative z-10 max-w-3xl mx-auto text-center fade-section">
+     <h2 id="bottomCtaText" class="font-display text-4xl md:text-6xl lg:text-7xl font-light mb-8" style="color: #e8e4de;">Let the details close the sale.</h2><a href="#collection" class="cta-pulse inline-block px-12 py-4 text-xs tracking-widest uppercase font-medium transition-all duration-300 hover:brightness-110" style="background: #d4af7d; color: #0a0a0a;">Shop Now</a>
+     <div class="flex items-center justify-center gap-8 mt-12" style="color: rgba(232,228,222,0.4);">
+      <div class="flex items-center gap-2">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+       </svg><span class="text-xs font-light">Secure checkout</span>
+      </div>
+      <div class="flex items-center gap-2">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+       </svg><span class="text-xs font-light">Free shipping</span>
+      </div>
+      <div class="flex items-center gap-2">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+       </svg><span class="text-xs font-light">Money-back guarantee</span>
+      </div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer class="w-full py-12 px-6" style="border-top: 1px solid rgba(212,175,125,0.1);">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+     <p class="font-display text-sm tracking-widest" style="color: rgba(232,228,222,0.3);">DETAILZOOM ATELIER</p>
+     <p class="text-xs font-light" style="color: rgba(232,228,222,0.2);">Crafted with precision. All rights reserved.</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+  // Default config
+  const defaultConfig = {
+    hero_title: 'Sell the details.',
+    hero_subtitle: 'A page built to make products feel expensive.',
+    cta_primary: 'Shop Collection',
+    cta_secondary: 'See Details',
+    bottom_cta_text: 'Let the details close the sale.',
+    background_color: '#0a0a0a',
+    accent_color: '#d4af7d',
+    text_color: '#e8e4de',
+    surface_color: '#0f0d0a',
+    muted_color: '#161411',
+    font_family: 'Cormorant Garamond',
+    font_size: 16
+  };
+
+  function applyConfig(config) {
+    const el = (id) => document.getElementById(id);
+    const c = (k) => config[k] || defaultConfig[k];
+
+    // Text
+    if (el('heroTitle')) el('heroTitle').textContent = c('hero_title');
+    if (el('heroSubtitle')) el('heroSubtitle').textContent = c('hero_subtitle');
+    if (el('ctaPrimary')) el('ctaPrimary').textContent = c('cta_primary');
+    if (el('ctaSecondary')) el('ctaSecondary').textContent = c('cta_secondary');
+    if (el('bottomCtaText')) el('bottomCtaText').textContent = c('bottom_cta_text');
+
+    // Colors
+    const bg = c('background_color');
+    const accent = c('accent_color');
+    const text = c('text_color');
+    const surface = c('surface_color');
+
+    document.body.style.backgroundColor = bg;
+    document.getElementById('app').style.backgroundColor = bg;
+
+    // Apply accent color
+    document.querySelectorAll('[style*="color: #d4af7d"], [style*="color:#d4af7d"]').forEach(el => {
+      el.style.color = accent;
+    });
+    document.querySelectorAll('.cta-pulse').forEach(el => {
+      el.style.backgroundColor = accent;
+    });
+    document.querySelectorAll('svg[stroke="#d4af7d"]').forEach(svg => {
+      svg.setAttribute('stroke', accent);
+    });
+    document.querySelectorAll('svg[fill="#d4af7d"]').forEach(svg => {
+      svg.setAttribute('fill', accent);
+    });
+
+    // Font
+    const font = c('font_family');
+    const baseSize = c('font_size');
+    document.querySelectorAll('.font-display').forEach(el => {
+      el.style.fontFamily = `${font}, serif`;
+    });
+    document.querySelectorAll('.font-body, body').forEach(el => {
+      el.style.fontSize = `${baseSize}px`;
+    });
+  }
+
+  // Element SDK init
+  if (window.elementSdk) {
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => { applyConfig(config); },
+      mapToCapabilities: (config) => {
+        const c = (k) => config[k] || defaultConfig[k];
+        const mut = (key) => ({
+          get: () => c(key),
+          set: (v) => { config[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+        });
+        return {
+          recolorables: [mut('background_color'), mut('surface_color'), mut('text_color'), mut('accent_color'), mut('muted_color')],
+          borderables: [],
+          fontEditable: mut('font_family'),
+          fontSizeable: mut('font_size')
+        };
+      },
+      mapToEditPanelValues: (config) => {
+        const c = (k) => config[k] || defaultConfig[k];
+        return new Map([
+          ['hero_title', c('hero_title')],
+          ['hero_subtitle', c('hero_subtitle')],
+          ['cta_primary', c('cta_primary')],
+          ['cta_secondary', c('cta_secondary')],
+          ['bottom_cta_text', c('bottom_cta_text')]
+        ]);
+      }
+    });
+  }
+
+  // Mobile menu toggle
+  document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+    document.getElementById('mobileMenu').classList.toggle('hidden');
+  });
+  // Close mobile menu on link click
+  document.querySelectorAll('#mobileMenu a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('mobileMenu').classList.add('hidden'));
+  });
+
+  // Scroll-triggered fade-in
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-section').forEach(el => observer.observe(el));
+
+  // Init lucide
+  lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef828e8410d27c5',t:'MTc3NjczMDE2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

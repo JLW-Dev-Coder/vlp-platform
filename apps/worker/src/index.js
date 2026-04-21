@@ -1215,6 +1215,55 @@ function generateWlvlpWelcomeEmail(name, email) {
 }
 
 // ---------------------------------------------------------------------------
+// WLVLP purchase confirmation email (sent on checkout.session.completed)
+function generateWlvlpPurchaseEmail({ slug, tier, siteName, price }) {
+  const safeSlug = String(slug || '').replace(/[<>&"]/g, '').slice(0, 80)
+  const safeName = String(siteName || safeSlug).replace(/[<>&"]/g, '').slice(0, 120)
+  const tierLabel = (String(tier || '').toLowerCase() === 'premium') ? 'Premium' : 'Standard'
+  const base = 'https://websitelotto.virtuallaunch.pro'
+  const cyan = '#00F0D0'
+  const blue = '#00D4FF'
+  const yellow = '#FFE534'
+  return `<!doctype html>
+<html><body style="margin:0;padding:0;background:#07070A;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:#fff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#07070A;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#12121A;border:1px solid ${blue}40;border-radius:16px;padding:32px;">
+        <tr><td align="center" style="padding-bottom:16px;">
+          <div style="width:72px;height:72px;border-radius:50%;background:rgba(34,197,94,0.15);border:2px solid #22C55E;display:inline-block;line-height:68px;font-size:38px;">&#9989;</div>
+        </td></tr>
+        <tr><td align="center" style="padding-bottom:8px;">
+          <h1 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#fff;">
+            Payment <span style="color:${cyan};text-shadow:0 0 20px ${cyan};">successful!</span>
+          </h1>
+        </td></tr>
+        <tr><td align="center" style="padding-bottom:20px;">
+          <p style="margin:0;color:rgba(255,255,255,0.7);font-size:15px;line-height:1.6;">
+            Your site template has been claimed and is being set up.
+          </p>
+        </td></tr>
+        <tr><td align="center" style="padding-bottom:16px;">
+          <span style="display:inline-block;background:rgba(0,212,255,0.1);border:1px solid ${blue}66;color:${blue};font-weight:700;padding:8px 18px;border-radius:999px;font-size:13px;margin:4px;">${safeName}</span>
+          <span style="display:inline-block;background:rgba(255,229,52,0.1);border:1px solid ${yellow}66;color:${yellow};font-weight:700;padding:8px 18px;border-radius:999px;font-size:13px;margin:4px;">${tierLabel}</span>
+          ${price ? `<span style="display:inline-block;background:rgba(34,197,94,0.1);border:1px solid #22C55E66;color:#4ADE80;font-weight:700;padding:8px 18px;border-radius:999px;font-size:13px;margin:4px;">$${price}</span>` : ''}
+        </td></tr>
+        <tr><td align="center" style="padding:24px 0 12px 0;">
+          <a href="${base}/dashboard/my-sites" style="display:inline-block;background:${yellow};color:#07070A;text-decoration:none;font-weight:800;padding:14px 28px;border-radius:10px;font-size:15px;box-shadow:0 0 24px ${yellow}66;">Go to Dashboard &rarr;</a>
+        </td></tr>
+        <tr><td align="center" style="padding-bottom:16px;">
+          <a href="${base}/" style="color:${blue};text-decoration:none;font-weight:600;font-size:14px;">Browse more templates</a>
+        </td></tr>
+        <tr><td align="center" style="padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
+          <p style="margin:0;color:rgba(255,255,255,0.45);font-size:12px;line-height:1.6;">
+            Need help? Contact us at <a href="mailto:help@websitelotto.virtuallaunch.pro" style="color:${blue};text-decoration:none;">help@websitelotto.virtuallaunch.pro</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`
+}
+
 // TOTP helpers (RFC 6238, HMAC-SHA1, 30-second step, 6-digit code)
 // ---------------------------------------------------------------------------
 
@@ -4713,6 +4762,17 @@ const ROUTES = [
                 const slug = obj.metadata.slug;
                 const tier = obj.metadata.tier;
 
+                // Idempotency: if we've already processed this checkout session, skip
+                try {
+                  const prior = await env.DB.prepare(
+                    'SELECT purchase_id FROM wlvlp_purchases WHERE stripe_session_id = ? LIMIT 1'
+                  ).bind(obj.id).first();
+                  if (prior?.purchase_id) {
+                    console.log(`WLVLP purchase webhook replay for ${slug}, skipping (session ${obj.id})`);
+                    break;
+                  }
+                } catch (_) {}
+
                 // Reconcile anonymous checkout: look up or create account by Stripe email
                 let wlvlpAccountId = account_id;
                 if (!wlvlpAccountId || wlvlpAccountId === 'anonymous') {
@@ -4817,34 +4877,33 @@ const ROUTES = [
                     notification
                   );
 
-                  // 2) Immediate Gmail send via existing integration
-                  if (buyerEmail) {
+                  // 2) Branded HTML email via Resend (best-effort, non-blocking)
+                  if (buyerEmail && env.RESEND_API_KEY) {
                     try {
-                      const subject = `Your Website Lotto purchase: ${siteName}`;
-                      const body = [
-                        `Hi,`,
-                        ``,
-                        `Thanks for your purchase on Website Lotto VLP.`,
-                        ``,
-                        `Site: ${siteName}`,
-                        `Tier: ${tier}`,
-                        `Amount: $${priceDollars}`,
-                        `Hosting active until: ${hostingExpiresAt}`,
-                        ``,
-                        `You can view your site here:`,
-                        `https://websitelotto.virtuallaunch.pro/sites/${slug}/`,
-                        ``,
-                        `Manage your purchases at:`,
-                        `https://websitelotto.virtuallaunch.pro/dashboard`,
-                        ``,
-                        `— Virtual Launch Pro`
-                      ].join('\n');
-                      await sendGmailMessage(env, buyerEmail, subject, body);
+                      const html = generateWlvlpPurchaseEmail({
+                        slug,
+                        tier,
+                        siteName,
+                        price: priceDollars,
+                      });
+                      await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          from: 'Xavier <xavier@websitelotto.virtuallaunch.pro>',
+                          to: [buyerEmail],
+                          subject: '🎰 Your Website Lotto Site is Live!',
+                          html,
+                        }),
+                      });
                       console.log(`WLVLP purchase email sent to ${buyerEmail} for ${slug}`);
                     } catch (mailErr) {
                       console.error('WLVLP purchase email send failed:', mailErr?.message || mailErr);
                     }
-                  } else {
+                  } else if (!buyerEmail) {
                     console.warn(`WLVLP purchase ${slug}: no buyer email; notification queued only`);
                   }
                 } catch (notifErr) {

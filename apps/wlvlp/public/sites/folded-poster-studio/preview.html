@@ -1,1 +1,573 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/b9c73224-ed3c-4062-941c-b7f2a4ff2a96 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoldedPoster Studio</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <style>
+  html, body { height: 100%; margin: 0; }
+  * { box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1714;
+    --surface: #2a2520;
+    --text: #f0ece4;
+    --accent: #ff4d2a;
+    --secondary: #c8b89a;
+  }
+
+  .font-bebas { font-family: 'Bebas Neue', sans-serif; }
+  .font-mono { font-family: 'Space Mono', monospace; }
+
+  /* Paper fold effect */
+  .poster-panel {
+    position: relative;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .poster-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, rgba(0,0,0,0.08) 100%),
+      repeating-linear-gradient(90deg, transparent, transparent 49.5%, rgba(255,255,255,0.02) 49.5%, rgba(255,255,255,0.02) 50.5%, transparent 50.5%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .poster-panel::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 5%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.15) 80%, transparent 95%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Tape corners */
+  .tape {
+    position: absolute;
+    width: 60px;
+    height: 24px;
+    background: rgba(240,236,228,0.12);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+    border: 1px solid rgba(240,236,228,0.08);
+  }
+  .tape-tl { top: -6px; left: 16px; transform: rotate(-8deg); }
+  .tape-tr { top: -6px; right: 16px; transform: rotate(12deg); }
+  .tape-bl { bottom: -6px; left: 20px; transform: rotate(5deg); }
+  .tape-br { bottom: -6px; right: 20px; transform: rotate(-10deg); }
+
+  /* Crease shadow */
+  .crease-v {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.12) 30%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.12) 70%, transparent 100%);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Animations */
+  @keyframes unfoldIn {
+    0% { transform: perspective(800px) rotateY(-6deg) scale(0.95); opacity: 0; }
+    100% { transform: perspective(800px) rotateY(0) scale(1); opacity: 1; }
+  }
+  @keyframes slideUp {
+    0% { transform: translateY(40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,42,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(255,77,42,0); }
+  }
+  .anim-unfold { animation: unfoldIn 0.8s ease-out both; }
+  .anim-slide { animation: slideUp 0.6s ease-out both; }
+  .anim-fade { animation: fadeIn 0.5s ease-out both; }
+  .anim-pulse { animation: pulse 2s ease-in-out infinite; }
+  .anim-hidden { opacity: 0; transform: translateY(40px); }
+
+  /* Stagger classes */
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+  .delay-5 { animation-delay: 0.5s; }
+  .delay-6 { animation-delay: 0.6s; }
+
+  /* Scroll snap */
+  .nav-link {
+    position: relative;
+    transition: color 0.2s;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    transform: scaleX(1);
+  }
+
+  /* Paper grain overlay */
+  .grain-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* Thin line icon style */
+  .icon-thin svg { stroke-width: 1.2; }
+
+  .img-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Review card */
+  .review-card {
+    border-left: 2px solid var(--accent);
+    padding-left: 20px;
+  }
+
+  .scroll-wrapper {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full" style="background:var(--bg);color:var(--text);">
+  <div class="grain-overlay"></div>
+  <div id="app" class="scroll-wrapper"><!-- STICKY NAV -->
+   <nav id="stickyNav" class="fixed top-0 left-0 right-0 z-50 font-mono" style="background:rgba(26,23,20,0.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(200,184,154,0.1);">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between" style="height:52px;"><a href="#home" class="font-bebas text-xl tracking-wider" style="color:var(--accent);">FP</a>
+     <div class="hidden md:flex gap-6 text-xs uppercase tracking-widest" style="color:var(--secondary);"><a href="#home" class="nav-link">Home</a> <a href="#posters" class="nav-link">Posters</a> <a href="#details" class="nav-link">Details</a> <a href="#lineup" class="nav-link">Lineup</a> <a href="#reviews" class="nav-link">Reviews</a> <a href="#download" class="nav-link">Download</a>
+     </div><button id="mobileMenuBtn" class="md:hidden" style="color:var(--secondary);">
+      <svg width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+       <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+      </svg></button>
+    </div>
+    <div id="mobileMenu" class="hidden md:hidden px-4 pb-4 text-xs uppercase tracking-widest font-mono flex flex-col gap-3" style="color:var(--secondary);"><a href="#home" class="nav-link">Home</a> <a href="#posters" class="nav-link">Posters</a> <a href="#details" class="nav-link">Details</a> <a href="#lineup" class="nav-link">Lineup</a> <a href="#reviews" class="nav-link">Reviews</a> <a href="#download" class="nav-link">Download</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative" style="padding-top:52px;">
+    <div class="poster-panel relative" style="min-height:500px;">
+     <div class="tape tape-tl"></div>
+     <div class="tape tape-tr"></div>
+     <div class="crease-v"></div><!-- Background image layer -->
+     <div class="absolute inset-0" style="z-index:0;"><img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1400&amp;q=80" alt="Stage lights and crowd" class="img-cover" style="opacity:0.2;filter:grayscale(60%);" loading="lazy" onerror="this.style.display='none';">
+      <div class="absolute inset-0" style="background:linear-gradient(180deg,var(--bg) 0%,transparent 30%,transparent 70%,var(--bg) 100%);"></div>
+     </div>
+     <div class="relative z-10 max-w-5xl mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] mb-6 anim-fade delay-1" style="color:var(--secondary);">
+       FoldedPoster Studio
+      </div>
+      <h1 id="heroTitle" class="font-bebas text-6xl md:text-8xl lg:text-9xl leading-none tracking-tight mb-6 anim-slide delay-2" style="color:var(--text);">Your launch belongs on a wall.</h1>
+      <p id="heroSubtitle" class="font-mono text-sm md:text-base max-w-lg mb-10 anim-slide delay-3" style="color:var(--secondary);">Motion posters that stop thumbs.</p>
+      <div class="flex flex-col sm:flex-row gap-4 anim-slide delay-4"><a href="#download" id="ctaPrimary" class="font-mono text-sm uppercase tracking-widest px-8 py-3 anim-pulse" style="background:var(--accent);color:var(--text);border:none;">Get the Template</a> <a href="#posters" id="ctaSecondary" class="font-mono text-sm uppercase tracking-widest px-8 py-3" style="background:transparent;color:var(--secondary);border:1px solid var(--secondary);">View Posters</a>
+      </div>
+     </div>
+     <div class="tape tape-bl"></div>
+     <div class="tape tape-br"></div>
+    </div>
+   </section><!-- POSTERS GRID -->
+   <section id="posters" class="max-w-6xl mx-auto px-4 py-20">
+    <div class="flex items-center gap-4 mb-12 scroll-reveal">
+     <svg class="icon-thin" width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <rect x="2" y="3" width="20" height="18" rx="2" /><line x1="2" y1="9" x2="22" y2="9" /><line x1="9" y1="3" x2="9" y2="9" />
+     </svg>
+     <h2 class="font-bebas text-4xl md:text-5xl tracking-wide">Posters</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6"><!-- Poster 1 -->
+     <div class="poster-panel scroll-reveal" style="aspect-ratio:3/4;position:relative;">
+      <div class="tape tape-tl"></div>
+      <div class="tape tape-tr"></div><img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&amp;q=80" alt="Urban night scene" class="img-cover absolute inset-0" style="opacity:0.35;filter:grayscale(40%);" loading="lazy" onerror="this.style.background='#2a2520';this.style.display='none';">
+      <div class="absolute inset-0" style="background:linear-gradient(180deg,transparent 40%,var(--surface) 100%);z-index:1;"></div>
+      <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+       <div class="font-mono text-xs uppercase tracking-widest mb-2" style="color:var(--accent);">
+        Launch Event
+       </div>
+       <div class="font-bebas text-3xl leading-tight">
+        Neon District
+       </div>
+       <div class="font-mono text-xs mt-2" style="color:var(--secondary);">
+        Vol. 01 — 2024
+       </div>
+      </div>
+      <div class="crease-v"></div>
+     </div><!-- Poster 2 -->
+     <div class="poster-panel scroll-reveal" style="aspect-ratio:3/4;position:relative;">
+      <div class="tape tape-tl"></div>
+      <div class="tape tape-tr"></div><img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=600&amp;q=80" alt="Crowd at concert" class="img-cover absolute inset-0" style="opacity:0.35;filter:grayscale(40%);" loading="lazy" onerror="this.style.display='none';">
+      <div class="absolute inset-0" style="background:linear-gradient(180deg,transparent 40%,var(--surface) 100%);z-index:1;"></div>
+      <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+       <div class="font-mono text-xs uppercase tracking-widest mb-2" style="color:var(--accent);">
+        Creator Drop
+       </div>
+       <div class="font-bebas text-3xl leading-tight">
+        Sound Wall
+       </div>
+       <div class="font-mono text-xs mt-2" style="color:var(--secondary);">
+        Vol. 02 — 2024
+       </div>
+      </div>
+      <div class="crease-v"></div>
+     </div><!-- Poster 3 -->
+     <div class="poster-panel scroll-reveal" style="aspect-ratio:3/4;position:relative;">
+      <div class="tape tape-tl"></div>
+      <div class="tape tape-tr"></div><img src="https://images.unsplash.com/photo-1557683316-973673baf926?w=600&amp;q=80" alt="Abstract gradient" class="img-cover absolute inset-0" style="opacity:0.3;filter:grayscale(50%);" loading="lazy" onerror="this.style.display='none';">
+      <div class="absolute inset-0" style="background:linear-gradient(180deg,transparent 40%,var(--surface) 100%);z-index:1;"></div>
+      <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+       <div class="font-mono text-xs uppercase tracking-widest mb-2" style="color:var(--accent);">
+        Brand Reveal
+       </div>
+       <div class="font-bebas text-3xl leading-tight">
+        Gradient Shift
+       </div>
+       <div class="font-mono text-xs mt-2" style="color:var(--secondary);">
+        Vol. 03 — 2024
+       </div>
+      </div>
+      <div class="crease-v"></div>
+     </div>
+    </div>
+   </section><!-- DETAILS -->
+   <section id="details" class="py-20" style="background:var(--surface);">
+    <div class="max-w-6xl mx-auto px-4">
+     <div class="poster-panel p-8 md:p-14 relative">
+      <div class="tape tape-tl"></div>
+      <div class="tape tape-tr"></div>
+      <div class="crease-v"></div>
+      <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12">
+       <div class="scroll-reveal">
+        <h2 class="font-bebas text-4xl md:text-5xl tracking-wide mb-6">Print-grade detail.<br>
+         Screen-native motion.</h2>
+        <p class="font-mono text-sm leading-relaxed" style="color:var(--secondary);">Every template ships with layered compositions, grain textures, and fold-line overlays. Designed for social, web, and print at any resolution.</p>
+       </div>
+       <div class="grid grid-cols-2 gap-6 scroll-reveal">
+        <div class="flex flex-col gap-2">
+         <svg class="icon-thin" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+         </svg><span class="font-bebas text-2xl" style="color:var(--accent);">12+</span> <span class="font-mono text-xs" style="color:var(--secondary);">Templates</span>
+        </div>
+        <div class="flex flex-col gap-2">
+         <svg class="icon-thin" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+         </svg><span class="font-bebas text-2xl" style="color:var(--accent);">40+</span> <span class="font-mono text-xs" style="color:var(--secondary);">Layers Each</span>
+        </div>
+        <div class="flex flex-col gap-2">
+         <svg class="icon-thin" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+         </svg><span class="font-bebas text-2xl" style="color:var(--accent);">4K</span> <span class="font-mono text-xs" style="color:var(--secondary);">Resolution</span>
+        </div>
+        <div class="flex flex-col gap-2">
+         <svg class="icon-thin" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" />
+         </svg><span class="font-bebas text-2xl" style="color:var(--accent);">60fps</span> <span class="font-mono text-xs" style="color:var(--secondary);">Animation</span>
+        </div>
+       </div>
+      </div>
+      <div class="tape tape-bl"></div>
+      <div class="tape tape-br"></div>
+     </div>
+    </div>
+   </section><!-- LINEUP -->
+   <section id="lineup" class="max-w-6xl mx-auto px-4 py-20">
+    <div class="flex items-center gap-4 mb-12 scroll-reveal">
+     <svg class="icon-thin" width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+     </svg>
+     <h2 class="font-bebas text-4xl md:text-5xl tracking-wide">Lineup</h2>
+    </div>
+    <div class="space-y-4">
+     <div class="poster-panel p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 scroll-reveal">
+      <div class="flex items-center gap-4"><span class="font-bebas text-3xl" style="color:var(--accent);">01</span>
+       <div>
+        <div class="font-bebas text-xl">
+         The Opener
+        </div>
+        <div class="font-mono text-xs" style="color:var(--secondary);">
+         Brand launch / Product reveal
+        </div>
+       </div>
+      </div>
+      <div class="font-mono text-xs flex items-center gap-2" style="color:var(--secondary);">
+       <svg class="icon-thin" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+       </svg> 16:9 + 9:16 + 1:1
+      </div>
+     </div>
+     <div class="poster-panel p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 scroll-reveal">
+      <div class="flex items-center gap-4"><span class="font-bebas text-3xl" style="color:var(--accent);">02</span>
+       <div>
+        <div class="font-bebas text-xl">
+         Street Static
+        </div>
+        <div class="font-mono text-xs" style="color:var(--secondary);">
+         Music / Festival / Nightlife
+        </div>
+       </div>
+      </div>
+      <div class="font-mono text-xs flex items-center gap-2" style="color:var(--secondary);">
+       <svg class="icon-thin" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+       </svg> 16:9 + 9:16 + 1:1
+      </div>
+     </div>
+     <div class="poster-panel p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 scroll-reveal">
+      <div class="flex items-center gap-4"><span class="font-bebas text-3xl" style="color:var(--accent);">03</span>
+       <div>
+        <div class="font-bebas text-xl">
+         The Fold
+        </div>
+        <div class="font-mono text-xs" style="color:var(--secondary);">
+         Creator economy / Drops
+        </div>
+       </div>
+      </div>
+      <div class="font-mono text-xs flex items-center gap-2" style="color:var(--secondary);">
+       <svg class="icon-thin" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+       </svg> 16:9 + 9:16 + 1:1
+      </div>
+     </div>
+     <div class="poster-panel p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 scroll-reveal">
+      <div class="flex items-center gap-4"><span class="font-bebas text-3xl" style="color:var(--accent);">04</span>
+       <div>
+        <div class="font-bebas text-xl">
+         Broadside
+        </div>
+        <div class="font-mono text-xs" style="color:var(--secondary);">
+         Conference / Workshop / Talk
+        </div>
+       </div>
+      </div>
+      <div class="font-mono text-xs flex items-center gap-2" style="color:var(--secondary);">
+       <svg class="icon-thin" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+       </svg> 16:9 + 9:16 + 1:1
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="py-20" style="background:var(--surface);">
+    <div class="max-w-6xl mx-auto px-4">
+     <div class="flex items-center gap-4 mb-12 scroll-reveal">
+      <svg class="icon-thin" width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+      </svg>
+      <h2 class="font-bebas text-4xl md:text-5xl tracking-wide">Reviews</h2>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="review-card scroll-reveal">
+       <p class="font-mono text-sm leading-relaxed mb-4" style="color:var(--secondary);">"Made our product drop look like a headline act. The fold textures are insane."</p>
+       <div class="font-bebas text-lg">
+        Maya Chen
+       </div>
+       <div class="font-mono text-xs" style="color:var(--accent);">
+        Creative Director
+       </div>
+      </div>
+      <div class="review-card scroll-reveal">
+       <p class="font-mono text-sm leading-relaxed mb-4" style="color:var(--secondary);">"Stopped scrollers cold. Our engagement jumped 4x the week we switched to these."</p>
+       <div class="font-bebas text-lg">
+        Ade Okafor
+       </div>
+       <div class="font-mono text-xs" style="color:var(--accent);">
+        Brand Manager
+       </div>
+      </div>
+      <div class="review-card scroll-reveal">
+       <p class="font-mono text-sm leading-relaxed mb-4" style="color:var(--secondary);">"Finally a template pack that doesn't look like every other Canva export."</p>
+       <div class="font-bebas text-lg">
+        Lena Voss
+       </div>
+       <div class="font-mono text-xs" style="color:var(--accent);">
+        Freelance Designer
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- BOTTOM CTA / DOWNLOAD -->
+   <section id="download" class="py-24">
+    <div class="max-w-6xl mx-auto px-4">
+     <div class="poster-panel p-10 md:p-16 relative text-center">
+      <div class="tape tape-tl"></div>
+      <div class="tape tape-tr"></div>
+      <div class="crease-v"></div>
+      <div class="relative z-10 scroll-reveal">
+       <h2 id="bottomCtaText" class="font-bebas text-5xl md:text-7xl tracking-tight mb-6">Make it look like an event.</h2>
+       <p class="font-mono text-sm mb-10 max-w-md mx-auto" style="color:var(--secondary);">Download the full poster pack. Layered files, motion presets, grain overlays — all included.</p><a href="#" id="bottomCtaBtn" class="inline-block font-mono text-sm uppercase tracking-widest px-10 py-4 anim-pulse" style="background:var(--accent);color:var(--text);" onclick="event.preventDefault();">Get the Template</a>
+      </div>
+      <div class="tape tape-bl"></div>
+      <div class="tape tape-br"></div>
+     </div>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="py-8 text-center font-mono text-xs" style="color:var(--secondary);border-top:1px solid rgba(200,184,154,0.1);">
+    <div class="flex items-center justify-center gap-2 mb-2"><span class="font-bebas text-sm tracking-widest" style="color:var(--accent);">FoldedPoster Studio</span>
+    </div><span>Print-to-motion design templates</span>
+   </footer>
+  </div><!-- end app -->
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: "Your launch belongs on a wall.",
+  hero_subtitle: "Motion posters that stop thumbs.",
+  cta_primary: "Get the Template",
+  cta_secondary: "View Posters",
+  bottom_cta_text: "Make it look like an event.",
+  background_color: "#1a1714",
+  surface_color: "#2a2520",
+  text_color: "#f0ece4",
+  accent_color: "#ff4d2a",
+  secondary_color: "#c8b89a",
+  font_family: "Bebas Neue",
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+
+  // Text
+  document.getElementById('heroTitle').textContent = c.hero_title;
+  document.getElementById('heroSubtitle').textContent = c.hero_subtitle;
+  document.getElementById('ctaPrimary').textContent = c.cta_primary;
+  document.getElementById('ctaSecondary').textContent = c.cta_secondary;
+  document.getElementById('bottomCtaText').textContent = c.bottom_cta_text;
+  document.getElementById('bottomCtaBtn').textContent = c.cta_primary;
+
+  // Colors
+  const root = document.documentElement;
+  root.style.setProperty('--bg', c.background_color);
+  root.style.setProperty('--surface', c.surface_color);
+  root.style.setProperty('--text', c.text_color);
+  root.style.setProperty('--accent', c.accent_color);
+  root.style.setProperty('--secondary', c.secondary_color);
+
+  document.body.style.background = c.background_color;
+  document.body.style.color = c.text_color;
+
+  // Font
+  const customFont = c.font_family || defaultConfig.font_family;
+  const monoStack = "'Space Mono', monospace";
+  const displayStack = `'${customFont}', 'Bebas Neue', sans-serif`;
+  document.querySelectorAll('.font-bebas').forEach(el => el.style.fontFamily = displayStack);
+  document.querySelectorAll('.font-mono').forEach(el => el.style.fontFamily = `'${customFont}', ${monoStack}`);
+
+  // Font size
+  const base = c.font_size || defaultConfig.font_size;
+  document.body.style.fontSize = base + 'px';
+}
+
+// Element SDK
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => {
+      const c = { ...defaultConfig, ...config };
+      const makeColor = (key) => ({
+        get: () => c[key] || defaultConfig[key],
+        set: (v) => { c[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+      });
+      return {
+        recolorables: [
+          makeColor('background_color'),
+          makeColor('surface_color'),
+          makeColor('text_color'),
+          makeColor('accent_color'),
+          makeColor('secondary_color')
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => c.font_family || defaultConfig.font_family,
+          set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => c.font_size || defaultConfig.font_size,
+          set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      };
+    },
+    mapToEditPanelValues: (config) => {
+      const c = { ...defaultConfig, ...config };
+      return new Map([
+        ["hero_title", c.hero_title],
+        ["hero_subtitle", c.hero_subtitle],
+        ["cta_primary", c.cta_primary],
+        ["cta_secondary", c.cta_secondary],
+        ["bottom_cta_text", c.bottom_cta_text]
+      ]);
+    }
+  });
+}
+
+// Mobile menu
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('hidden');
+});
+document.querySelectorAll('#mobileMenu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobileMenu').classList.add('hidden'));
+});
+
+// Scroll reveal
+const scrollWrapper = document.getElementById('app');
+function revealOnScroll() {
+  const els = document.querySelectorAll('.scroll-reveal');
+  els.forEach((el, i) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.88) {
+      el.classList.add('anim-unfold');
+      el.style.animationDelay = (i % 4) * 0.1 + 's';
+      el.classList.remove('scroll-reveal');
+    }
+  });
+}
+scrollWrapper.addEventListener('scroll', revealOnScroll);
+window.addEventListener('load', revealOnScroll);
+
+// Active nav
+const sections = ['home','posters','details','lineup','reviews','download'];
+scrollWrapper.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top < 200) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+
+applyConfig(defaultConfig);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82ad8569b27c5',t:'MTc3NjczMDI0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

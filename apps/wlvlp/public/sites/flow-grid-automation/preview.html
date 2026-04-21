@@ -1,1 +1,630 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/edea2de5-267b-4653-886d-497cc8ff90e5 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowGrid Automation</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        accent: '#00D4FF',
+        charcoal: '#1A1A2E',
+        slate: '#16213E',
+        surface: '#0F3460',
+        muted: '#94A3B8'
+      },
+      fontFamily: {
+        heading: ['Space Mono', 'monospace'],
+        body: ['DM Sans', 'sans-serif']
+      }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+
+@keyframes flowLine {
+  0% { transform: translateX(-100%); opacity: 0; }
+  20% { opacity: 0.3; }
+  80% { opacity: 0.3; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+
+@keyframes flowLineV {
+  0% { transform: translateY(-100%); opacity: 0; }
+  20% { opacity: 0.15; }
+  80% { opacity: 0.15; }
+  100% { transform: translateY(200%); opacity: 0; }
+}
+
+@keyframes pulse-cta {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.5); }
+  50% { box-shadow: 0 0 20px 6px rgba(0,212,255,0.25); }
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.flow-line {
+  position: absolute;
+  height: 1px;
+  width: 200px;
+  background: linear-gradient(90deg, transparent, #00D4FF, transparent);
+  animation: flowLine 8s linear infinite;
+}
+
+.flow-line-v {
+  position: absolute;
+  width: 1px;
+  height: 120px;
+  background: linear-gradient(180deg, transparent, #00D4FF, transparent);
+  animation: flowLineV 10s linear infinite;
+}
+
+.pulse-btn { animation: pulse-cta 2.5s ease-in-out infinite; }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.nav-link {
+  position: relative;
+  transition: color 0.2s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #00D4FF;
+  transition: width 0.3s;
+}
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+.card-hover {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,212,255,0.12);
+}
+
+.icon-box {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0,212,255,0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1A1A2E; }
+::-webkit-scrollbar-thumb { background: #0F3460; border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-charcoal text-white font-body">
+  <div id="app-wrapper" class="w-full h-full overflow-auto relative"><!-- Flow line overlays -->
+   <div class="pointer-events-none fixed inset-0 overflow-hidden z-0" aria-hidden="true">
+    <div class="flow-line" style="top:18%; animation-delay:0s;"></div>
+    <div class="flow-line" style="top:42%; animation-delay:3s;"></div>
+    <div class="flow-line" style="top:68%; animation-delay:5.5s;"></div>
+    <div class="flow-line" style="top:88%; animation-delay:1.5s;"></div>
+    <div class="flow-line-v" style="left:15%; animation-delay:2s;"></div>
+    <div class="flow-line-v" style="left:75%; animation-delay:6s;"></div>
+   </div><!-- Sticky Nav -->
+   <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300" style="background:rgba(26,26,46,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,212,255,0.08);">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"><a href="#home" class="flex items-center gap-2">
+      <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2" /> <rect x="17" y="3" width="8" height="8" rx="2" /> <rect x="10" y="17" width="8" height="8" rx="2" /> <line x1="11" y1="7" x2="17" y2="7" /> <line x1="14" y1="11" x2="14" y2="17" />
+      </svg><span class="font-heading font-bold text-sm tracking-wider" id="nav-brand">FLOWGRID</span> </a>
+     <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-sm text-muted hover:text-accent">Home</a> <a href="#automate" class="nav-link text-sm text-muted hover:text-accent">What We Automate</a> <a href="#process" class="nav-link text-sm text-muted hover:text-accent">Process</a> <a href="#deliverables" class="nav-link text-sm text-muted hover:text-accent">Deliverables</a> <a href="#reviews" class="nav-link text-sm text-muted hover:text-accent">Reviews</a> <a href="#book" class="nav-link text-sm text-white bg-surface px-4 py-2 rounded-lg hover:bg-accent hover:text-charcoal transition-colors">Book</a>
+     </div><button id="mobile-toggle" class="md:hidden text-muted" aria-label="Menu"> <i data-lucide="menu" style="width:24px;height:24px;"></i> </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3"><a href="#home" class="text-sm text-muted hover:text-accent">Home</a> <a href="#automate" class="text-sm text-muted hover:text-accent">What We Automate</a> <a href="#process" class="text-sm text-muted hover:text-accent">Process</a> <a href="#deliverables" class="text-sm text-muted hover:text-accent">Deliverables</a> <a href="#reviews" class="text-sm text-muted hover:text-accent">Reviews</a> <a href="#book" class="text-sm text-accent">Book</a>
+    </div>
+   </nav><!-- Hero -->
+   <section id="home" class="relative min-h-screen flex items-center pt-20" style="min-height:100%;">
+    <div class="absolute inset-0 z-0" style="background:radial-gradient(ellipse at 30% 40%, rgba(0,212,255,0.06) 0%, transparent 60%);"></div>
+    <div class="max-w-6xl mx-auto px-6 py-24 relative z-10 w-full">
+     <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div>
+       <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/20 mb-8 reveal"><span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span> <span class="text-xs font-heading text-accent tracking-wider">WORKFLOW AUTOMATION CONSULTING</span>
+       </div>
+       <h1 id="hero-title" class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 reveal" style="animation-delay:0.1s;">Automate the busywork.<br><span class="text-accent">Keep the control.</span></h1>
+       <p id="hero-subtitle" class="text-lg text-muted max-w-lg mb-10 reveal" style="animation-delay:0.2s;">Systems that scale without breaking. We design, build, and maintain automation workflows that give your ops team clarity and your business real ROI.</p>
+       <div class="flex flex-wrap gap-4 reveal" style="animation-delay:0.3s;"><a href="#book" id="cta-primary-btn" class="pulse-btn inline-flex items-center gap-2 bg-accent text-charcoal font-bold px-6 py-3.5 rounded-lg hover:bg-white transition-colors"> <i data-lucide="zap" style="width:18px;height:18px;"></i> <span id="cta-primary-text">Request a Workflow Audit</span> </a> <a href="#deliverables" id="cta-secondary-btn" class="inline-flex items-center gap-2 border border-white/20 text-white font-medium px-6 py-3.5 rounded-lg hover:border-accent hover:text-accent transition-colors"> <span id="cta-secondary-text">See Deliverables</span> <i data-lucide="arrow-down" style="width:16px;height:16px;"></i> </a>
+       </div>
+       <div class="flex items-center gap-8 mt-12 reveal" style="animation-delay:0.4s;">
+        <div>
+         <span class="text-2xl font-heading font-bold text-accent">200+</span>
+         <p class="text-xs text-muted mt-1">Workflows Automated</p>
+        </div>
+        <div class="w-px h-10 bg-white/10"></div>
+        <div>
+         <span class="text-2xl font-heading font-bold text-accent">40hrs</span>
+         <p class="text-xs text-muted mt-1">Avg. Saved / Month</p>
+        </div>
+        <div class="w-px h-10 bg-white/10"></div>
+        <div>
+         <span class="text-2xl font-heading font-bold text-accent">98%</span>
+         <p class="text-xs text-muted mt-1">Client Retention</p>
+        </div>
+       </div>
+      </div>
+      <div class="relative reveal" style="animation-delay:0.3s;">
+       <div class="relative rounded-2xl overflow-hidden border border-white/10"><img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=700&amp;q=80" alt="Workflow planning with sticky notes on a board" class="w-full h-auto object-cover" loading="lazy" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#0F3460,#1A1A2E)'; this.alt='Image unavailable';">
+        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(26,26,46,0.7) 0%, transparent 50%);"></div>
+       </div><!-- Floating card -->
+       <div class="absolute -bottom-6 -left-6 bg-slate border border-white/10 rounded-xl p-4 flex items-center gap-3 shadow-2xl">
+        <div class="icon-box">
+         <i data-lucide="check-circle" style="width:20px;height:20px;color:#00D4FF;"></i>
+        </div>
+        <div>
+         <p class="text-sm font-bold">12 Automations</p>
+         <p class="text-xs text-muted">Deployed this week</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- What We Automate -->
+   <section id="automate" class="relative py-24">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="text-center mb-16 reveal">
+      <p class="text-xs font-heading text-accent tracking-widest mb-3">WHAT WE AUTOMATE</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-bold mb-4">Ops bottlenecks, eliminated.</h2>
+      <p class="text-muted max-w-xl mx-auto">From onboarding flows to reporting pipelines, we map, build, and maintain automations that save your team real hours every week.</p>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal">
+       <div class="icon-box mb-4">
+        <i data-lucide="git-branch" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold mb-2">Workflow Routing</h3>
+       <p class="text-sm text-muted">Auto-route tasks, approvals, and handoffs so nothing falls through the cracks.</p>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal">
+       <div class="icon-box mb-4">
+        <i data-lucide="settings" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold mb-2">Tool Integration</h3>
+       <p class="text-sm text-muted">Connect your CRM, project tools, comms, and databases into one seamless system.</p>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal">
+       <div class="icon-box mb-4">
+        <i data-lucide="zap" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold mb-2">Trigger-Based Actions</h3>
+       <p class="text-sm text-muted">Form submitted? Deal closed? Status changed? We fire the right action automatically.</p>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal">
+       <div class="icon-box mb-4">
+        <i data-lucide="clock" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold mb-2">Reporting Pipelines</h3>
+       <p class="text-sm text-muted">Auto-generate weekly dashboards, status reports, and KPI snapshots.</p>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal">
+       <div class="icon-box mb-4">
+        <i data-lucide="users" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold mb-2">Client Onboarding</h3>
+       <p class="text-sm text-muted">Welcome sequences, intake forms, and project kickoffs that run themselves.</p>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal">
+       <div class="icon-box mb-4">
+        <i data-lucide="shield" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold mb-2">SOPs &amp; Documentation</h3>
+       <p class="text-sm text-muted">Living docs that update as your processes evolve. No more outdated PDFs.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Process -->
+   <section id="process" class="relative py-24" style="background:linear-gradient(180deg, rgba(15,52,96,0.15) 0%, transparent 100%);">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="text-center mb-16 reveal">
+      <p class="text-xs font-heading text-accent tracking-widest mb-3">OUR PROCESS</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-bold mb-4">From chaos to clarity in 4 steps.</h2>
+     </div>
+     <div class="grid md:grid-cols-4 gap-6">
+      <div class="reveal text-center">
+       <div class="w-14 h-14 rounded-full border-2 border-accent flex items-center justify-center mx-auto mb-4"><span class="font-heading font-bold text-accent text-lg">01</span>
+       </div>
+       <h3 class="font-heading font-bold mb-2">Audit</h3>
+       <p class="text-sm text-muted">We map your current workflows, tools, and pain points in a free discovery call.</p>
+      </div>
+      <div class="reveal" style="transition-delay:0.1s;">
+       <div class="hidden md:block w-full h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-8 mt-7"></div>
+       <div class="text-center">
+        <div class="w-14 h-14 rounded-full border-2 border-accent flex items-center justify-center mx-auto mb-4"><span class="font-heading font-bold text-accent text-lg">02</span>
+        </div>
+        <h3 class="font-heading font-bold mb-2">Design</h3>
+        <p class="text-sm text-muted">We build a visual workflow map and prioritize your automation backlog by ROI.</p>
+       </div>
+      </div>
+      <div class="reveal" style="transition-delay:0.2s;">
+       <div class="hidden md:block w-full h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-8 mt-7"></div>
+       <div class="text-center">
+        <div class="w-14 h-14 rounded-full border-2 border-accent flex items-center justify-center mx-auto mb-4"><span class="font-heading font-bold text-accent text-lg">03</span>
+        </div>
+        <h3 class="font-heading font-bold mb-2">Build</h3>
+        <p class="text-sm text-muted">No-code and AI-powered automations deployed in your existing stack. No rip-and-replace.</p>
+       </div>
+      </div>
+      <div class="reveal" style="transition-delay:0.3s;">
+       <div class="hidden md:block w-full h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-8 mt-7"></div>
+       <div class="text-center">
+        <div class="w-14 h-14 rounded-full border-2 border-accent flex items-center justify-center mx-auto mb-4"><span class="font-heading font-bold text-accent text-lg">04</span>
+        </div>
+        <h3 class="font-heading font-bold mb-2">Maintain</h3>
+        <p class="text-sm text-muted">Ongoing retainer or project wrap-up with SOPs, training, and handoff docs.</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Deliverables -->
+   <section id="deliverables" class="relative py-24">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="reveal">
+       <p class="text-xs font-heading text-accent tracking-widest mb-3">DELIVERABLES</p>
+       <h2 class="font-heading text-3xl md:text-4xl font-bold mb-4">Everything you need to run on autopilot.</h2>
+       <p class="text-muted mb-8">Every engagement includes a full toolkit of templates, documentation, and live automations tailored to your ops.</p>
+       <div class="space-y-4">
+        <div class="flex items-start gap-4 bg-slate/40 border border-white/5 rounded-lg p-4 card-hover">
+         <div class="icon-box">
+          <i data-lucide="git-branch" style="width:18px;height:18px;color:#00D4FF;"></i>
+         </div>
+         <div>
+          <h4 class="font-bold text-sm">Workflow Map Templates</h4>
+          <p class="text-xs text-muted mt-1">Visual maps of every automated process with decision nodes and triggers.</p>
+         </div>
+        </div>
+        <div class="flex items-start gap-4 bg-slate/40 border border-white/5 rounded-lg p-4 card-hover">
+         <div class="icon-box">
+          <i data-lucide="list-checks" style="width:18px;height:18px;color:#00D4FF;"></i>
+         </div>
+         <div>
+          <h4 class="font-bold text-sm">Automation Backlog Template</h4>
+          <p class="text-xs text-muted mt-1">Prioritized list of automation opportunities ranked by effort and ROI.</p>
+         </div>
+        </div>
+        <div class="flex items-start gap-4 bg-slate/40 border border-white/5 rounded-lg p-4 card-hover">
+         <div class="icon-box">
+          <i data-lucide="file-text" style="width:18px;height:18px;color:#00D4FF;"></i>
+         </div>
+         <div>
+          <h4 class="font-bold text-sm">SOP Templates</h4>
+          <p class="text-xs text-muted mt-1">Standard Operating Procedures that live alongside your automations.</p>
+         </div>
+        </div>
+        <div class="flex items-start gap-4 bg-slate/40 border border-white/5 rounded-lg p-4 card-hover">
+         <div class="icon-box">
+          <i data-lucide="plug" style="width:18px;height:18px;color:#00D4FF;"></i>
+         </div>
+         <div>
+          <h4 class="font-bold text-sm">Integration Checklist</h4>
+          <p class="text-xs text-muted mt-1">Tool-by-tool connection guide for your entire tech stack.</p>
+         </div>
+        </div>
+        <div class="flex items-start gap-4 bg-slate/40 border border-white/5 rounded-lg p-4 card-hover">
+         <div class="icon-box">
+          <i data-lucide="calculator" style="width:18px;height:18px;color:#00D4FF;"></i>
+         </div>
+         <div>
+          <h4 class="font-bold text-sm">ROI Calculator Layout</h4>
+          <p class="text-xs text-muted mt-1">Quantify time and cost savings for every automation deployed.</p>
+         </div>
+        </div>
+        <div class="flex items-start gap-4 bg-slate/40 border border-white/5 rounded-lg p-4 card-hover">
+         <div class="icon-box">
+          <i data-lucide="clipboard-list" style="width:18px;height:18px;color:#00D4FF;"></i>
+         </div>
+         <div>
+          <h4 class="font-bold text-sm">Onboarding Questionnaire</h4>
+          <p class="text-xs text-muted mt-1">Pre-engagement intake form to capture your workflows and goals.</p>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="relative reveal">
+       <div class="rounded-2xl overflow-hidden border border-white/10"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&amp;q=80" alt="Modern office workspace with laptop showing analytics" class="w-full h-auto object-cover" loading="lazy" onerror="console.error('Image failed:', this.src); this.style.background='linear-gradient(135deg,#0F3460,#1A1A2E)'; this.alt='Image unavailable';">
+       </div>
+       <div class="absolute -top-4 -right-4 bg-charcoal border border-accent/30 rounded-xl p-4 shadow-2xl">
+        <div class="flex items-center gap-2 mb-2"><i data-lucide="trending-up" style="width:16px;height:16px;color:#00D4FF;"></i> <span class="text-xs font-heading text-accent">ROI IMPACT</span>
+        </div>
+        <p class="text-2xl font-heading font-bold">4.2x</p>
+        <p class="text-xs text-muted">Avg. return on engagement</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Reviews -->
+   <section id="reviews" class="relative py-24" style="background:linear-gradient(180deg, rgba(15,52,96,0.1) 0%, transparent 100%);">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="text-center mb-16 reveal">
+      <p class="text-xs font-heading text-accent tracking-widest mb-3">CLIENT REVIEWS</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-bold mb-4">Trusted by ops leaders.</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal">
+       <div class="flex gap-1 mb-4"><i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i>
+       </div>
+       <p class="text-sm text-muted mb-6">"FlowGrid cut our client onboarding from 3 days to 45 minutes. The ROI was immediate and the handoff docs meant our team could maintain everything independently."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-surface flex items-center justify-center font-heading font-bold text-accent text-sm">
+         MR
+        </div>
+        <div>
+         <p class="text-sm font-bold">Maya Reeves</p>
+         <p class="text-xs text-muted">Head of Ops, Vantage</p>
+        </div>
+       </div>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal" style="transition-delay:0.1s;">
+       <div class="flex gap-1 mb-4"><i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i>
+       </div>
+       <p class="text-sm text-muted mb-6">"We were drowning in manual reporting. FlowGrid automated our entire weekly dashboard pipeline. Now it just arrives every Monday morning, no clicks required."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-surface flex items-center justify-center font-heading font-bold text-accent text-sm">
+         JL
+        </div>
+        <div>
+         <p class="text-sm font-bold">James Liu</p>
+         <p class="text-xs text-muted">COO, ScalePoint</p>
+        </div>
+       </div>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-6 reveal" style="transition-delay:0.2s;">
+       <div class="flex gap-1 mb-4"><i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i> <i data-lucide="star" style="width:16px;height:16px;color:#00D4FF;fill:#00D4FF;"></i>
+       </div>
+       <p class="text-sm text-muted mb-6">"The automation backlog alone was worth the engagement. It gave us a clear roadmap of what to automate next and what to leave manual. Brilliant ops thinking."</p>
+       <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-surface flex items-center justify-center font-heading font-bold text-accent text-sm">
+         SP
+        </div>
+        <div>
+         <p class="text-sm font-bold">Sarah Petrov</p>
+         <p class="text-xs text-muted">Founder, NorthBridge</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Pricing Angles -->
+   <section class="relative py-24">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="text-center mb-16 reveal">
+      <p class="text-xs font-heading text-accent tracking-widest mb-3">ENGAGEMENT OPTIONS</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-bold mb-4">Flexible. Transparent. ROI-driven.</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-8 reveal">
+       <div class="icon-box mb-5">
+        <i data-lucide="search" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold text-lg mb-2">Workflow Audit</h3>
+       <p class="text-xs text-accent font-heading tracking-wider mb-3">ONE-TIME</p>
+       <p class="text-sm text-muted mb-4">Full ops audit with prioritized automation backlog and ROI projections. Perfect for teams exploring automation.</p>
+       <p class="text-xs text-muted italic">Reduce manual work from day one.</p>
+      </div>
+      <div class="card-hover bg-slate/60 border border-accent/30 rounded-xl p-8 relative reveal" style="transition-delay:0.1s;">
+       <div class="absolute top-0 right-0 bg-accent text-charcoal text-xs font-heading font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
+        POPULAR
+       </div>
+       <div class="icon-box mb-5">
+        <i data-lucide="zap" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold text-lg mb-2">Build &amp; Launch</h3>
+       <p class="text-xs text-accent font-heading tracking-wider mb-3">PROJECT-BASED</p>
+       <p class="text-sm text-muted mb-4">End-to-end automation build with SOPs, integration setup, team training, and full handoff documentation.</p>
+       <p class="text-xs text-muted italic">Ops clarity, delivered.</p>
+      </div>
+      <div class="card-hover bg-slate/60 border border-white/5 rounded-xl p-8 reveal" style="transition-delay:0.2s;">
+       <div class="icon-box mb-5">
+        <i data-lucide="refresh-cw" style="width:20px;height:20px;color:#00D4FF;"></i>
+       </div>
+       <h3 class="font-heading font-bold text-lg mb-2">Ops Retainer</h3>
+       <p class="text-xs text-accent font-heading tracking-wider mb-3">MONTHLY</p>
+       <p class="text-sm text-muted mb-4">Ongoing automation maintenance, new workflow builds, and priority support. Your fractional automation team.</p>
+       <p class="text-xs text-muted italic">Retainer upsells that compound.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Bottom CTA / Book -->
+   <section id="book" class="relative py-24">
+    <div class="max-w-6xl mx-auto px-6">
+     <div class="relative rounded-2xl overflow-hidden border border-accent/20 p-12 md:p-16 text-center" style="background:linear-gradient(135deg, rgba(15,52,96,0.5) 0%, rgba(26,26,46,0.9) 100%);">
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+       <div class="flow-line" style="top:30%;animation-delay:0s;"></div>
+       <div class="flow-line" style="top:70%;animation-delay:2s;"></div>
+      </div>
+      <div class="relative z-10 reveal">
+       <div class="icon-box mx-auto mb-6 border-accent/50">
+        <i data-lucide="zap" style="width:22px;height:22px;color:#00D4FF;"></i>
+       </div>
+       <h2 id="bottom-cta-title" class="font-heading text-3xl md:text-5xl font-bold mb-4">Get hours back every week.</h2>
+       <p class="text-muted max-w-lg mx-auto mb-8">Book a free workflow audit and discover exactly where automation can save your team the most time and money.</p>
+       <div class="flex flex-wrap justify-center gap-4 mb-10"><a href="#book" class="pulse-btn inline-flex items-center gap-2 bg-accent text-charcoal font-bold px-8 py-4 rounded-lg hover:bg-white transition-colors text-lg"> <i data-lucide="calendar" style="width:20px;height:20px;"></i> Book a Free Audit </a>
+       </div>
+       <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-charcoal/50"><i data-lucide="message-circle" style="width:14px;height:14px;color:#00D4FF;"></i> <span class="text-xs text-muted">Vote + Comment (Embed Widget Here)</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer class="border-t border-white/5 py-12">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+     <div class="flex items-center gap-2">
+      <svg width="20" height="20" viewbox="0 0 28 28" fill="none" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2" /><rect x="17" y="3" width="8" height="8" rx="2" /><rect x="10" y="17" width="8" height="8" rx="2" /> <line x1="11" y1="7" x2="17" y2="7" /><line x1="14" y1="11" x2="14" y2="17" />
+      </svg><span class="font-heading text-xs tracking-wider">FLOWGRID AUTOMATION</span>
+     </div>
+     <p class="text-xs text-muted">Automate the busywork. Keep the control.</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'Automate the busywork. Keep the control.',
+  hero_subtitle: 'Systems that scale without breaking. We design, build, and maintain automation workflows that give your ops team clarity and your business real ROI.',
+  cta_primary: 'Request a Workflow Audit',
+  cta_secondary: 'See Deliverables',
+  bottom_cta_title: 'Get hours back every week.',
+  background_color: '#1A1A2E',
+  surface_color: '#16213E',
+  text_color: '#FFFFFF',
+  accent_color: '#00D4FF',
+  muted_color: '#94A3B8',
+  font_family: 'Space Mono',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const get = (k) => config[k] || defaultConfig[k];
+
+  // Text
+  const heroEl = document.getElementById('hero-title');
+  const parts = get('hero_title').split('.');
+  if (parts.length > 1) {
+    heroEl.innerHTML = parts[0].trim() + '.<br><span style="color:' + get('accent_color') + ';">' + parts.slice(1).join('.').trim() + '</span>';
+  } else {
+    heroEl.textContent = get('hero_title');
+  }
+
+  document.getElementById('hero-subtitle').textContent = get('hero_subtitle');
+  document.getElementById('cta-primary-text').textContent = get('cta_primary');
+  document.getElementById('cta-secondary-text').textContent = get('cta_secondary');
+  document.getElementById('bottom-cta-title').textContent = get('bottom_cta_title');
+
+  // Colors
+  document.body.style.backgroundColor = get('background_color');
+  document.body.style.color = get('text_color');
+
+  document.querySelectorAll('.bg-slate\\/60, .bg-slate\\/40').forEach(el => {
+    el.style.backgroundColor = get('surface_color') + '99';
+  });
+
+  document.querySelectorAll('.pulse-btn').forEach(btn => {
+    btn.style.backgroundColor = get('accent_color');
+    btn.style.color = get('background_color');
+  });
+
+  document.querySelectorAll('.text-accent').forEach(el => {
+    el.style.color = get('accent_color');
+  });
+
+  document.querySelectorAll('.text-muted').forEach(el => {
+    el.style.color = get('muted_color');
+  });
+
+  // Font
+  const font = get('font_family');
+  const baseSize = get('font_size');
+  document.querySelectorAll('.font-heading').forEach(el => {
+    el.style.fontFamily = font + ', monospace';
+  });
+  document.querySelectorAll('h1').forEach(el => el.style.fontSize = '');
+  document.querySelectorAll('p, .text-sm').forEach(el => {
+    el.style.fontSize = baseSize + 'px';
+  });
+}
+
+// Element SDK init
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => { applyConfig(config); },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } },
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family,
+      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: {
+      get: () => config.font_size || defaultConfig.font_size,
+      set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+    }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['hero_title', config.hero_title || defaultConfig.hero_title],
+    ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+    ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+    ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+    ['bottom_cta_title', config.bottom_cta_title || defaultConfig.bottom_cta_title],
+  ])
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Mobile menu
+document.getElementById('mobile-toggle').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+
+// Close mobile menu on link click
+document.querySelectorAll('#mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+});
+
+// Active nav link on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+const wrapper = document.getElementById('app-wrapper');
+wrapper.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (wrapper.scrollTop >= s.offsetTop - 120) current = s.getAttribute('id');
+  });
+  navLinks.forEach(l => {
+    l.classList.remove('active');
+    if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+  });
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82a43d29a27c5',t:'MTc3NjczMDIyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
