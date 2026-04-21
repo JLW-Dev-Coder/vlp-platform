@@ -72,7 +72,7 @@ Up to 4 platform-specific items. Examples:
 | TTMP | Free Code Lookup, Sample Report, Transcript Guide, API Docs |
 | WLVLP | Template Gallery, Before/After Preview, Site Hosting FAQ, Design Tips |
 | TMP | IRS Payment Calculator, Directory Search, Tax Pro Guide, Compliance Checklist |
-| TCVLP | Form 843 Explainer, Penalty Calculator, Case Examples, Filing Guide |
+| TCVLP | Gala — Claim Guide, Form 843 Explainer, Penalty Calculator, Case Examples |
 | TTTMP | Game Demo, IRS Form Guide, Code Quiz, Study Tools |
 | DVLP | Portfolio Examples, Hiring Guide, Skill Matcher, Rate Calculator |
 | GVLP | Game Previews, Leaderboards, Achievement Guide, Tournament Rules |

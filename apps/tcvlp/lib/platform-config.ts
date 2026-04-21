@@ -85,6 +85,7 @@ export const tcvlpConfig: PlatformConfig = {
         { label: 'Help Center', href: '/help', description: 'Answers, FAQs, and booking' },
       ],
       toolsExtras: [
+        { label: 'Gala — Claim Guide', href: '/gala' },
         { label: 'Onboarding', href: '/onboarding' },
         { label: 'Affiliate Program', href: '/dashboard/affiliate' },
         { label: 'Book a Call', href: '/help' },
