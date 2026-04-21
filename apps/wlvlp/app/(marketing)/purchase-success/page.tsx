@@ -87,7 +87,7 @@ function PurchaseSuccessInner() {
   const sessionId = params.get('session_id');
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <PurchaseBeacon app="wlvlp" sessionId={sessionId ?? undefined} />
       <style>{`
         @keyframes dance {
@@ -101,14 +101,7 @@ function PurchaseSuccessInner() {
         }
       `}</style>
       <Confetti />
-      <nav className="sticky top-0 z-50 bg-[rgba(7,7,10,0.75)] backdrop-blur-md border-b border-neon-blue/20">
-        <div className="max-w-[960px] mx-auto px-6 h-[60px] flex items-center">
-          <Link href="/" className="font-sora font-extrabold text-[1.2rem] text-neon-blue glow-blue no-underline">
-            Website Lotto
-          </Link>
-        </div>
-      </nav>
-      <main className="flex-1 flex items-center justify-center px-6 py-12 min-h-[60vh]">
+      <div className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8 shadow-2xl text-center flex flex-col items-center gap-5 neon-border">
           <div
             className="dance-emoji text-[5rem] leading-none"
@@ -145,8 +138,8 @@ function PurchaseSuccessInner() {
             </Link>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
 
