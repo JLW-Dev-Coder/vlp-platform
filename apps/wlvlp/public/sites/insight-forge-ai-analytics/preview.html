@@ -1,1 +1,864 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/6828861f-6802-4dd0-a82c-47ea583d9525 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InsightForge AI Analytics</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace']
+      }
+    }
+  }
+}
+</script>
+  <style>
+html { height: 100%; }
+body { height: 100%; margin: 0; }
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.3); }
+  50% { box-shadow: 0 0 35px rgba(6, 182, 212, 0.6); }
+}
+
+.animate-gradient { animation: gradientShift 8s ease infinite; background-size: 200% 200%; }
+.animate-glow { animation: glowPulse 3s ease-in-out infinite; }
+.animate-cta { animation: ctaPulse 2.5s ease-in-out infinite; }
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-left { opacity: 0; transform: translateX(-40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+.reveal-right { opacity: 0; transform: translateX(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+.model-output {
+  background: rgba(6, 182, 212, 0.05);
+  border-left: 2px solid rgba(6, 182, 212, 0.4);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.nav-active { color: #06b6d4; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a1a; }
+::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.3); border-radius: 3px; }
+
+.star-filled { fill: #06b6d4; stroke: #06b6d4; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto" style="background: #07071a; color: #e2e8f0;"><!-- Animated BG -->
+  <div class="fixed inset-0 animate-gradient" style="background: linear-gradient(135deg, #07071a 0%, #0d0b2e 25%, #07071a 50%, #0a1628 75%, #07071a 100%); z-index: 0;"></div><!-- Sticky Nav -->
+  <nav id="mainNav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background: rgba(7, 7, 26, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+   <div class="max-w-6xl mx-auto px-6 flex items-center justify-between" style="height: 64px;"><a href="#home" class="flex items-center gap-2 text-white font-bold text-lg">
+     <svg width="28" height="28" viewbox="0 0 28 28" fill="none" stroke="url(#navGrad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><defs>
+       <lineargradient id="navGrad" x1="0" y1="0" x2="28" y2="28">
+        <stop stop-color="#06b6d4" />
+        <stop offset="1" stop-color="#8b5cf6" />
+       </lineargradient>
+      </defs> <circle cx="14" cy="14" r="12" /> <circle cx="14" cy="10" r="3" /> <line x1="14" y1="13" x2="14" y2="20" /> <line x1="10" y1="16" x2="14" y2="13" /> <line x1="18" y1="16" x2="14" y2="13" /> <circle cx="10" cy="16" r="1.5" /> <circle cx="18" cy="16" r="1.5" /> <circle cx="14" cy="20" r="1.5" />
+     </svg><span>InsightForge</span> </a>
+    <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-sm text-gray-400 hover:text-cyan-400 transition-colors">Home</a> <a href="#usecases" class="nav-link text-sm text-gray-400 hover:text-cyan-400 transition-colors">Use Cases</a> <a href="#howitworks" class="nav-link text-sm text-gray-400 hover:text-cyan-400 transition-colors">How It Works</a> <a href="#sampleinsight" class="nav-link text-sm text-gray-400 hover:text-cyan-400 transition-colors">Sample Insight</a> <a href="#reviews" class="nav-link text-sm text-gray-400 hover:text-cyan-400 transition-colors">Reviews</a> <a href="#book" class="nav-link text-sm px-4 py-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all">Book</a>
+    </div><button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white"> <i data-lucide="menu" style="width:24px;height:24px;"></i> </button>
+   </div>
+   <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3"><a href="#home" class="nav-link text-sm text-gray-400 hover:text-cyan-400 py-1">Home</a> <a href="#usecases" class="nav-link text-sm text-gray-400 hover:text-cyan-400 py-1">Use Cases</a> <a href="#howitworks" class="nav-link text-sm text-gray-400 hover:text-cyan-400 py-1">How It Works</a> <a href="#sampleinsight" class="nav-link text-sm text-gray-400 hover:text-cyan-400 py-1">Sample Insight</a> <a href="#reviews" class="nav-link text-sm text-gray-400 hover:text-cyan-400 py-1">Reviews</a> <a href="#book" class="nav-link text-sm text-cyan-400 py-1">Book</a>
+   </div>
+  </nav>
+  <main class="relative z-10 w-full"><!-- HERO -->
+   <section id="home" class="min-h-screen flex items-center justify-center px-6 pt-20">
+    <div class="max-w-4xl mx-auto text-center">
+     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-xs text-cyan-400 mb-8" style="animation: slideUp 0.6s ease both;">
+      <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+      </svg> AI-Powered Analytics Consulting
+     </div>
+     <h1 id="heroTitle" class="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6" style="animation: slideUp 0.8s ease 0.1s both;">Turn data into<br><span style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">decisions fast.</span></h1>
+     <p id="heroSubtitle" class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10" style="animation: slideUp 0.8s ease 0.2s both;">AI-assisted analysis with human-grade interpretation.</p>
+     <div class="flex flex-col sm:flex-row gap-4 justify-center" style="animation: slideUp 0.8s ease 0.3s both;"><a href="#book" id="ctaPrimaryBtn" class="animate-cta px-8 py-3.5 rounded-xl font-semibold text-white transition-all" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6);">Book an Assessment</a> <a href="#sampleinsight" id="ctaSecondaryBtn" class="px-8 py-3.5 rounded-xl font-semibold text-cyan-400 glass-card hover:bg-white/10 transition-all">View Sample Insight</a>
+     </div><!-- Hero metric cards -->
+     <div class="grid grid-cols-3 gap-4 mt-16 max-w-lg mx-auto" style="animation: slideUp 0.8s ease 0.5s both;">
+      <div class="glass-card rounded-xl p-4 text-center">
+       <div class="text-2xl font-bold text-cyan-400 animate-glow">
+        3x
+       </div>
+       <div class="text-xs text-gray-500 mt-1">
+        Faster Decisions
+       </div>
+      </div>
+      <div class="glass-card rounded-xl p-4 text-center">
+       <div class="text-2xl font-bold text-violet-400 animate-glow" style="animation-delay: 0.5s;">
+        92%
+       </div>
+       <div class="text-xs text-gray-500 mt-1">
+        Action Rate
+       </div>
+      </div>
+      <div class="glass-card rounded-xl p-4 text-center">
+       <div class="text-2xl font-bold text-cyan-400 animate-glow" style="animation-delay: 1s;">
+        48h
+       </div>
+       <div class="text-xs text-gray-500 mt-1">
+        Avg Delivery
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- USE CASES -->
+   <section id="usecases" class="py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+     <div class="text-center mb-16 reveal">
+      <p class="text-cyan-400 text-sm font-mono mb-3">// USE CASES</p>
+      <h2 class="text-3xl md:text-4xl font-bold">Built for teams that need clarity</h2>
+      <p class="text-gray-400 mt-4 max-w-xl mx-auto">From monthly reporting to strategic pivots, InsightForge delivers actionable analysis across every function.</p>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="glass-card-strong rounded-2xl p-7 reveal" style="transition-delay: 0.1s;">
+       <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-5" style="background: rgba(6, 182, 212, 0.1);">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M3 3v18h18" /><path d="M7 16l4-8 4 4 6-10" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Executive Reporting</h3>
+       <p class="text-sm text-gray-400 leading-relaxed">Monthly KPI packs with trend analysis, anomaly detection, and clear executive summaries your board can act on.</p>
+       <div class="mt-5 flex flex-wrap gap-2"><span class="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400">KPI Trees</span> <span class="text-xs px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-400">Trend Lines</span>
+       </div>
+      </div>
+      <div class="glass-card-strong rounded-2xl p-7 reveal" style="transition-delay: 0.2s;">
+       <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-5" style="background: rgba(139, 92, 246, 0.1);">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /><line x1="11" y1="8" x2="11" y2="14" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Market &amp; Customer Analysis</h3>
+       <p class="text-sm text-gray-400 leading-relaxed">Segment behavior, churn drivers, and revenue attribution mapped to your specific business model.</p>
+       <div class="mt-5 flex flex-wrap gap-2"><span class="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400">Segmentation</span> <span class="text-xs px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-400">Attribution</span>
+       </div>
+      </div>
+      <div class="glass-card-strong rounded-2xl p-7 reveal" style="transition-delay: 0.3s;">
+       <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-5" style="background: rgba(6, 182, 212, 0.1);">
+        <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold mb-2">Operational Deep-Dives</h3>
+       <p class="text-sm text-gray-400 leading-relaxed">Process efficiency audits, cost modeling, and resource allocation insights backed by your own data.</p>
+       <div class="mt-5 flex flex-wrap gap-2"><span class="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400">Cost Models</span> <span class="text-xs px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-400">Efficiency</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- HOW IT WORKS -->
+   <section id="howitworks" class="py-24 px-6" style="background: rgba(255,255,255,0.01);">
+    <div class="max-w-5xl mx-auto">
+     <div class="text-center mb-16 reveal">
+      <p class="text-violet-400 text-sm font-mono mb-3">// HOW IT WORKS</p>
+      <h2 class="text-3xl md:text-4xl font-bold">From raw data to clear action</h2>
+     </div>
+     <div class="relative"><!-- Connecting line -->
+      <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px" style="background: linear-gradient(to bottom, transparent, rgba(6,182,212,0.3), rgba(139,92,246,0.3), transparent);"></div>
+      <div class="space-y-16"><!-- Step 1 -->
+       <div class="md:flex items-center gap-12 reveal-left">
+        <div class="md:w-1/2 md:text-right mb-6 md:mb-0">
+         <div class="inline-flex items-center gap-2 text-cyan-400 font-mono text-sm mb-3"><span class="w-8 h-8 rounded-full border border-cyan-500/30 flex items-center justify-center text-xs">01</span> Data Request
+         </div>
+         <h3 class="text-xl font-semibold mb-2">We scope your questions</h3>
+         <p class="text-sm text-gray-400">Using our data request checklist, we define what matters. You share exports, dashboards, or database access.</p>
+        </div>
+        <div class="md:w-1/2">
+         <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center gap-3 mb-3">
+           <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 12l2 2 4-4" />
+           </svg><span class="text-sm font-medium">Data Request Checklist</span>
+          </div>
+          <div class="space-y-2 text-xs text-gray-400 font-mono">
+           <div class="flex items-center gap-2">
+            <span class="text-cyan-400">[x]</span> Revenue by segment (12mo)
+           </div>
+           <div class="flex items-center gap-2">
+            <span class="text-cyan-400">[x]</span> Customer acquisition source
+           </div>
+           <div class="flex items-center gap-2">
+            <span class="text-gray-600">[ ]</span> Churn event timestamps
+           </div>
+          </div>
+         </div>
+        </div>
+       </div><!-- Step 2 -->
+       <div class="md:flex items-center gap-12 flex-row-reverse reveal-right">
+        <div class="md:w-1/2 mb-6 md:mb-0">
+         <div class="inline-flex items-center gap-2 text-violet-400 font-mono text-sm mb-3"><span class="w-8 h-8 rounded-full border border-violet-500/30 flex items-center justify-center text-xs">02</span> AI + Human Analysis
+         </div>
+         <h3 class="text-xl font-semibold mb-2">Models process, analysts interpret</h3>
+         <p class="text-sm text-gray-400">Our AI models surface patterns. Our analysts validate, contextualize, and build the KPI tree framework.</p>
+        </div>
+        <div class="md:w-1/2">
+         <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center gap-3 mb-3">
+           <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a8 8 0 0 0-8 8c0 3 1.5 5.5 4 7v3h8v-3c2.5-1.5 4-4 4-7a8 8 0 0 0-8-8z" /><path d="M10 22h4" />
+           </svg><span class="text-sm font-medium">KPI Tree Output</span>
+          </div>
+          <div class="text-xs font-mono text-gray-400 space-y-1">
+           <div class="text-cyan-400">
+            Revenue
+           </div>
+           <div class="pl-4">
+            |-- New Customer Rev <span class="text-green-400">+12%</span>
+           </div>
+           <div class="pl-4">
+            |-- Existing Expansion <span class="text-green-400">+8%</span>
+           </div>
+           <div class="pl-4">
+            |-- Churned Rev <span class="text-red-400">-4%</span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div><!-- Step 3 -->
+       <div class="md:flex items-center gap-12 reveal-left">
+        <div class="md:w-1/2 md:text-right mb-6 md:mb-0">
+         <div class="inline-flex items-center gap-2 text-cyan-400 font-mono text-sm mb-3"><span class="w-8 h-8 rounded-full border border-cyan-500/30 flex items-center justify-center text-xs">03</span> Insight Delivery
+         </div>
+         <h3 class="text-xl font-semibold mb-2">Reports that drive action</h3>
+         <p class="text-sm text-gray-400">Executive summary, insight report, and a "Next Actions" playbook delivered in 48 hours.</p>
+        </div>
+        <div class="md:w-1/2">
+         <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center gap-3 mb-3">
+           <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+           </svg><span class="text-sm font-medium">Deliverables</span>
+          </div>
+          <div class="space-y-2 text-xs text-gray-400">
+           <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Executive Summary Slide
+           </div>
+           <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span> Full Insight Report
+           </div>
+           <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Next Actions Playbook
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- SAMPLE INSIGHT -->
+   <section id="sampleinsight" class="py-24 px-6">
+    <div class="max-w-5xl mx-auto">
+     <div class="text-center mb-16 reveal">
+      <p class="text-cyan-400 text-sm font-mono mb-3">// SAMPLE INSIGHT</p>
+      <h2 class="text-3xl md:text-4xl font-bold">What your deliverable looks like</h2>
+      <p class="text-gray-400 mt-4">A mock executive summary from a real engagement pattern.</p>
+     </div>
+     <div class="grid md:grid-cols-2 gap-6"><!-- Executive Summary -->
+      <div class="glass-card-strong rounded-2xl p-7 reveal-left">
+       <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+         <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+         </svg><span class="text-sm font-semibold">Executive Summary</span>
+        </div><span class="text-xs px-2 py-1 rounded bg-cyan-500/10 text-cyan-400 font-mono">Q4 2024</span>
+       </div>
+       <div class="model-output rounded-lg p-4 mb-4 text-xs leading-relaxed text-gray-300">
+        <p class="mb-3"><span class="text-cyan-400 font-semibold">Key Finding:</span> Revenue grew 18% QoQ but customer acquisition cost increased 31%, compressing net margin by 4.2 percentage points.</p>
+        <p class="mb-3"><span class="text-violet-400 font-semibold">Root Cause:</span> Paid channel ROAS declined from 3.2x to 2.1x due to audience saturation in primary segments. Organic channels underinvested.</p>
+        <p><span class="text-cyan-400 font-semibold">Confidence:</span> High (p &lt; 0.05 across all segment analyses)</p>
+       </div>
+       <div class="grid grid-cols-3 gap-3">
+        <div class="text-center p-3 rounded-lg" style="background: rgba(6,182,212,0.06);">
+         <div class="text-lg font-bold text-cyan-400">
+          +18%
+         </div>
+         <div class="text-[10px] text-gray-500">
+          Revenue
+         </div>
+        </div>
+        <div class="text-center p-3 rounded-lg" style="background: rgba(239,68,68,0.06);">
+         <div class="text-lg font-bold text-red-400">
+          +31%
+         </div>
+         <div class="text-[10px] text-gray-500">
+          CAC
+         </div>
+        </div>
+        <div class="text-center p-3 rounded-lg" style="background: rgba(139,92,246,0.06);">
+         <div class="text-lg font-bold text-violet-400">
+          -4.2pp
+         </div>
+         <div class="text-[10px] text-gray-500">
+          Margin
+         </div>
+        </div>
+       </div>
+      </div><!-- Action List -->
+      <div class="glass-card-strong rounded-2xl p-7 reveal-right">
+       <div class="flex items-center gap-3 mb-6">
+        <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+        </svg><span class="text-sm font-semibold">Next Actions Playbook</span>
+       </div>
+       <div class="space-y-4">
+        <div class="flex gap-3 p-3 rounded-lg" style="background: rgba(6,182,212,0.04);"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs font-bold">1</span>
+         <div>
+          <div class="text-sm font-medium mb-1">
+           Reallocate 20% paid budget to organic
+          </div>
+          <div class="text-xs text-gray-500">
+           Impact: est. $240K annual savings | Owner: Marketing
+          </div>
+         </div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-lg" style="background: rgba(139,92,246,0.04);"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-xs font-bold">2</span>
+         <div>
+          <div class="text-sm font-medium mb-1">
+           Launch Segment C expansion test
+          </div>
+          <div class="text-xs text-gray-500">
+           Impact: +12% addressable market | Owner: Growth
+          </div>
+         </div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-lg" style="background: rgba(6,182,212,0.04);"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs font-bold">3</span>
+         <div>
+          <div class="text-sm font-medium mb-1">
+           Implement churn early-warning model
+          </div>
+          <div class="text-xs text-gray-500">
+           Impact: -8% churn rate | Owner: Customer Success
+          </div>
+         </div>
+        </div>
+        <div class="flex gap-3 p-3 rounded-lg" style="background: rgba(139,92,246,0.04);"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-xs font-bold">4</span>
+         <div>
+          <div class="text-sm font-medium mb-1">
+           Review pricing model for Q1 uplift
+          </div>
+          <div class="text-xs text-gray-500">
+           Impact: +3-5pp margin recovery | Owner: Finance
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DIGITAL PRODUCT -->
+   <section class="py-24 px-6" style="background: rgba(255,255,255,0.01);">
+    <div class="max-w-5xl mx-auto">
+     <div class="text-center mb-16 reveal">
+      <p class="text-violet-400 text-sm font-mono mb-3">// INCLUDED IN EVERY ENGAGEMENT</p>
+      <h2 class="text-3xl md:text-4xl font-bold">Your Insight Pack</h2>
+      <p class="text-gray-400 mt-4">Five tools delivered digitally, ready to use immediately.</p>
+     </div>
+     <div class="grid sm:grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="glass-card rounded-xl p-5 text-center reveal" style="transition-delay: 0.05s;">
+       <svg class="mx-auto mb-3" width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+       </svg>
+       <div class="text-sm font-medium">
+        Insight Report Template
+       </div>
+      </div>
+      <div class="glass-card rounded-xl p-5 text-center reveal" style="transition-delay: 0.1s;">
+       <svg class="mx-auto mb-3" width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3" /><circle cx="12" cy="4" r="2" /><circle cx="4" cy="18" r="2" /><circle cx="20" cy="18" r="2" /><line x1="12" y1="7" x2="12" y2="9" /><line x1="6" y1="16.5" x2="9.5" y2="13.5" /><line x1="18" y1="16.5" x2="14.5" y2="13.5" />
+       </svg>
+       <div class="text-sm font-medium">
+        KPI Tree Framework
+       </div>
+      </div>
+      <div class="glass-card rounded-xl p-5 text-center reveal" style="transition-delay: 0.15s;">
+       <svg class="mx-auto mb-3" width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 12l2 2 4-4" />
+       </svg>
+       <div class="text-sm font-medium">
+        Data Request Checklist
+       </div>
+      </div>
+      <div class="glass-card rounded-xl p-5 text-center reveal" style="transition-delay: 0.2s;">
+       <svg class="mx-auto mb-3" width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+       </svg>
+       <div class="text-sm font-medium">
+        Exec Summary Slide
+       </div>
+      </div>
+      <div class="glass-card rounded-xl p-5 text-center reveal" style="transition-delay: 0.25s;">
+       <svg class="mx-auto mb-3" width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+       </svg>
+       <div class="text-sm font-medium">
+        Next Actions Playbook
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- PRICING -->
+   <section class="py-24 px-6">
+    <div class="max-w-4xl mx-auto">
+     <div class="text-center mb-16 reveal">
+      <p class="text-cyan-400 text-sm font-mono mb-3">// PRICING ANGLES</p>
+      <h2 class="text-3xl md:text-4xl font-bold">Choose your speed</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="glass-card rounded-2xl p-7 reveal" style="transition-delay: 0.05s;">
+       <div class="text-sm text-gray-500 font-mono mb-2">
+        One-Time
+       </div>
+       <h3 class="text-xl font-bold mb-1">Faster Decisions</h3>
+       <p class="text-sm text-gray-400 mb-6">Single deep-dive analysis with full Insight Pack delivery.</p>
+       <div class="text-3xl font-bold mb-1" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        $2,400
+       </div>
+       <div class="text-xs text-gray-500 mb-6">
+        per engagement
+       </div>
+       <ul class="space-y-2 text-sm text-gray-400 mb-8">
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Full Insight Pack</li>
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> 48h turnaround</li>
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> 1 revision round</li>
+       </ul><a href="#book" class="block text-center py-2.5 rounded-lg text-sm font-medium text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 transition-all">Get Started</a>
+      </div>
+      <div class="rounded-2xl p-7 reveal" style="background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.2); transition-delay: 0.15s;">
+       <div class="flex items-center justify-between mb-2">
+        <div class="text-sm text-cyan-400 font-mono">
+         Monthly
+        </div><span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">POPULAR</span>
+       </div>
+       <h3 class="text-xl font-bold mb-1">Repeatable Service</h3>
+       <p class="text-sm text-gray-400 mb-6">Ongoing monthly analysis cycle with dedicated analyst.</p>
+       <div class="text-3xl font-bold mb-1" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        $1,800
+       </div>
+       <div class="text-xs text-gray-500 mb-6">
+        per month
+       </div>
+       <ul class="space-y-2 text-sm text-gray-400 mb-8">
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Monthly Insight Pack</li>
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Dedicated analyst</li>
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Unlimited revisions</li>
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Slack support</li>
+       </ul><a href="#book" class="block text-center py-2.5 rounded-lg text-sm font-semibold text-white transition-all" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6);">Get Started</a>
+      </div>
+      <div class="glass-card rounded-2xl p-7 reveal" style="transition-delay: 0.25s;">
+       <div class="text-sm text-gray-500 font-mono mb-2">
+        Strategic
+       </div>
+       <h3 class="text-xl font-bold mb-1">Clear Executive Reporting</h3>
+       <p class="text-sm text-gray-400 mb-6">Board-ready reporting with strategic narrative and forecasting.</p>
+       <div class="text-3xl font-bold mb-1" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Custom
+       </div>
+       <div class="text-xs text-gray-500 mb-6">
+        scoped to needs
+       </div>
+       <ul class="space-y-2 text-sm text-gray-400 mb-8">
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Everything in Monthly</li>
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Board presentations</li>
+        <li class="flex items-center gap-2">
+         <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+         </svg> Predictive models</li>
+       </ul><a href="#book" class="block text-center py-2.5 rounded-lg text-sm font-medium text-violet-400 border border-violet-500/20 hover:bg-violet-500/10 transition-all">Contact Us</a>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="py-24 px-6" style="background: rgba(255,255,255,0.01);">
+    <div class="max-w-5xl mx-auto">
+     <div class="text-center mb-16 reveal">
+      <p class="text-violet-400 text-sm font-mono mb-3">// REVIEWS</p>
+      <h2 class="text-3xl md:text-4xl font-bold">Trusted by data-driven teams</h2>
+     </div>
+     <div class="grid md:grid-cols-3 gap-6">
+      <div class="glass-card-strong rounded-2xl p-7 reveal" style="transition-delay: 0.05s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="text-sm text-gray-300 leading-relaxed mb-6">"InsightForge cut our monthly reporting cycle from 2 weeks to 2 days. The executive summaries are the clearest we've ever presented to the board."</p>
+       <div>
+        <div class="text-sm font-semibold">
+         Sarah Chen
+        </div>
+        <div class="text-xs text-gray-500">
+         VP Analytics, SeriesB SaaS
+        </div>
+       </div>
+      </div>
+      <div class="glass-card-strong rounded-2xl p-7 reveal" style="transition-delay: 0.15s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="text-sm text-gray-300 leading-relaxed mb-6">"The KPI tree framework alone was worth it. We finally have a shared language for what drives revenue. The playbook actions were immediately implementable."</p>
+       <div>
+        <div class="text-sm font-semibold">
+         Marcus Rivera
+        </div>
+        <div class="text-xs text-gray-500">
+         CEO, GrowthOps Co.
+        </div>
+       </div>
+      </div>
+      <div class="glass-card-strong rounded-2xl p-7 reveal" style="transition-delay: 0.25s;">
+       <div class="flex gap-1 mb-4">
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        <svg width="14" height="14" viewbox="0 0 24 24" class="star-filled">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+       </div>
+       <p class="text-sm text-gray-300 leading-relaxed mb-6">"We tried building internal dashboards for 6 months. InsightForge delivered better insights in 48 hours than we got in half a year of tooling."</p>
+       <div>
+        <div class="text-sm font-semibold">
+         Anya Petrov
+        </div>
+        <div class="text-xs text-gray-500">
+         Head of Strategy, FinEdge
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- BOOK / BOTTOM CTA -->
+   <section id="book" class="py-24 px-6">
+    <div class="max-w-3xl mx-auto">
+     <div class="glass-card-strong rounded-3xl p-10 md:p-14 text-center reveal">
+      <div class="animate-glow inline-block mb-6">
+       <svg width="48" height="48" viewbox="0 0 24 24" fill="none" stroke="url(#ctaGrad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><defs>
+         <lineargradient id="ctaGrad" x1="0" y1="0" x2="24" y2="24">
+          <stop stop-color="#06b6d4" />
+          <stop offset="1" stop-color="#8b5cf6" />
+         </lineargradient>
+        </defs> <path d="M3 3v18h18" /><path d="M7 16l4-8 4 4 6-10" />
+       </svg>
+      </div>
+      <h2 id="bottomCtaTitle" class="text-3xl md:text-4xl font-bold mb-4">Make your metrics usable.</h2>
+      <p class="text-gray-400 mb-8 max-w-md mx-auto">Book a free 30-minute assessment call. We'll review your data landscape and show you what's possible.</p><!-- Booking Form -->
+      <form id="bookingForm" class="max-w-md mx-auto mb-10">
+       <div class="flex flex-col sm:flex-row gap-3"><label for="bookEmail" class="sr-only">Email address</label> <input id="bookEmail" type="email" placeholder="you@company.com" required class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"> <button type="submit" class="animate-cta px-6 py-3 rounded-xl font-semibold text-white text-sm whitespace-nowrap transition-all" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6);">Book Assessment</button>
+       </div>
+       <div id="formMsg" class="mt-3 text-sm hidden"></div>
+      </form><!-- Vote + Comment Widget -->
+      <div class="glass-card rounded-xl p-6 max-w-md mx-auto">
+       <div class="text-xs text-gray-500 font-mono mb-4">
+        // VOTE + COMMENT
+       </div>
+       <div class="flex items-center justify-center gap-6 mb-5"><button id="upvoteBtn" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/10 text-cyan-400 text-sm hover:bg-cyan-500/20 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/30">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+         </svg> Helpful <span id="upvoteCount" class="font-mono">0</span> </button> <button id="downvoteBtn" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-gray-400 text-sm hover:bg-white/10 transition-all focus:outline-none focus:ring-2 focus:ring-gray-500/30">
+         <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+         </svg><span id="downvoteCount" class="font-mono">0</span> </button>
+       </div>
+       <div><label for="commentInput" class="sr-only">Leave a comment</label> <textarea id="commentInput" rows="2" placeholder="Leave a comment..." class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/30 resize-none transition-all"></textarea> <button id="commentSubmitBtn" class="mt-2 px-4 py-2 rounded-lg text-xs font-medium text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/30">Post Comment</button>
+        <div id="commentsArea" class="mt-4 space-y-2 text-left"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="py-10 px-6 border-t border-white/5">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+     <div class="flex items-center gap-2">
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg> InsightForge AI Analytics
+     </div>
+     <div>
+      Data-driven decisions, delivered.
+     </div>
+    </div>
+   </footer>
+  </main>
+  <script>
+// Default config
+const defaultConfig = {
+  background_color: '#07071a',
+  surface_color: '#0f0f2e',
+  text_color: '#e2e8f0',
+  primary_action_color: '#06b6d4',
+  secondary_action_color: '#8b5cf6',
+  font_family: 'DM Sans',
+  font_size: 16,
+  hero_title: 'Turn data into decisions fast.',
+  hero_subtitle: 'AI-assisted analysis with human-grade interpretation.',
+  cta_primary: 'Book an Assessment',
+  cta_secondary: 'View Sample Insight',
+  bottom_cta_title: 'Make your metrics usable.'
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  const font = c.font_family || defaultConfig.font_family;
+  const baseSize = c.font_size || defaultConfig.font_size;
+
+  document.body.style.background = c.background_color;
+  document.body.style.color = c.text_color;
+  document.body.style.fontFamily = `${font}, DM Sans, sans-serif`;
+
+  // Hero text
+  const heroTitle = document.getElementById('heroTitle');
+  if (heroTitle) {
+    const parts = c.hero_title.split(' ');
+    const half = Math.ceil(parts.length / 2);
+    heroTitle.innerHTML = parts.slice(0, half).join(' ') + '<br><span style="background: linear-gradient(135deg, ' + c.primary_action_color + ', ' + c.secondary_action_color + '); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">' + parts.slice(half).join(' ') + '</span>';
+    heroTitle.style.fontFamily = `${font}, DM Sans, sans-serif`;
+  }
+
+  const heroSub = document.getElementById('heroSubtitle');
+  if (heroSub) { heroSub.textContent = c.hero_subtitle; heroSub.style.color = c.text_color + '99'; }
+
+  const ctaP = document.getElementById('ctaPrimaryBtn');
+  if (ctaP) { ctaP.textContent = c.cta_primary; ctaP.style.background = `linear-gradient(135deg, ${c.primary_action_color}, ${c.secondary_action_color})`; }
+
+  const ctaS = document.getElementById('ctaSecondaryBtn');
+  if (ctaS) { ctaS.textContent = c.cta_secondary; ctaS.style.color = c.primary_action_color; }
+
+  const bottomT = document.getElementById('bottomCtaTitle');
+  if (bottomT) { bottomT.textContent = c.bottom_cta_title; bottomT.style.fontFamily = `${font}, DM Sans, sans-serif`; }
+
+  // Font sizes
+  document.querySelectorAll('h1').forEach(el => el.style.fontSize = '');
+  document.querySelectorAll('h2').forEach(el => { el.style.fontFamily = `${font}, DM Sans, sans-serif`; });
+  document.querySelectorAll('p, li, div').forEach(el => { el.style.fontFamily = `${font}, DM Sans, sans-serif`; });
+
+  // Animated bg
+  const bg = document.querySelector('.animate-gradient');
+  if (bg) bg.style.background = `linear-gradient(135deg, ${c.background_color} 0%, ${c.surface_color} 25%, ${c.background_color} 50%, ${c.surface_color}88 75%, ${c.background_color} 100%)`;
+}
+
+// Element SDK init
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+        { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['hero_title', config.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+      ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+      ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+      ['bottom_cta_title', config.bottom_cta_title || defaultConfig.bottom_cta_title]
+    ])
+  });
+}
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
+
+// Active nav
+const sections = ['home', 'usecases', 'howitworks', 'sampleinsight', 'reviews', 'book'];
+const mainEl = document.querySelector('main').parentElement;
+(mainEl.tagName === 'BODY' ? document.querySelector('body') : mainEl).addEventListener('scroll', function() {
+  // handled by window below
+});
+function updateActiveNav() {
+  let current = 'home';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 120) current = id;
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.toggle('nav-active', link.getAttribute('href') === '#' + current);
+    if (link.getAttribute('href') === '#' + current) link.classList.remove('text-gray-400');
+    else link.classList.add('text-gray-400');
+  });
+}
+document.body.addEventListener('scroll', updateActiveNav);
+window.addEventListener('scroll', updateActiveNav);
+
+// Mobile menu
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  const menu = document.getElementById('mobileMenu');
+  menu.classList.toggle('hidden');
+});
+document.querySelectorAll('#mobileMenu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobileMenu').classList.add('hidden'));
+});
+
+// Form
+document.getElementById('bookingForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('formMsg');
+  msg.textContent = 'Assessment booked! We\'ll reach out within 24 hours.';
+  msg.className = 'mt-3 text-sm text-cyan-400';
+  msg.classList.remove('hidden');
+  document.getElementById('bookEmail').value = '';
+});
+
+// Vote + Comment
+let upvotes = 0, downvotes = 0;
+document.getElementById('upvoteBtn').addEventListener('click', () => {
+  upvotes++;
+  document.getElementById('upvoteCount').textContent = upvotes;
+});
+document.getElementById('downvoteBtn').addEventListener('click', () => {
+  downvotes++;
+  document.getElementById('downvoteCount').textContent = downvotes;
+});
+document.getElementById('commentSubmitBtn').addEventListener('click', () => {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const area = document.getElementById('commentsArea');
+  const div = document.createElement('div');
+  div.className = 'p-3 rounded-lg text-sm text-gray-300';
+  div.style.background = 'rgba(255,255,255,0.03)';
+  div.style.borderLeft = '2px solid rgba(6,182,212,0.3)';
+  div.innerHTML = '<span class="text-xs text-gray-500 block mb-1">Just now</span>' + text.replace(/</g, '&lt;');
+  area.prepend(div);
+  input.value = '';
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82dbd523ad93b',t:'MTc3NjczMDM2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

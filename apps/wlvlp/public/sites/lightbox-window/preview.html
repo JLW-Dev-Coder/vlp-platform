@@ -1,1 +1,455 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/20f9a979-36b8-4396-817b-022c88c9c9e4 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LightboxWindow</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&amp;family=DM+Sans:wght@300;400;500&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        body: ['"DM Sans"', 'sans-serif']
+      },
+      colors: {
+        base: '#0a0a0c',
+        surface: '#161619',
+        glow: '#d4a053',
+        textLight: '#e8e4dc',
+        muted: '#8a867e'
+      }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+
+@keyframes spotlightSweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes slowZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(212,160,83,0.15); }
+  50% { box-shadow: 0 0 40px rgba(212,160,83,0.3); }
+}
+
+.spotlight-sweep {
+  background: linear-gradient(90deg, transparent 0%, rgba(212,160,83,0.06) 45%, rgba(212,160,83,0.12) 50%, rgba(212,160,83,0.06) 55%, transparent 100%);
+  background-size: 200% 100%;
+  animation: spotlightSweep 8s ease-in-out infinite;
+}
+
+.window-frame {
+  border: 1px solid rgba(212,160,83,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.window-frame img {
+  animation: slowZoom 20s ease-in-out alternate infinite;
+}
+
+.caption-card {
+  background: rgba(22,22,25,0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212,160,83,0.15);
+}
+
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.15s; }
+.reveal-delay-2 { transition-delay: 0.3s; }
+.reveal-delay-3 { transition-delay: 0.45s; }
+
+.cta-pulse { animation: glowPulse 3s ease-in-out infinite; }
+
+.nav-link { position: relative; }
+.nav-link::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px;
+  background: #d4a053; transition: width 0.3s ease;
+}
+.nav-link:hover::after { width: 100%; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0c; }
+::-webkit-scrollbar-thumb { background: rgba(212,160,83,0.3); border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-base text-textLight font-body overflow-auto" id="app-body"><!-- NAV -->
+  <nav class="fixed top-0 left-0 w-full z-50 border-b border-white/5" style="background:rgba(10,10,12,0.85);backdrop-filter:blur(12px);">
+   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"><a href="#home" class="font-display text-xl tracking-widest text-glow" id="nav-logo">LightboxWindow</a>
+    <div class="hidden md:flex gap-8 text-xs tracking-[0.2em] uppercase text-muted"><a href="#home" class="nav-link hover:text-textLight transition-colors">Home</a> <a href="#windows" class="nav-link hover:text-textLight transition-colors">Windows</a> <a href="#collection" class="nav-link hover:text-textLight transition-colors">Collection</a> <a href="#details" class="nav-link hover:text-textLight transition-colors">Details</a> <a href="#reviews" class="nav-link hover:text-textLight transition-colors">Reviews</a> <a href="#buy" class="nav-link hover:text-textLight transition-colors">Buy</a>
+    </div><button id="mobile-menu-btn" class="md:hidden text-muted hover:text-textLight"> <i data-lucide="menu" style="width:20px;height:20px;"></i> </button>
+   </div>
+   <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3 text-xs tracking-[0.2em] uppercase text-muted"><a href="#home" class="hover:text-textLight">Home</a> <a href="#windows" class="hover:text-textLight">Windows</a> <a href="#collection" class="hover:text-textLight">Collection</a> <a href="#details" class="hover:text-textLight">Details</a> <a href="#reviews" class="hover:text-textLight">Reviews</a> <a href="#buy" class="hover:text-textLight">Buy</a>
+   </div>
+  </nav><!-- HERO -->
+  <section id="home" class="relative w-full flex items-center justify-center spotlight-sweep" style="min-height:100%;padding-top:80px;">
+   <div class="absolute inset-0 bg-gradient-to-b from-transparent via-base/50 to-base pointer-events-none"></div>
+   <div class="relative z-10 text-center px-6 max-w-3xl mx-auto">
+    <p class="text-glow text-xs tracking-[0.4em] uppercase mb-6 reveal">Curated Displays</p>
+    <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-300 italic leading-[1.1] mb-6 reveal reveal-delay-1" id="hero-title">A storefront you can scroll.</h1>
+    <p class="text-muted text-lg md:text-xl font-light max-w-xl mx-auto mb-10 reveal reveal-delay-2" id="hero-subtitle">Make your product feel displayed, not posted.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center reveal reveal-delay-3"><a href="#collection" class="cta-pulse inline-flex items-center gap-2 px-8 py-3.5 bg-glow/10 border border-glow/40 text-glow text-sm tracking-widest uppercase hover:bg-glow/20 transition-colors" id="cta-primary-btn">
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+      </svg><span id="cta-primary-text">Shop Collection</span> </a> <a href="#windows" class="inline-flex items-center gap-2 px-8 py-3.5 border border-white/10 text-textLight text-sm tracking-widest uppercase hover:border-glow/30 hover:text-glow transition-colors" id="cta-secondary-btn">
+      <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+       <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+      </svg><span id="cta-secondary-text">Enter the Windows</span> </a>
+    </div>
+   </div><!-- Decorative glow orb -->
+   <div class="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(212,160,83,0.08) 0%,transparent 70%);"></div>
+  </section><!-- WINDOWS -->
+  <section id="windows" class="w-full py-24 px-6">
+   <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-20">
+     <p class="text-glow text-xs tracking-[0.4em] uppercase mb-4 reveal">The Windows</p>
+     <h2 class="font-display text-4xl md:text-5xl font-300 italic reveal reveal-delay-1">Each frame tells a story</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-8 lg:gap-12"><!-- Window 1 -->
+     <div class="reveal">
+      <div class="window-frame"><img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&amp;h=600&amp;fit=crop" alt="Boutique window display with warm lighting" loading="lazy" class="w-full h-80 object-cover" onerror="this.style.background='linear-gradient(135deg,#161619,#1a1a1f)';this.alt='Display unavailable';">
+       <div class="absolute inset-0 bg-gradient-to-t from-base/80 via-transparent to-transparent"></div>
+      </div>
+      <div class="caption-card -mt-16 mx-6 relative z-10 p-6">
+       <div class="flex items-center gap-2 text-glow text-xs tracking-[0.3em] uppercase mb-2">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" />
+        </svg> Window I
+       </div>
+       <h3 class="font-display text-2xl italic mb-2">The Evening Silhouette</h3>
+       <p class="text-muted text-sm leading-relaxed">Structured tailoring meets ambient glow. A display that makes you stop walking.</p>
+      </div>
+     </div><!-- Window 2 -->
+     <div class="reveal reveal-delay-1">
+      <div class="window-frame"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&amp;h=600&amp;fit=crop" alt="City night reflections on glass" loading="lazy" class="w-full h-80 object-cover" onerror="this.style.background='linear-gradient(135deg,#161619,#1a1a1f)';this.alt='Display unavailable';">
+       <div class="absolute inset-0 bg-gradient-to-t from-base/80 via-transparent to-transparent"></div>
+      </div>
+      <div class="caption-card -mt-16 mx-6 relative z-10 p-6">
+       <div class="flex items-center gap-2 text-glow text-xs tracking-[0.3em] uppercase mb-2">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" />
+        </svg> Window II
+       </div>
+       <h3 class="font-display text-2xl italic mb-2">Reflection &amp; Light</h3>
+       <p class="text-muted text-sm leading-relaxed">Night glass becomes the canvas. Your product, suspended between worlds.</p>
+      </div>
+     </div><!-- Window 3 -->
+     <div class="reveal">
+      <div class="window-frame"><img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&amp;h=600&amp;fit=crop" alt="Modern interior with dramatic lighting" loading="lazy" class="w-full h-80 object-cover" onerror="this.style.background='linear-gradient(135deg,#161619,#1a1a1f)';this.alt='Display unavailable';">
+       <div class="absolute inset-0 bg-gradient-to-t from-base/80 via-transparent to-transparent"></div>
+      </div>
+      <div class="caption-card -mt-16 mx-6 relative z-10 p-6">
+       <div class="flex items-center gap-2 text-glow text-xs tracking-[0.3em] uppercase mb-2">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" />
+        </svg> Window III
+       </div>
+       <h3 class="font-display text-2xl italic mb-2">Interior Atmospheres</h3>
+       <p class="text-muted text-sm leading-relaxed">Where architecture meets curation. Space as a stage for desire.</p>
+      </div>
+     </div><!-- Window 4 -->
+     <div class="reveal reveal-delay-1">
+      <div class="window-frame"><img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&amp;h=600&amp;fit=crop" alt="Fashion details in gallery lighting" loading="lazy" class="w-full h-80 object-cover" onerror="this.style.background='linear-gradient(135deg,#161619,#1a1a1f)';this.alt='Display unavailable';">
+       <div class="absolute inset-0 bg-gradient-to-t from-base/80 via-transparent to-transparent"></div>
+      </div>
+      <div class="caption-card -mt-16 mx-6 relative z-10 p-6">
+       <div class="flex items-center gap-2 text-glow text-xs tracking-[0.3em] uppercase mb-2">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+         <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" />
+        </svg> Window IV
+       </div>
+       <h3 class="font-display text-2xl italic mb-2">The Luxury Detail</h3>
+       <p class="text-muted text-sm leading-relaxed">Close enough to touch, elevated enough to covet. That's the window effect.</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- COLLECTION -->
+  <section id="collection" class="w-full py-24 px-6 spotlight-sweep" style="animation-delay:4s;">
+   <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+     <p class="text-glow text-xs tracking-[0.4em] uppercase mb-4 reveal">The Collection</p>
+     <h2 class="font-display text-4xl md:text-5xl font-300 italic reveal reveal-delay-1">Selected pieces</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+     <div class="reveal group cursor-pointer">
+      <div class="window-frame aspect-[3/4] overflow-hidden"><img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&amp;h=530&amp;fit=crop" alt="Luxury flatlay product" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.background='#161619';this.alt='Item unavailable';">
+      </div>
+      <div class="mt-3 px-1">
+       <p class="font-display text-lg italic">Lumière Watch</p>
+       <p class="text-muted text-xs tracking-wider">$420</p>
+      </div>
+     </div>
+     <div class="reveal reveal-delay-1 group cursor-pointer">
+      <div class="window-frame aspect-[3/4] overflow-hidden"><img src="https://images.unsplash.com/photo-1560343090-f0409e92791a?w=400&amp;h=530&amp;fit=crop" alt="Designer accessory" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.background='#161619';this.alt='Item unavailable';">
+      </div>
+      <div class="mt-3 px-1">
+       <p class="font-display text-lg italic">Noir Vessel</p>
+       <p class="text-muted text-xs tracking-wider">$185</p>
+      </div>
+     </div>
+     <div class="reveal reveal-delay-2 group cursor-pointer">
+      <div class="window-frame aspect-[3/4] overflow-hidden"><img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&amp;h=530&amp;fit=crop" alt="Curated design object" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.background='#161619';this.alt='Item unavailable';">
+      </div>
+      <div class="mt-3 px-1">
+       <p class="font-display text-lg italic">Amber Flask</p>
+       <p class="text-muted text-xs tracking-wider">$95</p>
+      </div>
+     </div>
+     <div class="reveal reveal-delay-3 group cursor-pointer">
+      <div class="window-frame aspect-[3/4] overflow-hidden"><img src="https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=400&amp;h=530&amp;fit=crop" alt="Gallery-lit product" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.background='#161619';this.alt='Item unavailable';">
+      </div>
+      <div class="mt-3 px-1">
+       <p class="font-display text-lg italic">Glass Prism</p>
+       <p class="text-muted text-xs tracking-wider">$260</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section><!-- DETAILS -->
+  <section id="details" class="w-full py-24 px-6">
+   <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16">
+     <p class="text-glow text-xs tracking-[0.4em] uppercase mb-4 reveal">The Details</p>
+     <h2 class="font-display text-4xl md:text-5xl font-300 italic reveal reveal-delay-1">What sets us apart</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+     <div class="reveal caption-card p-8 text-center">
+      <div class="w-12 h-12 mx-auto mb-5 flex items-center justify-center border border-glow/20 rounded-full">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#d4a053" stroke-width="1.5">
+        <circle cx="12" cy="12" r="3" /><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+       </svg>
+      </div>
+      <h3 class="font-display text-xl italic mb-3">Gallery Lighting</h3>
+      <p class="text-muted text-sm leading-relaxed">Every piece is lit like it belongs in a museum. Because it does.</p>
+     </div>
+     <div class="reveal reveal-delay-1 caption-card p-8 text-center">
+      <div class="w-12 h-12 mx-auto mb-5 flex items-center justify-center border border-glow/20 rounded-full">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#d4a053" stroke-width="1.5">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+       </svg>
+      </div>
+      <h3 class="font-display text-xl italic mb-3">Curated Labels</h3>
+      <p class="text-muted text-sm leading-relaxed">Each item arrives with its story — provenance, craft, and intention.</p>
+     </div>
+     <div class="reveal reveal-delay-2 caption-card p-8 text-center">
+      <div class="w-12 h-12 mx-auto mb-5 flex items-center justify-center border border-glow/20 rounded-full">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#d4a053" stroke-width="1.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+       </svg>
+      </div>
+      <h3 class="font-display text-xl italic mb-3">Protected Transit</h3>
+      <p class="text-muted text-sm leading-relaxed">White-glove packaging. Insured delivery. Arrives as it was displayed.</p>
+     </div>
+    </div>
+   </div>
+  </section><!-- REVIEWS -->
+  <section id="reviews" class="w-full py-24 px-6 spotlight-sweep" style="animation-delay:2s;">
+   <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16">
+     <p class="text-glow text-xs tracking-[0.4em] uppercase mb-4 reveal">Testimonials</p>
+     <h2 class="font-display text-4xl md:text-5xl font-300 italic reveal reveal-delay-1">What they say</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-8">
+     <div class="reveal caption-card p-8">
+      <div class="flex gap-1 mb-4">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+      </div>
+      <p class="text-textLight/90 text-sm italic leading-relaxed mb-4">"I've never experienced online shopping that felt this intentional. The unboxing alone was a gallery moment."</p>
+      <p class="text-muted text-xs tracking-wider uppercase">— Claire M., Paris</p>
+     </div>
+     <div class="reveal reveal-delay-1 caption-card p-8">
+      <div class="flex gap-1 mb-4">
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+       <svg width="14" height="14" viewbox="0 0 24 24" fill="#d4a053" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+       </svg>
+      </div>
+      <p class="text-textLight/90 text-sm italic leading-relaxed mb-4">"The window display concept is genius. Every scroll felt like discovering a new storefront on a midnight walk."</p>
+      <p class="text-muted text-xs tracking-wider uppercase">— Tomás R., Barcelona</p>
+     </div>
+    </div>
+   </div>
+  </section><!-- BUY / BOTTOM CTA -->
+  <section id="buy" class="w-full py-32 px-6 relative">
+   <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse at center,rgba(212,160,83,0.06) 0%,transparent 60%);"></div>
+   <div class="max-w-3xl mx-auto text-center relative z-10">
+    <p class="text-glow text-xs tracking-[0.4em] uppercase mb-6 reveal">Step Inside</p>
+    <h2 class="font-display text-4xl md:text-6xl font-300 italic mb-6 reveal reveal-delay-1" id="bottom-cta-heading">Turn browsing into desire.</h2>
+    <p class="text-muted text-lg mb-10 reveal reveal-delay-2">The window is open. The collection awaits.</p><a href="#collection" class="reveal reveal-delay-3 cta-pulse inline-flex items-center gap-3 px-10 py-4 bg-glow/10 border border-glow/40 text-glow text-sm tracking-widest uppercase hover:bg-glow/20 transition-colors">
+     <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+     </svg> Shop Now </a>
+   </div>
+  </section><!-- FOOTER -->
+  <footer class="w-full border-t border-white/5 py-8 px-6">
+   <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-muted text-xs tracking-wider"><span class="font-display text-sm text-glow/60">LightboxWindow</span> <span>Curated with intention. Displayed with care.</span>
+   </div>
+  </footer>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'A storefront you can scroll.',
+  hero_subtitle: 'Make your product feel displayed, not posted.',
+  cta_primary: 'Shop Collection',
+  cta_secondary: 'Enter the Windows',
+  bottom_cta_text: 'Turn browsing into desire.',
+  background_color: '#0a0a0c',
+  surface_color: '#161619',
+  text_color: '#e8e4dc',
+  accent_color: '#d4a053',
+  muted_color: '#8a867e',
+  font_family: 'Cormorant Garamond',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = key => config[key] || defaultConfig[key];
+  const font = c('font_family');
+  const baseSize = c('font_size');
+  const bg = c('background_color');
+  const surface = c('surface_color');
+  const text = c('text_color');
+  const accent = c('accent_color');
+  const muted = c('muted_color');
+
+  document.getElementById('hero-title').textContent = c('hero_title');
+  document.getElementById('hero-subtitle').textContent = c('hero_subtitle');
+  document.getElementById('cta-primary-text').textContent = c('cta_primary');
+  document.getElementById('cta-secondary-text').textContent = c('cta_secondary');
+  document.getElementById('bottom-cta-heading').textContent = c('bottom_cta_text');
+
+  // Font
+  const displayStack = `${font}, Georgia, serif`;
+  document.querySelectorAll('.font-display').forEach(el => el.style.fontFamily = displayStack);
+
+  // Font size scaling
+  document.getElementById('hero-title').style.fontSize = `${baseSize * 3.5}px`;
+  document.getElementById('hero-subtitle').style.fontSize = `${baseSize * 1.25}px`;
+
+  // Colors
+  document.body.style.backgroundColor = bg;
+  document.body.style.color = text;
+  document.documentElement.style.setProperty('--glow', accent);
+
+  // Accent color on glow elements
+  document.querySelectorAll('.text-glow').forEach(el => el.style.color = accent);
+  document.querySelectorAll('.caption-card').forEach(el => {
+    el.style.background = `${surface}b3`;
+    el.style.borderColor = `${accent}26`;
+  });
+  document.querySelectorAll('.text-muted').forEach(el => el.style.color = muted);
+  document.querySelectorAll('.window-frame').forEach(el => el.style.borderColor = `${accent}33`);
+}
+
+// Element SDK init
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => {
+    const c = (key) => config[key] || defaultConfig[key];
+    const makeColor = (key) => ({
+      get: () => c(key),
+      set: (v) => { config[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+    });
+    return {
+      recolorables: [
+        makeColor('background_color'),
+        makeColor('surface_color'),
+        makeColor('text_color'),
+        makeColor('accent_color'),
+        makeColor('muted_color')
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => c('font_family'),
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => c('font_size'),
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    };
+  },
+  mapToEditPanelValues: (config) => new Map([
+    ['hero_title', config.hero_title || defaultConfig.hero_title],
+    ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+    ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+    ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+    ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+  ])
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Mobile menu
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('mobile-menu').classList.add('hidden');
+  });
+});
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82f1367a4a155',t:'MTc3NjczMDQxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

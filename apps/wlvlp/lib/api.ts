@@ -359,8 +359,50 @@ export function createHostingRenewalCheckout(slug: string): Promise<CheckoutResp
   });
 }
 
-export function getMySites(account_id: string): Promise<PurchasedSite[]> {
-  return apiFetch(`/v1/wlvlp/sites/by-account/${account_id}`);
+interface WlvlpPurchaseRow {
+  slug: string;
+  tier?: string;
+  purchased_at: string;
+  hosting_expires_at?: string;
+  status?: string;
+  custom_domain?: string;
+  domain_status?: 'pending' | 'verified' | 'failed';
+}
+
+export async function getMySites(account_id: string): Promise<PurchasedSite[]> {
+  const data = await apiFetch<{ ok?: boolean; sites?: WlvlpPurchaseRow[] } | WlvlpPurchaseRow[]>(
+    `/v1/wlvlp/sites/by-account/${account_id}`
+  );
+  const rows: WlvlpPurchaseRow[] = Array.isArray(data) ? data : (data?.sites ?? []);
+  const catalog = (await import('@/wlvlp-catalog.json')).default as {
+    sites: { slug: string; title: string; categories?: string[] }[];
+  };
+  const bySlug = new Map(catalog.sites.map(s => [s.slug, s]));
+  const now = Date.now();
+  return rows.map(r => {
+    const meta = bySlug.get(r.slug);
+    const title = meta?.title
+      ?? r.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const category = meta?.categories?.[0];
+    const expiresMs = r.hosting_expires_at ? Date.parse(r.hosting_expires_at) : NaN;
+    const hosting_status: PurchasedSite['hosting_status'] =
+      r.status === 'expired' || (!Number.isNaN(expiresMs) && expiresMs < now)
+        ? 'expired'
+        : r.status === 'active'
+          ? 'active'
+          : 'pending';
+    return {
+      slug: r.slug,
+      title,
+      category,
+      purchased_at: r.purchased_at,
+      hosting_status,
+      hosting_expires_at: r.hosting_expires_at,
+      site_url: `https://${r.slug}.websitelotto.virtuallaunch.pro`,
+      custom_domain: r.custom_domain,
+      domain_status: r.domain_status,
+    };
+  });
 }
 
 export function updateConfig(slug: string, config: Record<string, string>): Promise<{ ok: boolean }> {

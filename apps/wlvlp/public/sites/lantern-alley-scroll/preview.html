@@ -1,1 +1,617 @@
 <!-- PASTE HTML FROM CANVA: https://www.canva.com/ai/code/thread/d4d93958-9f81-47de-bc89-a9e61459c386 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LanternAlley Scroll</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=DM+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        lantern: { warm: '#E8A84C', glow: '#D4843E', deep: '#0D0B09', ink: '#1A1612', card: '#1E1A15' }
+      }
+    }
+  }
+}
+</script>
+  <style>
+html { height: 100%; }
+body { height: 100%; margin: 0; }
+
+/* Grain overlay */
+.grain::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* Hanging sign sway */
+@keyframes sway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+}
+.sign-sway {
+  animation: sway 4s ease-in-out infinite;
+  transform-origin: top center;
+}
+.sign-sway-alt {
+  animation: sway 5s ease-in-out infinite reverse;
+  transform-origin: top center;
+}
+
+/* Light sweep */
+@keyframes lightSweep {
+  0% { opacity: 0.08; transform: translateX(-100%); }
+  50% { opacity: 0.15; }
+  100% { opacity: 0.08; transform: translateX(100%); }
+}
+.light-sweep::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(232,168,76,0.12), transparent);
+  animation: lightSweep 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Stagger reveal */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal { opacity: 0; }
+.reveal.visible {
+  animation: revealUp 0.7s ease-out forwards;
+}
+
+/* CTA pulse */
+@keyframes softPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(232,168,76,0.3); }
+  50% { box-shadow: 0 0 35px rgba(232,168,76,0.5); }
+}
+.cta-pulse { animation: softPulse 3s ease-in-out infinite; }
+
+/* Glow text */
+.glow-text { text-shadow: 0 0 40px rgba(232,168,76,0.4), 0 0 80px rgba(232,168,76,0.15); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0D0B09; }
+::-webkit-scrollbar-thumb { background: #E8A84C33; border-radius: 3px; }
+
+/* Hanging chain */
+.chain-line {
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, #E8A84C44 0px, #E8A84C44 4px, transparent 4px, transparent 8px);
+}
+
+/* Nav active */
+.nav-link { position: relative; }
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  background: #E8A84C;
+  border-radius: 1px;
+}
+
+/* Star rating */
+.star-filled { color: #E8A84C; }
+.star-empty { color: #3a3428; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="grain h-full">
+  <div id="app-wrapper" class="w-full h-full overflow-auto bg-lantern-deep" style="font-family: 'DM Sans', sans-serif;"><!-- SVG Icon Defs (hidden) -->
+   <svg style="display:none"><symbol id="ico-lantern" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M10 2h4" />
+     <path d="M12 2v3" />
+     <path d="M8 5h8l1 7c0 3-2.5 5-5 5s-5-2-5-5l1-7z" />
+     <path d="M10 17v2a2 2 0 004 0v-2" />
+    </symbol> <symbol id="ico-sign" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <rect x="3" y="6" width="18" height="12" rx="2" />
+     <path d="M8 2v4" />
+     <path d="M16 2v4" />
+    </symbol> <symbol id="ico-pin" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M12 21s-6-5.3-6-10a6 6 0 1112 0c0 4.7-6 10-6 10z" />
+     <circle cx="12" cy="11" r="2" />
+    </symbol> <symbol id="ico-tag" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M12.586 2.586A2 2 0 0011.172 2H4a2 2 0 00-2 2v7.172a2 2 0 00.586 1.414l8.828 8.828a2 2 0 002.828 0l5.172-5.172a2 2 0 000-2.828z" />
+     <circle cx="7.5" cy="7.5" r="1.5" />
+    </symbol> <symbol id="ico-cart" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <circle cx="9" cy="21" r="1" />
+     <circle cx="20" cy="21" r="1" />
+     <path d="M1 1h4l2.68 13.39a1 1 0 001 .81h9.72a1 1 0 001-.76L23 6H6" />
+    </symbol> <symbol id="ico-arrow" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M5 12h14" />
+     <path d="M12 5l7 7-7 7" />
+    </symbol>
+   </svg><!-- Sticky Nav -->
+   <nav id="sticky-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500" style="background: rgba(13,11,9,0.85); backdrop-filter: blur(12px);">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between"><a href="#home" class="flex items-center gap-2 text-lantern-warm">
+      <svg class="w-5 h-5">
+       <use href="#ico-lantern" />
+      </svg><span class="text-sm font-semibold tracking-widest uppercase" style="font-family: 'Playfair Display', serif;">LanternAlley</span> </a>
+     <div class="hidden md:flex items-center gap-6"><a href="#home" class="nav-link text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Home</a> <a href="#alley-turns" class="nav-link text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Alley Turns</a> <a href="#best-picks" class="nav-link text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Best Picks</a> <a href="#details" class="nav-link text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Details</a> <a href="#reviews" class="nav-link text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Reviews</a> <a href="#buy" class="nav-link text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Buy</a>
+     </div><button id="mobile-menu-btn" class="md:hidden text-lantern-warm">
+      <svg class="w-5 h-5">
+       <use href="#ico-sign" />
+      </svg></button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 flex flex-col gap-3"><a href="#home" class="text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Home</a> <a href="#alley-turns" class="text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Alley Turns</a> <a href="#best-picks" class="text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Best Picks</a> <a href="#details" class="text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Details</a> <a href="#reviews" class="text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Reviews</a> <a href="#buy" class="text-xs tracking-wider uppercase text-neutral-400 hover:text-lantern-warm transition-colors">Buy</a>
+    </div>
+   </nav><!-- HERO -->
+   <section id="home" class="relative w-full overflow-hidden light-sweep" style="min-height: 100%;"><img src="https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=1600&amp;q=80" alt="Lantern-lit alley at night" loading="lazy" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+    <div class="absolute inset-0 bg-gradient-to-b from-lantern-deep/80 via-lantern-deep/60 to-lantern-deep"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-lantern-deep/50 to-transparent"></div>
+    <div class="relative z-10 flex flex-col items-center justify-center text-center px-6" style="min-height: 100%; padding-top: 20%; padding-bottom: 15%;"><!-- Hanging lantern icon -->
+     <div class="flex flex-col items-center mb-8 reveal" data-delay="0">
+      <div class="chain-line h-12"></div>
+      <div class="sign-sway bg-lantern-ink border border-lantern-warm/30 rounded-lg px-4 py-2">
+       <svg class="w-8 h-8 text-lantern-warm">
+        <use href="#ico-lantern" />
+       </svg>
+      </div>
+     </div>
+     <h1 id="hero-title" class="glow-text text-5xl md:text-7xl lg:text-8xl font-bold text-lantern-warm mb-4 reveal" data-delay="200" style="font-family: 'Playfair Display', serif;">Follow the light.</h1>
+     <p id="hero-subtitle" class="text-neutral-400 text-lg md:text-xl max-w-md mb-10 reveal" data-delay="400">A page that feels like night.</p>
+     <div class="flex flex-col sm:flex-row gap-4 reveal" data-delay="600"><a href="#alley-turns" id="cta-primary-btn" class="cta-pulse bg-lantern-warm text-lantern-deep px-8 py-3 rounded-sm font-semibold text-sm tracking-wider uppercase hover:bg-lantern-glow transition-colors flex items-center gap-2"> <span>Enter the Alley</span>
+       <svg class="w-4 h-4">
+        <use href="#ico-arrow" />
+       </svg></a> <a href="#best-picks" id="cta-secondary-btn" class="border border-lantern-warm/40 text-lantern-warm px-8 py-3 rounded-sm font-semibold text-sm tracking-wider uppercase hover:bg-lantern-warm/10 transition-colors"> <span>See Best Picks</span> </a>
+     </div>
+    </div><!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"><span class="text-neutral-500 text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+     <div class="w-px h-8 bg-gradient-to-b from-lantern-warm/50 to-transparent"></div>
+    </div>
+   </section><!-- ALLEY TURNS -->
+   <section id="alley-turns" class="relative w-full py-24 px-4">
+    <div class="max-w-6xl mx-auto"><!-- Section hanging sign -->
+     <div class="flex flex-col items-center mb-16">
+      <div class="chain-line h-8"></div>
+      <div class="sign-sway-alt bg-lantern-card border border-lantern-warm/20 rounded px-6 py-3 text-center"><span class="text-lantern-warm text-xs tracking-[0.3em] uppercase font-semibold" style="font-family: 'Playfair Display', serif;">Alley Turns</span>
+      </div>
+     </div><!-- Turn 1 -->
+     <div class="grid md:grid-cols-2 gap-8 mb-20 items-center">
+      <div class="relative rounded-lg overflow-hidden reveal" data-delay="0" style="aspect-ratio: 4/3;"><img src="https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=800&amp;q=80" alt="Night market street food stall" loading="lazy" class="w-full h-full object-cover" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+       <div class="absolute inset-0 bg-gradient-to-t from-lantern-deep/70 to-transparent"></div>
+       <div class="absolute bottom-4 left-4 flex items-center gap-2 text-lantern-warm/70 text-xs">
+        <svg class="w-3.5 h-3.5">
+         <use href="#ico-pin" />
+        </svg><span>First Turn — East Gate</span>
+       </div>
+      </div>
+      <div class="reveal" data-delay="200">
+       <div class="sign-sway inline-block bg-lantern-card border border-lantern-warm/15 rounded px-5 py-4 mb-4">
+        <svg class="w-4 h-4 text-lantern-warm mb-2">
+         <use href="#ico-sign" />
+        </svg>
+        <h3 class="text-lantern-warm text-lg font-bold" style="font-family: 'Playfair Display', serif;">The Ember Gate</h3>
+       </div>
+       <p class="text-neutral-400 text-sm leading-relaxed mb-4">Where the alley begins. Smoke curls from charcoal grills, paper lanterns sway overhead, and the scent of sizzling skewers pulls you deeper into the corridor of light.</p>
+       <div class="bg-lantern-card/60 border border-lantern-warm/10 rounded p-4"><span class="text-[10px] tracking-[0.2em] uppercase text-lantern-warm/60 font-semibold">Menu</span>
+        <ul class="mt-2 space-y-2">
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Charcoal Lamb Skewers</span><span class="text-lantern-warm/70">$8</span></li>
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Smoked Tofu Bowl</span><span class="text-lantern-warm/70">$6</span></li>
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Ember Rice Wrap</span><span class="text-lantern-warm/70">$7</span></li>
+        </ul>
+       </div>
+      </div>
+     </div><!-- Turn 2 -->
+     <div class="grid md:grid-cols-2 gap-8 mb-20 items-center">
+      <div class="order-2 md:order-1 reveal" data-delay="200">
+       <div class="sign-sway-alt inline-block bg-lantern-card border border-lantern-warm/15 rounded px-5 py-4 mb-4">
+        <svg class="w-4 h-4 text-lantern-warm mb-2">
+         <use href="#ico-sign" />
+        </svg>
+        <h3 class="text-lantern-warm text-lg font-bold" style="font-family: 'Playfair Display', serif;">Neon Corridor</h3>
+       </div>
+       <p class="text-neutral-400 text-sm leading-relaxed mb-4">Halfway through, the alley widens. Neon reflections dance on wet cobblestones. The tea house to your left serves jasmine blends under a flickering marquee sign.</p>
+       <div class="bg-lantern-card/60 border border-lantern-warm/10 rounded p-4"><span class="text-[10px] tracking-[0.2em] uppercase text-lantern-warm/60 font-semibold">Menu</span>
+        <ul class="mt-2 space-y-2">
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Jasmine Silk Tea</span><span class="text-lantern-warm/70">$4</span></li>
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Oolong Midnight Brew</span><span class="text-lantern-warm/70">$5</span></li>
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Matcha Lantern Latte</span><span class="text-lantern-warm/70">$6</span></li>
+        </ul>
+       </div>
+      </div>
+      <div class="relative rounded-lg overflow-hidden order-1 md:order-2 reveal" data-delay="0" style="aspect-ratio: 4/3;"><img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800&amp;q=80" alt="Neon-lit alleyway with rain reflections" loading="lazy" class="w-full h-full object-cover" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+       <div class="absolute inset-0 bg-gradient-to-t from-lantern-deep/70 to-transparent"></div>
+       <div class="absolute bottom-4 left-4 flex items-center gap-2 text-lantern-warm/70 text-xs">
+        <svg class="w-3.5 h-3.5">
+         <use href="#ico-pin" />
+        </svg><span>Second Turn — Neon Row</span>
+       </div>
+      </div>
+     </div><!-- Turn 3 -->
+     <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div class="relative rounded-lg overflow-hidden reveal" data-delay="0" style="aspect-ratio: 4/3;"><img src="https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?w=800&amp;q=80" alt="Warm light bokeh at night market" loading="lazy" class="w-full h-full object-cover" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+       <div class="absolute inset-0 bg-gradient-to-t from-lantern-deep/70 to-transparent"></div>
+       <div class="absolute bottom-4 left-4 flex items-center gap-2 text-lantern-warm/70 text-xs">
+        <svg class="w-3.5 h-3.5">
+         <use href="#ico-pin" />
+        </svg><span>Third Turn — Golden End</span>
+       </div>
+      </div>
+      <div class="reveal" data-delay="200">
+       <div class="sign-sway inline-block bg-lantern-card border border-lantern-warm/15 rounded px-5 py-4 mb-4">
+        <svg class="w-4 h-4 text-lantern-warm mb-2">
+         <use href="#ico-sign" />
+        </svg>
+        <h3 class="text-lantern-warm text-lg font-bold" style="font-family: 'Playfair Display', serif;">The Golden End</h3>
+       </div>
+       <p class="text-neutral-400 text-sm leading-relaxed mb-4">The alley narrows again. Here, a dessert vendor with a cart of golden pastries serves warm bites by candlelight. The sweet finish before you step back into the city.</p>
+       <div class="bg-lantern-card/60 border border-lantern-warm/10 rounded p-4"><span class="text-[10px] tracking-[0.2em] uppercase text-lantern-warm/60 font-semibold">Menu</span>
+        <ul class="mt-2 space-y-2">
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Honeycomb Pastry</span><span class="text-lantern-warm/70">$5</span></li>
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Sesame Glow Cake</span><span class="text-lantern-warm/70">$4</span></li>
+         <li class="flex justify-between text-sm"><span class="text-neutral-300">Candlelit Crème</span><span class="text-lantern-warm/70">$6</span></li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- BEST PICKS -->
+   <section id="best-picks" class="relative w-full py-24 px-4" style="background: linear-gradient(180deg, #0D0B09 0%, #1A1612 50%, #0D0B09 100%);">
+    <div class="max-w-6xl mx-auto">
+     <div class="flex flex-col items-center mb-16">
+      <div class="chain-line h-8"></div>
+      <div class="sign-sway bg-lantern-card border border-lantern-warm/20 rounded px-6 py-3"><span class="text-lantern-warm text-xs tracking-[0.3em] uppercase font-semibold" style="font-family: 'Playfair Display', serif;">Best Picks</span>
+      </div>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"><!-- Pick cards -->
+      <div class="reveal bg-lantern-card border border-lantern-warm/10 rounded-lg overflow-hidden group hover:border-lantern-warm/30 transition-all duration-500" data-delay="0">
+       <div class="relative overflow-hidden" style="aspect-ratio: 16/10;"><img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&amp;q=80" alt="Street food close up" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+        <div class="absolute top-3 right-3 bg-lantern-deep/80 rounded px-2 py-1 flex items-center gap-1">
+         <svg class="w-3 h-3 text-lantern-warm">
+          <use href="#ico-tag" />
+         </svg><span class="text-lantern-warm text-[10px] font-semibold">TOP PICK</span>
+        </div>
+       </div>
+       <div class="p-5">
+        <h4 class="text-lantern-warm font-bold mb-1" style="font-family: 'Playfair Display', serif;">Charcoal Lamb Skewers</h4>
+        <p class="text-neutral-500 text-xs mb-3">The Ember Gate</p>
+        <p class="text-neutral-400 text-sm leading-relaxed">Slow-grilled over open flame, brushed with cumin and chili oil. The signature dish of the alley.</p>
+        <div class="flex justify-between items-center mt-4"><span class="text-lantern-warm font-semibold">$8</span> <button class="flex items-center gap-1 text-xs text-lantern-warm/60 hover:text-lantern-warm transition-colors">
+          <svg class="w-3.5 h-3.5">
+           <use href="#ico-cart" />
+          </svg> Add </button>
+        </div>
+       </div>
+      </div>
+      <div class="reveal bg-lantern-card border border-lantern-warm/10 rounded-lg overflow-hidden group hover:border-lantern-warm/30 transition-all duration-500" data-delay="150">
+       <div class="relative overflow-hidden" style="aspect-ratio: 16/10;"><img src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=600&amp;q=80" alt="Tea ceremony night" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+        <div class="absolute top-3 right-3 bg-lantern-deep/80 rounded px-2 py-1 flex items-center gap-1">
+         <svg class="w-3 h-3 text-lantern-warm">
+          <use href="#ico-tag" />
+         </svg><span class="text-lantern-warm text-[10px] font-semibold">POPULAR</span>
+        </div>
+       </div>
+       <div class="p-5">
+        <h4 class="text-lantern-warm font-bold mb-1" style="font-family: 'Playfair Display', serif;">Matcha Lantern Latte</h4>
+        <p class="text-neutral-500 text-xs mb-3">Neon Corridor</p>
+        <p class="text-neutral-400 text-sm leading-relaxed">Ceremonial-grade matcha whisked with oat milk and a swirl of amber honey. Served warm.</p>
+        <div class="flex justify-between items-center mt-4"><span class="text-lantern-warm font-semibold">$6</span> <button class="flex items-center gap-1 text-xs text-lantern-warm/60 hover:text-lantern-warm transition-colors">
+          <svg class="w-3.5 h-3.5">
+           <use href="#ico-cart" />
+          </svg> Add </button>
+        </div>
+       </div>
+      </div>
+      <div class="reveal bg-lantern-card border border-lantern-warm/10 rounded-lg overflow-hidden group hover:border-lantern-warm/30 transition-all duration-500" data-delay="300">
+       <div class="relative overflow-hidden" style="aspect-ratio: 16/10;"><img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600&amp;q=80" alt="Golden pastries dessert" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+        <div class="absolute top-3 right-3 bg-lantern-deep/80 rounded px-2 py-1 flex items-center gap-1">
+         <svg class="w-3 h-3 text-lantern-warm">
+          <use href="#ico-tag" />
+         </svg><span class="text-lantern-warm text-[10px] font-semibold">SWEET</span>
+        </div>
+       </div>
+       <div class="p-5">
+        <h4 class="text-lantern-warm font-bold mb-1" style="font-family: 'Playfair Display', serif;">Honeycomb Pastry</h4>
+        <p class="text-neutral-500 text-xs mb-3">The Golden End</p>
+        <p class="text-neutral-400 text-sm leading-relaxed">Layers of crispy phyllo filled with wildflower honey and toasted pistachios. Warm from the cart.</p>
+        <div class="flex justify-between items-center mt-4"><span class="text-lantern-warm font-semibold">$5</span> <button class="flex items-center gap-1 text-xs text-lantern-warm/60 hover:text-lantern-warm transition-colors">
+          <svg class="w-3.5 h-3.5">
+           <use href="#ico-cart" />
+          </svg> Add </button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- DETAILS -->
+   <section id="details" class="relative w-full py-24 px-4">
+    <div class="max-w-4xl mx-auto">
+     <div class="flex flex-col items-center mb-16">
+      <div class="chain-line h-8"></div>
+      <div class="sign-sway-alt bg-lantern-card border border-lantern-warm/20 rounded px-6 py-3"><span class="text-lantern-warm text-xs tracking-[0.3em] uppercase font-semibold" style="font-family: 'Playfair Display', serif;">Details</span>
+      </div>
+     </div>
+     <div class="grid sm:grid-cols-2 gap-6">
+      <div class="reveal bg-lantern-card/50 border border-lantern-warm/10 rounded-lg p-6" data-delay="0">
+       <svg class="w-5 h-5 text-lantern-warm mb-3">
+        <use href="#ico-pin" />
+       </svg>
+       <h4 class="text-lantern-warm font-bold mb-2" style="font-family: 'Playfair Display', serif;">Location</h4>
+       <p class="text-neutral-400 text-sm leading-relaxed">23 Lantern Lane, Old Quarter District. Enter through the East Gate arch, marked by the red paper lanterns.</p>
+      </div>
+      <div class="reveal bg-lantern-card/50 border border-lantern-warm/10 rounded-lg p-6" data-delay="100">
+       <svg class="w-5 h-5 text-lantern-warm mb-3">
+        <use href="#ico-lantern" />
+       </svg>
+       <h4 class="text-lantern-warm font-bold mb-2" style="font-family: 'Playfair Display', serif;">Hours</h4>
+       <p class="text-neutral-400 text-sm leading-relaxed">Open nightly, 6 PM to 2 AM. Best experienced after 9 PM when all stalls are lit and the evening crowd fills the corridor.</p>
+      </div>
+      <div class="reveal bg-lantern-card/50 border border-lantern-warm/10 rounded-lg p-6" data-delay="200">
+       <svg class="w-5 h-5 text-lantern-warm mb-3">
+        <use href="#ico-tag" />
+       </svg>
+       <h4 class="text-lantern-warm font-bold mb-2" style="font-family: 'Playfair Display', serif;">Pricing</h4>
+       <p class="text-neutral-400 text-sm leading-relaxed">Stall items range $4–$12. Cash and card accepted at all vendors. The alley pass ($25) includes one item from each stall.</p>
+      </div>
+      <div class="reveal bg-lantern-card/50 border border-lantern-warm/10 rounded-lg p-6" data-delay="300">
+       <svg class="w-5 h-5 text-lantern-warm mb-3">
+        <use href="#ico-sign" />
+       </svg>
+       <h4 class="text-lantern-warm font-bold mb-2" style="font-family: 'Playfair Display', serif;">Events</h4>
+       <p class="text-neutral-400 text-sm leading-relaxed">Live music Fridays. Lantern-making workshops Saturdays. Monthly full-moon night market with extended hours and guest chefs.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section id="reviews" class="relative w-full py-24 px-4" style="background: linear-gradient(180deg, #0D0B09 0%, #151210 50%, #0D0B09 100%);">
+    <div class="max-w-4xl mx-auto">
+     <div class="flex flex-col items-center mb-16">
+      <div class="chain-line h-8"></div>
+      <div class="sign-sway bg-lantern-card border border-lantern-warm/20 rounded px-6 py-3"><span class="text-lantern-warm text-xs tracking-[0.3em] uppercase font-semibold" style="font-family: 'Playfair Display', serif;">Reviews</span>
+      </div>
+     </div>
+     <div class="space-y-6">
+      <div class="reveal bg-lantern-card/40 border border-lantern-warm/10 rounded-lg p-6" data-delay="0">
+       <div class="flex items-center gap-1 mb-3">
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+       </div>
+       <p class="text-neutral-300 text-sm leading-relaxed italic mb-3">"It's not a market — it's a feeling. The kind of place you stumble into and never forget. The lamb skewers alone are worth the trip."</p><span class="text-lantern-warm/60 text-xs">— Mira T., Travel Writer</span>
+      </div>
+      <div class="reveal bg-lantern-card/40 border border-lantern-warm/10 rounded-lg p-6" data-delay="150">
+       <div class="flex items-center gap-1 mb-3">
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-empty" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+       </div>
+       <p class="text-neutral-300 text-sm leading-relaxed italic mb-3">"Went on a Friday night with live music. The atmosphere is unreal — warm lantern light, great food, and a sense of discovery around every corner."</p><span class="text-lantern-warm/60 text-xs">— James K., Food Blogger</span>
+      </div>
+      <div class="reveal bg-lantern-card/40 border border-lantern-warm/10 rounded-lg p-6" data-delay="300">
+       <div class="flex items-center gap-1 mb-3">
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+        <svg class="w-3.5 h-3.5 star-filled" viewbox="0 0 24 24" fill="currentColor">
+         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z" />
+        </svg>
+       </div>
+       <p class="text-neutral-300 text-sm leading-relaxed italic mb-3">"The matcha latte at the Neon Corridor stall? Life-changing. And the honeycomb pastry at the end is the perfect closer. Already planning my next visit."</p><span class="text-lantern-warm/60 text-xs">— Yuki A., Local Guide</span>
+      </div>
+     </div>
+    </div>
+   </section><!-- BUY / BOTTOM CTA -->
+   <section id="buy" class="relative w-full py-24 px-4 overflow-hidden light-sweep">
+    <div class="absolute inset-0"><img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1600&amp;q=80" alt="Warm light bokeh" loading="lazy" class="w-full h-full object-cover opacity-20" onerror="this.style.background='#1A1612'; this.alt='Image unavailable';">
+     <div class="absolute inset-0 bg-lantern-deep/85"></div>
+    </div>
+    <div class="relative z-10 max-w-2xl mx-auto text-center">
+     <div class="flex flex-col items-center mb-8">
+      <div class="chain-line h-10"></div>
+      <div class="sign-sway-alt bg-lantern-card border border-lantern-warm/20 rounded-lg p-4">
+       <svg class="w-10 h-10 text-lantern-warm">
+        <use href="#ico-lantern" />
+       </svg>
+      </div>
+     </div>
+     <h2 id="bottom-cta-heading" class="glow-text text-3xl md:text-5xl font-bold text-lantern-warm mb-4 reveal" data-delay="0" style="font-family: 'Playfair Display', serif;">Turn scrolling into wandering.</h2>
+     <p class="text-neutral-400 text-sm mb-8 reveal" data-delay="200">Get the Alley Pass — one item from every stall, priority entry on event nights, and a keepsake lantern.</p>
+     <div class="flex flex-col sm:flex-row gap-4 justify-center reveal" data-delay="400"><button class="cta-pulse bg-lantern-warm text-lantern-deep px-10 py-4 rounded-sm font-semibold text-sm tracking-wider uppercase hover:bg-lantern-glow transition-colors flex items-center justify-center gap-2">
+       <svg class="w-4 h-4">
+        <use href="#ico-cart" />
+       </svg><span>Get Alley Pass — $25</span> </button>
+     </div>
+     <p class="text-neutral-600 text-xs mt-6 reveal" data-delay="500">Available at the East Gate entrance or online. Valid for one evening.</p>
+    </div>
+   </section><!-- Footer -->
+   <footer class="w-full py-8 px-4 border-t border-lantern-warm/10">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+     <div class="flex items-center gap-2 text-lantern-warm/40">
+      <svg class="w-4 h-4">
+       <use href="#ico-lantern" />
+      </svg><span class="text-xs tracking-widest uppercase" style="font-family: 'Playfair Display', serif;">LanternAlley</span>
+     </div>
+     <p class="text-neutral-600 text-xs">Follow the light. Find the flavor. Walk the alley.</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+// Default config
+const defaultConfig = {
+  hero_title: 'Follow the light.',
+  hero_subtitle: 'A page that feels like night.',
+  cta_primary: 'Enter the Alley',
+  cta_secondary: 'See Best Picks',
+  bottom_cta_text: 'Turn scrolling into wandering.',
+  background_color: '#0D0B09',
+  surface_color: '#1E1A15',
+  text_color: '#a3a3a3',
+  accent_color: '#E8A84C',
+  secondary_accent_color: '#D4843E',
+  font_family: 'Playfair Display',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const el = (id) => document.getElementById(id);
+
+  // Text
+  const t = el('hero-title'); if (t) t.textContent = config.hero_title || defaultConfig.hero_title;
+  const s = el('hero-subtitle'); if (s) s.textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+  const cp = el('cta-primary-btn'); if (cp) cp.querySelector('span').textContent = config.cta_primary || defaultConfig.cta_primary;
+  const cs = el('cta-secondary-btn'); if (cs) cs.querySelector('span').textContent = config.cta_secondary || defaultConfig.cta_secondary;
+  const bc = el('bottom-cta-heading'); if (bc) bc.textContent = config.bottom_cta_text || defaultConfig.bottom_cta_text;
+
+  // Colors
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const txt = config.text_color || defaultConfig.text_color;
+  const accent = config.accent_color || defaultConfig.accent_color;
+  const accent2 = config.secondary_accent_color || defaultConfig.secondary_accent_color;
+
+  const wrapper = document.getElementById('app-wrapper');
+  if (wrapper) wrapper.style.backgroundColor = bg;
+
+  // Apply accent to all warm-colored elements
+  document.querySelectorAll('.text-lantern-warm').forEach(e => e.style.color = accent);
+  document.querySelectorAll('.bg-lantern-warm').forEach(e => { e.style.backgroundColor = accent; e.style.color = bg; });
+  document.querySelectorAll('.border-lantern-warm\\/20, .border-lantern-warm\\/10, .border-lantern-warm\\/15, .border-lantern-warm\\/30, .border-lantern-warm\\/40').forEach(e => {
+    e.style.borderColor = accent + '33';
+  });
+
+  // Font
+  const font = config.font_family || defaultConfig.font_family;
+  const baseSize = config.font_size || defaultConfig.font_size;
+  document.querySelectorAll('[style*="Playfair Display"]').forEach(e => {
+    e.style.fontFamily = `${font}, serif`;
+  });
+  if (t) t.style.fontSize = `${baseSize * 3.5}px`;
+  if (s) s.style.fontSize = `${baseSize * 1.2}px`;
+}
+
+// Element SDK
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+        { get: () => config.secondary_accent_color || defaultConfig.secondary_accent_color, set: (v) => { config.secondary_accent_color = v; window.elementSdk.setConfig({ secondary_accent_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['hero_title', config.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+      ['cta_primary', config.cta_primary || defaultConfig.cta_primary],
+      ['cta_secondary', config.cta_secondary || defaultConfig.cta_secondary],
+      ['bottom_cta_text', config.bottom_cta_text || defaultConfig.bottom_cta_text]
+    ])
+  });
+}
+
+// Scroll reveal observer
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const delay = entry.target.dataset.delay || 0;
+      setTimeout(() => entry.target.classList.add('visible'), parseInt(delay));
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Active nav link
+const sections = ['home', 'alley-turns', 'best-picks', 'details', 'reviews', 'buy'];
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) navObserver.observe(el);
+});
+
+// Mobile menu toggle
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+document.querySelectorAll('#mobile-menu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ef82e41f03727d1',t:'MTc3NjczMDM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
