@@ -23,12 +23,12 @@ export default function HostingPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Hosting</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Hosting</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Manage domains and hosting status for your Website Lotto sites.
         </p>
-      </div>
+      </header>
 
       {loading && (
         <div className="h-40 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
@@ -53,12 +53,14 @@ export default function HostingPage() {
           <p className="mt-2 text-sm text-white/50">
             Purchase or win a template to start hosting your site on Website Lotto.
           </p>
-          <Link
+          <a
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90"
           >
             Browse Templates
-          </Link>
+          </a>
         </div>
       )}
 

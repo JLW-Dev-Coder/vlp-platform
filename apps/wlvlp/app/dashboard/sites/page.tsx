@@ -49,7 +49,7 @@ export default function MySitesPage() {
         <div className={EMPTY_BOX}>
           <h2 className="font-sora text-2xl font-bold text-white m-0 mb-2">No sites yet</h2>
           <p className="text-white/50 m-0 mb-5">Browse the marketplace to claim your first template.</p>
-          <Link href="/" className={BROWSE_BTN}>Browse Templates</Link>
+          <a href="/" target="_blank" rel="noopener noreferrer" className={BROWSE_BTN}>Browse Templates</a>
         </div>
       )}
 

@@ -51,11 +51,11 @@ export default function DashboardPage() {
 
   return (
     <main className={MAIN}>
-      <header className="mb-8">
-        <h1 className="font-sora text-3xl md:text-4xl font-extrabold text-white -tracking-[0.5px] mb-2 glow-blue">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">
           Welcome{firstName ? `, ${firstName}` : ''} to Website Lotto
         </h1>
-        <p className="text-white/60 text-[0.95rem]">
+        <p className="text-white/55 text-[0.95rem] m-0">
           Your neon-lit control room — claim sites, scratch tickets, and track everything here.
         </p>
       </header>
@@ -73,18 +73,22 @@ export default function DashboardPage() {
       <section className="mb-10">
         <h2 className={SECTION_TITLE}>Quick Actions</h2>
         <div className="flex flex-wrap gap-3">
-          <Link
+          <a
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-neon-yellow text-[#07070A] font-bold text-[0.9rem] no-underline btn-glow-yellow hover:-translate-y-0.5 transition-transform"
           >
             🎨 Browse Templates
-          </Link>
-          <Link
+          </a>
+          <a
             href="/launch"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[rgba(0,212,255,0.08)] border border-neon-blue/40 text-neon-blue font-bold text-[0.9rem] no-underline hover:-translate-y-0.5 transition-transform"
           >
             🎫 Free Scratch Ticket
-          </Link>
+          </a>
           <Link
             href="/dashboard/affiliate"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[rgba(255,45,138,0.08)] border border-neon-magenta/40 text-neon-magenta font-bold text-[0.9rem] no-underline hover:-translate-y-0.5 transition-transform"

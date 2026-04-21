@@ -119,12 +119,12 @@ export default function SupportClient() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Support</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Support</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Manage support tickets and get help.
         </p>
-      </div>
+      </header>
 
       <div className="flex flex-wrap gap-3">
         <a
@@ -136,6 +136,8 @@ export default function SupportClient() {
         </a>
         <a
           href="/help"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-5 py-2.5 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
         >
           <BookOpen className="h-4 w-4" />
@@ -201,10 +203,10 @@ export default function SupportClient() {
 function SupportSkeleton() {
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Support</h1>
-        <p className="mt-1 text-sm text-white/50">Loading tickets…</p>
-      </div>
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Support</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">Loading tickets…</p>
+      </header>
       <div className="grid gap-4 sm:grid-cols-3">
         {[0, 1, 2].map((i) => (
           <div key={i} className="h-28 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
@@ -218,10 +220,10 @@ function SupportSkeleton() {
 function SupportFallback({ message }: { message: string }) {
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Support</h1>
-        <p className="mt-1 text-sm text-white/50">Manage support tickets and get help.</p>
-      </div>
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Support</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">Manage support tickets and get help.</p>
+      </header>
       <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
         <div>

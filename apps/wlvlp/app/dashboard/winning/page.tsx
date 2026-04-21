@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Trophy, Ticket, AlertCircle } from 'lucide-react';
 import { useAppShell } from '@vlp/member-ui';
 import { getScratchPrizes, type ScratchPrize } from '@/lib/api';
@@ -23,12 +22,12 @@ export default function WinningPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Winning</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Winning</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Prizes you&apos;ve won from scratch tickets and Website Lotto auctions.
         </p>
-      </div>
+      </header>
 
       {loading && (
         <div className="h-40 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
@@ -54,13 +53,15 @@ export default function WinningPage() {
             Scratch a ticket to try your luck — discounts, free templates, and bonus hosting
             credits are up for grabs.
           </p>
-          <Link
+          <a
             href="/scratch"
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90"
           >
             <Ticket className="h-4 w-4" />
             Free Scratch Ticket
-          </Link>
+          </a>
         </div>
       )}
 

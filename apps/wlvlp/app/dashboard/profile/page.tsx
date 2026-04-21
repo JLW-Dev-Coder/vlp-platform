@@ -9,12 +9,12 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Profile</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Profile</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Your public profile and brand details shown on your hosted sites.
         </p>
-      </div>
+      </header>
 
       <div className="rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-6">
         <div className="flex items-center gap-3">

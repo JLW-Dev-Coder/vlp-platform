@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Gavel, Inbox, AlertCircle, Clock, TrendingUp } from 'lucide-react';
 import { useAppShell } from '@vlp/member-ui';
 import {
@@ -41,12 +40,12 @@ export default function BiddingPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Bidding</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Bidding</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Active bids you&apos;ve placed on Website Lotto auction templates.
         </p>
-      </div>
+      </header>
 
       {loading && (
         <div className="h-40 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
@@ -91,12 +90,14 @@ export default function BiddingPage() {
             <Inbox className="h-3.5 w-3.5" />
             <span>Your bid activity appears here once you start bidding.</span>
           </div>
-          <Link
+          <a
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90"
           >
             Find Auction Templates
-          </Link>
+          </a>
         </div>
       )}
 
@@ -110,16 +111,18 @@ export default function BiddingPage() {
           </div>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {auctions.slice(0, 8).map((t) => (
-              <Link
+              <a
                 key={t.slug}
                 href={`/sites/${t.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center justify-between rounded-lg border border-[var(--member-border)] bg-white/5 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10"
               >
                 <span className="truncate">{t.title}</span>
                 <span className="ml-2 shrink-0 text-xs text-white/40">
                   {t.current_bid != null ? `$${t.current_bid}` : 'Open'}
                 </span>
-              </Link>
+              </a>
             ))}
           </div>
         </div>
@@ -166,12 +169,14 @@ function BidRow({ bid }: { bid: UserBid }) {
           <Gavel className="h-5 w-5 text-brand-primary" />
         </div>
         <div>
-          <Link
+          <a
             href={`/sites/${bid.template_slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-base font-semibold text-white hover:text-brand-primary"
           >
             {bid.template_title}
-          </Link>
+          </a>
           <div className="mt-1 flex items-center gap-3 text-xs text-white/50">
             <span>Placed {placed}</span>
             {ends && (

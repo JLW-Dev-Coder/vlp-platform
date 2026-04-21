@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { ThumbsUp, Inbox, AlertCircle, Heart } from 'lucide-react';
 import { useAppShell } from '@vlp/member-ui';
 import {
@@ -71,13 +70,13 @@ export default function VotingPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Voting</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Voting</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Vote on designs to help decide which templates get priority hosting and polish. Your votes
           shape what we build next.
         </p>
-      </div>
+      </header>
 
       {loading && (
         <div className="h-40 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
@@ -116,9 +115,11 @@ export default function VotingPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {myVotes.map((v) => (
-              <Link
+              <a
                 key={v.template_slug}
                 href={`/sites/${v.template_slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center justify-between gap-3 rounded-xl border border-brand-primary/20 bg-brand-primary/5 p-4 text-sm text-white/85 transition hover:border-brand-primary/40 hover:bg-brand-primary/10"
               >
                 <div className="min-w-0">
@@ -131,7 +132,7 @@ export default function VotingPage() {
                   <ThumbsUp className="h-3 w-3" />
                   <span>{v.vote_count}</span>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         </div>
@@ -151,12 +152,14 @@ export default function VotingPage() {
             <Inbox className="h-3.5 w-3.5" />
             <span>Voting opens for every new design.</span>
           </div>
-          <Link
+          <a
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90"
           >
             Browse Templates
-          </Link>
+          </a>
         </div>
       )}
 
@@ -166,9 +169,9 @@ export default function VotingPage() {
             <p className="text-xs uppercase tracking-widest text-white/40">
               Top templates — vote to prioritize
             </p>
-            <Link href="/" className="text-xs text-brand-primary hover:underline">
+            <a href="/" target="_blank" rel="noopener noreferrer" className="text-xs text-brand-primary hover:underline">
               See all templates →
-            </Link>
+            </a>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {top.map((t) => {
@@ -179,12 +182,14 @@ export default function VotingPage() {
                   className="flex flex-col gap-3 rounded-xl border border-[var(--member-border)] bg-[var(--member-card)] p-5"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <Link
+                    <a
                       href={`/sites/${t.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-sm font-semibold text-white hover:text-brand-primary"
                     >
                       {t.title}
-                    </Link>
+                    </a>
                     <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/60">
                       {t.status}
                     </span>

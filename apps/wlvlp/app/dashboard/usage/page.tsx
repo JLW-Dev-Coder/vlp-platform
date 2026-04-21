@@ -27,12 +27,12 @@ export default function UsagePage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Usage</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Usage</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Your Website Lotto activity — sites, hosting, and custom domains in use.
         </p>
-      </div>
+      </header>
 
       {loading && (
         <div className="h-40 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />

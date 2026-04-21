@@ -124,12 +124,12 @@ export default function AffiliateClient() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Affiliate Program</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Affiliate Program</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Earn commissions by referring new customers to our platform.
         </p>
-      </div>
+      </header>
 
       <HeroCard brandColor={wlvlpConfig.brandColor}>
         <div className="space-y-5">
@@ -279,10 +279,10 @@ export default function AffiliateClient() {
 function AffiliateSkeleton() {
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Affiliate Program</h1>
-        <p className="mt-1 text-sm text-white/50">Loading affiliate data…</p>
-      </div>
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Affiliate Program</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">Loading affiliate data…</p>
+      </header>
       <div className="h-40 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="h-40 animate-pulse rounded-xl border border-[var(--member-border)] bg-[var(--member-card)]" />
@@ -295,12 +295,12 @@ function AffiliateSkeleton() {
 function AffiliateFallback({ message }: { message: string }) {
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Affiliate Program</h1>
-        <p className="mt-1 text-sm text-white/50">
+      <header className="mb-7">
+        <h1 className="font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]">Affiliate Program</h1>
+        <p className="text-white/55 text-[0.95rem] m-0">
           Earn commissions by referring new customers.
         </p>
-      </div>
+      </header>
       <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
         <div>
