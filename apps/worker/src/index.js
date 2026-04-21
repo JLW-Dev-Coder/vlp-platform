@@ -4808,7 +4808,9 @@ const ROUTES = [
                   console.log(`WLVLP anonymous checkout reconciled to account ${wlvlpAccountId} via ${emailLower}`);
                 }
 
-                const purchasedAt = now;
+                const purchasedAt = obj.created
+                  ? new Date(obj.created * 1000).toISOString()
+                  : now;
                 const hostingExpiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
                 // Receipt to R2
