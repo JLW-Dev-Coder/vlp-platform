@@ -2,6 +2,7 @@ export interface NavItem {
   label: string;
   href: string;
   icon: string; // lucide-react icon name
+  external?: boolean; // if true, renders as <a target="_blank"> instead of <Link>
   children?: { label: string; href: string; icon?: string }[];
 }
 

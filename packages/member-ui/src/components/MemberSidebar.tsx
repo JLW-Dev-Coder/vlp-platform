@@ -79,37 +79,56 @@ export function MemberSidebar({ config, onSignOut }: MemberSidebarProps) {
                   expanded[item.href] ||
                   (hasChildren && item.children!.some((c) => isActive(c.href)))
 
+                const linkClassName = `flex flex-1 items-center rounded-lg py-2 text-sm font-medium transition ${
+                  collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+                } ${
+                  active
+                    ? `${collapsed ? '' : 'border-l-2'} text-white`
+                    : `${collapsed ? '' : 'border-l-2 border-transparent'} text-white/60 hover:bg-white/[0.04] hover:text-white`
+                }`
+                const linkStyle = active
+                  ? {
+                      borderColor: collapsed ? undefined : config.brandColor,
+                      backgroundColor: `${config.brandColor}1a`,
+                      color: config.brandColor,
+                    }
+                  : undefined
+                const linkBody = (
+                  <>
+                    <span
+                      className={active ? '' : 'text-white/40'}
+                      style={active ? { color: config.brandColor } : undefined}
+                    >
+                      <NavIcon name={item.icon} className="h-5 w-5" />
+                    </span>
+                    {!collapsed && item.label}
+                  </>
+                )
+
                 return (
                   <div key={item.href}>
                     <div className="flex items-center">
-                      <Link
-                        href={item.href}
-                        title={collapsed ? item.label : undefined}
-                        className={`flex flex-1 items-center rounded-lg py-2 text-sm font-medium transition ${
-                          collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                        } ${
-                          active
-                            ? `${collapsed ? '' : 'border-l-2'} text-white`
-                            : `${collapsed ? '' : 'border-l-2 border-transparent'} text-white/60 hover:bg-white/[0.04] hover:text-white`
-                        }`}
-                        style={
-                          active
-                            ? {
-                                borderColor: collapsed ? undefined : config.brandColor,
-                                backgroundColor: `${config.brandColor}1a`,
-                                color: config.brandColor,
-                              }
-                            : undefined
-                        }
-                      >
-                        <span
-                          className={active ? '' : 'text-white/40'}
-                          style={active ? { color: config.brandColor } : undefined}
+                      {item.external ? (
+                        <a
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={collapsed ? item.label : undefined}
+                          className={linkClassName}
+                          style={linkStyle}
                         >
-                          <NavIcon name={item.icon} className="h-5 w-5" />
-                        </span>
-                        {!collapsed && item.label}
-                      </Link>
+                          {linkBody}
+                        </a>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          title={collapsed ? item.label : undefined}
+                          className={linkClassName}
+                          style={linkStyle}
+                        >
+                          {linkBody}
+                        </Link>
+                      )}
                       {hasChildren && (
                         <button
                           type="button"

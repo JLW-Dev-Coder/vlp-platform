@@ -27,8 +27,8 @@ export const wlvlpConfig: PlatformConfig = {
         { label: 'My Sites', href: '/dashboard/sites', icon: 'Globe' },
         { label: 'Hosting', href: '/dashboard/hosting', icon: 'Server' },
         { label: 'Voting', href: '/dashboard/voting', icon: 'ThumbsUp' },
-        { label: 'Templates', href: '/', icon: 'LayoutGrid' },
-        { label: 'Scratch', href: '/scratch', icon: 'Ticket' },
+        { label: 'Templates', href: '/', icon: 'LayoutGrid', external: true },
+        { label: 'Scratch', href: '/scratch', icon: 'Ticket', external: true },
       ],
     },
     {

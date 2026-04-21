@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useAppShell } from '@vlp/member-ui';
 import { getMySites, createHostingRenewalCheckout, PurchasedSite } from '@/lib/api';
 
-const MAIN = 'flex-1 max-w-[1200px] w-full mx-auto pt-10 px-6 pb-15';
+const MAIN = 'flex-1 w-full pb-15';
 const TITLE = 'font-sora text-3xl font-extrabold text-white mt-0 mb-2 -tracking-[0.5px]';
 const SUBTITLE = 'text-white/55 text-[0.95rem] m-0';
 const STATE = 'flex justify-center py-20';

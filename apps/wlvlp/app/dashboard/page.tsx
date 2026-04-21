@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAppShell } from '@vlp/member-ui';
 import { getMySites, type PurchasedSite } from '@/lib/api';
 
-const MAIN = 'flex-1 max-w-[1200px] w-full mx-auto pt-10 px-6 pb-16';
+const MAIN = 'flex-1 w-full pb-16';
 const SECTION_TITLE = 'font-sora text-xs font-bold uppercase tracking-wider text-white/50 mb-3';
 
 interface StatCardProps {
