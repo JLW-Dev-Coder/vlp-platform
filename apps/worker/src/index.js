@@ -16367,6 +16367,30 @@ TTMP Support Team
     },
   },
 
+  // GET /v1/tcvlp/gala/:filename — serve Gala avatar video clips from R2
+  {
+    method: 'GET', pattern: '/v1/tcvlp/gala/:filename',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { filename } = params;
+      if (!filename || !/^[a-z0-9-]+\.mp4$/.test(filename)) {
+        return json({ ok: false, error: 'INVALID_FILENAME' }, 400, request);
+      }
+      const obj = await env.R2_VIRTUAL_LAUNCH.get(`gala/${filename}`);
+      if (!obj) {
+        return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+      }
+      const corsHeaders = getCorsHeaders(request);
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': 'video/mp4',
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Accept-Ranges': 'bytes',
+          ...corsHeaders,
+        },
+      });
+    },
+  },
+
   // GET /v1/tcvlp/forms/843/:submission_id/download
   {
     method: 'GET', pattern: '/v1/tcvlp/forms/843/:submission_id/download',

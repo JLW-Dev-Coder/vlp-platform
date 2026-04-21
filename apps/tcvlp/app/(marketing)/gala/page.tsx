@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 
+const GALA_VIDEO_BASE = 'https://api.virtuallaunch.pro/v1/tcvlp/gala'
+
 type Clip = { id: string; label: string; duration: number | null; loop: boolean }
 
 const CLIPS: Record<string, Clip> = {
@@ -373,6 +375,17 @@ export default function KwongClaimPage() {
     }
   }
 
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    const clip = branch?.clip
+    if (!clip) return
+    v.src = `${GALA_VIDEO_BASE}/${clip}.mp4`
+    v.loop = clip === 'idle'
+    v.muted = false
+    v.play().catch(() => {})
+  }, [currentBranch, branch?.clip])
+
   const handleIntakeSubmit = (formData: IntakeData) => {
     console.log('Intake submitted:', formData)
     setFormSubmitted(true)
@@ -443,29 +456,15 @@ export default function KwongClaimPage() {
       {currentBranch && (
         <div className="max-w-4xl mx-auto px-6 pb-16">
           <div className="relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl mb-6">
-            <div className="aspect-video bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 flex items-center justify-center relative">
-              <video ref={videoRef} className="hidden" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-24 h-24 rounded-full bg-yellow-500/10 border-2 border-yellow-500/30 flex items-center justify-center mx-auto mb-4">
-                    <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-yellow-500">G</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-zinc-500 font-medium">
-                    {isPlaying && branch?.clip
-                      ? `Playing: ${CLIPS[branch.clip]?.label || 'clip'}`
-                      : 'Gala — AI Claim Guide'}
-                  </p>
-                  <p className="text-xs text-zinc-600 mt-1">
-                    Video placeholder — clips from R2 in production
-                  </p>
-                </div>
-              </div>
+            <video
+              ref={videoRef}
+              className="w-full aspect-video object-cover bg-black"
+              playsInline
+              onEnded={() => setIsPlaying(false)}
+            />
 
-              <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs text-zinc-300 font-medium">
-                {branch?.clip && CLIPS[branch.clip] ? CLIPS[branch.clip].label : 'Idle'}
-              </div>
+            <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur text-xs text-zinc-300 font-medium">
+              {branch?.clip && CLIPS[branch.clip] ? CLIPS[branch.clip].label : 'Idle'}
             </div>
 
             {history.length > 0 && (
