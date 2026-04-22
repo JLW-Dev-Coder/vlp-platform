@@ -67,22 +67,50 @@ Completed 2026-04-21. Drift report: `apps/tttmp/.claude/audit-report-2026-04-21.
 
 29 findings: 9 Fix-Now / 11 Fix-with-Vesperi / 9 Fix-Later
 
-### Phase 1: Fix Critical Drift ← CURRENT
+### Phase 1: Fix Critical Drift ✅ COMPLETE (2026-04-21)
 
-Address all "Fix now" items from the audit. Each fix is its own commit.
+Phase 1 commits `03248aa..54efdf5`. See `apps/tttmp/.claude/audit-report-2026-04-21.md` for the per-finding status matrix.
 
-### Phase 2: Vesperi AI Game Guide (Landing Page)
+### Phase 2: Vesperi AI Game Guide (Landing Page) ✅ COMPLETE (2026-04-21)
 
 **Concept:** Similar to TCVLP's Gala, but tailored to TTTMP's audience and product. Vesperi is an AI avatar guide who walks visitors through the Tax Tools Arcade — explaining what games are available, who they're for, and how tokens work.
 
 **Avatar:** Vesperi (HeyGen, 14 looks available)
 **Primary look for landing page:** TBD after Owner reviews looks (see §4)
-**Landing page URL:** TBD (e.g., `/vesperi` or `/guide`)
+**Landing page URL:** `/vesperi`
 **Tone:** Engaging, educational, slightly playful — matches a game/learning product
 
-**Decision tree:** TBD — to be designed once the audit is complete and we understand the current state of the games, pricing, and onboarding flow.
+**Decision tree (shipped):**
 
-### Phase 3: YouTube Channel Setup
+```
+[root] Welcome — "21 games, tax pro or taxpayer?"
+  ├── [tax-pro]
+  │     ├── [notices]    → IRS Tax Detective (2t), Match the Tax Notice (5t), IRS Notice Jackpot (5t), IRS Notice Showdown (5t)
+  │     ├── [strategy]   → Circular 230 Quest (8t), Tax Strategy Adventures (8t), Audit Defense Showdown (8t), IRS Publication Maze (8t), International Tax Explorer (8t)
+  │     ├── [client-ed]  → Tax Mythbusters (2t), Taxpayer Journey Map (5t), Tax Deduction Quest (5t), Tax Return Simulator (8t)
+  │     └── [all-games-pro] → all 21 grouped by tier
+  └── [taxpayer]
+        ├── [filing]     → Tax Mythbusters (2t), Tax Deadline Master (5t), Tax Filing Race (5t), Tax Tips Refund Boost (5t)
+        ├── [concepts]   → Tax Time Machine (2t), Tax Jargon Game (8t), Taxpayer Journey Map (5t), Tax Deduction Quest (5t)
+        ├── [documents]  → Tax Scavenger Hunt (2t), Tax Document Hunter (8t), Tax Return Simulator (8t)
+        └── [all-games-tp] → all 21 grouped by tier
+```
+
+**Game catalog:** 21 games across 3 tiers — Starter (2 tokens, 4 games), Intermediate (5 tokens, 8 games), Advanced (8 tokens, 9 games). Full data in `apps/tttmp/lib/vesperi-tree.ts` (`GAME_CATALOG`).
+
+**Shipped scope:**
+- `/vesperi` page (`apps/tttmp/app/vesperi/page.tsx`) with state-machine decision tree, video player with mute/unmute, tier-coded game cards, email intake form, Cal.com Talk-to-Us, Back navigation.
+- Tree data + game catalog in `apps/tttmp/lib/vesperi-tree.ts`.
+- Worker: `POST /v1/tttmp/vesperi/intake` + `GET /v1/tttmp/vesperi/clips/:filename`. D1 migration `0061_tttmp_vesperi_intake.sql`.
+- PostHog funnel events (consent-gated): `vesperi_page_view`, `vesperi_node_view`, `vesperi_option_click`, `vesperi_game_click`, `vesperi_cal_click`, `vesperi_intake_submit`, `vesperi_back_click`.
+- Nav + sitemap integration (megaMenu.discover, local Header, sitemap priority 0.9).
+- Removed TTMP tools (Form 2848 Autofill, Form 8821 Autofill, Transcript Parser) from the TTTMP home page.
+
+**Pending owner inputs:**
+- 10 Vesperi HeyGen video clips (root, tax-pro, taxpayer, notices, strategy, client-ed, filing, concepts, documents, all-games) at `tttmp/vesperi/clips/{node-id}.mp4` in R2. Page is functional with missing videos via fallback text.
+- Worker deployment (currently committed, not deployed).
+
+### Phase 3: YouTube Channel Setup ← CURRENT
 
 **Channel:** New channel for TTTMP (separate from TCVLP's TaxClaim Pro channel)
 **Channel name:** TBD

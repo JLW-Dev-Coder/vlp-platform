@@ -276,6 +276,8 @@ Total routes: ~193
 | GET | `/v1/tttmp/support/tickets/:ticket_id` | Get ticket | Yes | TTTMP |
 | GET | `/v1/tttmp/tokens/balance` | Token balance | Yes | TTTMP |
 | GET | `/v1/tttmp/health` | Health check | No | TTTMP |
+| POST | `/v1/tttmp/vesperi/intake` | Vesperi game guide intake | No | TTTMP |
+| GET | `/v1/tttmp/vesperi/clips/:filename` | Serve Vesperi video clips from R2 | No | TTTMP |
 
 ---
 

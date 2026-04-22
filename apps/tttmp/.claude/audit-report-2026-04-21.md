@@ -176,8 +176,8 @@ These compound with the Vesperi AI guide / YouTube scope — natural to resolve 
 
 ### F-19 — Missing marketing pages: `/about`, `/features`, `/how-it-works`, `/reviews`
 - **Canonical:** `canonical-site-nav.md` §1 + `canonical-app-pages.md` (already flagged 2026-04-19 for TTTMP)
-- **Actual:** Only `/`, `/games`, `/pricing`, `/contact`, `/legal/*`, `/sign-in`, `/account`, `/affiliate` exist.
-- **Fix:** Build marketing pages during Vesperi Phase 2 (these are natural homes for Vesperi AI positioning).
+- **Actual:** Only `/`, `/games`, `/pricing`, `/contact`, `/legal/*`, `/sign-in`, `/account`, `/affiliate`, **`/vesperi`** (added Phase 2) exist.
+- **Fix:** ⚠️ Partially resolved — `/vesperi` is now the Vesperi AI positioning landing. `/about`, `/features`, `/how-it-works`, `/reviews` still pending.
 
 ### F-20 — Missing authenticated pages: `/dashboard/profile`, `/dashboard/usage`, `/dashboard/support`, `/dashboard/affiliate`, `/dashboard/account`, `/dashboard/bidding`, `/dashboard/winning`
 - **Canonical:** `canonical-site-nav.md` §2
