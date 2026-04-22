@@ -19,6 +19,41 @@ export const tttmpConfig: PlatformConfig = {
   calBookingSlug: 'tax-monitor-pro/tttmp-support',
   calIntroNamespace: 'tttmp-intro',
   calIntroSlug: 'tax-monitor-pro/tttmp-intro',
+  cookiePrefsStorageKey: 'tttmp_cookie_prefs_v1',
+  marketing: {
+    tagline: 'Tax Tools Arcade',
+    summary: 'Interactive games that teach IRS forms, tax concepts, and filing requirements.',
+    ctaLabel: 'Play Now',
+    ctaPath: '/pricing',
+    megaMenu: {
+      discover: [
+        { label: 'About', href: '/about', description: 'Learn about Tax Tools Arcade' },
+        { label: 'How It Works', href: '/how-it-works', description: 'See how game-based learning works' },
+      ],
+      explore: [
+        { label: 'Games', href: '/games' },
+        { label: 'Pricing', href: '/pricing' },
+        { label: 'Reviews', href: '/reviews' },
+      ],
+      toolsExtras: [
+        { label: 'Token Balance', href: '/dashboard' },
+        { label: 'Support', href: '/contact' },
+      ],
+      ctaText: 'Ready to learn tax through play?',
+      ctaMagnetLabel: 'See Available Games',
+      ctaMagnetPath: '/games',
+    },
+    footerResources: [
+      { label: 'Help Center', href: '/support' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Privacy Policy', href: '/privacy' },
+      { label: 'Terms of Service', href: '/terms' },
+    ],
+    footerLegal: [
+      { label: 'Privacy Policy', href: '/privacy' },
+      { label: 'Terms of Service', href: '/terms' },
+    ],
+  },
   navSections: [
     {
       title: 'WORKSPACE',
