@@ -1,7 +1,7 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 20; /* z-sticky per canonical-style.md */
   height: var(--header-height);
   background: var(--surface);
   border-bottom: 1px solid var(--surface-border);
