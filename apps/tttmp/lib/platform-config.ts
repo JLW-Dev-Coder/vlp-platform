@@ -73,6 +73,7 @@ export const tttmpConfig: PlatformConfig = {
       title: 'SETTINGS',
       items: [
         { label: 'Account', href: '/account', icon: 'Settings' },
+        { label: 'Help', href: '/help', icon: 'LifeBuoy', external: true },
         { label: 'Support', href: '/contact', icon: 'HelpCircle', external: true },
       ],
     },

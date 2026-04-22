@@ -34,6 +34,8 @@ export default function Header() {
         <nav className={styles.nav}>
           <Link href="/games">Games</Link>
           <Link href="/pricing">Tokens</Link>
+          <Link href="/help">Help</Link>
+          <Link href="/contact">Contact</Link>
           {loggedIn ? (
             <>
               <Link href="/affiliate">Affiliate</Link>
