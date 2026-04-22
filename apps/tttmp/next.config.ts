@@ -1,8 +1,5 @@
 import type { NextConfig } from 'next'
 
-const nextConfig: NextConfig = {
-  // Required for Cloudflare Pages
-  output: 'export',
-}
+const nextConfig: NextConfig = {}
 
 export default nextConfig
