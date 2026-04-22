@@ -16572,6 +16572,18 @@ TTMP Support Team
           utmMed
         ).run();
 
+        // Best-effort welcome email (Email 1). Failure here does not fail the
+        // intake — the 15:00 UTC drip cron retries any row where
+        // drip_email1_sent_at is still NULL after 5 minutes.
+        if (env.RESEND_API_KEY) {
+          try {
+            const intakeForEmail = { intake_id, email: record.email, audience, topic };
+            await sendVesperiDripForIntake(env, intakeForEmail, vesperiEmail1, 'drip_email1_sent_at');
+          } catch (emailErr) {
+            console.error('[TTTMP Vesperi] Email 1 send failed:', emailErr?.message || emailErr);
+          }
+        }
+
         return json({ id: intake_id, status: 'captured' }, 201, request);
       } catch (e) {
         console.error('[TTTMP Vesperi] Intake error:', e);
@@ -16601,6 +16613,44 @@ TTMP Support Team
           ...corsHeaders,
         },
       });
+    },
+  },
+
+  // GET /v1/tttmp/vesperi/unsubscribe — Vesperi drip unsubscribe (email link)
+  {
+    method: 'GET', pattern: '/v1/tttmp/vesperi/unsubscribe',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const url = new URL(request.url);
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+      const token = (url.searchParams.get('token') || '').trim();
+      const htmlHeaders = { 'Content-Type': 'text/html;charset=UTF-8', ...getCorsHeaders(request) };
+
+      const page = (title, body) => `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:80px auto;padding:32px;text-align:center;color:#1a1a2e;"><div style="border-top:4px solid #8b5cf6;padding-top:24px;">${body}</div></body></html>`;
+
+      if (!email || !token) {
+        return new Response(page('Unsubscribe', '<h2>Missing email or token.</h2>'), { status: 400, headers: htmlHeaders });
+      }
+
+      const valid = await verifyVesperiUnsubToken(env, email, token);
+      if (!valid) {
+        return new Response(page('Unsubscribe', '<h2>Invalid unsubscribe link.</h2><p>Contact <a href="mailto:outreach@virtuallaunch.pro" style="color:#8b5cf6;">outreach@virtuallaunch.pro</a> for help.</p>'), { status: 400, headers: htmlHeaders });
+      }
+
+      try {
+        await env.DB.prepare(
+          `UPDATE tttmp_vesperi_intake SET drip_unsubscribed = 1 WHERE LOWER(email) = ?`
+        ).bind(email).run();
+      } catch (e) {
+        console.error('[TTTMP Vesperi] Unsubscribe D1 update failed:', e);
+      }
+
+      return new Response(
+        page(
+          'Unsubscribed',
+          '<h2 style="margin:0 0 12px;">You\'ve been unsubscribed</h2><p style="color:#4b5563;">You will no longer receive Tax Tools Arcade emails. You can still visit <a href="https://taxtools.taxmonitor.pro" style="color:#8b5cf6;">taxtools.taxmonitor.pro</a> anytime.</p>'
+        ),
+        { status: 200, headers: htmlHeaders }
+      );
     },
   },
 
@@ -22019,6 +22069,419 @@ async function handleTcvlpGalaDripCron(env) {
 }
 
 // ---------------------------------------------------------------------------
+// TTTMP Vesperi Welcome Drip
+// ---------------------------------------------------------------------------
+// 3-email welcome sequence for the /vesperi Tax Tools Arcade game-guide intake.
+// Email 1 is sent synchronously from the intake handler. Emails 2 and 3 are
+// sent by the 15:00 UTC cron at +2 days and +5 days from Email 1.
+// Templates vary by audience (tax-pro vs taxpayer) and feature topic-relevant
+// game links. Unsubscribe flips drip_unsubscribed = 1 on tttmp_vesperi_intake.
+// ---------------------------------------------------------------------------
+
+const TTTMP_VESPERI_DRIP_FROM = 'Tax Tools Arcade <noreply@virtuallaunch.pro>';
+const TTTMP_VESPERI_DRIP_REPLY_TO = 'outreach@virtuallaunch.pro';
+const TTTMP_VESPERI_DRIP_LIMIT = 50;
+const TTTMP_BASE_URL = 'https://taxtools.taxmonitor.pro';
+const TTTMP_VESPERI_UNSUB_SECRET_FALLBACK = 'vesperi-unsub-v1';
+
+const VESPERI_TOPIC_GAMES = {
+  notices: [
+    { slug: 'irs-tax-detective', title: 'IRS Tax Detective', tokens: 2 },
+    { slug: 'match-the-tax-notice', title: 'Match the Tax Notice', tokens: 5 },
+    { slug: 'irs-notice-jackpot', title: 'IRS Notice Jackpot', tokens: 5 },
+    { slug: 'irs-notice-showdown', title: 'IRS Notice Showdown', tokens: 5 },
+  ],
+  strategy: [
+    { slug: 'circular-230-quest', title: 'Circular 230 Quest', tokens: 8 },
+    { slug: 'tax-strategy-adventures', title: 'Tax Strategy Adventures', tokens: 8 },
+    { slug: 'audit-defense-showdown', title: 'Audit Defense Showdown', tokens: 8 },
+    { slug: 'irs-publication-maze', title: 'IRS Publication Maze', tokens: 8 },
+    { slug: 'international-tax-explorer', title: 'International Tax Explorer', tokens: 8 },
+  ],
+  'client-ed': [
+    { slug: 'tax-mythbusters-interactive-quiz', title: 'Tax Mythbusters Quiz', tokens: 2 },
+    { slug: 'taxpayer-journey-map', title: 'Taxpayer Journey Map', tokens: 5 },
+    { slug: 'tax-deduction-quest', title: 'Tax Deduction Quest', tokens: 5 },
+    { slug: 'tax-return-simulator', title: 'Tax Return Simulator', tokens: 8 },
+  ],
+  filing: [
+    { slug: 'tax-mythbusters-interactive-quiz', title: 'Tax Mythbusters Quiz', tokens: 2 },
+    { slug: 'tax-deadline-master', title: 'Tax Deadline Master', tokens: 5 },
+    { slug: 'tax-filing-race', title: 'Tax Filing Race', tokens: 5 },
+    { slug: 'tax-tips-refund-boost', title: 'Tax Tips Refund Boost', tokens: 5 },
+  ],
+  concepts: [
+    { slug: 'tax-time-machine', title: 'Tax Time Machine', tokens: 2 },
+    { slug: 'tax-jargon-game', title: 'Tax Jargon Game', tokens: 8 },
+    { slug: 'taxpayer-journey-map', title: 'Taxpayer Journey Map', tokens: 5 },
+    { slug: 'tax-deduction-quest', title: 'Tax Deduction Quest', tokens: 5 },
+  ],
+  documents: [
+    { slug: 'tax-scavenger-hunt', title: 'Tax Scavenger Hunt', tokens: 2 },
+    { slug: 'tax-document-hunter', title: 'Tax Document Hunter', tokens: 8 },
+    { slug: 'tax-return-simulator', title: 'Tax Return Simulator', tokens: 8 },
+  ],
+  'all-games': [
+    { slug: 'irs-tax-detective', title: 'IRS Tax Detective', tokens: 2 },
+    { slug: 'tax-mythbusters-interactive-quiz', title: 'Tax Mythbusters Quiz', tokens: 2 },
+    { slug: 'tax-scavenger-hunt', title: 'Tax Scavenger Hunt', tokens: 2 },
+    { slug: 'tax-time-machine', title: 'Tax Time Machine', tokens: 2 },
+  ],
+};
+
+const VESPERI_CANSPAM_FOOTER_TEXT = `
+---
+Lenore, Inc. | 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020
+Unsubscribe: {UNSUB_URL}
+You're receiving this because you requested game recommendations from Vesperi at taxtools.taxmonitor.pro.`;
+
+const VESPERI_CANSPAM_FOOTER_HTML = `<hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0 16px;" />
+<p style="font-size:12px;color:#6b7280;line-height:1.6;margin:0;">
+  Lenore, Inc. · 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br />
+  <a href="{UNSUB_URL}" style="color:#6b7280;">Unsubscribe</a> &middot;
+  You're receiving this because you requested game recommendations from Vesperi at taxtools.taxmonitor.pro.
+</p>`;
+
+async function vesperiUnsubscribeUrl(env, email) {
+  const secret = env.VESPERI_UNSUB_SECRET || env.SESSION_SECRET || TTTMP_VESPERI_UNSUB_SECRET_FALLBACK;
+  const data = new TextEncoder().encode(`vesperi:${email.toLowerCase()}`);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, data);
+  const bytes = new Uint8Array(sig);
+  let hex = '';
+  for (let i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+  const token = hex.slice(0, 32);
+  return `https://api.virtuallaunch.pro/v1/tttmp/vesperi/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+}
+
+async function verifyVesperiUnsubToken(env, email, token) {
+  if (!email || !token) return false;
+  const expected = await vesperiUnsubscribeUrl(env, email);
+  const m = expected.match(/token=([a-f0-9]+)/);
+  return !!(m && m[1] === token);
+}
+
+function vesperiGamesForTopic(topic) {
+  return VESPERI_TOPIC_GAMES[topic] || VESPERI_TOPIC_GAMES['all-games'];
+}
+
+function vesperiGameListHtml(games) {
+  return games
+    .map(
+      (g) =>
+        `<li style="margin:8px 0;"><a href="${TTTMP_BASE_URL}/games/${g.slug}" style="color:#8b5cf6;font-weight:600;text-decoration:none;">${g.title}</a> <span style="color:#6b7280;font-size:13px;">(${g.tokens} tokens)</span></li>`
+    )
+    .join('');
+}
+
+function vesperiGameListText(games) {
+  return games.map((g) => `- ${g.title} (${g.tokens} tokens) — ${TTTMP_BASE_URL}/games/${g.slug}`).join('\n');
+}
+
+function vesperiShell(bodyHtml) {
+  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e;padding:24px;">
+  <div style="border-top:4px solid #8b5cf6;padding-top:20px;">
+    ${bodyHtml}
+  </div>
+  {FOOTER_HTML}
+</div>`;
+}
+
+function vesperiRender(html, text, unsubUrl) {
+  return {
+    html: html.replace('{FOOTER_HTML}', VESPERI_CANSPAM_FOOTER_HTML).replace(/\{UNSUB_URL\}/g, unsubUrl),
+    text: (text + VESPERI_CANSPAM_FOOTER_TEXT).replace(/\{UNSUB_URL\}/g, unsubUrl),
+  };
+}
+
+function vesperiEmail1(intake, unsubUrl) {
+  const isPro = intake.audience === 'tax-pro';
+  const games = vesperiGamesForTopic(intake.topic);
+  const subject = isPro
+    ? 'Your Tax Tools Arcade game picks are ready'
+    : 'Here are your Tax Tools Arcade game picks';
+  const intro = isPro
+    ? 'Thanks for checking out the Arcade. Based on where you were browsing, these are the games most tax pros start with:'
+    : 'Thanks for stopping by the Arcade. Based on what you were looking at, these are the games we recommend:';
+  const html = vesperiShell(`
+    <p style="font-size:15px;line-height:1.55;">Hi there,</p>
+    <p style="font-size:15px;line-height:1.55;">${intro}</p>
+    <ul style="font-size:15px;line-height:1.7;padding-left:20px;list-style:none;">${vesperiGameListHtml(games)}</ul>
+    <p style="margin:28px 0;"><a href="${TTTMP_BASE_URL}/vesperi" style="display:inline-block;padding:12px 28px;background:#8b5cf6;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Get more recommendations from Vesperi</a></p>
+    <p style="font-size:14px;color:#6b7280;">Want to see game walkthroughs? Our <a href="https://www.youtube.com/channel/UC2AeZcuISEo3yt_6EsKQtzQ" style="color:#8b5cf6;">YouTube channel</a> has Vesperi breaking down every game in 2–3 minutes.</p>
+    <p style="font-size:14px;color:#6b7280;margin-top:24px;">— Vesperi &amp; the Tax Tools Arcade team</p>
+  `);
+  const text = `Hi there,
+
+${intro}
+
+${vesperiGameListText(games)}
+
+Get more recommendations from Vesperi: ${TTTMP_BASE_URL}/vesperi
+
+Want to see game walkthroughs? Our YouTube channel has Vesperi breaking down every game in 2–3 minutes:
+https://www.youtube.com/channel/UC2AeZcuISEo3yt_6EsKQtzQ
+
+— Vesperi & the Tax Tools Arcade team`;
+  return { subject, ...vesperiRender(html, text, unsubUrl) };
+}
+
+function vesperiEmail2(intake, unsubUrl) {
+  const isPro = intake.audience === 'tax-pro';
+  const subject = isPro
+    ? '3 ways to use Tax Tools Arcade with your clients'
+    : 'The 3 best starter games in Tax Tools Arcade';
+
+  if (isPro) {
+    const html = vesperiShell(`
+      <p style="font-size:15px;line-height:1.55;">Hi there,</p>
+      <p style="font-size:15px;line-height:1.55;">A quick follow-up — here are three ways tax pros actually use the Arcade in practice:</p>
+      <ol style="font-size:15px;line-height:1.7;padding-left:20px;">
+        <li><strong>Send games before appointments.</strong> Clients arrive already understanding the basics instead of asking &ldquo;what&apos;s a deduction?&rdquo; mid-meeting.</li>
+        <li><strong>Use game analytics.</strong> See which concepts clients struggle with so you know where to spend session time.</li>
+        <li><strong>Share the Vesperi guide link.</strong> Point clients at <a href="${TTTMP_BASE_URL}/vesperi" style="color:#8b5cf6;">${TTTMP_BASE_URL}/vesperi</a> and let them self-select the right game.</li>
+      </ol>
+      <p style="margin:28px 0;"><a href="${TTTMP_BASE_URL}/games" style="display:inline-block;padding:12px 28px;background:#8b5cf6;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Browse the full Arcade</a></p>
+      <p style="font-size:14px;color:#6b7280;margin-top:24px;">— Vesperi &amp; the Tax Tools Arcade team</p>
+    `);
+    const text = `Hi there,
+
+A quick follow-up — here are three ways tax pros actually use the Arcade in practice:
+
+1. Send games before appointments. Clients arrive already understanding the basics instead of asking "what's a deduction?" mid-meeting.
+2. Use game analytics. See which concepts clients struggle with so you know where to spend session time.
+3. Share the Vesperi guide link. Point clients at ${TTTMP_BASE_URL}/vesperi and let them self-select the right game.
+
+Browse the full Arcade: ${TTTMP_BASE_URL}/games
+
+— Vesperi & the Tax Tools Arcade team`;
+    return { subject, ...vesperiRender(html, text, unsubUrl) };
+  }
+
+  const starters = [
+    { slug: 'tax-mythbusters-interactive-quiz', title: 'Tax Mythbusters Quiz', tokens: 2, teaches: 'common tax myths vs. reality' },
+    { slug: 'tax-time-machine', title: 'Tax Time Machine', tokens: 2, teaches: 'how today&apos;s tax rules actually got there' },
+    { slug: 'tax-scavenger-hunt', title: 'Tax Scavenger Hunt', tokens: 2, teaches: 'what each tax document is for' },
+  ];
+  const html = vesperiShell(`
+    <p style="font-size:15px;line-height:1.55;">Hi there,</p>
+    <p style="font-size:15px;line-height:1.55;">If you&apos;re new to the Arcade, these are the three best games to start with — all 2-token starters that teach a specific concept in 5–10 minutes:</p>
+    <ul style="font-size:15px;line-height:1.7;padding-left:20px;list-style:none;">
+      ${starters.map((g) => `<li style="margin:12px 0;"><a href="${TTTMP_BASE_URL}/games/${g.slug}" style="color:#8b5cf6;font-weight:600;text-decoration:none;">${g.title}</a> <span style="color:#6b7280;font-size:13px;">(${g.tokens} tokens)</span><br /><span style="color:#4b5563;font-size:14px;">Teaches ${g.teaches}.</span></li>`).join('')}
+    </ul>
+    <p style="margin:28px 0;"><a href="${TTTMP_BASE_URL}/games" style="display:inline-block;padding:12px 28px;background:#8b5cf6;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">See all 21 games</a></p>
+    <p style="font-size:14px;color:#6b7280;margin-top:24px;">— Vesperi &amp; the Tax Tools Arcade team</p>
+  `);
+  const text = `Hi there,
+
+If you're new to the Arcade, these are the three best games to start with — all 2-token starters that teach a specific concept in 5–10 minutes:
+
+${starters.map((g) => `- ${g.title} (${g.tokens} tokens). Teaches ${g.teaches.replace(/&apos;/g, "'")}. ${TTTMP_BASE_URL}/games/${g.slug}`).join('\n')}
+
+See all 21 games: ${TTTMP_BASE_URL}/games
+
+— Vesperi & the Tax Tools Arcade team`;
+  return { subject, ...vesperiRender(html, text, unsubUrl) };
+}
+
+function vesperiEmail3(intake, unsubUrl) {
+  const isPro = intake.audience === 'tax-pro';
+  const subject = isPro
+    ? 'Your clients are already confused about these tax concepts'
+    : 'One game that changes how you think about taxes';
+
+  if (isPro) {
+    const html = vesperiShell(`
+      <p style="font-size:15px;line-height:1.55;">Hi there,</p>
+      <p style="font-size:15px;line-height:1.55;">Here&apos;s a pattern we see every tax season: most client confusion isn&apos;t about filing mechanics — it&apos;s about <strong>tax myths</strong> they picked up from social media, a coworker, or an old tax-prep article.</p>
+      <p style="font-size:15px;line-height:1.55;">The <a href="${TTTMP_BASE_URL}/games/tax-mythbusters-interactive-quiz" style="color:#8b5cf6;font-weight:600;">Tax Mythbusters Quiz</a> surfaces those misconceptions fast, so you can correct them before they turn into a problem on a return.</p>
+      <p style="font-size:15px;line-height:1.55;">For practitioner-grade learning, the 8-token deep-dive games (Circular 230 Quest, Audit Defense Showdown, International Tax Explorer) cover the material most CPE courses skim over.</p>
+      <p style="margin:28px 0;"><a href="https://cal.com/tax-monitor-pro/virtual-launch-pro-demo-intro" style="display:inline-block;padding:12px 28px;background:#8b5cf6;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Book a 15-min call</a></p>
+      <p style="font-size:14px;color:#6b7280;">Want to see how to roll this out to your client list? We can walk through it on a quick call.</p>
+      <p style="font-size:14px;color:#6b7280;margin-top:24px;">— Vesperi &amp; the Tax Tools Arcade team</p>
+    `);
+    const text = `Hi there,
+
+Here's a pattern we see every tax season: most client confusion isn't about filing mechanics — it's about tax myths they picked up from social media, a coworker, or an old tax-prep article.
+
+The Tax Mythbusters Quiz surfaces those misconceptions fast, so you can correct them before they turn into a problem on a return:
+${TTTMP_BASE_URL}/games/tax-mythbusters-interactive-quiz
+
+For practitioner-grade learning, the 8-token deep-dive games (Circular 230 Quest, Audit Defense Showdown, International Tax Explorer) cover the material most CPE courses skim over.
+
+Book a 15-min call: https://cal.com/tax-monitor-pro/virtual-launch-pro-demo-intro
+
+— Vesperi & the Tax Tools Arcade team`;
+    return { subject, ...vesperiRender(html, text, unsubUrl) };
+  }
+
+  const html = vesperiShell(`
+    <p style="font-size:15px;line-height:1.55;">Hi there,</p>
+    <p style="font-size:15px;line-height:1.55;">If you only play one game in the Arcade, make it the <a href="${TTTMP_BASE_URL}/games/taxpayer-journey-map" style="color:#8b5cf6;font-weight:600;">Taxpayer Journey Map</a>.</p>
+    <p style="font-size:15px;line-height:1.55;">It walks you through real life events — getting married, buying a house, starting a side gig, having a kid — and shows exactly how each one changes your taxes. No jargon. No tricks.</p>
+    <p style="font-size:15px;line-height:1.55;">Most people finish it and say some version of: &ldquo;I wish someone had shown me this ten years ago.&rdquo;</p>
+    <p style="margin:28px 0;"><a href="${TTTMP_BASE_URL}/games/taxpayer-journey-map" style="display:inline-block;padding:12px 28px;background:#8b5cf6;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Play Taxpayer Journey Map</a></p>
+    <p style="font-size:14px;color:#6b7280;margin-top:24px;">— Vesperi &amp; the Tax Tools Arcade team</p>
+  `);
+  const text = `Hi there,
+
+If you only play one game in the Arcade, make it the Taxpayer Journey Map.
+
+It walks you through real life events — getting married, buying a house, starting a side gig, having a kid — and shows exactly how each one changes your taxes. No jargon. No tricks.
+
+Most people finish it and say some version of: "I wish someone had shown me this ten years ago."
+
+Play Taxpayer Journey Map: ${TTTMP_BASE_URL}/games/taxpayer-journey-map
+
+— Vesperi & the Tax Tools Arcade team`;
+  return { subject, ...vesperiRender(html, text, unsubUrl) };
+}
+
+async function sendVesperiDripEmail(env, to, subject, text, html) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: TTTMP_VESPERI_DRIP_FROM,
+      to: [to],
+      reply_to: TTTMP_VESPERI_DRIP_REPLY_TO,
+      subject,
+      text,
+      html,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    const wrapped = new Error(`resend_${res.status}: ${err.slice(0, 200)}`);
+    wrapped.status = res.status;
+    throw wrapped;
+  }
+  const data = await res.json().catch(() => ({}));
+  return data.id || null;
+}
+
+async function updateVesperiIntakeR2(env, intake_id, patch) {
+  try {
+    const key = `tttmp/vesperi/intake/${intake_id}.json`;
+    const obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+    if (!obj) return;
+    const existing = await obj.json();
+    const updated = { ...existing, ...patch };
+    await r2Put(env.R2_VIRTUAL_LAUNCH, key, updated);
+  } catch (e) {
+    console.error('[vesperi-drip] R2 update failed for', intake_id, e?.message || e);
+  }
+}
+
+async function sendVesperiDripForIntake(env, intake, buildEmail, column) {
+  const unsubUrl = await vesperiUnsubscribeUrl(env, intake.email);
+  const { subject, text, html } = buildEmail(intake, unsubUrl);
+  try {
+    await sendVesperiDripEmail(env, intake.email, subject, text, html);
+    const nowIso = new Date().toISOString();
+    await env.DB.prepare(
+      `UPDATE tttmp_vesperi_intake SET ${column} = ? WHERE intake_id = ?`
+    ).bind(nowIso, intake.intake_id).run();
+    await updateVesperiIntakeR2(env, intake.intake_id, { [column]: nowIso });
+    return { ok: true };
+  } catch (e) {
+    // Resend 422 = invalid email — stop future sends for this intake
+    if (e && e.status === 422) {
+      try {
+        await env.DB.prepare(
+          `UPDATE tttmp_vesperi_intake SET drip_unsubscribed = 1 WHERE intake_id = ?`
+        ).bind(intake.intake_id).run();
+      } catch {}
+    }
+    console.error(`[vesperi-drip] send failed for ${intake.email}:`, e?.message || e);
+    return { ok: false, error: e, status: e?.status || 0 };
+  }
+}
+
+async function runVesperiDripStage(env, stats, query, column, buildEmail) {
+  const rows = (await env.DB.prepare(query).all()).results || [];
+  for (const row of rows) {
+    if (stats.sent + stats.errors.length >= TTTMP_VESPERI_DRIP_LIMIT) break;
+    const result = await sendVesperiDripForIntake(env, row, buildEmail, column);
+    if (result.ok) {
+      stats.sent++;
+    } else {
+      stats.errors.push({ intake_id: row.intake_id, email: row.email, error: result.error?.message || String(result.error) });
+      // 429 = rate limit, stop this run
+      if (result.status === 429) return 'rate_limited';
+    }
+  }
+  return 'ok';
+}
+
+async function handleTttmpVesperiDripCron(env) {
+  const startedAt = new Date();
+  const stats = { sent: 0, errors: [], stages: { email1: 0, email2: 0, email3: 0 } };
+
+  // Email 1 catch-up — normally sent synchronously on intake, but if that
+  // failed or RESEND_API_KEY was missing, retry here.
+  const before1 = stats.sent;
+  await runVesperiDripStage(
+    env,
+    stats,
+    `SELECT intake_id, email, audience, topic FROM tttmp_vesperi_intake
+       WHERE drip_email1_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed = 0)
+         AND submitted_at < datetime('now', '-5 minutes')
+       LIMIT ${TTTMP_VESPERI_DRIP_LIMIT}`,
+    'drip_email1_sent_at',
+    vesperiEmail1,
+  );
+  stats.stages.email1 = stats.sent - before1;
+
+  // Email 2 — day 2
+  const before2 = stats.sent;
+  await runVesperiDripStage(
+    env,
+    stats,
+    `SELECT intake_id, email, audience, topic FROM tttmp_vesperi_intake
+       WHERE drip_email1_sent_at IS NOT NULL
+         AND drip_email2_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed = 0)
+         AND drip_email1_sent_at < datetime('now', '-2 days')
+       LIMIT ${TTTMP_VESPERI_DRIP_LIMIT}`,
+    'drip_email2_sent_at',
+    vesperiEmail2,
+  );
+  stats.stages.email2 = stats.sent - before2;
+
+  // Email 3 — day 5 from Email 1
+  const before3 = stats.sent;
+  await runVesperiDripStage(
+    env,
+    stats,
+    `SELECT intake_id, email, audience, topic FROM tttmp_vesperi_intake
+       WHERE drip_email2_sent_at IS NOT NULL
+         AND drip_email3_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed = 0)
+         AND drip_email1_sent_at < datetime('now', '-5 days')
+       LIMIT ${TTTMP_VESPERI_DRIP_LIMIT}`,
+    'drip_email3_sent_at',
+    vesperiEmail3,
+  );
+  stats.stages.email3 = stats.sent - before3;
+
+  const endedAt = new Date();
+  const summary = { ...stats, started_at: startedAt.toISOString(), ended_at: endedAt.toISOString(), duration_ms: endedAt - startedAt };
+  console.log('TTTMP Vesperi drip cron:', JSON.stringify(summary));
+  return summary;
+}
+
+// ---------------------------------------------------------------------------
 // WLVLP Email Send (called from 14:00 UTC cron)
 // ---------------------------------------------------------------------------
 
@@ -24551,6 +25014,15 @@ export default {
         console.error('Unsubscribe: master mutation failed:', e);
       }
 
+      // 1b. Flip drip_unsubscribed on tttmp_vesperi_intake for matching email
+      try {
+        await env.DB.prepare(
+          `UPDATE tttmp_vesperi_intake SET drip_unsubscribed = 1 WHERE LOWER(email) = ?`
+        ).bind(target).run();
+      } catch (e) {
+        console.error('Unsubscribe: vesperi intake update failed:', e);
+      }
+
       // 2. Flip status in each queue
       const queueKeys = [
         'vlp-scale/ttmp-send-queue/email1-pending.json',
@@ -25183,6 +25655,12 @@ export default {
         console.log('TCVLP Gala drip cron:', JSON.stringify(galaStats));
       } catch (e) {
         console.error('TCVLP Gala drip cron failed:', e);
+      }
+      try {
+        const vesperiStats = await handleTttmpVesperiDripCron(env);
+        console.log('TTTMP Vesperi drip cron:', JSON.stringify(vesperiStats));
+      } catch (e) {
+        console.error('TTTMP Vesperi drip cron failed:', e);
       }
       return;
     }
