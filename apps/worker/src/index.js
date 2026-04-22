@@ -16367,6 +16367,120 @@ TTMP Support Team
     },
   },
 
+  // POST /v1/tcvlp/gala/intake — Gala Claim Guide intake submission (public)
+  {
+    method: 'POST', pattern: '/v1/tcvlp/gala/intake',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const body = await parseBody(request);
+      if (!body) {
+        return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      }
+
+      const VALID_YEARS = ['2020', '2021', '2022', '2023'];
+      const VALID_PENALTIES = ['failure-to-file', 'failure-to-pay', 'estimated-tax', 'other'];
+      const VALID_CONTACT_PREFS = ['email', 'phone', 'text'];
+
+      const { taxYears, penaltyType, amount, description, name, email, phone, contactPref } = body;
+
+      if (!Array.isArray(taxYears) || taxYears.length === 0 || !taxYears.every((y) => VALID_YEARS.includes(y))) {
+        return json({ error: 'Select at least one valid tax year', field: 'taxYears' }, 400, request);
+      }
+      if (!penaltyType || !VALID_PENALTIES.includes(penaltyType)) {
+        return json({ error: 'Invalid penalty type', field: 'penaltyType' }, 400, request);
+      }
+      if (!description || typeof description !== 'string' || !description.trim()) {
+        return json({ error: 'Description is required', field: 'description' }, 400, request);
+      }
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return json({ error: 'Name is required', field: 'name' }, 400, request);
+      }
+      if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({ error: 'Valid email is required', field: 'email' }, 400, request);
+      }
+      if (!contactPref || !VALID_CONTACT_PREFS.includes(contactPref)) {
+        return json({ error: 'Invalid contact preference', field: 'contactPref' }, 400, request);
+      }
+
+      const intake_id = crypto.randomUUID();
+      const submitted_at = new Date().toISOString();
+      const phoneStr = typeof phone === 'string' ? phone : '';
+      const amountStr = typeof amount === 'string' ? amount : '';
+
+      const record = {
+        intake_id,
+        submitted_at,
+        source: 'gala',
+        status: 'pending',
+        taxYears,
+        penaltyType,
+        amount: amountStr,
+        description: description.trim(),
+        name: name.trim(),
+        email: email.trim(),
+        phone: phoneStr,
+        contactPref,
+      };
+
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `gala/intakes/${intake_id}.json`, record);
+
+        await env.DB.prepare(
+          `INSERT INTO gala_intakes (intake_id, submitted_at, name, email, phone, contact_pref, penalty_type, tax_years, amount, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
+        ).bind(
+          intake_id,
+          submitted_at,
+          record.name,
+          record.email,
+          phoneStr || null,
+          contactPref,
+          penaltyType,
+          taxYears.join(','),
+          amountStr || null
+        ).run();
+
+        // Notification email (non-blocking)
+        try {
+          const prefLabel = contactPref === 'text' ? 'Text' : contactPref === 'phone' ? 'Phone' : 'Email';
+          const emailHtml = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a2e;">
+  <div style="background: #eab308; padding: 20px 24px; border-radius: 8px 8px 0 0;">
+    <h1 style="margin: 0; font-size: 18px; color: #1a1a2e;">New Gala Intake: ${record.name} — ${penaltyType}</h1>
+  </div>
+  <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <p style="margin: 0 0 16px; font-size: 15px; color: #374151;">New intake submitted via Gala Claim Guide.</p>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Name</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${record.name}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Email</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${record.email}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Phone</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${phoneStr || 'Not provided'}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Contact Preference</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${prefLabel}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Tax Year(s)</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${taxYears.join(', ')}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Penalty Type</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${penaltyType}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Amount</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${amountStr || 'Not provided'}</td></tr>
+    </table>
+    <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">Description:</p>
+    <p style="margin: 0 0 20px; font-size: 14px; color: #1a1a2e; white-space: pre-wrap;">${record.description.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</p>
+    <a href="https://taxclaim.virtuallaunch.pro/dashboard" style="display: inline-block; padding: 10px 24px; background: #eab308; color: #1a1a2e; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Review in Dashboard</a>
+  </div>
+</div>`;
+          await sendEmail(
+            'outreach@virtuallaunch.pro',
+            `New Gala Intake: ${record.name} — ${penaltyType}`,
+            emailHtml,
+            env
+          );
+        } catch (emailErr) {
+          console.error('[TCVLP Gala] Notification email failed:', emailErr?.message || emailErr);
+        }
+
+        return json({ success: true, intake_id }, 201, request);
+      } catch (e) {
+        console.error('[TCVLP Gala] Intake error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to save intake' }, 500, request);
+      }
+    },
+  },
+
   // GET /v1/tcvlp/gala/:filename — serve Gala avatar video clips from R2
   {
     method: 'GET', pattern: '/v1/tcvlp/gala/:filename',

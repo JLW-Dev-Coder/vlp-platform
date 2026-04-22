@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { stripPhone, formatPhone, filterPhoneInput } from '@/lib/phone'
 
 const GALA_VIDEO_BASE = 'https://api.virtuallaunch.pro/v1/tcvlp/gala'
 
@@ -165,7 +166,15 @@ type IntakeData = {
   contactPref: string
 }
 
-function IntakeForm({ onSubmit }: { onSubmit: (data: IntakeData) => void }) {
+function IntakeForm({
+  onSubmit,
+  submitting,
+  submitError,
+}: {
+  onSubmit: (data: IntakeData) => void
+  submitting: boolean
+  submitError: string | null
+}) {
   const [form, setForm] = useState<IntakeData>({
     taxYears: [],
     penaltyType: '',
@@ -302,9 +311,11 @@ function IntakeForm({ onSubmit }: { onSubmit: (data: IntakeData) => void }) {
           <label className="block text-sm font-medium text-zinc-300 mb-2">Phone</label>
           <input
             type="tel"
+            inputMode="numeric"
             placeholder="(555) 123-4567"
             value={form.phone}
-            onChange={(e) => update('phone', e.target.value)}
+            onChange={(e) => update('phone', filterPhoneInput(e.target.value))}
+            onBlur={() => update('phone', formatPhone(form.phone))}
             className={inputClass('phone')}
           />
         </div>
@@ -338,12 +349,19 @@ function IntakeForm({ onSubmit }: { onSubmit: (data: IntakeData) => void }) {
         </div>
       </div>
 
+      {submitError && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+          {submitError}
+        </div>
+      )}
+
       <button
         type="button"
         onClick={handleSubmit}
-        className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-xl transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40 hover:-translate-y-0.5 active:translate-y-0"
+        disabled={submitting}
+        className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-xl transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
       >
-        Submit My Case Details
+        {submitting ? 'Submitting...' : 'Submit My Case Details'}
       </button>
     </div>
   )
@@ -354,6 +372,8 @@ export default function KwongClaimPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [showTranscript, setShowTranscript] = useState(true)
   const [formSubmitted, setFormSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [history, setHistory] = useState<string[]>([])
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const countdown = useCountdown('2026-07-15T00:00:00')
@@ -386,15 +406,37 @@ export default function KwongClaimPage() {
     v.play().catch(() => {})
   }, [currentBranch, branch?.clip])
 
-  const handleIntakeSubmit = (formData: IntakeData) => {
-    console.log('Intake submitted:', formData)
-    setFormSubmitted(true)
-    setCurrentBranch('submitted')
+  const handleIntakeSubmit = async (formData: IntakeData) => {
+    setSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      const res = await fetch('https://api.virtuallaunch.pro/v1/tcvlp/gala/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          phone: formData.phone ? stripPhone(formData.phone) : '',
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Submission failed' }))
+        throw new Error(err.error || 'Submission failed')
+      }
+
+      setFormSubmitted(true)
+      setCurrentBranch('submitted')
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleButtonAction = (btn: Button) => {
     if (btn.action === 'book') {
-      window.open('https://cal.com/vlp/tcvlp-discovery', '_blank')
+      window.open('https://cal.com/tax-monitor-pro/tcvlp-intro', '_blank')
     } else if (btn.action === 'done') {
       // stay on page
     } else if (btn.next) {
@@ -546,7 +588,11 @@ export default function KwongClaimPage() {
                   Takes about 2 minutes. All information is confidential.
                 </p>
               </div>
-              <IntakeForm onSubmit={handleIntakeSubmit} />
+              <IntakeForm
+                onSubmit={handleIntakeSubmit}
+                submitting={submitting}
+                submitError={submitError}
+              />
             </div>
           )}
 

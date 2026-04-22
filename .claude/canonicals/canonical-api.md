@@ -344,6 +344,8 @@ Total routes: ~193
 | POST | `/v1/tcvlp/forms/843/generate` | Generate Form 843 | Yes | TCVLP |
 | POST | `/v1/tcvlp/forms/843/submit` | Submit Form 843 | Yes | TCVLP |
 | GET | `/v1/tcvlp/forms/843/:submission_id/download` | Download Form 843 | No (link) | TCVLP |
+| POST | `/v1/tcvlp/gala/intake` | Submit Gala intake | No | TCVLP |
+| GET | `/v1/tcvlp/gala/:filename` | Serve Gala video clip | No | TCVLP |
 
 ---
 
