@@ -21676,6 +21676,250 @@ async function handleWlvlpDripCron(env) {
 }
 
 // ---------------------------------------------------------------------------
+// TCVLP Gala Welcome Drip Cron — 15:00 UTC daily.
+//
+// Sends a 3-email welcome sequence to visitors who submit the /gala intake
+// form. Email 1 fires on the next cron after submission (≥5 min after),
+// Email 2 at day 2, Email 3 at day 5. Each send flips the corresponding
+// drip_emailN_sent_at column on gala_intakes; R2 record is re-written to
+// mirror the updated timestamps.
+//
+// Capped at 50 sends per cron run to stay well under Resend free-tier limits.
+// On Resend error for a given intake, the sent_at column is NOT set so the
+// send retries on the next cron.
+// ---------------------------------------------------------------------------
+
+const TCVLP_GALA_DRIP_FROM = 'TaxClaim Pro <noreply@virtuallaunch.pro>';
+const TCVLP_GALA_DRIP_REPLY_TO = 'outreach@virtuallaunch.pro';
+const TCVLP_GALA_DRIP_LIMIT = 50;
+
+function galaDripEmail1(firstName) {
+  const subject = 'Your TaxClaim Pro access is ready';
+  const text = `Hey ${firstName},
+
+You're in.
+
+TaxClaim Pro helps tax professionals generate Form 843 penalty abatement requests from transcript and taxpayer data — without spending hours in manual prep.
+
+Here's what you can do right now:
+
+1. See the Kwong window and what it covers (Jan 2020 – July 2023 penalties)
+2. Run a quick eligibility check
+3. Generate a claim-ready Form 843 package
+
+Start here:
+https://taxclaim.virtuallaunch.pro
+
+If you want the fastest path, use the Gala guide:
+https://taxclaim.virtuallaunch.pro/gala
+
+— TaxClaim Pro`;
+  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e;padding:24px;">
+  <p style="font-size:15px;line-height:1.55;">Hey ${firstName},</p>
+  <p style="font-size:15px;line-height:1.55;">You're in.</p>
+  <p style="font-size:15px;line-height:1.55;">TaxClaim Pro helps tax professionals generate Form 843 penalty abatement requests from transcript and taxpayer data — without spending hours in manual prep.</p>
+  <p style="font-size:15px;line-height:1.55;">Here's what you can do right now:</p>
+  <ol style="font-size:15px;line-height:1.7;padding-left:20px;">
+    <li>See the Kwong window and what it covers (Jan 2020 – July 2023 penalties)</li>
+    <li>Run a quick eligibility check</li>
+    <li>Generate a claim-ready Form 843 package</li>
+  </ol>
+  <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Open TaxClaim Pro</a></p>
+  <p style="font-size:14px;color:#6b7280;">If you want the fastest path, use the Gala guide:<br><a href="https://taxclaim.virtuallaunch.pro/gala" style="color:#eab308;">https://taxclaim.virtuallaunch.pro/gala</a></p>
+  <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
+</div>`;
+  return { subject, text, html };
+}
+
+function galaDripEmail2(firstName) {
+  const subject = 'The fastest way to prep Form 843 claims (without cutting corners)';
+  const text = `Hey ${firstName},
+
+Most penalty abatement workflows break down in the same places:
+
+- Transcript review takes too long
+- Calculations get rechecked multiple times
+- Form 843 prep becomes a manual copy-paste project
+
+TaxClaim Pro removes that drag:
+
+- Penalty and interest calculations from transcript data
+- Form 843 generation with consistent formatting
+- Branded client claim pages for intake
+- Notifications when clients submit details
+
+See the flow end to end with Gala:
+https://taxclaim.virtuallaunch.pro/gala
+
+— TaxClaim Pro`;
+  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e;padding:24px;">
+  <p style="font-size:15px;line-height:1.55;">Hey ${firstName},</p>
+  <p style="font-size:15px;line-height:1.55;">Most penalty abatement workflows break down in the same places:</p>
+  <ul style="font-size:15px;line-height:1.7;padding-left:20px;">
+    <li>Transcript review takes too long</li>
+    <li>Calculations get rechecked multiple times</li>
+    <li>Form 843 prep becomes a manual copy-paste project</li>
+  </ul>
+  <p style="font-size:15px;line-height:1.55;">TaxClaim Pro removes that drag:</p>
+  <ul style="font-size:15px;line-height:1.7;padding-left:20px;">
+    <li>Penalty and interest calculations from transcript data</li>
+    <li>Form 843 generation with consistent formatting</li>
+    <li>Branded client claim pages for intake</li>
+    <li>Notifications when clients submit details</li>
+  </ul>
+  <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro/gala" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">See the Gala Flow</a></p>
+  <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
+</div>`;
+  return { subject, text, html };
+}
+
+function galaDripEmail3(firstName) {
+  const subject = 'July 2026 is closer than it looks';
+  const text = `Hey ${firstName},
+
+The Kwong v. US claim window has a hard deadline: July 2026.
+
+If you have clients with penalties assessed between Jan 2020 and July 2023, you want a workflow that handles volume without burning hours per case.
+
+Next best step:
+
+1. Use Gala to classify the case path (refund, notice, not sure)
+2. Collect the minimum intake details
+3. Generate Form 843 and supporting package
+
+Start here:
+https://taxclaim.virtuallaunch.pro/gala
+
+— TaxClaim Pro`;
+  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e;padding:24px;">
+  <p style="font-size:15px;line-height:1.55;">Hey ${firstName},</p>
+  <p style="font-size:15px;line-height:1.55;">The Kwong v. US claim window has a hard deadline: <strong>July 2026</strong>.</p>
+  <p style="font-size:15px;line-height:1.55;">If you have clients with penalties assessed between Jan 2020 and July 2023, you want a workflow that handles volume without burning hours per case.</p>
+  <p style="font-size:15px;line-height:1.55;">Next best step:</p>
+  <ol style="font-size:15px;line-height:1.7;padding-left:20px;">
+    <li>Use Gala to classify the case path (refund, notice, not sure)</li>
+    <li>Collect the minimum intake details</li>
+    <li>Generate Form 843 and supporting package</li>
+  </ol>
+  <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro/gala" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Start the Claim Guide</a></p>
+  <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
+</div>`;
+  return { subject, text, html };
+}
+
+async function sendGalaDripEmail(env, to, subject, text, html) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: TCVLP_GALA_DRIP_FROM,
+      to: [to],
+      reply_to: TCVLP_GALA_DRIP_REPLY_TO,
+      subject,
+      text,
+      html,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`resend_${res.status}: ${err.slice(0, 200)}`);
+  }
+  const data = await res.json().catch(() => ({}));
+  return data.id || null;
+}
+
+async function updateGalaIntakeR2(env, intake_id, patch) {
+  try {
+    const key = `gala/intakes/${intake_id}.json`;
+    const obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+    if (!obj) return;
+    const existing = await obj.json();
+    const updated = { ...existing, ...patch };
+    await r2Put(env.R2_VIRTUAL_LAUNCH, key, updated);
+  } catch (e) {
+    console.error('[gala-drip] R2 update failed for', intake_id, e?.message || e);
+  }
+}
+
+async function runGalaDripStage(env, stats, query, column, buildEmail) {
+  const rows = (await env.DB.prepare(query).all()).results || [];
+  for (const row of rows) {
+    if (stats.sent + stats.errors.length >= TCVLP_GALA_DRIP_LIMIT) break;
+    try {
+      const firstName = (row.name || '').split(/\s+/)[0] || 'there';
+      const { subject, text, html } = buildEmail(firstName);
+      await sendGalaDripEmail(env, row.email, subject, text, html);
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(
+        `UPDATE gala_intakes SET ${column} = ? WHERE intake_id = ?`
+      ).bind(nowIso, row.intake_id).run();
+      await updateGalaIntakeR2(env, row.intake_id, { [column]: nowIso });
+      stats.sent++;
+    } catch (e) {
+      console.error(`[gala-drip] send failed for ${row.email}:`, e?.message || e);
+      stats.errors.push({ intake_id: row.intake_id, email: row.email, error: e?.message || String(e) });
+    }
+  }
+}
+
+async function handleTcvlpGalaDripCron(env) {
+  const startedAt = new Date();
+  const stats = { sent: 0, errors: [], stages: { email1: 0, email2: 0, email3: 0 } };
+
+  // Email 1 — first cron after intake (≥5 min after submission)
+  const before1 = stats.sent;
+  await runGalaDripStage(
+    env,
+    stats,
+    `SELECT intake_id, name, email FROM gala_intakes
+       WHERE drip_email1_sent_at IS NULL
+         AND submitted_at < datetime('now', '-5 minutes')
+       LIMIT ${TCVLP_GALA_DRIP_LIMIT}`,
+    'drip_email1_sent_at',
+    galaDripEmail1,
+  );
+  stats.stages.email1 = stats.sent - before1;
+
+  // Email 2 — day 2
+  const before2 = stats.sent;
+  await runGalaDripStage(
+    env,
+    stats,
+    `SELECT intake_id, name, email FROM gala_intakes
+       WHERE drip_email1_sent_at IS NOT NULL
+         AND drip_email2_sent_at IS NULL
+         AND submitted_at < datetime('now', '-2 days')
+       LIMIT ${TCVLP_GALA_DRIP_LIMIT}`,
+    'drip_email2_sent_at',
+    galaDripEmail2,
+  );
+  stats.stages.email2 = stats.sent - before2;
+
+  // Email 3 — day 5
+  const before3 = stats.sent;
+  await runGalaDripStage(
+    env,
+    stats,
+    `SELECT intake_id, name, email FROM gala_intakes
+       WHERE drip_email2_sent_at IS NOT NULL
+         AND drip_email3_sent_at IS NULL
+         AND submitted_at < datetime('now', '-5 days')
+       LIMIT ${TCVLP_GALA_DRIP_LIMIT}`,
+    'drip_email3_sent_at',
+    galaDripEmail3,
+  );
+  stats.stages.email3 = stats.sent - before3;
+
+  const endedAt = new Date();
+  const summary = { ...stats, started_at: startedAt.toISOString(), ended_at: endedAt.toISOString(), duration_ms: endedAt - startedAt };
+  console.log('TCVLP Gala drip cron:', JSON.stringify(summary));
+  return summary;
+}
+
+// ---------------------------------------------------------------------------
 // WLVLP Email Send (called from 14:00 UTC cron)
 // ---------------------------------------------------------------------------
 
@@ -24834,6 +25078,12 @@ export default {
         console.log('WLVLP drip cron:', JSON.stringify(dripStats));
       } catch (e) {
         console.error('WLVLP drip cron failed:', e);
+      }
+      try {
+        const galaStats = await handleTcvlpGalaDripCron(env);
+        console.log('TCVLP Gala drip cron:', JSON.stringify(galaStats));
+      } catch (e) {
+        console.error('TCVLP Gala drip cron failed:', e);
       }
       return;
     }

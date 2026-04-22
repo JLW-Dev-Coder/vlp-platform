@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { stripPhone, formatPhone, filterPhoneInput } from '@/lib/phone'
+import { track } from '@/lib/posthog'
 
 const GALA_VIDEO_BASE = 'https://api.virtuallaunch.pro/v1/tcvlp/gala'
 
@@ -384,16 +385,27 @@ export default function KwongClaimPage() {
     if (currentBranch) setHistory((h) => [...h, currentBranch])
     setCurrentBranch(branchId)
     setIsPlaying(true)
+    track('gala_clip_played', {
+      clip_id: BRANCHES[branchId]?.clip,
+      branch: branchId,
+    })
   }
 
   const goBack = () => {
     if (history.length > 0) {
       const prev = history[history.length - 1]
+      track('gala_back_clicked', { from_branch: currentBranch, to_branch: prev })
       setHistory((h) => h.slice(0, -1))
       setCurrentBranch(prev)
       setIsPlaying(true)
     }
   }
+
+  useEffect(() => {
+    if (currentBranch && BRANCHES[currentBranch]?.showIntake && !formSubmitted) {
+      track('gala_intake_form_viewed')
+    }
+  }, [currentBranch, formSubmitted])
 
   useEffect(() => {
     const v = videoRef.current
@@ -427,6 +439,12 @@ export default function KwongClaimPage() {
 
       setFormSubmitted(true)
       setCurrentBranch('submitted')
+      track('gala_intake_submitted', {
+        tax_years: formData.taxYears,
+        penalty_type: formData.penaltyType,
+        contact_pref: formData.contactPref,
+        has_amount: Boolean(formData.amount),
+      })
     } catch (err: any) {
       setSubmitError(err?.message || 'Something went wrong. Please try again.')
     } finally {
@@ -435,7 +453,13 @@ export default function KwongClaimPage() {
   }
 
   const handleButtonAction = (btn: Button) => {
+    track('gala_button_clicked', {
+      label: btn.label,
+      next: btn.next || btn.action || 'unknown',
+      from_branch: currentBranch,
+    })
     if (btn.action === 'book') {
+      track('gala_book_review_clicked')
       window.open('https://cal.com/tax-monitor-pro/tcvlp-intro', '_blank')
     } else if (btn.action === 'done') {
       // stay on page
@@ -482,7 +506,10 @@ export default function KwongClaimPage() {
           {!currentBranch && (
             <button
               type="button"
-              onClick={() => navigate('greeting')}
+              onClick={() => {
+                track('gala_flow_started')
+                navigate('greeting')
+              }}
               className="inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-xl transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40 hover:-translate-y-0.5 active:translate-y-0"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
