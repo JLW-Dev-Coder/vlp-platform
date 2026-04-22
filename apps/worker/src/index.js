@@ -16510,6 +16510,100 @@ TTMP Support Team
     },
   },
 
+  // POST /v1/tttmp/vesperi/intake — Vesperi game-guide email capture (public)
+  {
+    method: 'POST', pattern: '/v1/tttmp/vesperi/intake',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const body = await parseBody(request);
+      if (!body) {
+        return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      }
+
+      const VALID_AUDIENCE = ['tax-pro', 'taxpayer'];
+      const VALID_TOPICS = ['notices', 'strategy', 'client-ed', 'filing', 'concepts', 'documents', 'all-games'];
+
+      const { email, audience, topic, source_node, utm_source, utm_medium } = body;
+
+      if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        return json({ error: 'Valid email is required', field: 'email' }, 400, request);
+      }
+      if (!audience || !VALID_AUDIENCE.includes(audience)) {
+        return json({ error: 'Invalid audience', field: 'audience' }, 400, request);
+      }
+      if (!topic || !VALID_TOPICS.includes(topic)) {
+        return json({ error: 'Invalid topic', field: 'topic' }, 400, request);
+      }
+      if (!source_node || typeof source_node !== 'string') {
+        return json({ error: 'Missing source_node', field: 'source_node' }, 400, request);
+      }
+
+      const intake_id = crypto.randomUUID();
+      const submitted_at = new Date().toISOString();
+      const utmSrc = typeof utm_source === 'string' ? utm_source.slice(0, 100) : null;
+      const utmMed = typeof utm_medium === 'string' ? utm_medium.slice(0, 100) : null;
+
+      const record = {
+        intake_id,
+        submitted_at,
+        source: 'vesperi',
+        status: 'captured',
+        email: email.trim().toLowerCase(),
+        audience,
+        topic,
+        source_node: source_node.slice(0, 100),
+        utm_source: utmSrc,
+        utm_medium: utmMed,
+      };
+
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tttmp/vesperi/intake/${intake_id}.json`, record);
+
+        await env.DB.prepare(
+          `INSERT INTO tttmp_vesperi_intake (intake_id, submitted_at, email, audience, topic, source_node, utm_source, utm_medium, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'captured')`
+        ).bind(
+          intake_id,
+          submitted_at,
+          record.email,
+          audience,
+          topic,
+          record.source_node,
+          utmSrc,
+          utmMed
+        ).run();
+
+        return json({ id: intake_id, status: 'captured' }, 201, request);
+      } catch (e) {
+        console.error('[TTTMP Vesperi] Intake error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to save intake' }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/tttmp/vesperi/clips/:filename — serve Vesperi avatar video clips from R2
+  {
+    method: 'GET', pattern: '/v1/tttmp/vesperi/clips/:filename',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { filename } = params;
+      if (!filename || !/^[a-z0-9-]+\.mp4$/.test(filename)) {
+        return json({ ok: false, error: 'INVALID_FILENAME' }, 400, request);
+      }
+      const obj = await env.R2_VIRTUAL_LAUNCH.get(`tttmp/vesperi/clips/${filename}`);
+      if (!obj) {
+        return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+      }
+      const corsHeaders = getCorsHeaders(request);
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': 'video/mp4',
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Accept-Ranges': 'bytes',
+          ...corsHeaders,
+        },
+      });
+    },
+  },
+
   // GET /v1/tcvlp/forms/843/:submission_id/download
   {
     method: 'GET', pattern: '/v1/tcvlp/forms/843/:submission_id/download',
