@@ -11,9 +11,22 @@ instruction file at `.claude/instructions/tttmp-vesperi-youtube.md`.
 ## Summary
 
 - Total findings: **29**
-- Fix now: **9**
+- Fix now: **9** (7 fixed in Phase 1 on 2026-04-21 — F-01, F-02, F-03, F-04/F-05, F-06, F-08, F-09; F-07 deferred to Phase 2 Tailwind migration)
 - Fix with Vesperi work: **11**
 - Fix later: **9**
+
+### Phase 1 Status (2026-04-21)
+
+| Finding | Status | Commit |
+|---------|--------|--------|
+| F-01 | ✅ Fixed | `03248aa` — replaced placeholder with full instruction |
+| F-02 | ✅ Fixed | `f65c274` — removed `output: 'export'` |
+| F-03 | ✅ Fixed (scope revised) | `20aca58` — added `marketing`, `cookiePrefsStorageKey`; kept `brand*` naming to match actual TypeScript interface. Canonical-site-nav §3 discrepancy deferred to monorepo-wide correction. |
+| F-04 / F-05 | ✅ Partially Fixed | `967a4d9` — added `/help` + `/contact` nav entries for existing pages. Missing marketing pages (About, Features, How-It-Works, Reviews) + missing dashboard pages remain Phase 2 scope. |
+| F-06 | ✅ Fixed | `dcc3d77` — SupportModal now uses Cal.com element-click popup from PlatformConfig |
+| F-07 | ⏸ Deferred | Phase 2 Tailwind migration (tied to F-11) |
+| F-08 | ✅ Fixed | `a4ce32c` — Header z-index 100→20, SupportModal 1000→40 |
+| F-09 | ✅ Fixed | `c36c6d9` — checkout/sessions is now public; account_id resolved opportunistically from session or via Stripe webhook |
 
 ### Audit matrix (by canonical)
 
