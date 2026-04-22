@@ -29,6 +29,7 @@ export const tttmpConfig: PlatformConfig = {
       discover: [
         { label: 'About', href: '/about', description: 'Learn about Tax Tools Arcade' },
         { label: 'How It Works', href: '/how-it-works', description: 'See how game-based learning works' },
+        { label: 'Game Guide', href: '/vesperi', description: 'Let Vesperi help you find the right game' },
       ],
       explore: [
         { label: 'Games', href: '/games' },

@@ -33,6 +33,7 @@ export default function Header() {
         </Link>
         <nav className={styles.nav}>
           <Link href="/games">Games</Link>
+          <Link href="/vesperi">Game Guide</Link>
           <Link href="/pricing">Tokens</Link>
           <Link href="/help">Help</Link>
           <Link href="/contact">Contact</Link>
