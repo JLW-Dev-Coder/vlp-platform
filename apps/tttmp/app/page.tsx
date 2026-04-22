@@ -57,46 +57,17 @@ const tools = [
     ),
   },
   {
-    title: 'Form 2848 Autofill',
-    description: 'Generate a complete IRS Power of Attorney form in minutes. No manual entry.',
-    color: 'green',
-    demo: '/tools/form-2848',
-    play: '/tools/form-2848',
-    playLabel: 'Use Tool',
+    title: 'Tax Mythbusters Quiz',
+    description: 'True-or-false quiz that debunks common tax myths with clear explanations.',
+    color: 'amber',
+    demo: '/games/tax-mythbusters-interactive-quiz',
+    play: '/games/tax-mythbusters-interactive-quiz',
+    playLabel: 'Play Now',
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" />
-        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Form 8821 Autofill',
-    description: 'Autofill Tax Information Authorization for your clients. Fast, accurate, ready to file.',
-    color: 'green',
-    demo: '/tools/form-8821',
-    play: '/tools/form-8821',
-    playLabel: 'Use Tool',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <path d="M9 15l2 2 4-4" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Transcript Parser',
-    description: 'Upload an IRS transcript PDF and get a plain-English breakdown of every transaction code.',
-    color: 'blue',
-    demo: '/tools/transcript-parser',
-    play: '/tools/transcript-parser',
-    playLabel: 'Use Tool',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="17 8 12 3 7 8" />
-        <line x1="12" y1="3" x2="12" y2="15" />
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
       </svg>
     ),
   },
@@ -171,8 +142,8 @@ const faqs = [
     a: 'Yes. Most games offer a free demo mode. Form tools show a preview of the output before you spend a token.',
   },
   {
-    q: 'How do I receive my completed forms?',
-    a: 'After autofilling Form 2848 or 8821, you get a completed PDF ready to print or e-file. The transcript parser generates a downloadable report.',
+    q: 'What do I get after playing a game?',
+    a: 'Every game tracks your progress and scoring as you play. Many games include badges, streaks, and achievement levels — and each game explains the underlying tax concept as you go.',
   },
 ]
 
@@ -187,9 +158,8 @@ export default function HomePage() {
             <span className={styles.eyebrow}>Tax Season 2026 Ready</span>
             <h1 className={styles.title}>Master IRS Procedures Through Play</h1>
             <p className={styles.subtitle}>
-              Interactive games and professional-grade form tools for tax professionals and
-              students. Learn transaction codes, autofill Form 2848 and Form 8821 — all in one
-              place.
+              Interactive games for tax professionals and students. Learn transaction codes,
+              IRS notices, deductions, and more — all through play.
             </p>
             <div className={styles.actions}>
               <a href="/games" className={styles.primary}>
@@ -329,7 +299,7 @@ export default function HomePage() {
                 <span className={styles.footerNavTitle}>Explore</span>
                 <a href="/">Home</a>
                 <a href="/games">Games</a>
-                <a href="/tools/form-2848">Tools</a>
+                <a href="/vesperi">Game Guide</a>
                 <a href="/pricing">Pricing</a>
                 <a href="/support">Support</a>
               </nav>
