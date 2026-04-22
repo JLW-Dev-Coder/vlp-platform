@@ -239,39 +239,57 @@ After reaching `qualify-yes.mp4` or `next-steps.mp4`:
 
 ## 7. Build Sequence
 
-### Phase 1: Foundation (no video yet)
+### Phase 1: Foundation (no video yet) — COMPLETE
 
 1. Define the complete Kwong claim decision tree (this document, §4)
 2. Write Gala's branching scripts (text for each clip — what she says)
 3. Build the landing page skeleton at `/gala` with placeholder video area + working button flow
 4. Build Worker session endpoints (`/v1/tcvlp/gala/session`, `/v1/tcvlp/gala/next`)
 
-### Phase 2: Video Production
+**Status:** Complete. Commits: 76ad515, 4774d90.
+
+### Phase 2: Video Production — COMPLETE
 
 5. Produce 8–12 short Gala clips using HeyGen (or equivalent avatar tool)
 6. Upload clips to R2 under `gala/` prefix
 7. Wire landing page player to R2 clip URLs via Worker endpoints
 8. Test full button-driven flow end-to-end
 
-### Phase 3: Intake Integration
+**Status:** Complete. 12 Gala clips produced in HeyGen (Gala Business Sofa Front). Uploaded to R2. Commit: 87aa4ca.
+
+### Phase 3: Intake Integration — COMPLETE
 
 9. Add intake form to the landing page terminal state
 10. Wire form submission to existing TCVLP Form 843 pipeline (or new intake endpoint)
 11. Add Gala's closing clip after form submission
 
-### Phase 4: YouTube Launch
+**Status:** Complete. Intake endpoint live at POST /v1/tcvlp/gala/intake. R2 + D1 storage. Resend notification. Commit: 42320e4.
+
+### Phase 4: YouTube Launch — COMPLETE
 
 12. Produce initial batch of 6 YouTube videos
 13. Set up channel with branding, descriptions, playlists
 14. Publish videos with Gala landing page CTAs in descriptions
 15. Set up PostHog tracking on the Gala page for funnel analytics
 
-### Phase 5: Level 2 — Hybrid AI (post-launch)
+**Status:** Complete. 6 videos scheduled (YT000–YT005). Channel live. 6 playlists created. PostHog funnel events wired. Commit: dab9418.
+
+### Phase 5: Level 2 — Hybrid AI (post-launch) — SKIPPED
 
 16. Add free-text input option alongside buttons
 17. Build Claude classification endpoint (`/v1/tcvlp/gala/classify`)
 18. Map classification results to existing clip paths
 19. Test and refine classification accuracy
+
+**Status:** Skipped by Owner decision (2026-04-21). Button-driven flow is sufficient. Revisit only if user research shows demand for typed input.
+
+### Phase 6: Email Drip — COMPLETE
+
+20. 3-email welcome sequence (immediate / day 2 / day 5)
+21. Resend delivery via Worker cron
+22. PostHog open/click tracking
+
+**Status:** Complete. 3-email welcome sequence via Resend cron (immediate / day 2 / day 5). Commit: dab9418.
 
 ---
 
@@ -280,7 +298,7 @@ After reaching `qualify-yes.mp4` or `next-steps.mp4`:
 | # | Question | Decision |
 |---|----------|----------|
 | 1 | Landing page URL | **CONFIRMED: `/gala`** — SEO advantage, "Kwong claim" is the search term |
-| 2 | YouTube channel name | **CONFIRMED: `TaxClaim Pro`** — matches product name, broader than just Kwong |
+| 2 | YouTube channel name | **CONFIRMED: TaxClaim Pro** — https://studio.youtube.com/channel/UCW4MlyxggAb4A_FK1aRmGbg |
 | 3 | Avatar tool | **CONFIRMED: HeyGen** — Gala avatar with 18 looks already created |
 | 4 | Gala's appearance | **CONFIRMED: Gala Business Sofa Front (landing page clips), Gala Office Front (YouTube authority pieces)** |
 | 5 | First interaction model | **CONFIRMED: A — Button-driven only (Level 1 first).** Level 2 hybrid AI added post-launch. |
@@ -318,3 +336,50 @@ After reaching `qualify-yes.mp4` or `next-steps.mp4`:
 - Phone inputs use canonical §10 normalization
 - PostHog analytics is live across all apps — new pages are automatically tracked via cookie consent gate
 - Build verification: `npx turbo build --filter=apps/tcvlp` after every change
+
+---
+
+## 11. YouTube Channel (Live)
+
+### Channel
+
+| Field | Value |
+|-------|-------|
+| Channel Name | TaxClaim Pro |
+| Studio URL | https://studio.youtube.com/channel/UCW4MlyxggAb4A_FK1aRmGbg |
+| Status | Live — first 6 videos scheduled, publishing starts 2026-04-22 |
+
+### Playlists
+
+All playlists are public. URLs use format: `https://www.youtube.com/playlist?list={id}`
+
+| # | Playlist | Playlist ID | Studio URL | Public URL |
+|---|----------|-------------|-----------|------------|
+| 1 | Kwong Claim Basics (2020–2023) | PLTivZkb8VORwg_EjludchXDNSD5SDYO7_ | https://studio.youtube.com/playlist/PLTivZkb8VORwg_EjludchXDNSD5SDYO7_/edit | https://www.youtube.com/playlist?list=PLTivZkb8VORwg_EjludchXDNSD5SDYO7_ |
+| 2 | Form 843 Step-by-Step | PLTivZkb8VORxdS2sauTDxvMsJLn8Ujzqb | https://studio.youtube.com/playlist/PLTivZkb8VORxdS2sauTDxvMsJLn8Ujzqb/edit | https://www.youtube.com/playlist?list=PLTivZkb8VORxdS2sauTDxvMsJLn8Ujzqb |
+| 3 | IRS Transcripts (What to Look For) | PLTivZkb8VORyp5kntx7Z-neY3HKrf9Em0 | https://studio.youtube.com/playlist/PLTivZkb8VORyp5kntx7Z-neY3HKrf9Em0/edit | https://www.youtube.com/playlist?list=PLTivZkb8VORyp5kntx7Z-neY3HKrf9Em0 |
+| 4 | Deadline and Strategy (July 2026) | PLTivZkb8VORz6afOtwoWlI6W-YBfEAOMF | https://studio.youtube.com/playlist/PLTivZkb8VORz6afOtwoWlI6W-YBfEAOMF/edit | https://www.youtube.com/playlist?list=PLTivZkb8VORz6afOtwoWlI6W-YBfEAOMF |
+| 5 | Case Walkthroughs (Notice Path vs Refund Path) | PLTivZkb8VORyk-8QEtbmjIqNzuUoYO4YC | https://studio.youtube.com/playlist/PLTivZkb8VORyk-8QEtbmjIqNzuUoYO4YC/edit | https://www.youtube.com/playlist?list=PLTivZkb8VORyk-8QEtbmjIqNzuUoYO4YC |
+| 6 | Product Workflow (TaxClaim Pro) | PLTivZkb8VORxgfCIj25QDuW9e0jV1z2N_ | https://studio.youtube.com/playlist/PLTivZkb8VORxgfCIj25QDuW9e0jV1z2N_/edit | https://www.youtube.com/playlist?list=PLTivZkb8VORxgfCIj25QDuW9e0jV1z2N_ |
+
+### Playlist Descriptions
+
+| Playlist | Description |
+|----------|-------------|
+| Kwong Claim Basics | Fast explanations of the Kwong window, who it applies to, and how to triage cases. |
+| Form 843 Step-by-Step | Practical Form 843 walkthroughs, common mistakes, and supporting documentation patterns. |
+| IRS Transcripts | Transcript signals, penalty entries, timelines, and examples. |
+| Deadline and Strategy | Planning, volume handling, and workflow choices leading up to July 2026. |
+| Case Walkthroughs | Example scenarios and routing decisions. |
+| Product Workflow | How the product supports intake, calculations, and generation. |
+
+### Published Videos
+
+| Task ID | Title | ClickUp | Full Video | Short |
+|---------|-------|---------|------------|-------|
+| YT000 | The IRS Owes You Money? Here's How to Check (Kwong v. US) | https://app.clickup.com/t/86e10n81b | https://youtu.be/_Eas5b8xODY | https://youtu.be/V0bhyj7owok |
+| YT001 | Form 843 Explained in 60 Seconds | https://app.clickup.com/t/86e10n8bq | https://youtu.be/4DfxmsZW9dE | https://youtu.be/mcBZnLHHTTs |
+| YT002 | 5 Signs the Kwong Claim Applies to Your Case | https://app.clickup.com/t/86e10n8u7 | https://youtu.be/HucOqqBWxvk | https://youtu.be/QN4zxNiGZq8 |
+| YT003 | IRS Penalty Abatement: What CPAs Need to Know Before July 2026 | https://app.clickup.com/t/86e10n952 | https://youtu.be/73_nHBnPRxc | https://youtu.be/wAEiBPktOfc |
+| YT004 | How to File Form 843 (Step-by-Step) | https://app.clickup.com/t/86e10ne2z | https://youtu.be/fUns00UfERg | https://youtu.be/78sinGfOlb8 |
+| YT005 | Kwong v. US: The Ruling That Could Get Your Penalty Refunded | https://app.clickup.com/t/86e10nefp | https://youtu.be/byep4n_M_O8 | https://youtu.be/a-KH8zqlpWQ |
