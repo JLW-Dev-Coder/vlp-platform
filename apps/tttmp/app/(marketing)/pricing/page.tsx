@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Header from '@/components/Header'
 import { api, type TokenPackage, type TokenPackSku } from '@/lib/api'
 import { capture } from '@vlp/member-ui'
 import styles from './page.module.css'
@@ -63,7 +62,7 @@ export default function PricingPage() {
 
   return (
     <>
-      <Header />
+
       <main className={styles.main}>
         <div className={styles.header}>
           <h1 className={styles.title}>Token Packs</h1>

@@ -23,6 +23,9 @@ instruction file at `.claude/instructions/tttmp-vesperi-youtube.md`.
 | F-02 | ✅ Fixed | `f65c274` — removed `output: 'export'` |
 | F-03 | ✅ Fixed (scope revised) | `20aca58` — added `marketing`, `cookiePrefsStorageKey`; kept `brand*` naming to match actual TypeScript interface. Canonical-site-nav §3 discrepancy deferred to monorepo-wide correction. |
 | F-04 / F-05 | ✅ Partially Fixed | `967a4d9` — added `/help` + `/contact` nav entries for existing pages. Missing marketing pages (About, Features, How-It-Works, Reviews) + missing dashboard pages remain Phase 2 scope. |
+| F-04 (marketing nav) | ✅ Fixed | Phase 3b (2026-04-21) — swapped local Header for shared `MarketingHeader` via `(marketing)` route group + created `/about`, `/features`, `/how-it-works`, `/reviews` pages. |
+| F-12 (MarketingFooter) | ✅ Partially Fixed | Phase 3b — shared `MarketingFooter` now renders on all marketing routes. Local `Header`/`SiteFooter` still used on `/games`, `/affiliate`, `/sign-in` pending further canonicalization. |
+| F-19 (missing marketing pages) | ✅ Fixed | Phase 3b — `/about`, `/features`, `/how-it-works`, `/reviews` created using canonical tokens. |
 | F-06 | ✅ Fixed | `dcc3d77` — SupportModal now uses Cal.com element-click popup from PlatformConfig |
 | F-07 | ⏸ Deferred | Phase 2 Tailwind migration (tied to F-11) |
 | F-08 | ✅ Fixed | `a4ce32c` — Header z-index 100→20, SupportModal 1000→40 |

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import Header from '@/components/Header'
 import { getPostHogClient } from '@vlp/member-ui'
 import {
   VESPERI_TREE,
@@ -395,7 +394,7 @@ export default function VesperiPage() {
 
   return (
     <>
-      <Header />
+
       <main className="min-h-screen bg-[#0a0714] text-white">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-gradient-to-b from-[rgba(139,92,246,0.12)] via-[rgba(139,92,246,0.04)] to-transparent" />
 

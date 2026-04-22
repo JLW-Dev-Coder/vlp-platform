@@ -1,5 +1,4 @@
 import { generatePageMeta } from '@vlp/member-ui'
-import Header from '@/components/Header'
 import FaqItem from '@/components/FaqItem'
 import styles from './page.module.css'
 
@@ -150,7 +149,6 @@ const faqs = [
 export default function HomePage() {
   return (
     <>
-      <Header />
       <main className={styles.main}>
         {/* Hero */}
         <section className={styles.hero}>
@@ -287,33 +285,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className={styles.footer}>
-          <div className={styles.footerInner}>
-            <div className={styles.footerTop}>
-              <div className={styles.footerBrand}>
-                <span className={styles.footerLogo}>🪙</span>
-                <span className={styles.footerBrandName}>TaxTools</span>
-              </div>
-              <nav className={styles.footerNav} aria-label="Quick links">
-                <span className={styles.footerNavTitle}>Explore</span>
-                <a href="/">Home</a>
-                <a href="/games">Games</a>
-                <a href="/vesperi">Game Guide</a>
-                <a href="/pricing">Pricing</a>
-                <a href="/support">Support</a>
-              </nav>
-              <nav className={styles.footerNav} aria-label="Legal">
-                <span className={styles.footerNavTitle}>Legal</span>
-                <a href="/legal/privacy">Privacy Policy</a>
-                <a href="/legal/terms">Terms</a>
-              </nav>
-            </div>
-            <div className={styles.footerBottom}>
-              © 2026 Tax Tools Arcade. Part of the VirtualLaunch.pro ecosystem. Not tax advice.
-            </div>
-          </div>
-        </footer>
       </main>
     </>
   )

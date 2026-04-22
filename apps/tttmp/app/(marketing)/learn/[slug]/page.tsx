@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import Header from '@/components/Header'
 import { GAME_CATALOG, getGameBySlug, type VesperiGame } from '@/lib/vesperi-tree'
 import { getVideoBySlug, TOPIC_CLUSTERS, YOUTUBE_CHANNEL_URL } from '@/lib/youtube-content'
 
@@ -104,7 +103,7 @@ export default async function LearnPage({
 
   return (
     <>
-      <Header />
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(videoJsonLd) }}

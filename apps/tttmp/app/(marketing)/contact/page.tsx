@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Header from '@/components/Header'
 import { api } from '@/lib/api'
 import styles from './page.module.css'
 
@@ -50,7 +49,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <Header />
+
       <main className={styles.main}>
         <h1 className={styles.title}>Contact Support</h1>
         <p className={styles.subtitle}>

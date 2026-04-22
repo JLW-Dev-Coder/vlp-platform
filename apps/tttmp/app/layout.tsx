@@ -1,11 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google'
-import { BusinessJsonLd, CookieConsent, PostHogPageview } from '@vlp/member-ui'
-import { tttmpConfig } from '@/lib/platform-config'
+import { BusinessJsonLd, PostHogPageview } from '@vlp/member-ui'
 import './globals.css'
-import CtaBanner from '@/components/CtaBanner'
-import SiteFooter from '@/components/SiteFooter'
 
 const sora = Sora({
   subsets: ['latin'],
@@ -58,9 +55,6 @@ export default function RootLayout({
           priceRange="$0 - $49"
         />
         {children}
-        <CtaBanner />
-        <SiteFooter />
-        <CookieConsent config={tttmpConfig} />
         <Suspense fallback={null}>
           <PostHogPageview />
         </Suspense>
