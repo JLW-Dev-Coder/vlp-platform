@@ -11618,15 +11618,17 @@ TTMP Support Team
   {
     method: 'POST', pattern: '/v1/tttmp/checkout/sessions',
     handler: async (_method, _pattern, _params, request, env) => {
-      const { session, error } = await requireTttmpSession(request, env);
-      if (error) return error;
+      // Public per canonical-api.md — account linkage resolved by webhook on paid event.
+      // If a valid TTTMP session exists we attach account_id for convenience; otherwise proceed anonymously.
+      const sessionResult = await requireTttmpSession(request, env);
+      const accountId = sessionResult?.session?.account_id ?? null;
 
       const body = await parseBody(request);
       if (!body?.price_id) {
         return json({ ok: false, error: 'BAD_REQUEST', message: 'price_id required' }, 400, request);
       }
 
-      const { price_id, success_url, cancel_url } = body;
+      const { price_id, success_url, cancel_url, email } = body;
 
       try {
         // Create Stripe checkout session
@@ -11637,10 +11639,13 @@ TTMP Support Team
           success_url: success_url || 'https://taxtools.taxmonitor.pro/checkout/success?session_id={CHECKOUT_SESSION_ID}',
           cancel_url: cancel_url || 'https://taxtools.taxmonitor.pro/checkout/cancel',
           metadata: {
-            account_id: session.account_id,
+            ...(accountId ? { account_id: accountId } : {}),
             platform: 'tttmp'
           }
         };
+        if (!accountId && email) {
+          checkoutParams.customer_email = email;
+        }
 
         // TTTMP token package prices live in the VLP Stripe account.
         const checkoutSession = await stripePost('/checkout/sessions', checkoutParams, env, env.STRIPE_SECRET_KEY_VLP);
@@ -11648,7 +11653,7 @@ TTMP Support Team
         // Store order in R2
         const orderData = {
           session_id: checkoutSession.id,
-          account_id: session.account_id,
+          account_id: accountId,
           price_id,
           created_at: new Date().toISOString(),
           status: 'pending'
@@ -11657,7 +11662,7 @@ TTMP Support Team
 
         const eventId = `EVT_${crypto.randomUUID()}`;
         await r2Put(env.R2_VIRTUAL_LAUNCH, `receipts/tttmp/checkout/${eventId}.json`, {
-          account_id: session.account_id, price_id, session_id: checkoutSession.id,
+          account_id: accountId, price_id, session_id: checkoutSession.id,
           event: 'TTTMP_CHECKOUT_SESSION_CREATED', created_at: new Date().toISOString()
         });
 
