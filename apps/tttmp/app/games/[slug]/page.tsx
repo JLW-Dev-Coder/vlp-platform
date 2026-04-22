@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import { getAllGames, getGame } from '@/lib/games'
 import GameDetailClient from './GameDetailClient'
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return getAllGames().map((g) => ({ slug: g.slug }))
 }
