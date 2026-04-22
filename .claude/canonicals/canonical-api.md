@@ -278,6 +278,7 @@ Total routes: ~193
 | GET | `/v1/tttmp/health` | Health check | No | TTTMP |
 | POST | `/v1/tttmp/vesperi/intake` | Vesperi game guide intake | No | TTTMP |
 | GET | `/v1/tttmp/vesperi/clips/:filename` | Serve Vesperi video clips from R2 | No | TTTMP |
+| GET | `/v1/tttmp/vesperi/unsubscribe` | Vesperi drip unsubscribe (HMAC-signed email link) | No | TTTMP |
 
 ---
 

@@ -153,12 +153,45 @@ Phase 1 commits `03248aa..54efdf5`. See `apps/tttmp/.claude/audit-report-2026-04
 - YouTube upload + URL fill-in on `YouTubeVideo.youtubeUrl` (edit `lib/youtube-content.ts` or via follow-up prompt)
 - Channel banner / profile image matching the spec
 
-### Phase 4: Integration (intake, PostHog, email drip) ← CURRENT
+### Phase 4: Integration (intake, PostHog, email drip) ✅ COMPLETE (2026-04-21)
 
-Follow the same pattern as TCVLP/Gala:
-- Intake endpoint (Worker)
-- PostHog funnel events
-- Welcome email drip (Resend via Worker cron)
+Intake endpoint and PostHog funnel events shipped in Phase 2. Welcome email
+drip shipped in Phase 4:
+
+**Shipped scope (email drip):**
+- D1 migration `0062_tttmp_vesperi_drip_columns.sql` — adds
+  `drip_email1_sent_at`, `drip_email2_sent_at`, `drip_email3_sent_at`,
+  `drip_unsubscribed` columns to `tttmp_vesperi_intake`.
+- 3-email welcome sequence via Resend (`Tax Tools Arcade <noreply@virtuallaunch.pro>`,
+  reply-to `outreach@virtuallaunch.pro`). Each email has tax-pro and taxpayer
+  variants plus topic-relevant game links (7 topic clusters → game slug lists).
+  Violet (#8b5cf6) accent, inline CSS, plain-text fallback, CAN-SPAM footer
+  with Lenore business address and HMAC-signed unsubscribe link.
+- Email 1 — welcome + topic game picks, sent synchronously from the
+  `POST /v1/tttmp/vesperi/intake` handler; drip cron retries any row that
+  fell through (≥5 min old, `drip_email1_sent_at IS NULL`).
+- Email 2 — tax-pro: 3 ways to use the Arcade with clients. Taxpayer: the
+  3 best 2-token starter games. Sent at +2 days from Email 1.
+- Email 3 — tax-pro: Mythbusters pitch + CPE-style deep dives + Cal.com CTA.
+  Taxpayer: Taxpayer Journey Map highlight + emotional hook. Sent at +5 days
+  from Email 1.
+- Drip cron hooks into the existing 15:00 UTC cron next to the TCVLP Gala
+  drip (`handleTttmpVesperiDripCron`). Capped at 50 sends/run. Resend 422
+  → auto-unsubscribe; 429 → halt this run.
+- `GET /v1/tttmp/vesperi/unsubscribe?email=&token=` — public, HMAC-validated,
+  flips `drip_unsubscribed = 1`. Existing `/unsubscribe` route also flips
+  the Vesperi flag when the email matches.
+
+**Pending owner inputs:**
+- Worker deployment (committed, not deployed). Deploy applies migration 0062
+  with `--remote` and activates the new 15:00 cron handler.
+- Confirm Resend-verified domains — currently only `virtuallaunch.pro` and
+  `websitelotto.virtuallaunch.pro` are verified, so Vesperi sends from
+  `noreply@virtuallaunch.pro`. If sending from `arcade@taxtools.taxmonitor.pro`
+  is desired, add DNS records to verify `taxtools.taxmonitor.pro` in Resend.
+- Optional: `VESPERI_UNSUB_SECRET` secret for HMAC signing. Falls back to
+  `SESSION_SECRET` (or a constant if neither is set) — strongly recommend
+  setting an explicit secret before deploy.
 
 ---
 
