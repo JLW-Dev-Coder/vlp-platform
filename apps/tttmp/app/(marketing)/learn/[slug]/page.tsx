@@ -4,8 +4,6 @@ import type { Metadata } from 'next'
 import { GAME_CATALOG, getGameBySlug, type VesperiGame } from '@/lib/vesperi-tree'
 import { getVideoBySlug, TOPIC_CLUSTERS, YOUTUBE_CHANNEL_URL } from '@/lib/youtube-content'
 
-export const dynamicParams = false
-
 export function generateStaticParams() {
   return GAME_CATALOG.map((g) => ({ slug: g.slug }))
 }

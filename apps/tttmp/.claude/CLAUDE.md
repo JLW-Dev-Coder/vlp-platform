@@ -10,7 +10,8 @@ See monorepo root `.claude/CLAUDE.md` for shared context, canonical docs, and ar
 - **Abbrev:** TTTMP
 - **Domain:** taxtools.taxmonitor.pro
 - **Brand Color:** #8b5cf6 (violet)
-- **Adapter:** `@cloudflare/next-on-pages` → Cloudflare Pages
+- **Adapter:** Static export (`output: 'export'`) → Cloudflare Pages
+- **Output dir:** `out/`
 
 ---
 
@@ -54,4 +55,4 @@ TTTMP passes `tttmpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 npx turbo build --filter=tttmp
 ```
 
-Pages build for Cloudflare: `npm run pages:build`
+Output goes to `apps/tttmp/out/` — deployed as static files to Cloudflare Pages.

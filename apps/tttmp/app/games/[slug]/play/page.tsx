@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation'
-import { getGame } from '@/lib/games'
+import { getAllGames, getGame } from '@/lib/games'
 import PlayClient from './PlayClient'
 
-export const runtime = 'edge'
+export function generateStaticParams() {
+  return getAllGames().map((g) => ({ slug: g.slug }))
+}
 
 export default async function PlayPage({
   params,

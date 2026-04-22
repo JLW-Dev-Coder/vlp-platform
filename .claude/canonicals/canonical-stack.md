@@ -21,7 +21,7 @@ Last updated: 2026-04-13
 | Virtual Launch Pro | VLP | virtuallaunch.pro | `apps/vlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@cloudflare/next-on-pages` | CF Pages | `npm run pages:build` | `.vercel/output/static` | `#f97316` (orange) |
 | Tax Monitor Pro | TMP | taxmonitor.pro | `apps/tmp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#3b82f6` (blue) |
 | Transcript Tax Monitor | TTMP | transcript.taxmonitor.pro | `apps/ttmp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@opennextjs/cloudflare` | CF Workers | `npm run cf:build` | `.open-next/` | `#14b8a6` (teal) |
-| Tax Tools Arcade | TTTMP | taxtools.taxmonitor.pro | `apps/tttmp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@cloudflare/next-on-pages` | CF Pages | `npx @cloudflare/next-on-pages` | `.vercel/output/static` | `#8b5cf6` (violet) |
+| Tax Tools Arcade | TTTMP | taxtools.taxmonitor.pro | `apps/tttmp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#8b5cf6` (violet) |
 | Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | `@cloudflare/next-on-pages` | CF Pages | `npm run pages:build` | `.vercel/output/static` | `#3b82f6` (blue) |
 | Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#ef4444` (red) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#eab308` (yellow) |

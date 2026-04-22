@@ -30,7 +30,7 @@ Before deploying any platform:
 
 ### 2.1 Static Export (`output: 'export'`)
 
-**Platforms:** TMP, GVLP, TCVLP, WLVLP
+**Platforms:** TMP, TTTMP, GVLP, TCVLP, WLVLP
 
 **Output directory:** `out/`
 
@@ -53,13 +53,14 @@ npx wrangler pages deploy out --project-name={pages-project-name}
 | App | Pages Project |
 |-----|--------------|
 | TMP | `taxmonitor-pro-site` |
+| TTTMP | `taxtools-taxmonitor-pro-site` |
 | GVLP | `games-virtuallaunch-pro` |
 | TCVLP | `taxclaim-virtuallaunch-pro` |
 | WLVLP | `websitelotto-virtuallaunch-pro` |
 
 ### 2.2 `@cloudflare/next-on-pages`
 
-**Platforms:** VLP, TTTMP, DVLP
+**Platforms:** VLP, DVLP
 
 **Output directory:** `.vercel/output/static`
 
@@ -69,8 +70,6 @@ npx wrangler pages deploy out --project-name={pages-project-name}
 ```bash
 # VLP
 cd apps/vlp && npm run pages:build
-# TTTMP
-cd apps/tttmp && npx @cloudflare/next-on-pages
 # DVLP
 cd apps/dvlp && npm run pages:build
 ```
@@ -85,7 +84,6 @@ npx wrangler pages deploy .vercel/output/static --project-name={pages-project-na
 | App | Pages Project |
 |-----|--------------|
 | VLP | `virtuallaunch-pro-web` |
-| TTTMP | `taxtools-taxmonitor-pro-site` |
 | DVLP | `developers-virtuallaunch-pro-site` |
 
 ### 2.3 `@opennextjs/cloudflare` (Workers)
@@ -171,8 +169,8 @@ After every deploy:
 
 | Platform | Cache Type | How to Purge |
 |----------|-----------|-------------|
-| TMP, GVLP, TCVLP, WLVLP | Cloudflare CDN (Pages) | Auto-purged on new deploy |
-| VLP, TTTMP, DVLP | Cloudflare CDN (Pages) | Auto-purged on new deploy |
+| TMP, TTTMP, GVLP, TCVLP, WLVLP | Cloudflare CDN (Pages) | Auto-purged on new deploy |
+| VLP, DVLP | Cloudflare CDN (Pages) | Auto-purged on new deploy |
 | TTMP | KV ISR Cache + CDN | KV flush (see section 2.3) + CDN auto-purge on Worker deploy |
 | Worker | None (no static assets) | N/A — Worker code is live immediately on deploy |
 
@@ -226,7 +224,7 @@ D1 migrations are forward-only. If a migration breaks something:
 | Virtual Launch Pro | VLP | next-on-pages | `.vercel/output/static` | Pages auto-deploy | `virtuallaunch-pro-web` |
 | Tax Monitor Pro | TMP | static export | `out` | Pages auto-deploy | `taxmonitor-pro-site` |
 | Transcript Tax Monitor | TTMP | OpenNext Workers | `.open-next/` | GitHub Actions | `transcript-taxmonitor-pro` |
-| Tax Tools Arcade | TTTMP | next-on-pages | `.vercel/output/static` | Pages auto-deploy | `taxtools-taxmonitor-pro-site` |
+| Tax Tools Arcade | TTTMP | static export | `out` | Pages auto-deploy | `taxtools-taxmonitor-pro-site` |
 | Developers VLP | DVLP | next-on-pages | `.vercel/output/static` | Pages auto-deploy | `developers-virtuallaunch-pro-site` |
 | Games VLP | GVLP | static export | `out` | Pages auto-deploy | `games-virtuallaunch-pro` |
 | Tax Claim VLP | TCVLP | static export | `out` | Pages auto-deploy | `taxclaim-virtuallaunch-pro` |

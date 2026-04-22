@@ -31,7 +31,7 @@ Every platform that previously lived in its own repo is migrated here.
 | Virtual Launch Pro | VLP | virtuallaunch.pro | `apps/vlp` | `@cloudflare/next-on-pages` | `#f97316` (orange) |
 | Tax Monitor Pro | TMP | taxmonitor.pro | `apps/tmp` | static export | `#f59e0b` (amber) |
 | Transcript Tax Monitor | TTMP | transcript.taxmonitor.pro | `apps/ttmp` | `@opennextjs/cloudflare` (Workers) | `#14b8a6` (teal) |
-| Tax Tools Arcade | TTTMP | taxtools.taxmonitor.pro | `apps/tttmp` | `@cloudflare/next-on-pages` | `#8b5cf6` (violet) |
+| Tax Tools Arcade | TTTMP | taxtools.taxmonitor.pro | `apps/tttmp` | static export | `#8b5cf6` (violet) |
 | Developers VLP | DVLP | developers.virtuallaunch.pro | `apps/dvlp` | `@cloudflare/next-on-pages` | `#3b82f6` (blue) |
 | Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | static export | `#22c55e` (green) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | static export | `#eab308` (yellow) |
@@ -49,7 +49,7 @@ Every platform that previously lived in its own repo is migrated here.
 | VLP | `virtuallaunch-pro-web` | `cd web && npm install && npm run pages:build` | `web/.vercel/output/static` | `@cloudflare/next-on-pages` |
 | TMP | `taxmonitor-pro-site` | `npm run build` | `out` | static export |
 | TTMP | `transcript-taxmonitor-pro` (Worker) | `npm run cf:build` | `.open-next/` | `@opennextjs/cloudflare` (Workers, not Pages) |
-| TTTMP | `taxtools-taxmonitor-pro-site` | `npx @cloudflare/next-on-pages` | `.vercel/output/static` | `@cloudflare/next-on-pages` |
+| TTTMP | `taxtools-taxmonitor-pro-site` | `npm run build` | `out` | static export |
 | DVLP | `developers-virtuallaunch-pro-site` | `npm run build` | `out` | static export |
 | GVLP | `games-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | TCVLP | `taxclaim-virtuallaunch-pro` | `npm run build` | `out` | static export |

@@ -25,13 +25,13 @@ Per `canonical-roles.md` and `.claude/ROLES.md` in the vlp-platform monorepo:
 |-------|-------|
 | Domain | `taxtools.taxmonitor.pro` |
 | App Dir | `apps/tttmp` |
-| Adapter | `@cloudflare/next-on-pages` (Cloudflare Pages with SSR) |
+| Adapter | Static Export (`output: 'export'`) → Cloudflare Pages |
 | Brand Color | `#8b5cf6` (violet) |
 | Backend | `apps/worker/src/index.js` → `api.virtuallaunch.pro` |
 | Storage | R2 (authoritative) + D1 (projection) |
 | Pages Project | `taxtools-taxmonitor-pro-site` |
-| Build Command | `npx @cloudflare/next-on-pages` |
-| Output Dir | `.vercel/output/static` |
+| Build Command | `next build` (via `npm run build`) |
+| Output Dir | `out/` |
 
 ### What TTTMP Does Today (live features)
 
@@ -266,4 +266,4 @@ drip shipped in Phase 4:
 - Dashboard page titles/subtitles must match the canonical pattern (`font-sora text-3xl font-extrabold text-white` + `text-white/55 text-[0.95rem]`)
 - Phone inputs use canonical §10 normalization
 - PostHog analytics is live across all apps — new pages are automatically tracked via cookie consent gate
-- Build verification: `npx turbo build --filter=tttmp` after every change (note: TTTMP uses `@cloudflare/next-on-pages`, not static export)
+- Build verification: `npx turbo build --filter=tttmp` after every change (TTTMP is a static export — output goes to `apps/tttmp/out/`)
