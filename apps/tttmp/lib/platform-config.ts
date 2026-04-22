@@ -33,6 +33,7 @@ export const tttmpConfig: PlatformConfig = {
       ],
       explore: [
         { label: 'Games', href: '/games' },
+        { label: 'Learn', href: '/learn' },
         { label: 'Pricing', href: '/pricing' },
         { label: 'Reviews', href: '/reviews' },
       ],

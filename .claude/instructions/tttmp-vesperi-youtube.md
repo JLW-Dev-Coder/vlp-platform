@@ -110,14 +110,50 @@ Phase 1 commits `03248aa..54efdf5`. See `apps/tttmp/.claude/audit-report-2026-04
 - 10 Vesperi HeyGen video clips (root, tax-pro, taxpayer, notices, strategy, client-ed, filing, concepts, documents, all-games) at `tttmp/vesperi/clips/{node-id}.mp4` in R2. Page is functional with missing videos via fallback text.
 - Worker deployment (currently committed, not deployed).
 
-### Phase 3: YouTube Channel Setup ← CURRENT
+### Phase 3: YouTube Channel Content Framework ✅ COMPLETE (2026-04-21)
 
-**Channel:** New channel for TTTMP (separate from TCVLP's TaxClaim Pro channel)
-**Channel name:** TBD
-**Avatar for videos:** Vesperi (HeyGen, looks TBD per content type)
-**Content strategy:** TBD after Phase 2 landing page design
+**Channel Name:** Tax Tools Arcade
+**Channel URL:** https://www.youtube.com/channel/UC2AeZcuISEo3yt_6EsKQtzQ
+**Avatar for videos:** Vesperi (HeyGen)
+**Audience:** Both tax professionals and taxpayers
+**Content source:** 21 games in the Tax Tools Arcade
 
-### Phase 4: Integration (intake, PostHog, email drip)
+**Content strategy:** Each game yields 2-3 videos:
+1. Walkthrough (2-3 min) — Vesperi explains what the game teaches
+2. Short (30-60s) — One key concept, cut for YouTube Shorts
+3. Deep Dive (optional) — For complex games only
+
+**Companion page pattern:** Every YouTube video has a SEO companion page at `/learn/[slug]`:
+- Ranks for same keywords as the video
+- Embeds YouTube iframe (when published) or a "coming soon" placeholder
+- Renders VideoObject JSON-LD structured data
+- "Play This Game" CTA → `/games/[slug]` (live game route)
+- "Find Your Game with Vesperi" + "Talk to Us" (Cal.com) CTAs
+- Related games by topic cluster
+
+**Shipped scope:**
+- `apps/tttmp/lib/youtube-content.ts` — content plan generator, tag map, description template, topic clusters
+- `apps/tttmp/app/learn/[slug]/page.tsx` — dynamic companion page (21 pages, one per game)
+- `apps/tttmp/app/learn/page.tsx` — `/learn` index grouped by topic cluster with filter tabs
+- Sitemap: `/learn` (priority 0.8) + 21 `/learn/[slug]` pages (priority 0.7)
+- Nav: "Learn" added to `marketing.megaMenu.explore` and local Header
+- `apps/tttmp/.claude/youtube-channel-kit.md` — channel description, tags, thumbnail spec, publishing cadence, Vesperi look map, first 5 video scripts ready for HeyGen
+
+**Vesperi look decisions (recorded):**
+| Context | Look |
+|---------|------|
+| Landing page (`/vesperi`) clips | Look 4 |
+| YouTube walkthroughs (standard) | Look 4 |
+| YouTube strategy/advanced content | Look 12 |
+| YouTube beginner/approachable content | Look 14 |
+| YouTube channel trailer | Look 7 |
+
+**Pending owner inputs:**
+- HeyGen video production for the 5 scripts in the channel kit
+- YouTube upload + URL fill-in on `YouTubeVideo.youtubeUrl` (edit `lib/youtube-content.ts` or via follow-up prompt)
+- Channel banner / profile image matching the spec
+
+### Phase 4: Integration (intake, PostHog, email drip) ← CURRENT
 
 Follow the same pattern as TCVLP/Gala:
 - Intake endpoint (Worker)

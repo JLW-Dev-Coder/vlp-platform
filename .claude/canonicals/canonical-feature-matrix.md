@@ -112,6 +112,7 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 | Game Tokens | GET /v1/tokens/balance/{id} (tax_game_tokens field) | tokens/{id}.json | tokens | /dashboard (balance display) | live |
 | Tax Tools Arcade Games | POST /v1/tttmp/grant-access, POST /v1/tttmp/verify-access, POST /v1/tttmp/end-game | games/sessions/{id}.json | game_sessions | /about-games/[slug] | live |
 | Vesperi Game Guide | POST /v1/tttmp/vesperi/intake, GET /v1/tttmp/vesperi/clips/:filename | tttmp/vesperi/intake/{id}.json, tttmp/vesperi/clips/{node}.mp4 | tttmp_vesperi_intake | /vesperi | live |
+| YouTube Companion Pages | N/A | N/A | N/A | /learn, /learn/[slug] | live |
 
 ---
 
