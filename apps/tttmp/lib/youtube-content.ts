@@ -17,6 +17,42 @@ export interface YouTubeVideo {
 export const YOUTUBE_CHANNEL_URL =
   'https://www.youtube.com/channel/UC2AeZcuISEo3yt_6EsKQtzQ'
 
+export const YOUTUBE_CHANNEL_TRAILER_URL = 'https://youtube.com/shorts/xWTclUHR4nw'
+
+export const GAME_YOUTUBE_URL_MAP: Record<string, string> = {
+  'irs-tax-detective': 'https://youtube.com/shorts/3zHnDmA_Gt4',
+  'tax-mythbusters-interactive-quiz': 'https://youtube.com/shorts/bsg_FhduTYM',
+  'tax-scavenger-hunt': 'https://youtube.com/shorts/vFWOXr58cNc',
+  'tax-time-machine': 'https://youtu.be/gJLskxcmebo',
+  'match-the-tax-notice': 'https://youtu.be/enYMcCGb42c',
+  'irs-notice-jackpot': 'https://youtube.com/shorts/t_Y_63mhh18',
+  'irs-notice-showdown': 'https://youtu.be/0hL1016lQc4',
+  'tax-deadline-master': 'https://youtu.be/_yu6USV3l2I',
+  'tax-deduction-quest': 'https://youtube.com/shorts/krGggkHh6HU',
+  'taxpayer-journey-map': 'https://youtu.be/O-9kFv_45Mk',
+  'tax-filing-race': 'https://youtu.be/Knqbzg_o3Tw',
+  'tax-tips-refund-boost': 'https://youtu.be/zUINiuYqt08',
+  'circular-230-quest': 'https://youtube.com/shorts/YLoKnyHObho',
+  'tax-jargon-game': 'https://youtube.com/shorts/1AolcJRnNBY',
+  'tax-strategy-adventures': 'https://youtube.com/shorts/uBfRizcb8jo',
+  'tax-escape-room-adventure': 'https://youtube.com/shorts/I3Qb94BE034',
+  'irs-publication-maze': 'https://youtube.com/shorts/uCtBcSlwxkw',
+  'audit-defense-showdown': 'https://youtu.be/rckV7R78G8U',
+  'international-tax-explorer': 'https://youtu.be/Mb2reGx_kEI',
+  'tax-return-simulator': 'https://youtube.com/shorts/tjC6BXZxr1s',
+  'tax-document-hunter': 'https://youtu.be/tfzsHN6fEPA',
+}
+
+export function toYouTubeEmbedUrl(url: string): string {
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([\w-]+)/)
+  if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}`
+  const youtuBeMatch = url.match(/youtu\.be\/([\w-]+)/)
+  if (youtuBeMatch) return `https://www.youtube.com/embed/${youtuBeMatch[1]}`
+  const watchMatch = url.match(/youtube\.com\/watch\?v=([\w-]+)/)
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`
+  return url
+}
+
 export const YOUTUBE_DESCRIPTION_TEMPLATE = `[VIDEO_TITLE]
 
 In this video:
@@ -80,6 +116,7 @@ export function generateContentPlan(): YouTubeVideo[] {
     companionSlug: game.slug,
     companionTitle: `Learn: ${game.title}`,
     companionDescription: `${game.description} Watch the walkthrough video and play the game in the Tax Tools Arcade.`,
+    youtubeUrl: GAME_YOUTUBE_URL_MAP[game.slug],
   }))
 }
 

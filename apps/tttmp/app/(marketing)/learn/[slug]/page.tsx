@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { GAME_CATALOG, getGameBySlug, type VesperiGame } from '@/lib/vesperi-tree'
-import { getVideoBySlug, TOPIC_CLUSTERS, YOUTUBE_CHANNEL_URL } from '@/lib/youtube-content'
+import { getVideoBySlug, TOPIC_CLUSTERS, YOUTUBE_CHANNEL_URL, toYouTubeEmbedUrl } from '@/lib/youtube-content'
 
 export function generateStaticParams() {
   return GAME_CATALOG.map((g) => ({ slug: g.slug }))
@@ -87,7 +87,7 @@ export default async function LearnPage({
     ...(video.youtubeUrl
       ? {
           contentUrl: video.youtubeUrl,
-          embedUrl: video.youtubeUrl.replace('watch?v=', 'embed/'),
+          embedUrl: toYouTubeEmbedUrl(video.youtubeUrl),
         }
       : {}),
     publisher: {
@@ -98,7 +98,7 @@ export default async function LearnPage({
   }
 
   const youtubeEmbedUrl = video.youtubeUrl
-    ? video.youtubeUrl.replace('watch?v=', 'embed/')
+    ? toYouTubeEmbedUrl(video.youtubeUrl)
     : null
 
   return (
