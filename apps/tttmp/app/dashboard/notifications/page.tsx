@@ -247,16 +247,8 @@ function NotificationsContent() {
                 <div className="p-8 text-center text-sm text-[var(--arcade-text-muted)]">Loading…</div>
               ) : !notifications || notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-10 text-center">
-                  <div
-                    className="mb-4 flex h-14 w-14 items-center justify-center rounded-full animate-neon-pulse"
-                    style={{
-                      background: 'rgba(139, 92, 246, 0.12)',
-                      color: 'var(--neon-violet)',
-                      border: '1px solid rgba(139, 92, 246, 0.35)',
-                      boxShadow: 'var(--arcade-glow-violet)',
-                    }}
-                  >
-                    <Bell className="h-6 w-6" />
+                  <div className="mb-4 h-12 w-12 rounded-full bg-[var(--neon-violet)]/10 flex items-center justify-center animate-neon-pulse">
+                    <Bell className="h-6 w-6 text-[var(--neon-violet)]" style={{ filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))' }} />
                   </div>
                   <p className="text-sm font-semibold text-[var(--arcade-text-muted)]">No notifications yet</p>
                   <p className="mt-1 text-xs text-[var(--arcade-text-muted)]">
