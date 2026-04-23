@@ -497,20 +497,26 @@ async function handlePhotoUpload(file: File) {
 
           {/* Notification Preferences link */}
           <Link href="/dashboard/notifications" className="arcade-card-interactive p-6 block group">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold text-white group-hover:text-[var(--neon-violet)] transition-colors">
-                  Notification Preferences
-                </h2>
-                <p className="text-sm text-[var(--arcade-text-muted)] mt-1">
-                  Manage your email notifications, game reminders, and alert settings.
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-[var(--neon-violet)]/10 flex items-center justify-center animate-neon-pulse">
-                  <Bell className="h-6 w-6 text-[var(--neon-violet)]" style={{ filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))' }} />
-                </div>
-                <ArrowRight className="h-5 w-5 text-[var(--arcade-text-muted)] group-hover:text-[var(--neon-violet)] transition-colors" />
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-white group-hover:text-[var(--neon-violet)] transition-colors">
+                Notification Preferences
+              </h2>
+              <ArrowRight className="h-5 w-5 text-[var(--arcade-text-muted)] group-hover:text-[var(--neon-violet)] transition-colors" />
+            </div>
+
+            <p className="text-sm text-[var(--arcade-text-muted)] mb-6">
+              Manage your email notifications, game reminders, and alert settings.
+            </p>
+
+            <div className="flex flex-col items-center justify-center py-4">
+              <div
+                className="h-16 w-16 rounded-full flex items-center justify-center animate-neon-pulse"
+                style={{ background: 'rgba(139, 92, 246, 0.1)' }}
+              >
+                <Bell
+                  className="h-8 w-8 text-[var(--neon-violet)]"
+                  style={{ filter: 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.5))' }}
+                />
               </div>
             </div>
           </Link>
