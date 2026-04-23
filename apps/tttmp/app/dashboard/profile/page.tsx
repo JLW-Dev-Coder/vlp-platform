@@ -153,7 +153,7 @@ function ProfileContent() {
     if (!website) missing.push('a website')
     if (missing.length === 0) return 'Your profile is complete — nice!'
     const list = missing.slice(0, 2).join(' and ')
-    return `Add ${list} to increase visibility.`
+    return `Add ${list} to personalize your experience.`
   }, [photoUrl, bio, role, phone, website])
 
   async function saveProfile(patch: Partial<Profile>) {
