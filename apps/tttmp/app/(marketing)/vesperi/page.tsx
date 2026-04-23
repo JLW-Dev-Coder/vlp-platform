@@ -32,54 +32,28 @@ function emailDomain(email: string): string {
   return at >= 0 ? email.slice(at + 1).toLowerCase() : ''
 }
 
-function tierClasses(tokens: 2 | 5 | 8): { badge: string; ring: string; label: string } {
-  if (tokens === 2)
-    return {
-      badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-      ring: 'hover:border-emerald-500/40',
-      label: 'Starter',
-    }
-  if (tokens === 5)
-    return {
-      badge: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-      ring: 'hover:border-sky-500/40',
-      label: 'Intermediate',
-    }
-  return {
-    badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    ring: 'hover:border-amber-500/40',
-    label: 'Advanced',
-  }
+function tierClasses(tokens: 2 | 5 | 8): { badge: string; label: string } {
+  if (tokens === 2) return { badge: 'token-badge token-badge-2', label: 'Starter' }
+  if (tokens === 5) return { badge: 'token-badge token-badge-5', label: 'Intermediate' }
+  return { badge: 'token-badge token-badge-8', label: 'Advanced' }
 }
 
 function GameCard({ game, onPlay }: { game: VesperiGame; onPlay: (g: VesperiGame) => void }) {
   const tier = tierClasses(game.tokens)
   return (
-    <article
-      className={`group relative flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-all backdrop-blur ${tier.ring} hover:-translate-y-0.5 hover:bg-white/[0.05] hover:shadow-lg hover:shadow-[var(--brand-glow,rgba(139,92,246,0.30))]`}
-    >
+    <article className="arcade-card group relative flex flex-col p-5">
       <div className="mb-3 flex items-start justify-between gap-3">
-        <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/60">
+        <span className="inline-flex items-center rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-neon-cyan">
           {game.type}
         </span>
-        <span
-          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${tier.badge}`}
-          title={`${tier.label} tier`}
-        >
-          {game.tokens} tokens
+        <span className={tier.badge} title={`${tier.label} tier`}>
+          {game.tokens}t
         </span>
       </div>
-      <h3 className="mb-1.5 text-base font-bold leading-tight text-white">{game.title}</h3>
-      <p className="mb-5 flex-1 text-sm leading-relaxed text-white/65">{game.description}</p>
-      <button
-        type="button"
-        onClick={() => onPlay(game)}
-        className="mt-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-[rgba(139,92,246,0.25)] transition-all hover:from-[#9469f7] hover:to-[#8b5cf6] hover:shadow-[rgba(139,92,246,0.40)] active:translate-y-px"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M8 5v14l11-7z" />
-        </svg>
-        Play
+      <h3 className="mb-1.5 font-sora text-base font-bold leading-tight text-white">{game.title}</h3>
+      <p className="mb-5 flex-1 text-sm leading-relaxed text-arcade-text-muted">{game.description}</p>
+      <button type="button" onClick={() => onPlay(game)} className="arcade-btn arcade-btn-primary mt-auto">
+        ▶ Play
       </button>
     </article>
   )
@@ -139,26 +113,21 @@ function IntakeForm({
 
   if (status === 'success') {
     return (
-      <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-center">
-        <p className="text-sm font-semibold text-emerald-300">
-          Thanks! We’ll send game tips and new releases to {email.trim()}.
+      <div className="rounded-2xl border border-neon-green/40 bg-neon-green/10 p-5 text-center shadow-glow-green">
+        <p className="text-sm font-bold text-neon-green">
+          ✓ Thanks! We&apos;ll send game tips and new releases to {email.trim()}.
         </p>
       </div>
     )
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur"
-    >
+    <form onSubmit={handleSubmit} className="arcade-card-static p-6">
       <div className="mb-1 flex items-center gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
-          Optional
-        </span>
+        <span className="arcade-eyebrow">Optional</span>
       </div>
-      <h4 className="mb-1 text-base font-bold text-white">Stay in the loop</h4>
-      <p className="mb-4 text-sm text-white/60">
+      <h4 className="mb-1 mt-3 font-sora text-base font-bold text-white">Stay in the loop</h4>
+      <p className="mb-4 text-sm text-arcade-text-muted">
         Get a monthly email when we add new games or update existing ones. Unsubscribe anytime.
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -169,12 +138,12 @@ function IntakeForm({
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-[#8b5cf6] focus:ring-2 focus:ring-[rgba(139,92,246,0.25)]"
+          className="arcade-input flex-1"
         />
         <button
           type="submit"
           disabled={!emailValid || status === 'submitting'}
-          className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[rgba(139,92,246,0.25)] transition-all hover:from-[#9469f7] hover:to-[#8b5cf6] disabled:cursor-not-allowed disabled:opacity-50"
+          className="arcade-btn arcade-btn-primary"
         >
           {status === 'submitting' ? 'Submitting…' : 'Get Game Updates'}
         </button>
@@ -203,7 +172,7 @@ function VesperiVideo({ nodeId, fallbackText }: { nodeId: string; fallbackText: 
   }, [nodeId])
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/40">
+    <div className="arcade-card-static relative overflow-hidden shadow-glow-violet">
       <div className="aspect-video w-full bg-gradient-to-br from-[#1a0e2e] via-[#0f0a1f] to-black">
         {state === 'error' ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
@@ -297,18 +266,14 @@ function GamesByTier({
   const tier = tierClasses(tokens)
   return (
     <div className="mb-10">
-      <div className="mb-4 flex items-baseline justify-between">
-        <h3 className="text-lg font-bold text-white">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
+        <h3 className="font-sora text-lg font-bold text-white">
           {label}
-          <span className="ml-2 text-sm font-medium text-white/50">
-            · {tokens} tokens · {games.length} games
+          <span className="ml-3 text-sm font-medium text-arcade-text-muted">
+            · {tokens}t · {games.length} games
           </span>
         </h3>
-        <span
-          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${tier.badge}`}
-        >
-          {tier.label}
-        </span>
+        <span className={tier.badge}>{tier.label}</span>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {games.map((g) => (
@@ -395,33 +360,29 @@ export default function VesperiPage() {
   return (
     <>
 
-      <main className="min-h-screen bg-[#0a0714] text-white">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-gradient-to-b from-[rgba(139,92,246,0.12)] via-[rgba(139,92,246,0.04)] to-transparent" />
-
+      <div className="min-h-screen">
         <div className="relative mx-auto max-w-5xl px-4 pt-10 pb-20 sm:px-6 sm:pt-14">
           <div className="mb-8 text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[rgba(139,92,246,0.3)] bg-[rgba(139,92,246,0.1)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#c4b5fd]">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#a78bfa]" />
-              Your AI Game Guide
-            </div>
-            <h1 className="font-sora text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
-              Meet <span className="bg-gradient-to-r from-[#a78bfa] to-[#8b5cf6] bg-clip-text text-transparent">Vesperi</span>
+            <span className="arcade-eyebrow animate-neon-pulse mb-4 inline-block">★ Your AI Game Guide ★</span>
+            <h1 className="font-sora text-4xl font-extrabold leading-tight tracking-tight text-white neon-text-violet sm:text-5xl">
+              Meet <span className="bg-gradient-neon bg-clip-text text-transparent animate-shimmer" style={{ backgroundSize: '200% auto' }}>Vesperi</span>
             </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-base text-white/60 sm:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-base text-arcade-text-muted sm:text-lg">
               21 games. 3 token tiers. Let Vesperi help you find the right place to start.
             </p>
           </div>
 
           <div className="mb-6">
             <VesperiVideo nodeId={node.id} fallbackText={node.videoFallbackText} />
-            <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-white/65 sm:text-base">
+            <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-neon-cyan sm:text-base"
+               style={{ textShadow: '0 0 12px rgba(6, 182, 212, 0.3)' }}>
               {node.contextLine}
             </p>
             <details className="mx-auto mt-3 max-w-2xl">
-              <summary className="cursor-pointer text-center text-xs font-semibold uppercase tracking-wider text-white/40 transition-colors hover:text-white/60">
+              <summary className="cursor-pointer text-center text-xs font-bold uppercase tracking-wider text-arcade-text-muted transition-colors hover:text-neon-violet">
                 Read transcript
               </summary>
-              <p className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-relaxed text-white/75">
+              <p className="arcade-card-static mt-3 p-4 text-sm leading-relaxed text-arcade-text">
                 {node.transcript}
               </p>
             </details>
@@ -432,7 +393,7 @@ export default function VesperiPage() {
               <button
                 type="button"
                 onClick={goBack}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-semibold text-white/70 transition-colors hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-full border border-arcade-border bg-arcade-surface px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-neon-cyan transition-all hover:border-neon-cyan/60 hover:shadow-glow-cyan hover:text-white"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5" />
@@ -445,24 +406,19 @@ export default function VesperiPage() {
 
           {node.type === 'branch' && node.options && (
             <div className="mx-auto grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2">
-              {node.options.map((opt) => (
+              {node.options.map((opt, i) => (
                 <button
                   key={opt.targetNodeId}
                   type="button"
                   onClick={() => navigate(opt.targetNodeId, opt.label)}
-                  className="group flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-[rgba(139,92,246,0.40)] hover:bg-[rgba(139,92,246,0.06)] hover:shadow-lg hover:shadow-[rgba(139,92,246,0.20)]"
+                  className="arcade-card group flex items-center justify-between gap-3 px-5 py-4 text-left animate-fade-up"
+                  style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'backwards' }}
                 >
-                  <span className="font-semibold text-white">{opt.label}</span>
+                  <span className="font-sora font-bold text-white group-hover:text-neon-violet transition-colors">{opt.label}</span>
                   <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="flex-shrink-0 text-white/40 transition-colors group-hover:text-[#a78bfa]"
+                    width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    className="flex-shrink-0 text-neon-cyan transition-transform group-hover:translate-x-1"
                   >
                     <path d="M5 12h14" />
                     <path d="M12 5l7 7-7 7" />
@@ -490,20 +446,10 @@ export default function VesperiPage() {
                 )}
 
                 <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={onCalClick}
-                    className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-white/80 transition-all hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
+                  <button type="button" onClick={onCalClick} className="arcade-btn arcade-btn-cyan">
                     Talk to Us
                   </button>
-                  <Link
-                    href="/pricing"
-                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[rgba(139,92,246,0.25)] transition-all hover:from-[#9469f7] hover:to-[#8b5cf6]"
-                  >
+                  <Link href="/pricing" className="arcade-btn arcade-btn-primary">
                     Get Tokens
                   </Link>
                 </div>
@@ -530,7 +476,7 @@ export default function VesperiPage() {
             </>
           )}
         </div>
-      </main>
+      </div>
     </>
   )
 }

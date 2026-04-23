@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import Header from '@/components/Header'
-import SiteFooter from '@/components/SiteFooter'
 import FaqItem from '@/components/FaqItem'
 import { api, type TokenPackage, type TokenPackSku } from '@/lib/api'
 import type { Game } from '@/lib/games'
@@ -229,7 +227,6 @@ export default function GameDetailClient({ game }: { game: Game }) {
 
   return (
     <>
-      <Header />
       <main className={styles.main}>
         {/* Hero */}
         <section className={`${styles.hero} ${styles[`hero_${game.tier}`]}`}>
@@ -357,7 +354,6 @@ export default function GameDetailClient({ game }: { game: Game }) {
           </div>
         </section>
       </main>
-      <SiteFooter />
 
       {/* Confirm Spend Modal */}
       {showConfirm && (

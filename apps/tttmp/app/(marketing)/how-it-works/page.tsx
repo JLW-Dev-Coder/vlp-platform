@@ -8,75 +8,77 @@ export const metadata = generatePageMeta({
   path: '/how-it-works',
 })
 
+const steps = [
+  { n: 1, color: 'violet' as const, title: 'Choose your path',
+    body: <>Use <Link href="/vesperi" className="text-neon-cyan underline-offset-4 hover:underline">Vesperi</Link>, our AI guide, to get a tailored game pick — or browse the full <Link href="/games" className="text-neon-cyan underline-offset-4 hover:underline">game library</Link> directly.</> },
+  { n: 2, color: 'cyan' as const, title: 'Use tokens',
+    body: <>Each game costs 2, 5, or 8 tokens depending on depth. Buy a pack once — tokens don&apos;t expire. VLP members get tokens included.</> },
+  { n: 3, color: 'pink' as const, title: 'Learn by doing',
+    body: <>Every game is grounded in a real IRS form, code section, or workflow — and explains the concept as you play. Every title has a companion walkthrough video if you want to review.</> },
+]
+
+const badgeBg = {
+  violet: 'bg-neon-violet/15 border-neon-violet/50 text-neon-violet',
+  cyan:   'bg-neon-cyan/15 border-neon-cyan/50 text-neon-cyan',
+  pink:   'bg-neon-pink/15 border-neon-pink/50 text-neon-pink',
+}
+
+const hColor = {
+  violet: 'text-neon-violet',
+  cyan:   'text-neon-cyan',
+  pink:   'text-neon-pink',
+}
+
 export default function HowItWorksPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-20">
       <header className="mb-12">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-primary">How It Works</p>
-        <h1 className="mb-4 text-4xl font-bold text-text-primary sm:text-5xl">Three Steps to Tax Mastery</h1>
-        <p className="text-lg text-text-muted">
+        <span className="arcade-eyebrow mb-4 inline-block">How It Works</span>
+        <h1 className="mb-4 font-sora text-4xl font-bold text-white neon-text-violet sm:text-5xl">
+          Three Steps to Tax Mastery
+        </h1>
+        <p className="text-lg text-arcade-text-muted">
           No syllabus. No lectures. Just games that teach IRS procedures by making you do them.
         </p>
       </header>
 
       <ol className="mb-16 space-y-6">
-        <li className="rounded-2xl border border-default bg-surface-elevated p-6">
-          <div className="mb-2 flex items-center gap-3">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-primary font-bold text-brand-text-on-primary">1</span>
-            <h2 className="text-xl font-semibold text-text-primary">Choose your path</h2>
-          </div>
-          <p className="text-text-muted">
-            Use <Link href="/vesperi" className="text-brand-primary underline hover:text-brand-hover">Vesperi</Link>,
-            our AI guide, to get a tailored game pick — or browse the full <Link href="/games" className="text-brand-primary underline hover:text-brand-hover">game library</Link> directly.
-          </p>
-        </li>
-
-        <li className="rounded-2xl border border-default bg-surface-elevated p-6">
-          <div className="mb-2 flex items-center gap-3">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-primary font-bold text-brand-text-on-primary">2</span>
-            <h2 className="text-xl font-semibold text-text-primary">Use tokens</h2>
-          </div>
-          <p className="text-text-muted">
-            Each game costs 2, 5, or 8 tokens depending on depth. Buy a pack once — tokens don&apos;t expire.
-            VLP members get tokens included.
-          </p>
-        </li>
-
-        <li className="rounded-2xl border border-default bg-surface-elevated p-6">
-          <div className="mb-2 flex items-center gap-3">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-primary font-bold text-brand-text-on-primary">3</span>
-            <h2 className="text-xl font-semibold text-text-primary">Learn by doing</h2>
-          </div>
-          <p className="text-text-muted">
-            Every game is grounded in a real IRS form, code section, or workflow — and explains the concept as
-            you play. Every title has a companion walkthrough video if you want to review.
-          </p>
-        </li>
+        {steps.map((s, i) => (
+          <li
+            key={s.n}
+            className="arcade-card p-6 animate-fade-up"
+            style={{ animationDelay: `${i * 90}ms`, animationFillMode: 'backwards' }}
+          >
+            <div className="mb-3 flex items-center gap-4">
+              <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full font-bold border ${badgeBg[s.color]}`}
+                    style={{ boxShadow: '0 0 16px currentColor' }}>
+                {s.n}
+              </span>
+              <h2 className={`font-sora text-xl font-bold ${hColor[s.color]}`}>{s.title}</h2>
+            </div>
+            <p className="text-arcade-text-muted">{s.body}</p>
+          </li>
+        ))}
       </ol>
 
       <section className="mb-12 grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border border-default bg-surface-elevated p-6">
-          <h2 className="mb-2 text-xl font-semibold text-text-primary">For tax pros</h2>
-          <p className="text-text-muted">
+        <div className="arcade-card p-6">
+          <h2 className="mb-2 font-sora text-xl font-bold text-neon-green">For tax pros</h2>
+          <p className="text-arcade-text-muted">
             Send game links to clients before appointments. They walk in understanding their transcript, their
             notice, or what a Form 843 even is — and the meeting gets shorter.
           </p>
         </div>
-        <div className="rounded-2xl border border-default bg-surface-elevated p-6">
-          <h2 className="mb-2 text-xl font-semibold text-text-primary">For taxpayers</h2>
-          <p className="text-text-muted">
+        <div className="arcade-card p-6">
+          <h2 className="mb-2 font-sora text-xl font-bold text-neon-amber">For taxpayers</h2>
+          <p className="text-arcade-text-muted">
             Stop signing things you don&apos;t understand. Play the game for your form and you&apos;ll know what
             each line means before you file.
           </p>
         </div>
       </section>
 
-      <Link
-        href="/vesperi"
-        className="rounded-lg bg-brand-primary px-5 py-3 font-semibold text-brand-text-on-primary hover:bg-brand-hover"
-      >
-        Start with Vesperi
-      </Link>
+      <Link href="/vesperi" className="arcade-btn arcade-btn-primary">Start with Vesperi</Link>
     </div>
   )
 }

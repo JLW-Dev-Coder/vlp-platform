@@ -1,7 +1,7 @@
 .main {
   max-width: var(--max-content);
   margin: 0 auto;
-  padding: 3rem 1.5rem;
+  padding: 4rem 1.5rem;
 }
 
 .header {
@@ -11,20 +11,29 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  margin-bottom: 0.75rem;
+  color: #fff;
+  text-shadow: 0 0 22px rgba(139, 92, 246, 0.55), 0 0 44px rgba(139, 92, 246, 0.25);
+  font-weight: 700;
 }
 
 .subtitle {
-  color: var(--text-muted);
-  font-size: 1.05rem;
+  color: var(--arcade-text-muted);
+  font-size: 1.1rem;
 }
 
 .balance {
   margin-top: 1rem;
-  font-size: 1rem;
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--neon-amber);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
 }
 
 .loading,
@@ -33,32 +42,44 @@
   padding: 2rem;
 }
 
-.error {
-  color: var(--error);
-}
+.error { color: #fca5a5; }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  max-width: 900px;
+  gap: 1.75rem;
+  max-width: 980px;
   margin: 0 auto;
 }
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius);
-  padding: 2rem 1.5rem;
+  background: var(--arcade-surface);
+  border: 1px solid var(--arcade-border);
+  border-radius: 16px;
+  padding: 2.25rem 1.5rem;
   text-align: center;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--neon-violet);
+  box-shadow: var(--arcade-glow-violet);
 }
 
 .recommended {
-  border: 2px solid var(--accent);
+  border-color: var(--neon-amber);
+  box-shadow: var(--arcade-glow-amber);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.07), var(--arcade-surface));
+}
+
+.recommended:hover {
+  border-color: var(--neon-amber);
+  box-shadow: 0 0 28px rgba(245, 158, 11, 0.5), 0 0 70px rgba(245, 158, 11, 0.15);
 }
 
 .badge {
@@ -66,57 +87,86 @@
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--accent);
-  color: #000;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.25rem 0.75rem;
+  background: linear-gradient(135deg, var(--neon-amber), #d97706);
+  color: #1a0a00;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.3rem 0.9rem;
   border-radius: 999px;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+  animation: neon-pulse 2.4s ease-in-out infinite;
 }
 
 .tokens {
   font-family: var(--font-display);
-  font-size: 2.5rem;
+  font-size: 3.25rem;
   margin-top: 0.5rem;
+  color: var(--neon-violet);
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.recommended .tokens {
+  color: var(--neon-amber);
+  text-shadow: 0 0 24px rgba(245, 158, 11, 0.6);
 }
 
 .tokenLabel {
-  color: var(--text-muted);
-  font-size: 0.875rem;
+  color: var(--arcade-text-muted);
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
+  letter-spacing: 0.12em;
+  margin-top: 0.35rem;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
 }
 
 .price {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 0.25rem;
+  color: #fff;
+  margin-bottom: 0.3rem;
 }
 
 .plays {
-  color: var(--text-muted);
+  color: var(--arcade-text-muted);
   font-size: 0.9rem;
   margin-bottom: 1.5rem;
 }
 
 .buyButton {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--accent);
-  color: #000;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, var(--neon-green), #16a34a);
+  color: #052e16;
   font-family: var(--font-sans);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.5), var(--arcade-glow-green);
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 
 .buyButton:hover:not(:disabled) {
-  background: var(--accent-hover);
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.55);
+}
+
+.recommended .buyButton {
+  background: linear-gradient(135deg, var(--neon-amber), #d97706);
+  color: #1a0a00;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.5), var(--arcade-glow-amber);
+}
+
+.recommended .buyButton:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.8), 0 0 30px rgba(245, 158, 11, 0.55);
 }
 
 .buyButton:disabled {
@@ -126,20 +176,15 @@
 
 .note {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--arcade-text-muted);
   font-size: 0.9rem;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
 
 @media (max-width: 640px) {
-  .grid {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-  }
+  .grid { grid-template-columns: 1fr; max-width: 400px; }
 }
 
 @media (min-width: 641px) and (max-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .grid { grid-template-columns: repeat(2, 1fr); }
 }
