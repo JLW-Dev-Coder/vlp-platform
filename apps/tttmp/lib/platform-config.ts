@@ -6,7 +6,7 @@ export const tttmpConfig: PlatformConfig = {
   brandColor: '#8b5cf6',
   brandSubtitle: 'Tax Education Hub',
   logoText: 'TTA',
-  apiBaseUrl: 'https://api.virtuallaunch.pro',
+  apiBaseUrl: 'https://api.taxmonitor.pro',
   posthog: {
     apiKey: 'phc_o5nTrNkxc37W2G9PXFL8peXMjWzdjo5d2HSjE5XzggkY',
     apiHost: 'https://us.i.posthog.com',

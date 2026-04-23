@@ -2,7 +2,7 @@
  * Vesperi decision-tree data.
  *
  * Videos are served via the Worker at:
- *   https://api.virtuallaunch.pro/v1/tttmp/vesperi/clips/{node-id}.mp4
+ *   https://api.taxmonitor.pro/v1/tttmp/vesperi/clips/{node-id}.mp4
  *
  * Clips live in R2 at `tttmp/vesperi/clips/{node-id}.mp4`. Missing videos
  * fall back to the context line + transcript — the page is functional
@@ -223,7 +223,7 @@ export const VESPERI_TREE: Record<string, VesperiNode> = {
   },
 }
 
-export const VESPERI_VIDEO_BASE = 'https://api.virtuallaunch.pro/v1/tttmp/vesperi/clips'
+export const VESPERI_VIDEO_BASE = 'https://api.taxmonitor.pro/v1/tttmp/vesperi/clips'
 
 // Node id → R2 clip name. Tree nodes split all-games into pro/taxpayer variants
 // to persist audience through "Back" navigation, but both use the same clip.
