@@ -254,6 +254,7 @@ This blueprint stays high-level. Depth lives in sub-canonicals:
 - **`canonical-style.md`** — token rem/hex values, component patterns, utility classes
 - **`canonical-site-nav.md`** — topbar, sidebar, mobile nav, footer patterns
 - **`canonical-app-components.md`** — dashboard layouts, forms, modals, toasts, empty states
+- **`canonical-dashboard-pages.md`** — standard authenticated page specifications (Dashboard, Tokens, Affiliate, Profile, Account, Support)
 - **`canonical-feature-matrix.md`** — per-app feature inventory (unchanged)
 - **`canonical-feature-benefits.md`** — per-app benefit copy (unchanged)
 

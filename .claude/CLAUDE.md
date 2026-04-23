@@ -87,7 +87,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 - Never duplicate a canonical into an app directory
 - When a canonical is updated, it applies to all apps immediately
 
-### Canonical files (21 total):
+### Canonical files (22 total):
 
 | File | Purpose | Use when... |
 |------|---------|-------------|
@@ -97,6 +97,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 | `canonical-claude.md` | CLAUDE.md template for app-level context | Creating or editing any app's `.claude/CLAUDE.md` |
 | `canonical-contract.json` | Contract JSON schema (7 required sections) | Creating or modifying any data contract |
 | `canonical-contract-registry.json` | Registry entry schema (required fields) | Adding entries to platform registries |
+| `canonical-dashboard-pages.md` | Standard authenticated page specs (Dashboard, Tokens, Affiliate, Profile, Account, Support) — required sections, endpoints, layout, audit checklist | Building, auditing, or modifying any authenticated dashboard page on any app |
 | `canonical-deploy.md` | Per-adapter deploy procedures + rollback | Deploying any platform or troubleshooting deploys |
 | `canonical-feature-benefits.md` | Human-readable benefit descriptions per feature across all 8 platforms ("what does this do for me") | Writing user-facing feature copy or positioning benefits |
 | `canonical-feature-matrix.md` | Feature → Worker route / storage / frontend page / build status mapping across all 8 platforms | Tracking what's live/partial/planned per platform |
