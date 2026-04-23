@@ -1,5 +1,5 @@
-import LegalPage from "@/components/LegalPage";
+import { redirect } from 'next/navigation'
 
-export default function Terms() {
-  return <LegalPage type="terms" />;
+export default function TermsRedirect() {
+  redirect('/legal/terms')
 }

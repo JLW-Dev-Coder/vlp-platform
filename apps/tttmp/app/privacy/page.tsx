@@ -1,5 +1,5 @@
-import LegalPage from "@/components/LegalPage";
+import { redirect } from 'next/navigation'
 
-export default function Privacy() {
-  return <LegalPage type="privacy" />;
+export default function PrivacyRedirect() {
+  redirect('/legal/privacy')
 }

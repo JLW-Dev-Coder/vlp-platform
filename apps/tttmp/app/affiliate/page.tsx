@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AppShell } from '@vlp/member-ui'
+import { AppShell, AuthGate } from '@vlp/member-ui'
 import { tttmpConfig } from '@/lib/platform-config'
-import Header from '@/components/Header'
 import { api } from '@/lib/api'
-import styles from './page.module.css'
 
 interface AffiliateData {
   referral_code: string
@@ -24,11 +22,12 @@ interface CommissionEvent {
   created_at: string
 }
 
-function formatUSD(cents: number) {
+function formatUSD(cents: number | null | undefined) {
+  const safe = (cents ?? 0) / 100
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-  }).format(cents / 100)
+  }).format(safe)
 }
 
 function formatDate(iso: string) {
@@ -39,21 +38,8 @@ function formatDate(iso: string) {
   })
 }
 
-function SkeletonRow() {
-  return (
-    <tr>
-      <td><span className={styles.skeleton} /></td>
-      <td><span className={styles.skeleton} /></td>
-      <td><span className={styles.skeleton} /></td>
-      <td><span className={styles.skeleton} /></td>
-      <td><span className={styles.skeleton} /></td>
-    </tr>
-  )
-}
-
-export default function AffiliatePage() {
+function AffiliateContent() {
   const router = useRouter()
-  const [accountId, setAccountId] = useState<string | null>(null)
   const [affiliate, setAffiliate] = useState<AffiliateData | null>(null)
   const [events, setEvents] = useState<CommissionEvent[] | null>(null)
   const [loading, setLoading] = useState(true)
@@ -67,7 +53,6 @@ export default function AffiliatePage() {
     api.getSession()
       .then((data) => {
         const id = data.session.account_id
-        setAccountId(id)
         return Promise.all([
           api.getAffiliate(id),
           api.getAffiliateEvents(id),
@@ -122,113 +107,148 @@ export default function AffiliatePage() {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <main className={styles.main}>
-          <p className={styles.loadingText}>Loading…</p>
-        </main>
-      </>
+      <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
+        <p className="text-center text-[var(--arcade-text-muted)] py-16">Loading…</p>
+      </div>
     )
   }
 
   if (!affiliate) {
     return (
-      <>
-        <Header />
-        <main className={styles.main}>
-          <p className={styles.errorText}>{error || 'Could not load affiliate data.'}</p>
-        </main>
-      </>
+      <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
+        <p className="text-center text-red-400 py-16">{error || 'Could not load affiliate data.'}</p>
+      </div>
     )
   }
 
-  const canPayout =
-    affiliate.balance_pending >= 1000 && affiliate.connect_status === 'active'
+  const pending = affiliate.balance_pending ?? 0
+  const paid = affiliate.balance_paid ?? 0
+  const canPayout = pending >= 1000 && affiliate.connect_status === 'active'
   const disabledReason =
     affiliate.connect_status !== 'active'
       ? 'Connect your bank account to withdraw'
-      : affiliate.balance_pending < 1000
-      ? 'Minimum payout is $10'
-      : ''
+      : pending < 1000
+        ? 'Minimum payout is $10'
+        : ''
+
+  const sectionStyle: React.CSSProperties = {
+    background: 'var(--arcade-surface)',
+    border: '1px solid var(--arcade-border)',
+    borderRadius: '1rem',
+  }
 
   return (
-    <>
-      <Header />
-      <main className={styles.main}>
-        <h1 className={styles.pageTitle}>Affiliate Dashboard</h1>
-        {error && <p className={styles.errorText}>{error}</p>}
+    <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="font-sora text-3xl font-extrabold text-white mb-2">
+          Affiliate Dashboard
+        </h1>
+        <p className="text-sm text-[var(--arcade-text-muted)] mb-8">
+          Share your link. Earn 20% commission for life on every referral.
+        </p>
+        {error && <p className="text-red-400 mb-4">{error}</p>}
 
-        {/* Section 1 — Referral Link */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Your Referral Link</h2>
-          <div className={styles.referralRow}>
-            <input
-              className={styles.referralInput}
-              type="text"
-              value={affiliate.referral_url}
-              readOnly
+        {/* Earnings Summary */}
+        <section className="p-6 mb-6" style={sectionStyle}>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)] mb-4">
+            Earnings Summary
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <StatCard
+              label="Available"
+              value={formatUSD(pending)}
+              color="var(--neon-green)"
+              glow="var(--arcade-glow-green)"
             />
-            <button
-              className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
-              onClick={handleCopy}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <p className={styles.referralHint}>
-            Share this link. Earn 20% commission on every purchase your referrals make, for life.
-          </p>
-        </section>
-
-        {/* Section 2 — Earnings Summary */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Earnings Summary</h2>
-          <div className={styles.statsRow}>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Available to withdraw</span>
-              <span className={styles.statValue}>{formatUSD(affiliate.balance_pending)}</span>
-              <span className={styles.statSubLabel}>Pending</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>Total earned and paid</span>
-              <span className={styles.statValue}>{formatUSD(affiliate.balance_paid)}</span>
-              <span className={styles.statSubLabel}>Paid Out</span>
-            </div>
+            <StatCard
+              label="Pending"
+              value={formatUSD(pending)}
+              color="var(--neon-amber)"
+              glow="var(--arcade-glow-amber)"
+            />
+            <StatCard
+              label="Paid Out"
+              value={formatUSD(paid)}
+              color="var(--neon-violet)"
+              glow="var(--arcade-glow-violet)"
+            />
           </div>
 
-          <div className={styles.payoutRow}>
-            <div className={styles.payoutBtnWrapper} title={disabledReason}>
+          <div className="flex flex-wrap items-center gap-3">
+            <span title={disabledReason} className="inline-block">
               <button
-                className={styles.payoutBtn}
                 onClick={handlePayout}
                 disabled={!canPayout || payoutLoading}
+                className="arcade-btn arcade-btn-amber h-11 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {payoutLoading ? 'Requesting…' : 'Request Payout'}
               </button>
-            </div>
+            </span>
+            {disabledReason && (
+              <span className="text-xs text-[var(--arcade-text-muted)]">
+                {disabledReason}
+              </span>
+            )}
             {payoutMessage && (
-              <p className={styles.payoutMessage}>{payoutMessage}</p>
+              <p className="text-sm text-[var(--neon-green)]">{payoutMessage}</p>
             )}
           </div>
         </section>
 
-        {/* Section 3 — Stripe Connect */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Bank Account</h2>
+        {/* Referral Link */}
+        <section className="p-6 mb-6" style={sectionStyle}>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)] mb-4">
+            Your Referral Link
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={affiliate.referral_url}
+              readOnly
+              className="flex-1 h-11 rounded-lg px-4 text-sm text-white outline-none"
+              style={{
+                background: 'var(--bg, #0a0a1a)',
+                border: '1px solid var(--neon-violet)',
+                boxShadow: '0 0 0 1px rgba(139, 92, 246, 0.15)',
+              }}
+            />
+            <button
+              onClick={handleCopy}
+              className={`arcade-btn h-11 px-6 ${copied ? 'arcade-btn-secondary' : 'arcade-btn-primary'}`}
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </section>
+
+        {/* Bank Account / Stripe Connect */}
+        <section className="p-6 mb-6" style={sectionStyle}>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)] mb-4">
+            Bank Account
+          </h2>
           {affiliate.connect_status === 'active' ? (
-            <div className={styles.connectedBadge}>
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
+              style={{
+                background: 'rgba(34, 197, 94, 0.12)',
+                color: 'var(--neon-green)',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+              }}
+            >
               ✓ Bank account connected
             </div>
           ) : (
-            <div className={styles.onboardCard}>
-              <h3 className={styles.onboardTitle}>Connect your bank account</h3>
-              <p className={styles.onboardBody}>
+            <div className="flex flex-col gap-3">
+              <h3 className="text-base font-bold text-white">
+                Connect your bank account
+              </h3>
+              <p className="text-sm text-[var(--arcade-text-muted)]">
                 Connect via Stripe to receive commission payouts directly to your bank.
               </p>
               <button
-                className={styles.onboardBtn}
                 onClick={handleOnboard}
                 disabled={onboardLoading}
+                className="arcade-btn arcade-btn-amber h-11 px-6 self-start disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {onboardLoading ? 'Redirecting…' : 'Connect Bank Account'}
               </button>
@@ -236,53 +256,73 @@ export default function AffiliatePage() {
           )}
         </section>
 
-        {/* Section 4 — Commission History */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Commission History</h2>
-          {events === null ? (
-            <div className={styles.tableWrapper}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Platform</th>
-                    <th>Sale Amount</th>
-                    <th>Your Commission</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <SkeletonRow />
-                  <SkeletonRow />
-                  <SkeletonRow />
-                </tbody>
-              </table>
-            </div>
-          ) : events.length === 0 ? (
-            <p className={styles.emptyState}>
+        {/* Commission History */}
+        <section className="p-6" style={sectionStyle}>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)] mb-4">
+            Commission History
+          </h2>
+          {!events || events.length === 0 ? (
+            <p className="text-sm text-[var(--arcade-text-muted)] text-center py-8">
               No commissions yet. Share your referral link to start earning.
             </p>
           ) : (
-            <div className={styles.tableWrapper}>
-              <table className={styles.table}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Platform</th>
-                    <th>Sale Amount</th>
-                    <th>Your Commission</th>
-                    <th>Status</th>
+                  <tr
+                    className="text-left"
+                    style={{ borderBottom: '1px solid var(--arcade-border)' }}
+                  >
+                    <th className="py-2 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--neon-violet)]">
+                      Date
+                    </th>
+                    <th className="py-2 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--neon-violet)]">
+                      Platform
+                    </th>
+                    <th className="py-2 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--neon-violet)]">
+                      Sale
+                    </th>
+                    <th className="py-2 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--neon-violet)]">
+                      Commission
+                    </th>
+                    <th className="py-2 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--neon-violet)]">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {events.map((evt, i) => (
-                    <tr key={i}>
-                      <td>{formatDate(evt.created_at)}</td>
-                      <td className={styles.platformCell}>{evt.platform}</td>
-                      <td>{formatUSD(evt.gross_amount)}</td>
-                      <td className={styles.commissionCell}>{formatUSD(evt.commission_amount)}</td>
-                      <td>
-                        <span className={`${styles.statusBadge} ${evt.status === 'paid' ? styles.statusPaid : styles.statusPending}`}>
+                    <tr
+                      key={i}
+                      style={{ borderBottom: '1px solid var(--arcade-border)' }}
+                    >
+                      <td className="py-3 px-3 text-[var(--arcade-text)]">
+                        {formatDate(evt.created_at)}
+                      </td>
+                      <td className="py-3 px-3 capitalize text-white">
+                        {evt.platform}
+                      </td>
+                      <td className="py-3 px-3 text-[var(--arcade-text)]">
+                        {formatUSD(evt.gross_amount)}
+                      </td>
+                      <td className="py-3 px-3 font-semibold text-[var(--neon-green)]">
+                        {formatUSD(evt.commission_amount)}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span
+                          className="inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize"
+                          style={
+                            evt.status === 'paid'
+                              ? {
+                                  background: 'rgba(34, 197, 94, 0.15)',
+                                  color: 'var(--neon-green)',
+                                }
+                              : {
+                                  background: 'rgba(245, 158, 11, 0.15)',
+                                  color: 'var(--neon-amber)',
+                                }
+                          }
+                        >
                           {evt.status}
                         </span>
                       </td>
@@ -293,7 +333,50 @@ export default function AffiliatePage() {
             </div>
           )}
         </section>
-      </main>
-    </>
+      </div>
+    </div>
+  )
+}
+
+function StatCard({
+  label,
+  value,
+  color,
+  glow,
+}: {
+  label: string
+  value: string
+  color: string
+  glow: string
+}) {
+  return (
+    <div
+      className="rounded-xl p-4 text-center"
+      style={{
+        background: 'var(--bg, #0a0a1a)',
+        border: `1px solid ${color}`,
+        boxShadow: glow,
+      }}
+    >
+      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)]">
+        {label}
+      </div>
+      <div
+        className="font-sora text-3xl font-extrabold mt-1"
+        style={{ color, textShadow: `0 0 20px ${color}55` }}
+      >
+        {value}
+      </div>
+    </div>
+  )
+}
+
+export default function AffiliatePage() {
+  return (
+    <AuthGate apiBaseUrl={tttmpConfig.apiBaseUrl}>
+      <AppShell config={tttmpConfig}>
+        <AffiliateContent />
+      </AppShell>
+    </AuthGate>
   )
 }

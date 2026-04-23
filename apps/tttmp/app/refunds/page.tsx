@@ -1,5 +1,5 @@
-import LegalPage from "@/components/LegalPage";
+import { redirect } from 'next/navigation'
 
-export default function Refunds() {
-  return <LegalPage type="refunds" />;
+export default function RefundsRedirect() {
+  redirect('/legal/refund')
 }

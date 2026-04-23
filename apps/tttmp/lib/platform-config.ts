@@ -66,7 +66,7 @@ export const tttmpConfig: PlatformConfig = {
     {
       title: 'WORKSPACE',
       items: [
-        { label: 'Dashboard', href: '/account', icon: 'LayoutDashboard' },
+        { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Games', href: '/games', icon: 'Gamepad2', external: true },
         { label: 'Tokens', href: '/pricing', icon: 'Coins', external: true },
       ],
@@ -89,8 +89,8 @@ export const tttmpConfig: PlatformConfig = {
   routes: {
     home: '/',
     signIn: '/sign-in',
-    signOut: '/sign-in',
-    dashboard: '/account',
+    signOut: '/sign-out',
+    dashboard: '/dashboard',
     account: '/account',
     profile: '/account',
     support: '/contact',

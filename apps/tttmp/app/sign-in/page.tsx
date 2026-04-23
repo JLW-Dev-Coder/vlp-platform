@@ -10,7 +10,7 @@ type View = 'default' | 'magic-link' | 'check-email'
 function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') || '/account'
+  const redirect = searchParams.get('redirect') || '/dashboard'
   const oauthError = searchParams.get('error')
 
   const [view, setView] = useState<View>('default')
