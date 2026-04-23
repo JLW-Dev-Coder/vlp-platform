@@ -1224,6 +1224,32 @@ async function notifyTicketCreated(env, { ticketId, accountId, email, subject, c
   }
 }
 
+async function notifyTicketUpdated(env, { ticketId, accountId, subject, status, platform }) {
+  const now = new Date().toISOString();
+  const notificationId = `NTF_${crypto.randomUUID()}`;
+  const link = platform === 'tttmp'
+    ? `https://taxtools.taxmonitor.pro/support/ticket?id=${ticketId}`
+    : `/dashboard/support/${ticketId}`;
+  const safeSubject = String(subject || '').slice(0, 200);
+  const statusLabel = status === 'resolved' ? 'resolved' : status === 'closed' ? 'closed' : status;
+  const message = `Your ticket "${safeSubject}" has been marked as ${statusLabel}.`;
+  try {
+    await r2Put(env.R2_VIRTUAL_LAUNCH, `notifications/in-app/${notificationId}.json`, {
+      notificationId, accountId, title: 'Ticket updated',
+      message, severity: 'info', type: 'support_ticket_updated',
+      link, ticketId, read: false, createdAt: now,
+    });
+    await d1Run(env.DB,
+      `INSERT INTO notifications (notification_id, account_id, title, message, severity, read, created_at) VALUES (?, ?, ?, ?, 'info', 0, ?)`,
+      [notificationId, accountId, 'Ticket updated', message, now]
+    );
+  } catch (e) {
+    console.error('[notifyTicketUpdated] notification write failed:', e?.message || e);
+  }
+}
+
+const SUPPORT_STATUSES = ['open', 'in_progress', 'waiting_on_user', 'resolved', 'closed'];
+
 // WLVLP welcome email (sent on /v1/wlvlp/leads first signup).
 // Self-contained HTML (inline styles, no external CSS) — Xavier brand voice.
 function generateWlvlpWelcomeEmail(name, email) {
@@ -6315,20 +6341,22 @@ const ROUTES = [
 
   {
     method: 'PATCH', pattern: '/v1/support/tickets/:ticket_id',
-    handler: async (_method, _pattern, params, request, env) => {
-      const { error } = await requireSession(request, env);
+    handler: async (_method, _pattern, params, request, env, ctx) => {
+      const { session, error } = await requireSession(request, env);
       if (error) return json({ ok: false, error: 'UNAUTHORIZED', message: error }, 401, request);
       try {
         const body = await parseBody(request);
         const now = new Date().toISOString();
         const setClauses = ['updated_at = ?'];
         const vals = [now];
-        const validStatuses = ['closed', 'in_progress', 'open', 'reopened', 'resolved'];
         if (body?.message !== undefined) { setClauses.push('message = ?'); vals.push(body.message); }
         if (body?.status !== undefined) {
-          if (!validStatuses.includes(body.status)) return json({ ok: false, error: 'VALIDATION', message: `status must be one of: ${validStatuses.join(', ')}` }, 400, request);
+          if (!SUPPORT_STATUSES.includes(body.status)) {
+            return json({ ok: false, error: 'VALIDATION', message: `status must be one of: ${SUPPORT_STATUSES.join(', ')}` }, 400, request);
+          }
           setClauses.push('status = ?'); vals.push(body.status);
         }
+        const ticketRow = await env.DB.prepare('SELECT account_id, subject, platform FROM support_tickets WHERE ticket_id = ?').bind(params.ticket_id).first().catch(() => null);
         await d1Run(env.DB,
           `UPDATE support_tickets SET ${setClauses.join(', ')} WHERE ticket_id = ?`,
           [...vals, params.ticket_id]
@@ -6339,6 +6367,18 @@ const ROUTES = [
         if (body?.message !== undefined) updated.message = body.message;
         if (body?.status !== undefined) updated.status = body.status;
         await r2Put(env.R2_VIRTUAL_LAUNCH, `support_tickets/${params.ticket_id}.json`, updated);
+
+        if ((body?.status === 'resolved' || body?.status === 'closed') && ticketRow) {
+          const notify = notifyTicketUpdated(env, {
+            ticketId: params.ticket_id,
+            accountId: ticketRow.account_id,
+            subject: ticketRow.subject,
+            status: body.status,
+            platform: ticketRow.platform || session?.platform,
+          });
+          if (ctx?.waitUntil) ctx.waitUntil(notify); else notify.catch(() => {});
+        }
+
         return json({ ok: true, ticketId: params.ticket_id, status: 'updated' }, 200, request);
       } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Ticket update failed' }, 500, request);
@@ -7264,7 +7304,7 @@ const ROUTES = [
 
   {
     method: 'PATCH', pattern: '/v1/admin/support/tickets/:ticket_id',
-    handler: async (_method, _pattern, params, request, env) => {
+    handler: async (_method, _pattern, params, request, env, ctx) => {
       const { session, error } = await requireSession(request, env)
       if (error) return error
 
@@ -7279,9 +7319,8 @@ const ROUTES = [
         if (!replyText && !newStatus) {
           return json({ ok: false, error: 'VALIDATION', message: 'message or status required' }, 400, request)
         }
-        const validStatuses = ['closed', 'in_progress', 'open', 'reopened', 'resolved', 'awaiting']
-        if (newStatus && !validStatuses.includes(newStatus)) {
-          return json({ ok: false, error: 'VALIDATION', message: `status must be one of: ${validStatuses.join(', ')}` }, 400, request)
+        if (newStatus && !SUPPORT_STATUSES.includes(newStatus)) {
+          return json({ ok: false, error: 'VALIDATION', message: `status must be one of: ${SUPPORT_STATUSES.join(', ')}` }, 400, request)
         }
 
         const row = await env.DB.prepare(
@@ -7290,6 +7329,10 @@ const ROUTES = [
             WHERE t.ticket_id = ?`
         ).bind(params.ticket_id).first()
         if (!row) return json({ ok: false, error: 'NOT_FOUND' }, 404, request)
+
+        if (replyText && row.status === 'closed' && newStatus !== 'open') {
+          return json({ ok: false, error: 'TICKET_CLOSED', message: 'Cannot reply to a closed ticket. Reopen first.' }, 400, request)
+        }
 
         const now = new Date().toISOString()
         const existingObj = await env.R2_VIRTUAL_LAUNCH.get(`support_tickets/${params.ticket_id}.json`)
@@ -7303,16 +7346,44 @@ const ROUTES = [
             createdAt: row.created_at,
           })
         }
+        let newMessageId = null
         if (replyText) {
+          newMessageId = `MSG_${crypto.randomUUID()}`
           messages.push({
-            id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            id: newMessageId,
             body: replyText,
             author: 'support',
             createdAt: now,
           })
+          // Also write to the canonical message thread storage (R2 + D1 support_messages)
+          await env.R2_VIRTUAL_LAUNCH.put(
+            `support/messages/${params.ticket_id}/${newMessageId}.json`,
+            JSON.stringify({
+              id: newMessageId,
+              ticket_id: params.ticket_id,
+              account_id: row.account_id,
+              sender_type: 'support',
+              message: replyText,
+              created_at: now,
+              updated_at: now,
+            })
+          )
+          await d1Run(env.DB,
+            `INSERT INTO support_messages (id, ticket_id, account_id, sender_type, message, created_at, updated_at)
+             VALUES (?, ?, ?, 'support', ?, ?, ?)`,
+            [newMessageId, params.ticket_id, row.account_id, replyText, now, now]
+          )
         }
 
-        const effectiveStatus = newStatus || (replyText ? 'awaiting' : row.status)
+        // Status transition: explicit newStatus wins; otherwise on admin reply
+        // promote open→in_progress, in_progress→waiting_on_user, keep others.
+        let effectiveStatus = newStatus || row.status
+        if (!newStatus && replyText) {
+          if (row.status === 'open') effectiveStatus = 'in_progress'
+          else if (row.status === 'in_progress') effectiveStatus = 'waiting_on_user'
+          else if (row.status === 'awaiting') effectiveStatus = 'waiting_on_user'
+          else effectiveStatus = 'waiting_on_user'
+        }
 
         await r2Put(env.R2_VIRTUAL_LAUNCH, `support_tickets/${params.ticket_id}.json`, {
           ...existing,
@@ -7329,6 +7400,17 @@ const ROUTES = [
           `UPDATE support_tickets SET status = ?, updated_at = ? WHERE ticket_id = ?`,
           [effectiveStatus, now, params.ticket_id]
         )
+
+        if ((effectiveStatus === 'resolved' || effectiveStatus === 'closed') && effectiveStatus !== row.status) {
+          const notify = notifyTicketUpdated(env, {
+            ticketId: params.ticket_id,
+            accountId: row.account_id,
+            subject: row.subject,
+            status: effectiveStatus,
+            platform: row.platform,
+          })
+          if (ctx?.waitUntil) ctx.waitUntil(notify); else notify.catch(() => {})
+        }
 
         return json({
           ok: true,
@@ -11814,17 +11896,29 @@ TTMP Support Team
 
       const { price_id, success_url, cancel_url, email } = body;
 
+      // Map TTTMP price_id → token count (must stay in sync with webhook TOKEN_PURCHASE_MAP).
+      const TTTMP_TOKEN_COUNTS = {
+        [env.STRIPE_PRICE_TTTMP_30_TOKENS]: 30,
+        [env.STRIPE_PRICE_TTTMP_80_TOKENS]: 80,
+        [env.STRIPE_PRICE_TTTMP_200_TOKENS]: 200,
+      };
+      const tokenCount = TTTMP_TOKEN_COUNTS[price_id] ?? null;
+
       try {
         // Create Stripe checkout session
         const checkoutParams = {
           mode: 'payment',
           payment_method_types: ['card'],
           line_items: [{ price: price_id, quantity: 1 }],
+          allow_promotion_codes: true,
           success_url: success_url || 'https://taxtools.taxmonitor.pro/checkout/success?session_id={CHECKOUT_SESSION_ID}',
           cancel_url: cancel_url || 'https://taxtools.taxmonitor.pro/checkout/cancel',
           metadata: {
             ...(accountId ? { account_id: accountId } : {}),
-            platform: 'tttmp'
+            platform: 'tttmp',
+            type: 'token_purchase',
+            price_id,
+            ...(tokenCount !== null ? { token_count: String(tokenCount) } : {}),
           }
         };
         if (!accountId && email) {
@@ -11882,22 +11976,55 @@ TTMP Support Team
 
         let creditsAdded = 0;
         let newBalance = 0;
+        let alreadyCredited = false;
 
         if (stripeSession.payment_status === 'paid') {
-          // Credit tokens based on price_id (this would need actual price mappings)
-          // For now, using placeholder logic
-          creditsAdded = 10; // Default, would map price_id to actual credits
+          const receiptKey = `tokens/receipts/checkout/${sessionId}.json`;
+          const existingReceipt = await env.R2_VIRTUAL_LAUNCH.get(receiptKey);
+          if (existingReceipt) {
+            alreadyCredited = true;
+            const receipt = await existingReceipt.json().catch(() => ({}));
+            creditsAdded = Number(receipt.credits_added) || 0;
+            const bal = await env.DB.prepare('SELECT tax_game_tokens FROM tokens WHERE account_id = ?')
+              .bind(session.account_id).first().catch(() => null);
+            newBalance = bal?.tax_game_tokens ?? 0;
+          } else {
+            // Read token count from metadata; fall back to price_id mapping.
+            const TTTMP_TOKEN_COUNTS = {
+              [env.STRIPE_PRICE_TTTMP_30_TOKENS]: 30,
+              [env.STRIPE_PRICE_TTTMP_80_TOKENS]: 80,
+              [env.STRIPE_PRICE_TTTMP_200_TOKENS]: 200,
+            };
+            const metaCount = Number(stripeSession.metadata?.token_count);
+            if (Number.isFinite(metaCount) && metaCount > 0) {
+              creditsAdded = metaCount;
+            } else {
+              const priceId = stripeSession.metadata?.price_id
+                || stripeSession.line_items?.data?.[0]?.price?.id
+                || null;
+              creditsAdded = TTTMP_TOKEN_COUNTS[priceId] ?? 0;
+            }
 
-          // Credit the tokens
-          const tokenResult = await creditTokens(session.account_id, creditsAdded, 'tax_game', env);
-          newBalance = tokenResult.newBalance;
+            if (creditsAdded > 0) {
+              const tokenResult = await creditTokens(session.account_id, creditsAdded, 'tax_game', env);
+              newBalance = tokenResult.newBalance;
+              await r2Put(env.R2_VIRTUAL_LAUNCH, receiptKey, {
+                session_id: sessionId,
+                account_id: session.account_id,
+                credits_added: creditsAdded,
+                token_type: 'tax_game',
+                credited_at: new Date().toISOString(),
+              });
+            }
+          }
         }
 
         return json({
           ok: true,
           status: stripeSession.payment_status,
           credits_added: creditsAdded,
-          balance: newBalance
+          balance: newBalance,
+          already_credited: alreadyCredited,
         });
       } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to check checkout status' }, 500, request);
@@ -13425,6 +13552,11 @@ TTMP Support Team
               return json({ ok: false, error: 'BAD_REQUEST', message: 'body required for reply' }, 400, request);
             }
 
+            const ticketRow = await env.DB.prepare('SELECT status FROM support_tickets WHERE ticket_id = ?').bind(ticket_id).first().catch(() => null);
+            if (ticketRow && ticketRow.status === 'closed') {
+              return json({ ok: false, error: 'TICKET_CLOSED', message: 'Ticket is closed. Reopen it to send a new message.' }, 400, request);
+            }
+
             const newMessageId = `MSG_${crypto.randomUUID()}`;
             const senderType = body.sender_type === 'support' ? 'support' : 'user';
 
@@ -13447,14 +13579,29 @@ TTMP Support Team
               [newMessageId, ticket_id, account_id, senderType, messageBody, timestamp, timestamp]
             );
 
+            let nextStatus = ticketRow?.status;
+            if (senderType === 'user' && ticketRow?.status === 'waiting_on_user') {
+              nextStatus = 'in_progress';
+            } else if (senderType === 'support') {
+              if (ticketRow?.status === 'open') nextStatus = 'in_progress';
+              else if (ticketRow?.status === 'in_progress') nextStatus = 'waiting_on_user';
+            }
+
             try {
-              await d1Run(env.DB,
-                `UPDATE support_tickets SET updated_at = ? WHERE ticket_id = ?`,
-                [timestamp, ticket_id]
-              );
+              if (nextStatus && nextStatus !== ticketRow?.status) {
+                await d1Run(env.DB,
+                  `UPDATE support_tickets SET updated_at = ?, status = ? WHERE ticket_id = ?`,
+                  [timestamp, nextStatus, ticket_id]
+                );
+              } else {
+                await d1Run(env.DB,
+                  `UPDATE support_tickets SET updated_at = ? WHERE ticket_id = ?`,
+                  [timestamp, ticket_id]
+                );
+              }
             } catch {}
 
-            return json({ ok: true, message_id: newMessageId, ticket_id, action: 'reply' }, 200, request);
+            return json({ ok: true, message_id: newMessageId, ticket_id, action: 'reply', status: nextStatus }, 200, request);
           }
 
           default:

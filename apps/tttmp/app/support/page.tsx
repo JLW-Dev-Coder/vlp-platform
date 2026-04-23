@@ -25,41 +25,60 @@ function formatDate(iso?: string | null): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function normalizeStatus(s: string): 'open' | 'pending' | 'resolved' {
+type CanonicalStatus = 'open' | 'in_progress' | 'waiting_on_user' | 'resolved' | 'closed'
+
+function normalizeStatus(s: string): CanonicalStatus {
   const v = (s || '').toLowerCase()
   if (v === 'open' || v === 'reopened') return 'open'
-  if (v === 'in_progress' || v === 'awaiting' || v === 'pending') return 'pending'
-  return 'resolved'
+  if (v === 'in_progress' || v === 'pending') return 'in_progress'
+  if (v === 'waiting_on_user' || v === 'awaiting') return 'waiting_on_user'
+  if (v === 'closed') return 'closed'
+  if (v === 'resolved') return 'resolved'
+  return 'open'
+}
+
+const STATUS_STYLES: Record<CanonicalStatus, { background: string; color: string; border: string; label: string }> = {
+  open: {
+    background: 'rgba(34, 197, 94, 0.12)',
+    color: 'var(--neon-green)',
+    border: '1px solid rgba(34, 197, 94, 0.35)',
+    label: 'OPEN',
+  },
+  in_progress: {
+    background: 'rgba(59, 130, 246, 0.12)',
+    color: '#60a5fa',
+    border: '1px solid rgba(59, 130, 246, 0.35)',
+    label: 'IN PROGRESS',
+  },
+  waiting_on_user: {
+    background: 'rgba(245, 158, 11, 0.12)',
+    color: 'var(--neon-amber)',
+    border: '1px solid rgba(245, 158, 11, 0.35)',
+    label: 'WAITING ON YOU',
+  },
+  resolved: {
+    background: 'rgba(139, 92, 246, 0.12)',
+    color: 'var(--neon-violet)',
+    border: '1px solid rgba(139, 92, 246, 0.35)',
+    label: 'RESOLVED',
+  },
+  closed: {
+    background: 'rgba(148, 163, 184, 0.12)',
+    color: 'var(--arcade-text-muted)',
+    border: '1px solid rgba(148, 163, 184, 0.35)',
+    label: 'CLOSED',
+  },
 }
 
 function StatusBadge({ status }: { status: string }) {
   const kind = normalizeStatus(status)
-  const styles = {
-    open: {
-      background: 'rgba(34, 197, 94, 0.12)',
-      color: 'var(--neon-green)',
-      border: '1px solid rgba(34, 197, 94, 0.35)',
-      label: 'OPEN',
-    },
-    pending: {
-      background: 'rgba(245, 158, 11, 0.12)',
-      color: 'var(--neon-amber)',
-      border: '1px solid rgba(245, 158, 11, 0.35)',
-      label: 'IN PROGRESS',
-    },
-    resolved: {
-      background: 'rgba(148, 163, 184, 0.12)',
-      color: 'var(--arcade-text-muted)',
-      border: '1px solid rgba(148, 163, 184, 0.35)',
-      label: 'RESOLVED',
-    },
-  }[kind]
+  const { label, ...styles } = STATUS_STYLES[kind]
   return (
     <span
       className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
       style={styles}
     >
-      {styles.label}
+      {label}
     </span>
   )
 }
@@ -105,9 +124,15 @@ function SupportContent() {
     }
   }, [])
 
-  const openCount = (tickets ?? []).filter((t) => normalizeStatus(t.status) === 'open').length
-  const pendingCount = (tickets ?? []).filter((t) => normalizeStatus(t.status) === 'pending').length
-  const resolvedCount = (tickets ?? []).filter((t) => normalizeStatus(t.status) === 'resolved').length
+  const openCount = (tickets ?? []).filter((t) => {
+    const s = normalizeStatus(t.status)
+    return s === 'open' || s === 'in_progress' || s === 'waiting_on_user'
+  }).length
+  const pendingCount = (tickets ?? []).filter((t) => normalizeStatus(t.status) === 'waiting_on_user').length
+  const resolvedCount = (tickets ?? []).filter((t) => {
+    const s = normalizeStatus(t.status)
+    return s === 'resolved' || s === 'closed'
+  }).length
 
   return (
     <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
