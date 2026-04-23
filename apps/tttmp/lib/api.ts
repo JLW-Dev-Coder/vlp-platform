@@ -205,11 +205,28 @@ export const api = {
       }>
     }>(`/v1/affiliates/${account_id}/events`),
 
-  startAffiliateOnboarding: () =>
+  startAffiliateOnboarding: (returnUrl?: string) =>
     apiFetch<{ ok: boolean; onboard_url: string }>(
       '/v1/affiliates/connect/onboard',
-      { method: 'POST' }
+      {
+        method: 'POST',
+        body: JSON.stringify({ return_url: returnUrl }),
+      }
     ),
+
+  getGameSessions: () =>
+    apiFetch<{
+      ok: boolean
+      sessions: Array<{
+        id: string
+        game_slug: string
+        grant_id: string
+        tokens_cost: number
+        started_at: string
+      }>
+      total: number
+      tokens_spent: number
+    }>(`/v1/tttmp/game-sessions`),
 
   requestPayout: (amount: number) =>
     apiFetch<{ ok: boolean; payout_id: string; amount: number; status: string }>(

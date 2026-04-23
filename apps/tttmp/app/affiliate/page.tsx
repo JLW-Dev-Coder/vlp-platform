@@ -48,6 +48,16 @@ function AffiliateContent() {
   const [payoutMessage, setPayoutMessage] = useState('')
   const [onboardLoading, setOnboardLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showConnectedToast, setShowConnectedToast] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('connected') !== 'true') return
+    setShowConnectedToast(true)
+    const t = setTimeout(() => setShowConnectedToast(false), 6000)
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     api.getSession()
@@ -98,7 +108,11 @@ function AffiliateContent() {
   async function handleOnboard() {
     setOnboardLoading(true)
     try {
-      const result = await api.startAffiliateOnboarding()
+      const returnUrl =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/affiliate`
+          : 'https://taxtools.taxmonitor.pro/affiliate'
+      const result = await api.startAffiliateOnboarding(returnUrl)
       window.location.href = result.onboard_url
     } catch {
       setOnboardLoading(false)
@@ -147,6 +161,19 @@ function AffiliateContent() {
           Share your link. Earn 20% commission for life on every referral.
         </p>
         {error && <p className="text-red-400 mb-4">{error}</p>}
+        {showConnectedToast && (
+          <div
+            className="mb-6 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold"
+            style={{
+              background: 'rgba(34, 197, 94, 0.12)',
+              color: 'var(--neon-green)',
+              border: '1px solid rgba(34, 197, 94, 0.35)',
+            }}
+          >
+            <span>✓</span>
+            <span>Stripe account connected successfully.</span>
+          </div>
+        )}
 
         {/* Earnings Summary */}
         <section className="p-6 mb-6" style={sectionStyle}>

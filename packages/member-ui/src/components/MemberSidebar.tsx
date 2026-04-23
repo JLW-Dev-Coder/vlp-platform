@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   ArrowLeft,
+  ArrowUpRight,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -108,7 +109,14 @@ export function MemberSidebar({ config, onSignOut }: MemberSidebarProps) {
                     >
                       <NavIcon name={item.icon} className="h-5 w-5" />
                     </span>
-                    {!collapsed && item.label}
+                    {!collapsed && (
+                      <span className="flex flex-1 items-center justify-between gap-2">
+                        <span>{item.label}</span>
+                        {item.external && (
+                          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-white/30" />
+                        )}
+                      </span>
+                    )}
                   </>
                 )
 

@@ -6546,11 +6546,63 @@ const ROUTES = [
           // R2 is canonical — do not fail the request
         }
 
+        // 10b. Projection: record the game play for activity history.
+        try {
+          await d1Run(env.DB,
+            `INSERT OR IGNORE INTO tttmp_game_plays (play_id, account_id, game_slug, grant_id, tokens_cost, created_at)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [grantId, session.account_id, slug, grantId, amount, nowIso]
+          );
+        } catch (e) {
+          console.error('D1 tttmp_game_plays projection update failed:', e);
+        }
+
         // 11. Return success
         return json({ ok: true, grantId, slug }, 200, request);
       } catch (e) {
         console.error('/v1/tokens/spend error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to spend tokens' }, 500, request);
+      }
+    },
+  },
+
+  {
+    method: 'GET', pattern: '/v1/tttmp/game-sessions',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      try {
+        const rows = await env.DB.prepare(
+          `SELECT play_id, game_slug, grant_id, tokens_cost, created_at
+           FROM tttmp_game_plays
+           WHERE account_id = ?
+           ORDER BY created_at DESC
+           LIMIT 50`
+        ).bind(session.account_id).all();
+
+        const sessions = (rows?.results || []).map(r => ({
+          id: r.play_id,
+          game_slug: r.game_slug,
+          grant_id: r.grant_id,
+          tokens_cost: r.tokens_cost,
+          started_at: r.created_at,
+        }));
+
+        const totals = await env.DB.prepare(
+          `SELECT COUNT(*) as total, SUM(tokens_cost) as tokens_spent
+           FROM tttmp_game_plays WHERE account_id = ?`
+        ).bind(session.account_id).first();
+
+        return json({
+          ok: true,
+          sessions,
+          total: totals?.total || 0,
+          tokens_spent: totals?.tokens_spent || 0,
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/tttmp/game-sessions error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to load game sessions' }, 500, request);
       }
     },
   },
@@ -18457,8 +18509,45 @@ TTMP Support Team
       const { session, error } = await requireSession(request, env);
       if (error) return error;
 
+      // Parse optional return_url — lets the originating platform receive the
+      // post-Stripe-Connect redirect instead of defaulting to VLP.
+      let returnUrl = '';
       try {
-        const onboardUrl = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=${env.STRIPE_CONNECT_CLIENT_ID}&scope=read_write&redirect_uri=https://api.virtuallaunch.pro/v1/affiliates/connect/callback&state=${session.account_id}`;
+        const body = await parseBody(request);
+        if (body && typeof body === 'object' && typeof body.return_url === 'string') {
+          returnUrl = body.return_url;
+        }
+      } catch { /* no body is fine */ }
+
+      const allowedReturnOrigins = [
+        'https://virtuallaunch.pro',
+        'https://taxmonitor.pro',
+        'https://transcript.taxmonitor.pro',
+        'https://taxtools.taxmonitor.pro',
+        'https://developers.virtuallaunch.pro',
+        'https://games.virtuallaunch.pro',
+        'https://taxclaim.virtuallaunch.pro',
+        'https://websitelotto.virtuallaunch.pro',
+      ];
+      let safeReturnUrl = '';
+      if (returnUrl) {
+        try {
+          const parsed = new URL(returnUrl);
+          const origin = `${parsed.protocol}//${parsed.host}`;
+          if (allowedReturnOrigins.includes(origin)) {
+            safeReturnUrl = parsed.toString();
+          }
+        } catch { /* ignore malformed URLs */ }
+      }
+
+      try {
+        // state encodes `<account_id>|<base64url(return_url)>` so the callback
+        // can redirect to the originating platform without a DB lookup.
+        const returnPart = safeReturnUrl
+          ? btoa(safeReturnUrl).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+          : '';
+        const state = `${session.account_id}|${returnPart}`;
+        const onboardUrl = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=${env.STRIPE_CONNECT_CLIENT_ID}&scope=read_write&redirect_uri=https://api.virtuallaunch.pro/v1/affiliates/connect/callback&state=${encodeURIComponent(state)}`;
         return json({ ok: true, onboard_url: onboardUrl }, 200, request);
       } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Affiliate onboarding failed' }, 500, request);
@@ -18471,13 +18560,38 @@ TTMP Support Team
     handler: async (_method, _pattern, _params, request, env) => {
       const url = new URL(request.url);
       const code = url.searchParams.get('code');
-      const accountId = url.searchParams.get('state');
+      const rawState = url.searchParams.get('state') || '';
+
+      // Decode state: `<account_id>|<base64url(return_url)>` (return_url optional)
+      const allowedReturnOrigins = [
+        'https://virtuallaunch.pro',
+        'https://taxmonitor.pro',
+        'https://transcript.taxmonitor.pro',
+        'https://taxtools.taxmonitor.pro',
+        'https://developers.virtuallaunch.pro',
+        'https://games.virtuallaunch.pro',
+        'https://taxclaim.virtuallaunch.pro',
+        'https://websitelotto.virtuallaunch.pro',
+      ];
+      const [accountId, encodedReturn] = rawState.split('|');
+      let returnBase = 'https://virtuallaunch.pro/dashboard/affiliate';
+      if (encodedReturn) {
+        try {
+          const padded = encodedReturn.replace(/-/g, '+').replace(/_/g, '/');
+          const decoded = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4));
+          const parsed = new URL(decoded);
+          const origin = `${parsed.protocol}//${parsed.host}`;
+          if (allowedReturnOrigins.includes(origin)) {
+            returnBase = `${origin}${parsed.pathname}`;
+          }
+        } catch { /* fall back to default */ }
+      }
 
       if (!code || !accountId) {
         return new Response('', {
           status: 302,
           headers: {
-            'Location': 'https://virtuallaunch.pro/dashboard/affiliate?error=invalid_request',
+            'Location': `${returnBase}?error=invalid_request`,
           },
         });
       }
@@ -18521,14 +18635,14 @@ TTMP Support Team
         return new Response('', {
           status: 302,
           headers: {
-            'Location': 'https://virtuallaunch.pro/dashboard/affiliate?connected=true',
+            'Location': `${returnBase}?connected=true`,
           },
         });
       } catch (e) {
         return new Response('', {
           status: 302,
           headers: {
-            'Location': 'https://virtuallaunch.pro/dashboard/affiliate?error=connect_failed',
+            'Location': `${returnBase}?error=connect_failed`,
           },
         });
       }

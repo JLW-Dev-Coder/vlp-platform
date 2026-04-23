@@ -16,6 +16,7 @@ function DashboardContent() {
   const [email, setEmail] = useState('')
   const [balance, setBalance] = useState<number | null>(null)
   const [affiliate, setAffiliate] = useState<AffiliateSummary | null>(null)
+  const [gamesPlayed, setGamesPlayed] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,6 +32,13 @@ function DashboardContent() {
           if (!cancelled) setBalance(bal.balance.tax_game_tokens)
         } catch {
           if (!cancelled) setBalance(0)
+        }
+
+        try {
+          const sessions = await api.getGameSessions()
+          if (!cancelled) setGamesPlayed(sessions.total ?? 0)
+        } catch {
+          if (!cancelled) setGamesPlayed(0)
         }
 
         try {
@@ -84,10 +92,11 @@ function DashboardContent() {
           />
           <KpiCard
             label="Games Played"
-            value="—"
-            sublabel="Coming soon"
+            value={loading ? '—' : String(gamesPlayed ?? 0)}
+            sublabel="View activity →"
             color="var(--neon-violet)"
             glow="var(--arcade-glow-violet)"
+            href="/dashboard/game-activity"
             iconPath="M6 12h4m-2-2v4m5 0h.01M18 10h.01M17.32 5H6.68a4 4 0 0 0-3.978 3.59l-.63 6A4 4 0 0 0 6.05 19h11.9a4 4 0 0 0 3.977-4.41l-.63-6A4 4 0 0 0 17.32 5z"
           />
           <KpiCard
