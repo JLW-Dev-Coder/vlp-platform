@@ -69,7 +69,7 @@ export const tttmpConfig: PlatformConfig = {
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Game Activity', href: '/dashboard/game-activity', icon: 'Gamepad2' },
         { label: 'Games', href: '/games', icon: 'Joystick', external: true },
-        { label: 'Tokens', href: '/pricing', icon: 'Coins', external: true },
+        { label: 'Tokens', href: '/dashboard/tokens', icon: 'Coins' },
       ],
     },
     {
@@ -81,6 +81,7 @@ export const tttmpConfig: PlatformConfig = {
     {
       title: 'SETTINGS',
       items: [
+        { label: 'Profile', href: '/dashboard/profile', icon: 'User' },
         { label: 'Account', href: '/account', icon: 'Settings' },
         { label: 'Help', href: '/help', icon: 'LifeBuoy', external: true },
         { label: 'Support', href: '/support', icon: 'HelpCircle' },
@@ -93,7 +94,7 @@ export const tttmpConfig: PlatformConfig = {
     signOut: '/sign-out',
     dashboard: '/dashboard',
     account: '/account',
-    profile: '/account',
+    profile: '/dashboard/profile',
     support: '/support',
     notifications: '/dashboard/notifications',
   },

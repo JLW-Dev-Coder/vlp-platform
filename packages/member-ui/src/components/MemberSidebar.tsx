@@ -20,8 +20,18 @@ interface MemberSidebarProps {
   onSignOut: () => void
 }
 
+// Aliases for Lucide icons renamed in newer versions. Keeps existing
+// `icon: 'HelpCircle'` entries in platform configs working after the lucide
+// rename to `CircleQuestionMark` (which dropped the legacy names from the
+// `icons` registry but kept the direct named exports).
+const iconAliases: Record<string, string> = {
+  HelpCircle: 'CircleQuestionMark',
+  CircleHelp: 'CircleQuestionMark',
+}
+
 function NavIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = icons[name as keyof typeof icons]
+  const resolved = iconAliases[name] ?? name
+  const Icon = icons[resolved as keyof typeof icons]
   if (!Icon) return null
   return <Icon className={className} />
 }
