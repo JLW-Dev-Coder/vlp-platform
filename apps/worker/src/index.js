@@ -13416,11 +13416,90 @@ TTMP Support Team
             return json({ ok: true, message_id, action: 'delete_permanent' }, 200, request);
           }
 
+          case 'reply': {
+            const { ticket_id } = body;
+            if (!ticket_id) {
+              return json({ ok: false, error: 'BAD_REQUEST', message: 'ticket_id required for reply' }, 400, request);
+            }
+            if (!messageBody || !messageBody.trim()) {
+              return json({ ok: false, error: 'BAD_REQUEST', message: 'body required for reply' }, 400, request);
+            }
+
+            const newMessageId = `MSG_${crypto.randomUUID()}`;
+            const senderType = body.sender_type === 'support' ? 'support' : 'user';
+
+            const messageKey = `support/messages/${ticket_id}/${newMessageId}.json`;
+            const messageData = {
+              id: newMessageId,
+              ticket_id,
+              account_id,
+              sender_type: senderType,
+              message: messageBody,
+              created_at: timestamp,
+              updated_at: timestamp,
+            };
+            await env.R2_VIRTUAL_LAUNCH.put(messageKey, JSON.stringify(messageData));
+
+            await d1Run(env.DB,
+              `INSERT INTO support_messages
+               (id, ticket_id, account_id, sender_type, message, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              [newMessageId, ticket_id, account_id, senderType, messageBody, timestamp, timestamp]
+            );
+
+            try {
+              await d1Run(env.DB,
+                `UPDATE support_tickets SET updated_at = ? WHERE ticket_id = ?`,
+                [timestamp, ticket_id]
+              );
+            } catch {}
+
+            return json({ ok: true, message_id: newMessageId, ticket_id, action: 'reply' }, 200, request);
+          }
+
           default:
             return json({ ok: false, error: 'BAD_REQUEST', message: 'Invalid action' }, 400, request);
         }
       } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to process message' }, 500, request);
+      }
+    },
+  },
+
+  {
+    method: 'GET', pattern: '/v1/support/messages',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      try {
+        const url = new URL(request.url);
+        const ticketId = url.searchParams.get('ticket_id');
+        if (!ticketId) {
+          return json({ ok: false, error: 'BAD_REQUEST', message: 'ticket_id required' }, 400, request);
+        }
+
+        const result = await env.DB.prepare(
+          `SELECT id, ticket_id, account_id, sender_type, message, created_at, updated_at
+             FROM support_messages
+            WHERE ticket_id = ?
+            ORDER BY created_at ASC`
+        ).bind(ticketId).all().catch(() => ({ results: [] }));
+
+        const messages = (result.results || []).map((r) => ({
+          message_id: r.id,
+          ticket_id: r.ticket_id,
+          account_id: r.account_id,
+          sender_type: r.sender_type,
+          body: r.message,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
+          direction: r.sender_type === 'support' ? 'inbound' : 'outbound',
+        }));
+
+        return json({ ok: true, messages, count: messages.length }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to load messages' }, 500, request);
       }
     },
   },
