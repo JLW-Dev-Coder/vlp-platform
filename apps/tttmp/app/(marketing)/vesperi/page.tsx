@@ -41,7 +41,7 @@ function tierClasses(tokens: 2 | 5 | 8): { badge: string; label: string } {
 function GameCard({ game, onPlay }: { game: VesperiGame; onPlay: (g: VesperiGame) => void }) {
   const tier = tierClasses(game.tokens)
   return (
-    <article className="arcade-card group relative flex flex-col p-5">
+    <article className="arcade-card-interactive group relative flex flex-col p-5">
       <div className="mb-3 flex items-start justify-between gap-3">
         <span className="inline-flex items-center rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-neon-cyan">
           {game.type}
@@ -411,7 +411,7 @@ export default function VesperiPage() {
                   key={opt.targetNodeId}
                   type="button"
                   onClick={() => navigate(opt.targetNodeId, opt.label)}
-                  className="arcade-card group flex items-center justify-between gap-3 px-5 py-4 text-left animate-fade-up"
+                  className="arcade-card-interactive group flex items-center justify-between gap-3 px-5 py-4 text-left animate-fade-up"
                   style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'backwards' }}
                 >
                   <span className="font-sora font-bold text-white group-hover:text-neon-violet transition-colors">{opt.label}</span>

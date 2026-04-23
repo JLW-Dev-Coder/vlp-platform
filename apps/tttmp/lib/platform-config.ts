@@ -83,7 +83,7 @@ export const tttmpConfig: PlatformConfig = {
       items: [
         { label: 'Account', href: '/account', icon: 'Settings' },
         { label: 'Help', href: '/help', icon: 'LifeBuoy', external: true },
-        { label: 'Support', href: '/contact', icon: 'HelpCircle', external: true },
+        { label: 'Support', href: '/support', icon: 'HelpCircle' },
       ],
     },
   ],
@@ -94,7 +94,7 @@ export const tttmpConfig: PlatformConfig = {
     dashboard: '/dashboard',
     account: '/account',
     profile: '/account',
-    support: '/contact',
+    support: '/support',
     notifications: '/dashboard/notifications',
   },
   businessInfo: {

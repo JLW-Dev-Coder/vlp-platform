@@ -30,7 +30,7 @@ export default function GamesIndexPage() {
             <Link
               key={game.slug}
               href={`/games/${game.slug}`}
-              className="arcade-card animate-fade-up p-6 flex flex-col group"
+              className="arcade-card-interactive animate-fade-up p-6 flex flex-col group"
               style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'backwards' }}
             >
               <div className="flex items-start justify-between gap-3 mb-4">

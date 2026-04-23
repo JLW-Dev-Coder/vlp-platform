@@ -17,7 +17,7 @@ function LearnCard({ game, index }: { game: VesperiGame; index: number }) {
   return (
     <Link
       href={`/learn/${game.slug}`}
-      className="arcade-card group flex flex-col p-5 animate-fade-up"
+      className="arcade-card-interactive group flex flex-col p-5 animate-fade-up"
       style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
     >
       <div className="mb-3 flex items-start justify-between gap-3">

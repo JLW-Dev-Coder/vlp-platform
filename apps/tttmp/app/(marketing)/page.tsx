@@ -143,7 +143,7 @@ export default function HomePage() {
             {tools.map((t, i) => (
               <article
                 key={t.title}
-                className="arcade-card p-6 flex flex-col animate-fade-up"
+                className="arcade-card-interactive p-6 flex flex-col animate-fade-up"
                 style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'backwards' }}
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
@@ -163,7 +163,7 @@ export default function HomePage() {
 
             {/* Highlight card */}
             <article
-              className="arcade-card p-6 flex flex-col animate-fade-up relative overflow-hidden"
+              className="arcade-card-interactive p-6 flex flex-col animate-fade-up relative overflow-hidden"
               style={{ animationDelay: '320ms', animationFillMode: 'backwards',
                        background: 'linear-gradient(135deg, rgba(139,92,246,0.18), rgba(236,72,153,0.12))' }}
             >

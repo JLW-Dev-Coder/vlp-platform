@@ -304,11 +304,11 @@ function AccountContent() {
               ) : null}
             </Card>
 
-            {/* Payment Method */}
+            {/* Billing & Invoices */}
             <Card>
-              <h2 className="mb-4 text-lg font-semibold text-white">Payment Method</h2>
+              <h2 className="mb-4 text-lg font-semibold text-white">Billing &amp; Invoices</h2>
               {paymentMethod?.last4 ? (
-                <>
+                <div className="mb-4">
                   <p className="text-xs uppercase tracking-wider text-[var(--arcade-text-muted)]">
                     {(paymentMethod.brand || 'CARD').toString().toUpperCase()}{' '}
                     {(paymentMethod.funding || '').toString().toUpperCase()} CARD
@@ -322,18 +322,22 @@ function AccountContent() {
                       {String(paymentMethod.exp_year).slice(-2)}
                     </p>
                   )}
-                </>
+                </div>
               ) : (
-                <p className="text-sm text-[var(--arcade-text-muted)]">No payment method on file</p>
+                <p className="mb-4 text-sm text-[var(--arcade-text-muted)]">No payment method on file</p>
               )}
+
+              <p className="mb-4 text-sm text-[var(--arcade-text-muted)]">
+                Manage your subscription, update payment methods, view invoices, and download receipts.
+              </p>
 
               <button
                 type="button"
                 onClick={openBillingPortal}
                 disabled={portalLoading}
-                className="arcade-btn arcade-btn-secondary mt-4 w-full"
+                className="arcade-btn arcade-btn-secondary w-full"
               >
-                {portalLoading ? 'Opening…' : 'Update Payment Method'}
+                {portalLoading ? 'Opening…' : 'Manage Billing & Invoices'}
               </button>
             </Card>
 

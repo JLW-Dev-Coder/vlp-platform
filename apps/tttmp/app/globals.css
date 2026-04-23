@@ -191,8 +191,17 @@ img {
 .neon-text-green  { text-shadow: 0 0 18px rgba(34, 197, 94, 0.55), 0 0 40px rgba(34, 197, 94, 0.25); }
 .neon-text-amber  { text-shadow: 0 0 18px rgba(245, 158, 11, 0.55), 0 0 40px rgba(245, 158, 11, 0.25); }
 
-/* Arcade card */
+/* Arcade card — base (static, thin border, NO hover animation) */
 .arcade-card {
+  background: var(--arcade-surface);
+  border: 1px solid var(--arcade-border);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Arcade card — interactive (thick gradient border + hover lift + glow) */
+.arcade-card-interactive {
   background: var(--arcade-surface);
   border: 1px solid var(--arcade-border);
   border-radius: 14px;
@@ -203,7 +212,7 @@ img {
   position: relative;
   overflow: hidden;
 }
-.arcade-card::before {
+.arcade-card-interactive::before {
   content: '';
   position: absolute;
   inset: -1px;
@@ -215,17 +224,17 @@ img {
           mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
-  opacity: 0;
+  opacity: 0.6;
   transition: opacity 0.35s ease;
   pointer-events: none;
 }
-.arcade-card:hover {
-  transform: translateY(-4px);
+.arcade-card-interactive:hover {
+  transform: translateY(-4px) scale(1.01);
   border-color: transparent;
   background: var(--arcade-surface-hover);
   box-shadow: var(--arcade-glow-violet);
 }
-.arcade-card:hover::before {
+.arcade-card-interactive:hover::before {
   opacity: 1;
   animation: shimmer 3s linear infinite;
 }
@@ -406,7 +415,7 @@ img {
   .arcade-scan-line::after {
     animation: none !important;
   }
-  .arcade-card:hover { transform: none; }
+  .arcade-card-interactive:hover { transform: none; }
   .arcade-btn:hover { transform: none; }
   html { scroll-behavior: auto; }
 }

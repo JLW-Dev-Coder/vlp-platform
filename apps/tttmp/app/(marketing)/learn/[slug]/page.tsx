@@ -224,7 +224,7 @@ export default async function LearnPage({
                 {related.map((g) => {
                   const t = tierMeta(g.tokens)
                   return (
-                    <Link key={g.slug} href={`/learn/${g.slug}`} className="arcade-card group flex flex-col p-5">
+                    <Link key={g.slug} href={`/learn/${g.slug}`} className="arcade-card-interactive group flex flex-col p-5">
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <span className="inline-flex items-center rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-neon-cyan">
                           {g.type}
