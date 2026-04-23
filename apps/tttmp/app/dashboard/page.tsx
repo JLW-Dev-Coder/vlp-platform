@@ -72,7 +72,10 @@ function DashboardContent() {
       <div className="mx-auto max-w-6xl">
         {/* Welcome */}
         <header className="mb-8">
-          <h1 className="font-sora text-3xl font-extrabold text-white">
+          <h1
+            className="font-sora text-3xl font-extrabold text-white"
+            style={{ textShadow: '0 0 18px rgba(139, 92, 246, 0.55)' }}
+          >
             Your Arcade Dashboard
           </h1>
           <p className="mt-1 text-sm text-[var(--arcade-text-muted)]">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Send, Loader2, AlertCircle, ChevronDown } from 'lucide-react'
 import { AppShell, AuthGate } from '@vlp/member-ui'
 import { tttmpConfig } from '@/lib/platform-config'
 
@@ -91,7 +91,7 @@ function NewTicketContent() {
 
   return (
     <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <Link
           href="/support"
           className="mb-4 inline-flex items-center gap-1.5 text-sm text-[var(--arcade-text-muted)] transition hover:text-white"
@@ -175,30 +175,36 @@ function NewTicketContent() {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelCls}>Priority</label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value as typeof priority)}
-                  className="arcade-input"
-                >
-                  <option value="normal">Normal</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Critical</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as typeof priority)}
+                    className="arcade-input appearance-none pr-10"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Critical</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--arcade-text-muted)]" />
+                </div>
               </div>
               <div>
                 <label className={labelCls}>Category</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="arcade-input"
-                >
-                  <option value="">Select category</option>
-                  <option value="technical">Technical</option>
-                  <option value="billing">Billing</option>
-                  <option value="feature">Feature Request</option>
-                  <option value="account">Account</option>
-                  <option value="other">Other</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="arcade-input appearance-none pr-10"
+                  >
+                    <option value="">Select category</option>
+                    <option value="technical">Technical</option>
+                    <option value="billing">Billing</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="account">Account</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--arcade-text-muted)]" />
+                </div>
               </div>
             </div>
 

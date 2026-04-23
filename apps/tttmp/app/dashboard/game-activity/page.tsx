@@ -74,8 +74,11 @@ function GameActivityContent() {
 
   return (
     <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="font-sora text-3xl font-extrabold text-white mb-2">
+      <div className="mx-auto max-w-6xl">
+        <h1
+          className="font-sora text-3xl font-extrabold text-white mb-2"
+          style={{ textShadow: '0 0 18px rgba(139, 92, 246, 0.55)' }}
+        >
           Game Activity
         </h1>
         <p className="text-sm text-[var(--arcade-text-muted)] mb-8">
