@@ -208,10 +208,18 @@ function SupportContent() {
                     {tickets.map((t) => (
                       <tr
                         key={t.ticket_id}
-                        className="border-b border-[var(--arcade-border)] last:border-b-0 transition-colors hover:bg-[var(--arcade-surface-hover)]"
+                        onClick={() => {
+                          window.location.href = `/support/ticket?id=${encodeURIComponent(t.ticket_id)}`
+                        }}
+                        className="cursor-pointer border-b border-[var(--arcade-border)] last:border-b-0 transition-colors hover:bg-[var(--arcade-surface-hover)]"
                       >
                         <Td>
-                          <span className="font-medium text-white">{t.subject || '(no subject)'}</span>
+                          <Link
+                            href={`/support/ticket?id=${encodeURIComponent(t.ticket_id)}`}
+                            className="font-medium text-white hover:text-[var(--neon-violet)]"
+                          >
+                            {t.subject || '(no subject)'}
+                          </Link>
                         </Td>
                         <Td>{t.category || t.priority || 'General'}</Td>
                         <Td>
