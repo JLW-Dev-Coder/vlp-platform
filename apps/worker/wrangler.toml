@@ -8,6 +8,7 @@ compatibility_date = "2026-02-28"
 
 routes = [
   { pattern = "api.virtuallaunch.pro/*", zone_name = "virtuallaunch.pro" },
+  { pattern = "api.taxmonitor.pro/*", zone_name = "taxmonitor.pro" },
   { pattern = "*.websitelotto.virtuallaunch.pro/*", zone_name = "virtuallaunch.pro" }
 ]
 

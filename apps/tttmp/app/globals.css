@@ -230,6 +230,41 @@ img {
   animation: shimmer 3s linear infinite;
 }
 
+/* Arcade toggle switch */
+.arcade-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--arcade-surface);
+  border: 1px solid var(--arcade-border);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+}
+.arcade-toggle.active {
+  background: var(--neon-violet);
+  border-color: var(--neon-violet);
+  box-shadow: var(--arcade-glow-violet);
+}
+.arcade-toggle .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.2s ease;
+}
+.arcade-toggle.active .thumb {
+  transform: translateX(20px);
+}
+.arcade-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Static card (no hover lift) — for legal/content contexts */
 .arcade-card-static {
   background: var(--arcade-surface);
