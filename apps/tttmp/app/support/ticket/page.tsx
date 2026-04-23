@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeft, Loader2, Send } from 'lucide-react'
+import { ArrowLeft, Loader2, Send, Lock, RotateCcw } from 'lucide-react'
 import { AppShell, AuthGate } from '@vlp/member-ui'
 import { tttmpConfig } from '@/lib/platform-config'
 
@@ -47,23 +47,29 @@ async function fetchMessages(ticketId: string): Promise<MessageRow[]> {
   }
 }
 
-function normalizeStatus(s: string): 'open' | 'pending' | 'resolved' | 'closed' {
+type CanonicalStatus = 'open' | 'in_progress' | 'waiting_on_user' | 'resolved' | 'closed'
+
+function normalizeStatus(s: string): CanonicalStatus {
   const v = (s || '').toLowerCase()
   if (v === 'open' || v === 'reopened') return 'open'
-  if (v === 'in_progress' || v === 'pending' || v === 'awaiting') return 'pending'
+  if (v === 'in_progress' || v === 'pending') return 'in_progress'
+  if (v === 'waiting_on_user' || v === 'awaiting') return 'waiting_on_user'
   if (v === 'closed') return 'closed'
-  return 'resolved'
+  if (v === 'resolved') return 'resolved'
+  return 'open'
 }
 
 function statusStyles(status: string) {
   const k = normalizeStatus(status)
   if (k === 'open')
     return { bg: 'rgba(34,197,94,0.12)', color: 'var(--neon-green)', border: 'rgba(34,197,94,0.35)', label: 'OPEN' }
-  if (k === 'pending')
-    return { bg: 'rgba(245,158,11,0.12)', color: 'var(--neon-amber)', border: 'rgba(245,158,11,0.35)', label: 'IN PROGRESS' }
-  if (k === 'closed')
-    return { bg: 'rgba(148,163,184,0.12)', color: 'var(--arcade-text-muted)', border: 'rgba(148,163,184,0.35)', label: 'CLOSED' }
-  return { bg: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: 'rgba(59,130,246,0.35)', label: 'RESOLVED' }
+  if (k === 'in_progress')
+    return { bg: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: 'rgba(59,130,246,0.35)', label: 'IN PROGRESS' }
+  if (k === 'waiting_on_user')
+    return { bg: 'rgba(245,158,11,0.12)', color: 'var(--neon-amber)', border: 'rgba(245,158,11,0.35)', label: 'WAITING ON YOU' }
+  if (k === 'resolved')
+    return { bg: 'rgba(139,92,246,0.12)', color: 'var(--neon-violet)', border: 'rgba(139,92,246,0.35)', label: 'RESOLVED' }
+  return { bg: 'rgba(148,163,184,0.12)', color: 'var(--arcade-text-muted)', border: 'rgba(148,163,184,0.35)', label: 'CLOSED' }
 }
 
 function formatRelative(iso: string): string {
@@ -99,6 +105,7 @@ function TicketDetailContent() {
   const [reply, setReply] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
+  const [statusBusy, setStatusBusy] = useState(false)
 
   useEffect(() => {
     if (!ticketId) {
@@ -210,7 +217,7 @@ function TicketDetailContent() {
   if (loading) {
     return (
       <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-6xl">
           <div className="arcade-card p-10 text-center text-sm text-[var(--arcade-text-muted)]">Loading…</div>
         </div>
       </div>
@@ -220,7 +227,7 @@ function TicketDetailContent() {
   if (error || !ticket) {
     return (
       <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-6xl">
           <Link
             href="/support"
             className="mb-6 inline-flex items-center gap-2 text-sm text-[var(--arcade-text-muted)] transition hover:text-white"
@@ -237,11 +244,36 @@ function TicketDetailContent() {
   }
 
   const status = statusStyles(ticket.status)
-  const isClosed = normalizeStatus(ticket.status) === 'closed' || normalizeStatus(ticket.status) === 'resolved'
+  const canonicalStatus = normalizeStatus(ticket.status)
+  const isClosed = canonicalStatus === 'closed'
+  const isResolved = canonicalStatus === 'resolved'
+
+  async function changeStatus(next: CanonicalStatus) {
+    if (!ticket || statusBusy) return
+    setStatusBusy(true)
+    try {
+      const res = await fetch(`${API_BASE}/v1/support/tickets/${encodeURIComponent(ticket.ticket_id)}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      })
+      const json = await res.json().catch(() => null)
+      if (res.ok && json?.ok) {
+        setTicket({ ...ticket, status: next })
+      } else {
+        setSendError(json?.message || 'Failed to update status')
+      }
+    } catch {
+      setSendError('Network error — please try again')
+    } finally {
+      setStatusBusy(false)
+    }
+  }
 
   return (
     <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-6xl">
         <Link
           href="/support"
           className="mb-6 inline-flex items-center gap-2 text-sm text-[var(--arcade-text-muted)] transition hover:text-white"
@@ -321,7 +353,30 @@ function TicketDetailContent() {
           </section>
         )}
 
-        {!isClosed && (
+        {isClosed ? (
+          <section className="arcade-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-sm text-[var(--arcade-text-muted)]">
+                <Lock className="h-4 w-4" />
+                This ticket is closed. Reopen it to send a new message.
+              </div>
+              <button
+                type="button"
+                onClick={() => changeStatus('open')}
+                disabled={statusBusy}
+                className="arcade-btn arcade-btn-secondary disabled:opacity-50"
+              >
+                {statusBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                Reopen Ticket
+              </button>
+            </div>
+            {sendError && (
+              <p className="mt-3 text-xs" style={{ color: '#f87171' }}>
+                {sendError}
+              </p>
+            )}
+          </section>
+        ) : (
           <section className="arcade-card p-6">
             <h2 className="mb-4 text-sm font-semibold text-white">Add a reply</h2>
             <form onSubmit={submitReply} className="space-y-3">
@@ -339,16 +394,29 @@ function TicketDetailContent() {
                   {sendError}
                 </p>
               )}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-[var(--arcade-text-muted)]">{reply.length}/5000</span>
-                <button
-                  type="submit"
-                  disabled={sending || !reply.trim()}
-                  className="arcade-btn arcade-btn-secondary disabled:opacity-50"
-                >
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  {sending ? 'Sending…' : 'Send Reply'}
-                </button>
+                <div className="flex items-center gap-2">
+                  {isResolved && (
+                    <button
+                      type="button"
+                      onClick={() => changeStatus('closed')}
+                      disabled={statusBusy}
+                      className="arcade-btn arcade-btn-ghost disabled:opacity-50"
+                    >
+                      {statusBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+                      Close Ticket
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={sending || !reply.trim()}
+                    className="arcade-btn arcade-btn-secondary disabled:opacity-50"
+                  >
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    {sending ? 'Sending…' : 'Send Reply'}
+                  </button>
+                </div>
               </div>
             </form>
           </section>
@@ -364,7 +432,7 @@ export default function TicketDetailPage() {
       <AppShell config={tttmpConfig}>
         <Suspense fallback={
           <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
-            <div className="mx-auto max-w-4xl">
+            <div className="mx-auto max-w-6xl">
               <div className="arcade-card p-10 text-center text-sm text-[var(--arcade-text-muted)]">Loading…</div>
             </div>
           </div>
