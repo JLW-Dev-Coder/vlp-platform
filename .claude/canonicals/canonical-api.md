@@ -1,6 +1,6 @@
 <!--
 Status: Authoritative
-Last updated: 2026-04-15
+Last updated: 2026-04-23
 Owner: JLW (Principal Engineer review required for changes)
 Scope: All 8 apps in the vlp-platform monorepo
 Parent: canonical-app-blueprint.md
@@ -10,8 +10,8 @@ Parent: canonical-app-blueprint.md
 
 Master API endpoint registry for the VLP Worker (`apps/worker/src/index.js`).
 
-Last updated: 2026-04-13
-Total routes: ~193
+Last updated: 2026-04-23
+Total routes: ~196
 
 ---
 
@@ -131,8 +131,11 @@ Total routes: ~193
 | GET | `/v1/support/tickets/:ticket_id` | Get ticket details | Yes |
 | PATCH | `/v1/support/tickets/:ticket_id` | Update ticket | Yes |
 | POST | `/v1/support/messages` | Post support message | Yes |
+| GET | `/v1/support/messages` | Get messages by ticket_id | Yes |
 | POST | `/v1/notifications/in-app` | Create in-app notification | Yes |
-| GET | `/v1/notifications/in-app` | Get in-app notifications | Yes |
+| GET | `/v1/notifications/in-app` | Get in-app notifications (supports unreadOnly=1; returns unreadCount) | Yes |
+| PATCH | `/v1/notifications/in-app/:notification_id` | Mark notification read | Yes |
+| POST | `/v1/notifications/in-app/mark-all-read` | Mark all notifications read | Yes |
 | GET | `/v1/notifications/preferences/:account_id` | Get notification prefs | Yes |
 | PATCH | `/v1/notifications/preferences/:account_id` | Update notification prefs | Yes |
 | POST | `/v1/notifications/sms/send` | Send SMS notification | Yes |
