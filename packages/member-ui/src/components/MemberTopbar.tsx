@@ -48,13 +48,15 @@ export function MemberTopbar({ config, session, onSignOut, unreadNotifications =
           )}
         </Link>
 
-        <Link
+        <a
           href="/help"
+          target="_blank"
+          rel="noopener noreferrer"
           className="rounded-lg p-2.5 text-white/40 transition hover:bg-white/[0.04] hover:text-white"
           aria-label="Help Center"
         >
           <HelpCircle className="h-5 w-5" />
-        </Link>
+        </a>
 
         {/* Avatar + dropdown */}
         <div className="relative ml-2" ref={dropdownRef}>

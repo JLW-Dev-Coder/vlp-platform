@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AppShell, AuthGate } from '@vlp/member-ui'
-import { Camera, Mail, UserPen } from 'lucide-react'
+import { ArrowRight, Camera, Mail, UserPen } from 'lucide-react'
 import { tttmpConfig } from '@/lib/platform-config'
 
 const API_BASE = tttmpConfig.apiBaseUrl
@@ -28,14 +28,6 @@ interface Profile {
   phone?: string | null
   website?: string | null
   photo_url?: string | null
-  [k: string]: unknown
-}
-
-interface Preferences {
-  email_notifications?: boolean
-  game_reminders?: boolean
-  marketing_emails?: boolean
-  theme?: string
   [k: string]: unknown
 }
 
@@ -73,7 +65,6 @@ function ProfileContent() {
   const [session, setSession] = useState<Session | null>(null)
   const [account, setAccount] = useState<AccountDetails | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [prefs, setPrefs] = useState<Preferences | null>(null)
   const [loading, setLoading] = useState(true)
   const [editDetails, setEditDetails] = useState(false)
   const [editContact, setEditContact] = useState(false)
@@ -102,10 +93,9 @@ function ProfileContent() {
         if (cancelled) return
         setSession(sess)
 
-        const [accRes, profRes, prefRes] = await Promise.all([
+        const [accRes, profRes] = await Promise.all([
           fetch(`${API_BASE}/v1/accounts/${sess.account_id}`, { credentials: 'include' }).catch(() => null),
           fetch(`${API_BASE}/v1/profiles/${sess.account_id}`, { credentials: 'include' }).catch(() => null),
-          fetch(`${API_BASE}/v1/accounts/preferences/${sess.account_id}`, { credentials: 'include' }).catch(() => null),
         ])
 
         if (!cancelled && accRes?.ok) {
@@ -124,13 +114,6 @@ function ProfileContent() {
           setFRole(p?.role || p?.credentials || '')
           setFPhone(p?.phone || '')
           setFWebsite(p?.website || '')
-        }
-
-        if (!cancelled && prefRes?.ok) {
-          const rj = await prefRes.json().catch(() => null)
-          setPrefs(rj?.preferences || rj || {})
-        } else if (!cancelled) {
-          setPrefs({})
         }
       } catch {
         // degrade gracefully
@@ -196,23 +179,7 @@ function ProfileContent() {
     }
   }
 
-  async function savePreferences(patch: Partial<Preferences>) {
-    if (!session) return
-    const next = { ...(prefs || {}), ...patch }
-    setPrefs(next)
-    try {
-      await fetch(`${API_BASE}/v1/accounts/preferences/${session.account_id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      })
-    } catch {
-      // keep optimistic update; user can retry
-    }
-  }
-
-  async function handlePhotoUpload(file: File) {
+async function handlePhotoUpload(file: File) {
     if (!session || !file) return
     setUploading(true)
     setMessage(null)
@@ -528,42 +495,20 @@ function ProfileContent() {
             )}
           </section>
 
-          {/* Preferences */}
-          <section className="arcade-card p-6">
-            <h2 className="mb-4 text-lg font-semibold text-white">Preferences</h2>
-            <div className="space-y-4">
-              <ToggleRow
-                label="Email Notifications"
-                value={!!prefs?.email_notifications}
-                onChange={(v) => savePreferences({ email_notifications: v })}
-              />
-              <ToggleRow
-                label="Game Reminders"
-                value={!!prefs?.game_reminders}
-                onChange={(v) => savePreferences({ game_reminders: v })}
-              />
-              <ToggleRow
-                label="Marketing Emails"
-                value={!!prefs?.marketing_emails}
-                onChange={(v) => savePreferences({ marketing_emails: v })}
-              />
-              <div className="border-t pt-4" style={{ borderColor: 'var(--arcade-border)' }}>
-                <p className="text-xs uppercase tracking-wider text-[var(--arcade-text-muted)]">
-                  Theme
+          {/* Notification Preferences link */}
+          <Link href="/dashboard/notifications" className="arcade-card-interactive p-6 block group">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-white group-hover:text-[var(--neon-violet)] transition-colors">
+                  Notification Preferences
+                </h2>
+                <p className="text-sm text-[var(--arcade-text-muted)] mt-1">
+                  Manage your email notifications, game reminders, and alert settings.
                 </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{
-                      background: 'var(--neon-violet)',
-                      boxShadow: '0 0 8px rgba(139, 92, 246, 0.6)',
-                    }}
-                  />
-                  <span className="text-sm text-white">Dark (Arcade)</span>
-                </div>
               </div>
+              <ArrowRight className="h-5 w-5 text-[var(--arcade-text-muted)] group-hover:text-[var(--neon-violet)] transition-colors" />
             </div>
-          </section>
+          </Link>
         </div>
 
         {/* Edit actions */}
@@ -619,42 +564,6 @@ function LabelValue({ label, value }: { label: string; value: string }) {
       >
         {value}
       </p>
-    </div>
-  )
-}
-
-function ToggleRow({
-  label,
-  value,
-  onChange,
-}: {
-  label: string
-  value: boolean
-  onChange: (v: boolean) => void
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-white">{label}</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={value}
-        onClick={() => onChange(!value)}
-        className="relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors"
-        style={{
-          background: value ? 'var(--neon-violet)' : 'var(--arcade-surface-hover)',
-          border: '1px solid var(--arcade-border)',
-          boxShadow: value ? '0 0 12px rgba(139, 92, 246, 0.5)' : 'none',
-        }}
-      >
-        <span
-          className="inline-block h-4 w-4 rounded-full bg-white transition-transform"
-          style={{
-            transform: value ? 'translateX(22px)' : 'translateX(4px)',
-            marginTop: '3px',
-          }}
-        />
-      </button>
     </div>
   )
 }

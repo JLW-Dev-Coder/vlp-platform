@@ -11,8 +11,10 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  CircleHelp,
   icons,
 } from 'lucide-react'
+import type { ComponentType, SVGProps } from 'react'
 import type { PlatformConfig } from '../types/config'
 
 interface MemberSidebarProps {
@@ -20,18 +22,18 @@ interface MemberSidebarProps {
   onSignOut: () => void
 }
 
-// Aliases for Lucide icons renamed in newer versions. Keeps existing
-// `icon: 'HelpCircle'` entries in platform configs working after the lucide
-// rename to `CircleQuestionMark` (which dropped the legacy names from the
-// `icons` registry but kept the direct named exports).
-const iconAliases: Record<string, string> = {
-  HelpCircle: 'CircleQuestionMark',
-  CircleHelp: 'CircleQuestionMark',
+// Direct-import fallbacks for icons whose names were removed from the runtime
+// `icons` registry in newer lucide-react versions even though the named
+// exports still work. Keeps existing `icon: 'HelpCircle'` config entries
+// rendering without forcing every app to rename.
+const iconFallbacks: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+  HelpCircle: CircleHelp,
+  CircleHelp: CircleHelp,
+  CircleQuestionMark: CircleHelp,
 }
 
 function NavIcon({ name, className }: { name: string; className?: string }) {
-  const resolved = iconAliases[name] ?? name
-  const Icon = icons[resolved as keyof typeof icons]
+  const Icon = icons[name as keyof typeof icons] ?? iconFallbacks[name]
   if (!Icon) return null
   return <Icon className={className} />
 }
