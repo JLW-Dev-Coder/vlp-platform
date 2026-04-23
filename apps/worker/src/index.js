@@ -1150,6 +1150,80 @@ async function sendEmail(to, subject, htmlBody, env) {
   }
 }
 
+// Confirmation email + in-app notification on support ticket creation.
+// Non-blocking — errors are logged but never thrown. Wrap the call in
+// ctx.waitUntil(...) so it doesn't delay the response.
+async function notifyTicketCreated(env, { ticketId, accountId, email, subject, category, platform }) {
+  const now = new Date().toISOString();
+  const notificationId = `NTF_${crypto.randomUUID()}`;
+  const link = platform === 'tttmp'
+    ? `https://taxtools.taxmonitor.pro/support/${ticketId}`
+    : `/dashboard/support/${ticketId}`;
+  const safeSubject = String(subject || '').slice(0, 200);
+  const message = `Your ticket "${safeSubject}" has been received. We'll respond within 24 hours.`;
+
+  // 1. In-app notification — R2 + D1
+  try {
+    await r2Put(env.R2_VIRTUAL_LAUNCH, `notifications/in-app/${notificationId}.json`, {
+      notificationId, accountId, title: 'Support ticket submitted',
+      message, severity: 'info', type: 'support_ticket_created',
+      link, ticketId, read: false, createdAt: now,
+    });
+    await d1Run(env.DB,
+      `INSERT INTO notifications (notification_id, account_id, title, message, severity, read, created_at) VALUES (?, ?, ?, ?, 'info', 0, ?)`,
+      [notificationId, accountId, 'Support ticket submitted', message, now]
+    );
+  } catch (e) {
+    console.error('[notifyTicketCreated] notification write failed:', e?.message || e);
+  }
+
+  // 2. Confirmation email via Resend (non-blocking)
+  if (!email || !env.RESEND_API_KEY) return;
+
+  const viewUrl = platform === 'tttmp'
+    ? `https://taxtools.taxmonitor.pro/support/${ticketId}`
+    : `https://virtuallaunch.pro/dashboard/support/${ticketId}`;
+  const safeCat = category ? String(category).slice(0, 80) : '';
+  const htmlSubject = safeSubject.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+  const html = `<!DOCTYPE html><html><body style="font-family:Arial,Helvetica,sans-serif;background:#0a0a0a;color:#e6e6e6;margin:0;padding:24px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#12121A;border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:28px;">
+    <tr><td>
+      <h1 style="margin:0 0 12px;color:#fff;font-size:20px;">We've received your request</h1>
+      <p style="margin:0 0 16px;color:#c7c7d1;">Thanks for reaching out — your support ticket has been submitted. Our team typically responds within 24 hours.</p>
+      <div style="background:#0a0a0f;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:16px;margin:0 0 20px;">
+        <div style="color:#8b5cf6;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Ticket #${ticketId}</div>
+        <div style="margin-top:8px;color:#fff;font-weight:600;">${htmlSubject}</div>
+        ${safeCat ? `<div style="margin-top:4px;color:#9ca3af;font-size:13px;">Category: ${safeCat}</div>` : ''}
+      </div>
+      <a href="${viewUrl}" style="display:inline-block;background:#8b5cf6;color:#fff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px;font-size:14px;">View ticket</a>
+      <p style="margin:24px 0 0;color:#6b7280;font-size:12px;">If you didn't submit this ticket, you can safely ignore this email.</p>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: platform === 'tttmp'
+          ? 'Tax Tools Arcade <noreply@taxmonitor.pro>'
+          : 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+        to: [email],
+        subject: `Support Ticket #${ticketId} — We've received your request`,
+        html,
+        text: `We've received your support ticket.\n\nTicket: ${ticketId}\nSubject: ${safeSubject}${safeCat ? `\nCategory: ${safeCat}` : ''}\n\nOur team typically responds within 24 hours. View your ticket: ${viewUrl}`,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      console.error(`[notifyTicketCreated] Resend ${res.status}:`, err.slice(0, 200));
+    }
+  } catch (e) {
+    console.error('[notifyTicketCreated] Resend exception:', e?.message || e);
+  }
+}
+
 // WLVLP welcome email (sent on /v1/wlvlp/leads first signup).
 // Self-contained HTML (inline styles, no external CSS) — Xavier brand voice.
 function generateWlvlpWelcomeEmail(name, email) {
@@ -6169,12 +6243,12 @@ const ROUTES = [
 
   {
     method: 'POST', pattern: '/v1/support/tickets',
-    handler: async (_method, _pattern, _params, request, env) => {
-      const { error } = await requireSession(request, env);
+    handler: async (_method, _pattern, _params, request, env, ctx) => {
+      const { session, error } = await requireSession(request, env);
       if (error) return json({ ok: false, error: 'UNAUTHORIZED', message: error }, 401, request);
       try {
         const body = await parseBody(request);
-        const { accountId, message, priority, subject, ticketId } = body ?? {};
+        const { accountId, message, priority, subject, ticketId, category } = body ?? {};
         if (!accountId || !message || !priority || !subject || !ticketId) {
           return json({ ok: false, error: 'MISSING_FIELDS', message: 'accountId, message, priority, subject, ticketId are required' }, 400, request);
         }
@@ -6195,6 +6269,10 @@ const ROUTES = [
           `INSERT INTO support_tickets (ticket_id, account_id, subject, message, priority, status, created_at) VALUES (?, ?, ?, ?, ?, 'open', ?)`,
           [ticketId, accountId, subject, message, priority, now]
         );
+        const notify = notifyTicketCreated(env, {
+          ticketId, accountId, email: session?.email, subject, category, platform: session?.platform,
+        });
+        if (ctx?.waitUntil) ctx.waitUntil(notify); else notify.catch(() => {});
         return json({ ok: true, ticketId, status: 'created' }, 200, request);
       } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Support ticket creation failed' }, 500, request);
@@ -6313,12 +6391,66 @@ const ROUTES = [
         if (!accountId) return json({ ok: false, error: 'MISSING_FIELDS', message: 'accountId query param is required' }, 400, request);
         const limitParam = parseInt(url.searchParams.get('limit') ?? '20', 10);
         const limit = Math.min(isNaN(limitParam) ? 20 : limitParam, 100);
-        const rows = await env.DB.prepare(
-          `SELECT * FROM notifications WHERE account_id = ? ORDER BY created_at DESC LIMIT ?`
-        ).bind(accountId, limit).all();
-        return json({ ok: true, notifications: rows.results }, 200, request);
+        const unreadOnly = url.searchParams.get('unreadOnly') === '1' || url.searchParams.get('unreadOnly') === 'true';
+        const rows = unreadOnly
+          ? await env.DB.prepare(
+              `SELECT * FROM notifications WHERE account_id = ? AND read = 0 ORDER BY created_at DESC LIMIT ?`
+            ).bind(accountId, limit).all()
+          : await env.DB.prepare(
+              `SELECT * FROM notifications WHERE account_id = ? ORDER BY created_at DESC LIMIT ?`
+            ).bind(accountId, limit).all();
+        const unreadRow = await env.DB.prepare(
+          `SELECT COUNT(*) AS c FROM notifications WHERE account_id = ? AND read = 0`
+        ).bind(accountId).first().catch(() => ({ c: 0 }));
+        return json({ ok: true, notifications: rows.results, unreadCount: unreadRow?.c ?? 0 }, 200, request);
       } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to fetch notifications' }, 500, request);
+      }
+    },
+  },
+
+  {
+    method: 'PATCH', pattern: '/v1/notifications/in-app/:notification_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return json({ ok: false, error: 'UNAUTHORIZED', message: error }, 401, request);
+      try {
+        const body = await parseBody(request).catch(() => ({}));
+        const markRead = body?.read === undefined ? true : !!body.read;
+        await d1Run(env.DB,
+          `UPDATE notifications SET read = ? WHERE notification_id = ?`,
+          [markRead ? 1 : 0, params.notification_id]
+        );
+        const existing = await env.R2_VIRTUAL_LAUNCH.get(`notifications/in-app/${params.notification_id}.json`);
+        if (existing) {
+          const current = await existing.json().catch(() => ({}));
+          await r2Put(env.R2_VIRTUAL_LAUNCH, `notifications/in-app/${params.notification_id}.json`, {
+            ...current, read: markRead, readAt: markRead ? new Date().toISOString() : null,
+          });
+        }
+        return json({ ok: true, notificationId: params.notification_id, read: markRead }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to update notification' }, 500, request);
+      }
+    },
+  },
+
+  {
+    method: 'POST', pattern: '/v1/notifications/in-app/mark-all-read',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return json({ ok: false, error: 'UNAUTHORIZED', message: error }, 401, request);
+      try {
+        const body = await parseBody(request).catch(() => ({}));
+        const accountId = body?.accountId;
+        if (!accountId) return json({ ok: false, error: 'MISSING_FIELDS', message: 'accountId is required' }, 400, request);
+        await d1Run(env.DB,
+          `UPDATE notifications SET read = 1 WHERE account_id = ? AND read = 0`,
+          [accountId]
+        );
+        return json({ ok: true, accountId }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to mark all read' }, 500, request);
       }
     },
   },
@@ -11778,7 +11910,7 @@ TTMP Support Team
   // TTTMP Support Routes
   {
     method: 'POST', pattern: '/v1/tttmp/support/tickets',
-    handler: async (_method, _pattern, _params, request, env) => {
+    handler: async (_method, _pattern, _params, request, env, ctx) => {
       const { session, error } = await requireTttmpSession(request, env);
       if (error) return error;
 
@@ -11820,6 +11952,12 @@ TTMP Support Team
           `INSERT INTO support_tickets (ticket_id, account_id, subject, message, priority, status, created_at) VALUES (?, ?, ?, ?, ?, 'open', ?)`,
           [ticketId, session.account_id, subject, message, priority || 'medium', now]
         );
+
+        const notify = notifyTicketCreated(env, {
+          ticketId, accountId: session.account_id, email: session.email,
+          subject, category: category || 'technical', platform: 'tttmp',
+        });
+        if (ctx?.waitUntil) ctx.waitUntil(notify); else notify.catch(() => {});
 
         return json({ ok: true, ticket_id: ticketId, status: 'open' });
       } catch (e) {
