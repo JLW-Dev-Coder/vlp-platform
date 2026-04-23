@@ -7274,26 +7274,67 @@ const ROUTES = [
             LIMIT 100`
         ).all()
         const rows = result.results || []
-        // Hydrate messages[] from R2 canonical record (parallel)
+
+        // Batch-load all thread messages from D1 support_messages for these tickets.
+        const ticketIds = rows.map((r) => r.ticket_id)
+        const threadByTicket = new Map()
+        if (ticketIds.length > 0) {
+          const placeholders = ticketIds.map(() => '?').join(',')
+          const msgResult = await env.DB.prepare(
+            `SELECT id, ticket_id, sender_type, message, created_at
+               FROM support_messages
+              WHERE ticket_id IN (${placeholders})
+              ORDER BY created_at ASC`
+          ).bind(...ticketIds).all().catch(() => ({ results: [] }))
+          for (const m of (msgResult.results || [])) {
+            if (!threadByTicket.has(m.ticket_id)) threadByTicket.set(m.ticket_id, [])
+            threadByTicket.get(m.ticket_id).push({
+              id: m.id,
+              body: m.message,
+              author: m.sender_type === 'support' ? 'support' : 'user',
+              createdAt: m.created_at,
+            })
+          }
+        }
+
+        // Hydrate platform + any R2-only messages[] from R2 canonical record (parallel)
         const tickets = await Promise.all(rows.map(async (row) => {
-          let messages = []
+          let r2Messages = []
+          let r2Platform = null
           try {
             const obj = await env.R2_VIRTUAL_LAUNCH.get(`support_tickets/${row.ticket_id}.json`)
             if (obj) {
               const data = await obj.json().catch(() => ({}))
-              if (Array.isArray(data.messages)) messages = data.messages
+              if (Array.isArray(data.messages)) r2Messages = data.messages
+              if (typeof data.platform === 'string' && data.platform) r2Platform = data.platform
             }
           } catch {}
-          // Seed initial user message if R2 record has no thread yet
-          if (messages.length === 0 && row.message) {
-            messages = [{
+
+          const d1Messages = threadByTicket.get(row.ticket_id) || []
+
+          // Merge D1 thread + any R2 messages not already in D1 (deduped by id).
+          const seen = new Set(d1Messages.map((m) => m.id))
+          const merged = d1Messages.slice()
+          for (const m of r2Messages) {
+            if (m && m.id && !seen.has(m.id)) {
+              merged.push(m)
+              seen.add(m.id)
+            }
+          }
+
+          // Seed the initial user message from the ticket row if the thread is empty.
+          if (merged.length === 0 && row.message) {
+            merged.push({
               id: `msg_seed_${row.ticket_id}`,
               body: row.message,
               author: 'user',
               createdAt: row.created_at,
-            }]
+            })
           }
-          return { ...row, messages }
+
+          merged.sort((a, b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')))
+
+          return { ...row, platform: r2Platform || row.platform, messages: merged }
         }))
         return json({ ok: true, tickets }, 200, request)
       } catch (e) {
