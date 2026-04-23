@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AppShell, AuthGate } from '@vlp/member-ui'
-import { ArrowRight, Camera, Mail, UserPen } from 'lucide-react'
+import { ArrowRight, Bell, Camera, Mail, UserPen } from 'lucide-react'
 import { tttmpConfig } from '@/lib/platform-config'
 
 const API_BASE = tttmpConfig.apiBaseUrl
@@ -498,7 +498,7 @@ async function handlePhotoUpload(file: File) {
           {/* Notification Preferences link */}
           <Link href="/dashboard/notifications" className="arcade-card-interactive p-6 block group">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <h2 className="text-lg font-semibold text-white group-hover:text-[var(--neon-violet)] transition-colors">
                   Notification Preferences
                 </h2>
@@ -506,7 +506,12 @@ async function handlePhotoUpload(file: File) {
                   Manage your email notifications, game reminders, and alert settings.
                 </p>
               </div>
-              <ArrowRight className="h-5 w-5 text-[var(--arcade-text-muted)] group-hover:text-[var(--neon-violet)] transition-colors" />
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-[var(--neon-violet)]/10 flex items-center justify-center animate-neon-pulse">
+                  <Bell className="h-6 w-6 text-[var(--neon-violet)]" style={{ filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))' }} />
+                </div>
+                <ArrowRight className="h-5 w-5 text-[var(--arcade-text-muted)] group-hover:text-[var(--neon-violet)] transition-colors" />
+              </div>
             </div>
           </Link>
         </div>
