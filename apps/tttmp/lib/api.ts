@@ -59,6 +59,7 @@ export type TokenPackSku =
 
 export interface TokenPackage {
   sku: TokenPackSku
+  price_id: string
   tokens: number
   amount: number // cents
   currency: string
@@ -67,10 +68,11 @@ export interface TokenPackage {
   badge?: string
 }
 
-// Static token pack catalog — VLP checkout accepts these SKUs.
+// Stripe price IDs must match Worker env (STRIPE_PRICE_TTTMP_*_TOKENS in apps/worker/wrangler.toml).
 const TOKEN_PACKAGES: TokenPackage[] = [
   {
     sku: 'token_pack_small_30',
+    price_id: 'price_1TGTiqQEa4WBi79guSRnECvw',
     tokens: 30,
     amount: 999,
     currency: 'usd',
@@ -79,6 +81,7 @@ const TOKEN_PACKAGES: TokenPackage[] = [
   },
   {
     sku: 'token_pack_medium_80',
+    price_id: 'price_1TGTiqQEa4WBi79gScrpsUab',
     tokens: 80,
     amount: 1999,
     currency: 'usd',
@@ -88,6 +91,7 @@ const TOKEN_PACKAGES: TokenPackage[] = [
   },
   {
     sku: 'token_pack_large_200',
+    price_id: 'price_1TGTiqQEa4WBi79gpTsbsLIi',
     tokens: 200,
     amount: 3999,
     currency: 'usd',
@@ -140,12 +144,23 @@ export const api = {
   getTokenPackages: (): Promise<{ ok: true; packages: TokenPackage[] }> =>
     Promise.resolve({ ok: true, packages: TOKEN_PACKAGES }),
 
-  // Checkout
-  createCheckoutSession: (item: TokenPackSku) =>
-    apiFetch<{ ok: boolean; checkout_url: string; session_id: string }>(
-      '/v1/checkout/sessions',
-      { method: 'POST', body: JSON.stringify({ item }) }
-    ),
+  // Checkout (TTTMP token purchase — separate from membership checkout)
+  createCheckoutSession: (sku: TokenPackSku) => {
+    const pkg = TOKEN_PACKAGES.find((p) => p.sku === sku)
+    if (!pkg) throw new Error(`Unknown token pack sku: ${sku}`)
+    return apiFetch<{ ok: boolean; checkout_url: string; session_id: string }>(
+      '/v1/tttmp/checkout/sessions',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          price_id: pkg.price_id,
+          success_url:
+            'https://taxtools.taxmonitor.pro/account?checkout=success&session_id={CHECKOUT_SESSION_ID}',
+          cancel_url: 'https://taxtools.taxmonitor.pro/pricing?checkout=cancel',
+        }),
+      }
+    )
+  },
 
   getCheckoutStatus: (session_id: string) =>
     apiFetch<{
@@ -153,7 +168,8 @@ export const api = {
       status: string
       credits_added?: number
       balance?: number
-    }>(`/v1/checkout/status?session_id=${encodeURIComponent(session_id)}`),
+      already_credited?: boolean
+    }>(`/v1/tttmp/checkout/status?session_id=${encodeURIComponent(session_id)}`),
 
   // Games
   checkAccess: (slug: string) =>
