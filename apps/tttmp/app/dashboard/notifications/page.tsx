@@ -88,6 +88,7 @@ function NotificationsContent() {
   const [categories, setCategories] = useState<Record<string, boolean>>({})
   const [notifications, setNotifications] = useState<NotificationRow[] | null>(null)
   const [loading, setLoading] = useState(true)
+  const [savedField, setSavedField] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -178,6 +179,11 @@ function NotificationsContent() {
         // non-blocking
       }
     }
+
+    setSavedField(key)
+    setTimeout(() => {
+      setSavedField((current) => (current === key ? null : current))
+    }, 2000)
   }
 
   return (
@@ -221,12 +227,22 @@ function NotificationsContent() {
                       </div>
                       <p className="mt-1 text-xs text-[var(--arcade-text-muted)]">{cat.description}</p>
                     </div>
-                    <Toggle
-                      label={cat.label}
-                      active={active}
-                      onToggle={() => toggleCategory(cat.key)}
-                      disabled={cat.comingSoon}
-                    />
+                    <div className="flex shrink-0 items-center gap-2">
+                      {savedField === cat.key && (
+                        <span
+                          className="text-xs font-medium animate-fade-up"
+                          style={{ color: 'var(--neon-green)' }}
+                        >
+                          Saved ✓
+                        </span>
+                      )}
+                      <Toggle
+                        label={cat.label}
+                        active={active}
+                        onToggle={() => toggleCategory(cat.key)}
+                        disabled={cat.comingSoon}
+                      />
+                    </div>
                   </div>
                 )
               })}

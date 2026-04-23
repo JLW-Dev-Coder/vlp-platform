@@ -29,6 +29,8 @@ interface Membership {
   renews_at?: string | null
   status?: string | null
   benefits?: string[]
+  stripe_customer_id?: string | null
+  customerId?: string | null
 }
 
 interface PaymentMethod {
@@ -173,6 +175,11 @@ function AccountContent() {
 
   async function openBillingPortal() {
     if (!session) return
+    const customerId = membership?.stripe_customer_id || membership?.customerId
+    if (!customerId) {
+      setPaymentMessage('No billing account found yet. Purchase tokens or subscribe to a plan first.')
+      return
+    }
     setPortalLoading(true)
     try {
       const res = await fetch(`${API_BASE}/v1/billing/portal/sessions`, {
@@ -180,7 +187,10 @@ function AccountContent() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          return_url: typeof window !== 'undefined' ? window.location.href : undefined,
+          accountId: session.account_id,
+          customerId,
+          eventId: `EVT_${crypto.randomUUID()}`,
+          returnUrl: typeof window !== 'undefined' ? window.location.href : '',
         }),
       })
       const data = await res.json().catch(() => null)

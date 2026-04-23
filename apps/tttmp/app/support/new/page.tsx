@@ -65,11 +65,14 @@ function NewTicketContent() {
     setSubmitError(null)
     setSubmitting(true)
     try {
+      const ticketId = `TKT_${crypto.randomUUID()}`
       const res = await fetch(`${API_BASE}/v1/support/tickets`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          accountId: account.accountId,
+          ticketId,
           subject: subject.trim(),
           message: message.trim(),
           priority,
