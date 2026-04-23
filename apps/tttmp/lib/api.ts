@@ -99,11 +99,11 @@ const TOKEN_PACKAGES: TokenPackage[] = [
 
 export const api = {
   // Auth
-  requestMagicLink: (email: string, redirect?: string) =>
+  requestMagicLink: (email: string, redirectUri?: string) =>
     apiFetch('/v1/auth/magic-link/request', {
       method: 'POST',
       auth: false,
-      body: JSON.stringify({ email, redirect }),
+      body: JSON.stringify({ email, redirectUri }),
     }),
 
   verifyMagicLink: (token: string) =>
