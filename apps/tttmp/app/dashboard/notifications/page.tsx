@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Bell } from 'lucide-react'
 import { AppShell, AuthGate } from '@vlp/member-ui'
 import { tttmpConfig } from '@/lib/platform-config'
 
@@ -183,7 +184,12 @@ function NotificationsContent() {
     <div className="arcade-grid-bg min-h-full px-6 py-10 md:px-10">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8">
-          <h1 className="font-sora text-3xl font-extrabold text-white">Notifications</h1>
+          <h1
+            className="font-sora text-3xl font-extrabold text-white"
+            style={{ textShadow: '0 0 18px rgba(139, 92, 246, 0.55)' }}
+          >
+            Notifications
+          </h1>
           <p className="mt-1 text-[0.95rem] text-[var(--arcade-text-muted)]">
             Stay updated on your account activity and support tickets.
           </p>
@@ -192,14 +198,18 @@ function NotificationsContent() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
           {/* Settings */}
           <section>
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)]">
+            <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)]">
+              <span
+                className="inline-block h-3 w-[3px] rounded-sm"
+                style={{ background: 'var(--neon-violet)', boxShadow: 'var(--arcade-glow-violet)' }}
+              />
               Notification Settings
             </h2>
-            <div className="arcade-card-static divide-y divide-[var(--arcade-border)]">
+            <div className="arcade-card p-0 divide-y divide-[var(--arcade-border)]">
               {CATEGORIES.map((cat) => {
                 const active = !!categories[cat.key]
                 return (
-                  <div key={cat.key} className="flex items-start justify-between gap-4 p-5">
+                  <div key={cat.key} className="flex items-start justify-between gap-4 p-6">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-white">{cat.label}</p>
@@ -225,39 +235,45 @@ function NotificationsContent() {
 
           {/* Recent notifications */}
           <section>
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)]">
+            <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--arcade-text-muted)]">
+              <span
+                className="inline-block h-3 w-[3px] rounded-sm"
+                style={{ background: 'var(--neon-violet)', boxShadow: 'var(--arcade-glow-violet)' }}
+              />
               Recent Notifications
             </h2>
-            <div className="arcade-card-static">
+            <div className="arcade-card p-0">
               {loading ? (
                 <div className="p-8 text-center text-sm text-[var(--arcade-text-muted)]">Loading…</div>
               ) : !notifications || notifications.length === 0 ? (
-                <div className="p-8 text-center">
+                <div className="flex flex-col items-center justify-center p-10 text-center">
                   <div
-                    className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full"
-                    style={{ background: 'rgba(139, 92, 246, 0.12)', color: 'var(--neon-violet)' }}
+                    className="mb-4 flex h-14 w-14 items-center justify-center rounded-full animate-neon-pulse"
+                    style={{
+                      background: 'rgba(139, 92, 246, 0.12)',
+                      color: 'var(--neon-violet)',
+                      border: '1px solid rgba(139, 92, 246, 0.35)',
+                      boxShadow: 'var(--arcade-glow-violet)',
+                    }}
                   >
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                      />
-                    </svg>
+                    <Bell className="h-6 w-6" />
                   </div>
-                  <p className="text-sm font-semibold text-white">No notifications yet</p>
+                  <p className="text-sm font-semibold text-[var(--arcade-text-muted)]">No notifications yet</p>
                   <p className="mt-1 text-xs text-[var(--arcade-text-muted)]">
                     We&apos;ll let you know when something happens.
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-[var(--arcade-border)]">
+                <ul>
                   {notifications.map((n) => {
                     const isRead = n.read === 1 || n.read === true
                     return (
-                      <li key={n.notification_id} className="flex items-start gap-3 p-4">
+                      <li
+                        key={n.notification_id}
+                        className="flex items-start gap-3 border-b border-[var(--arcade-border)] p-5 transition-colors duration-200 ease-out last:border-b-0 hover:bg-[var(--arcade-surface-hover)]"
+                      >
                         <div
-                          className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                          className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full ${isRead ? '' : 'animate-neon-pulse'}`}
                           style={{
                             background: isRead ? 'var(--arcade-text-muted)' : 'var(--neon-violet)',
                             boxShadow: isRead ? 'none' : 'var(--arcade-glow-violet)',
@@ -268,7 +284,10 @@ function NotificationsContent() {
                           {n.message && (
                             <p className="mt-0.5 text-sm text-[var(--arcade-text-muted)]">{n.message}</p>
                           )}
-                          <p className="mt-1 text-xs text-[var(--arcade-text-muted)]">
+                          <p
+                            className="mt-1 text-xs"
+                            style={{ color: 'var(--neon-cyan)' }}
+                          >
                             {formatRelativeTime(n.created_at)}
                           </p>
                         </div>

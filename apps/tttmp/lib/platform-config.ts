@@ -68,7 +68,6 @@ export const tttmpConfig: PlatformConfig = {
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Game Activity', href: '/dashboard/game-activity', icon: 'Gamepad2' },
-        { label: 'Notifications', href: '/dashboard/notifications', icon: 'Bell' },
         { label: 'Games', href: '/games', icon: 'Joystick', external: true },
         { label: 'Tokens', href: '/pricing', icon: 'Coins', external: true },
       ],
