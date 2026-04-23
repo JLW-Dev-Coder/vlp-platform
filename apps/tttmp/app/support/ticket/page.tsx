@@ -29,6 +29,22 @@ interface MessageRow {
   created_at: string
   author?: string
   direction?: 'inbound' | 'outbound'
+  sender_type?: 'user' | 'support'
+}
+
+async function fetchMessages(ticketId: string): Promise<MessageRow[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/v1/support/messages?ticket_id=${encodeURIComponent(ticketId)}`,
+      { credentials: 'include' }
+    )
+    if (!res.ok) return []
+    const json = await res.json().catch(() => null)
+    if (!json?.ok || !Array.isArray(json.messages)) return []
+    return json.messages as MessageRow[]
+  } catch {
+    return []
+  }
 }
 
 function normalizeStatus(s: string): 'open' | 'pending' | 'resolved' | 'closed' {
@@ -133,9 +149,8 @@ function TicketDetailContent() {
           created_at: t.created_at || new Date().toISOString(),
           updated_at: t.updated_at ?? null,
         })
-        // Messages endpoint is write-only (action-based) in the Worker today,
-        // so we treat the ticket itself as the initial message.
-        setMessages([])
+        const thread = await fetchMessages(ticketId)
+        if (!cancelled) setMessages(thread)
       } catch {
         if (!cancelled) setError('Failed to load ticket')
       } finally {
@@ -158,11 +173,10 @@ function TicketDetailContent() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'create',
+          action: 'reply',
           account_id: accountId,
-          subject: `Re: ${ticket.subject}`,
+          ticket_id: ticket.ticket_id,
           body: reply.trim(),
-          category: ticket.category || 'support',
         }),
       })
       const json = await res.json().catch(() => null)
@@ -179,10 +193,13 @@ function TicketDetailContent() {
           body: reply.trim(),
           created_at: now,
           direction: 'outbound',
+          sender_type: 'user',
           author: 'you',
         },
       ])
       setReply('')
+      const refreshed = await fetchMessages(ticket.ticket_id)
+      if (refreshed.length > 0) setMessages(refreshed)
     } catch {
       setSendError('Network error — please try again')
     } finally {
@@ -280,7 +297,7 @@ function TicketDetailContent() {
         {messages && messages.length > 0 && (
           <section className="mb-6 space-y-4">
             {messages.map((m) => {
-              const mine = m.direction !== 'inbound'
+              const mine = m.sender_type ? m.sender_type !== 'support' : m.direction !== 'inbound'
               return (
                 <div
                   key={m.message_id}
