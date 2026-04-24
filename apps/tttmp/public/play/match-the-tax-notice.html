@@ -61,21 +61,6 @@ box-shadow: 0 0 20px rgba(16,185,129,0.9), inset 0 0 8px rgba(255,255,255,0.5);
 }
 }
 
-.status-badge{
-display:inline-flex;
-align-items:center;
-gap:12px;
-background:linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(6,182,212,0.08) 100%);
-border:2px solid rgba(16,185,129,0.35);
-border-radius:14px;
-padding:12px 20px;
-font-size:15px;
-font-weight:600;
-letter-spacing:0.3px;
-box-shadow:0 4px 20px rgba(16,185,129,0.1), inset 0 1px 2px rgba(255,255,255,0.1);
-transition:all .3s ease;
-}
-
 .status-indicator{
 display:inline-flex;
 align-items:center;
@@ -243,61 +228,6 @@ font-weight:600;
 
 <script>
 
-const API_BASE = "https://tools-api.taxmonitor.pro";
-const GAME_FILE = "match-the-tax-notice.html";
-const GAME_SLUG = "match-the-tax-notice";
-const ABOUT_URL = "/about-games/" + GAME_FILE;
-
-function setStatus(msg){
-const el=document.getElementById("status");
-if(el) el.textContent=msg||"";
-}
-
-async function apiGet(path){
-const res=await fetch(API_BASE+path,{method:"GET",credentials:"include"});
-let json={};
-try{json=await res.json();}catch{}
-return {res,json};
-}
-
-async function endRun(result){
-await fetch(API_BASE+"/v1/games/end",{
-method:"POST",
-credentials:"include",
-headers:{"content-type":"application/json"},
-body:JSON.stringify({result,slug:GAME_SLUG})
-}).catch(()=>{});
-}
-
-function redirectToAbout(){
-window.location.href=ABOUT_URL;
-}
-
-async function gateAccess(){
-
-setStatus("Checking session…");
-const me=await apiGet("/v1/auth/me");
-
-if(!me.res.ok || !me.json || me.json.isAuthenticated===false){
-redirectToAbout();
-return false;
-}
-
-setStatus("Loading token balance…");
-await apiGet("/v1/tokens/balance");
-
-setStatus("Verifying access…");
-const access=await apiGet("/v1/games/access?slug="+encodeURIComponent(GAME_SLUG));
-
-if(!access.res.ok || !access.json || access.json.allowed!==true){
-redirectToAbout();
-return false;
-}
-
-setStatus("Access granted.");
-return true;
-}
-
 function initializeApp(){
 
 const start=document.getElementById("start-btn");
@@ -416,14 +346,10 @@ document.getElementById('final-score').textContent=score;
 createConfetti();
 createFireworks();
 
-await endRun("completed");
-
 }else{
 
 document.getElementById('lose-screen').classList.remove('hidden');
 document.getElementById('lose-score').textContent=score;
-
-await endRun("lost");
 
 }
 
