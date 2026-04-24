@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AppShell, AuthGate } from '@vlp/member-ui'
 import { tttmpConfig } from '@/lib/platform-config'
 import { GAMES } from '@/lib/games'
+import { api } from '@/lib/api'
 
 const API_BASE = tttmpConfig.apiBaseUrl
 
@@ -63,6 +65,8 @@ function monthlyAllocation(planName?: string | null): number {
 }
 
 function TokensContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [session, setSession] = useState<Session | null>(null)
   const [balance, setBalance] = useState<Balance | null>(null)
   const [membership, setMembership] = useState<Membership | null>(null)
@@ -71,6 +75,9 @@ function TokensContent() {
   const [gameTotal, setGameTotal] = useState(0)
   const [tokensSpentTotal, setTokensSpentTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [purchaseToast, setPurchaseToast] = useState<
+    { kind: 'processing' | 'success' | 'error'; message: string } | null
+  >(null)
 
   const gameTitleBySlug = useMemo(() => {
     const map: Record<string, string> = {}
@@ -135,6 +142,55 @@ function TokensContent() {
       cancelled = true
     }
   }, [])
+
+  // Detect ?checkout=success&session_id=... and trigger token crediting via the
+  // status endpoint (idempotent — returns already_credited on replay).
+  useEffect(() => {
+    if (searchParams.get('checkout') !== 'success') return
+    const sessionId = searchParams.get('session_id')
+    if (!sessionId) return
+
+    let cancelled = false
+    setPurchaseToast({ kind: 'processing', message: 'Processing your purchase…' })
+    ;(async () => {
+      try {
+        const res = await api.getCheckoutStatus(sessionId)
+        if (cancelled) return
+        if (res.ok && (res.credits_added || res.already_credited)) {
+          if (typeof res.balance === 'number') {
+            setBalance((prev) => ({
+              tax_game_tokens: res.balance ?? prev?.tax_game_tokens ?? 0,
+              transcript_tokens: prev?.transcript_tokens ?? 0,
+            }))
+          }
+          setPurchaseToast({
+            kind: 'success',
+            message: res.already_credited
+              ? 'Tokens already credited to your balance.'
+              : `${res.credits_added} tokens added to your balance!`,
+          })
+        } else {
+          setPurchaseToast({
+            kind: 'error',
+            message: 'Payment received — tokens will appear shortly. Refresh if not visible.',
+          })
+        }
+      } catch {
+        if (!cancelled) {
+          setPurchaseToast({
+            kind: 'error',
+            message: 'Could not confirm purchase. Refresh to update your balance.',
+          })
+        }
+      } finally {
+        if (!cancelled) router.replace('/dashboard/tokens')
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [searchParams, router])
 
   const tokenBalance = balance?.tax_game_tokens ?? 0
   const planName = membership?.plan_name || null
@@ -226,6 +282,36 @@ function TokensContent() {
             Manage your token balance and purchases.
           </p>
         </header>
+
+        {purchaseToast ? (
+          <div
+            role="status"
+            className="mb-6 rounded-lg p-4 text-sm font-medium"
+            style={{
+              background:
+                purchaseToast.kind === 'success'
+                  ? 'rgba(34, 197, 94, 0.10)'
+                  : purchaseToast.kind === 'error'
+                  ? 'rgba(236, 72, 153, 0.10)'
+                  : 'rgba(139, 92, 246, 0.10)',
+              border: `1px solid ${
+                purchaseToast.kind === 'success'
+                  ? 'rgba(34, 197, 94, 0.45)'
+                  : purchaseToast.kind === 'error'
+                  ? 'rgba(236, 72, 153, 0.45)'
+                  : 'rgba(139, 92, 246, 0.45)'
+              }`,
+              color:
+                purchaseToast.kind === 'success'
+                  ? 'var(--neon-green)'
+                  : purchaseToast.kind === 'error'
+                  ? 'var(--neon-pink)'
+                  : 'var(--neon-violet)',
+            }}
+          >
+            {purchaseToast.message}
+          </div>
+        ) : null}
 
         {/* Balance hero */}
         <section className="arcade-card mb-6 p-8">

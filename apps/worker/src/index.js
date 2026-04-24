@@ -5080,9 +5080,16 @@ const ROUTES = [
                   price_id = obj.line_items.data[0].price.id;
                 } else {
                   // Fallback: lookup price from session.
-                  // Token purchase price IDs (TTMP/TTTMP) live in the TMP Stripe account.
+                  // Token purchase price IDs (TTMP/TTTMP) live in the TMP Stripe account,
+                  // so the session lookup MUST use STRIPE_SECRET_KEY_TMP — the VLP key
+                  // cannot retrieve sessions from the TMP account.
+                  const tmpKey = env.STRIPE_SECRET_KEY_TMP;
+                  if (!tmpKey) {
+                    console.error('token_purchase webhook: STRIPE_SECRET_KEY_TMP not set; cannot look up session', obj.id);
+                    break;
+                  }
                   const sessionDetails = await fetch(`https://api.stripe.com/v1/checkout/sessions/${obj.id}?expand[]=line_items`, {
-                    headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY || env.STRIPE_SECRET_KEY_VLP}` }
+                    headers: { 'Authorization': `Bearer ${tmpKey}` }
                   });
                   if (sessionDetails.ok) {
                     const session = await sessionDetails.json();
