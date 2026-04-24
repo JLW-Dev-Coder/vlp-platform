@@ -11991,7 +11991,8 @@ TTMP Support Team
           checkout_url: checkoutSession.url
         }, 200, request);
       } catch (e) {
-        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to create checkout session' }, 500, request);
+        console.error('TTTMP checkout session create failed:', e?.message, 'price_id=', price_id, 'account_id=', accountId);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e?.message || 'Failed to create checkout session' }, 500, request);
       }
     },
   },

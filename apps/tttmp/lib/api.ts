@@ -155,7 +155,7 @@ export const api = {
         body: JSON.stringify({
           price_id: pkg.price_id,
           success_url:
-            'https://taxtools.taxmonitor.pro/account?checkout=success&session_id={CHECKOUT_SESSION_ID}',
+            'https://taxtools.taxmonitor.pro/dashboard/tokens?checkout=success&session_id={CHECKOUT_SESSION_ID}',
           cancel_url: 'https://taxtools.taxmonitor.pro/pricing?checkout=cancel',
         }),
       }

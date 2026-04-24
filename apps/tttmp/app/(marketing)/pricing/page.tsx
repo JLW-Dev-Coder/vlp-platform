@@ -8,6 +8,7 @@ import styles from './page.module.css'
 
 export default function PricingPage() {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const [prices, setPrices] = useState<TokenPackage[]>([])
   const [balance, setBalance] = useState<number | null>(null)
   const [loggedIn, setLoggedIn] = useState(false)
@@ -16,6 +17,7 @@ export default function PricingPage() {
   const [buyingId, setBuyingId] = useState<string | null>(null)
 
   useEffect(() => {
+    setMounted(true)
     api.getTokenPackages()
       .then((data) => setPrices(data.packages))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load pricing'))
@@ -69,7 +71,7 @@ export default function PricingPage() {
           <p className={styles.subtitle}>
             Tokens power your gameplay. 1 token = 1 game play.
           </p>
-          {loggedIn && balance !== null && (
+          {mounted && loggedIn && balance !== null && (
             <p className={styles.balance}>Your balance: {balance} tokens</p>
           )}
         </div>
