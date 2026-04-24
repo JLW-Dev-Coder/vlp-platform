@@ -5080,9 +5080,9 @@ const ROUTES = [
                   price_id = obj.line_items.data[0].price.id;
                 } else {
                   // Fallback: lookup price from session.
-                  // Token purchase price IDs (TTMP/TTTMP) live in the VLP Stripe account.
+                  // Token purchase price IDs (TTMP/TTTMP) live in the TMP Stripe account.
                   const sessionDetails = await fetch(`https://api.stripe.com/v1/checkout/sessions/${obj.id}?expand[]=line_items`, {
-                    headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY_VLP || env.STRIPE_SECRET_KEY}` }
+                    headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY || env.STRIPE_SECRET_KEY_VLP}` }
                   });
                   if (sessionDetails.ok) {
                     const session = await sessionDetails.json();
@@ -6850,16 +6850,16 @@ const ROUTES = [
       }
 
       try {
-        // TTMP/TTTMP token package prices live in the VLP Stripe account.
-        const vlpSecretKey = env.STRIPE_SECRET_KEY_VLP;
-        if (!vlpSecretKey) {
-          return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY_VLP is not set' }, 503, request);
+        // TTMP/TTTMP token package prices live in the TMP Stripe account (acct_1T81TPQEa4WBi79g).
+        const tmpSecretKey = env.STRIPE_SECRET_KEY;
+        if (!tmpSecretKey) {
+          return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY is not set' }, 503, request);
         }
         // Create Stripe Checkout session for one-time payment
         const checkoutSession = await fetch('https://api.stripe.com/v1/checkout/sessions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${vlpSecretKey}`,
+            'Authorization': `Bearer ${tmpSecretKey}`,
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: new URLSearchParams({
@@ -11966,8 +11966,9 @@ TTMP Support Team
           checkoutParams.customer_email = email;
         }
 
-        // TTTMP token package prices live in the VLP Stripe account.
-        const checkoutSession = await stripePost('/checkout/sessions', checkoutParams, env, env.STRIPE_SECRET_KEY_VLP);
+        // TTTMP token package prices live in the TMP Stripe account (acct_1T81TPQEa4WBi79g),
+        // so use STRIPE_SECRET_KEY (TMP) — not STRIPE_SECRET_KEY_VLP.
+        const checkoutSession = await stripePost('/checkout/sessions', checkoutParams, env, env.STRIPE_SECRET_KEY);
 
         // Store order in R2
         const orderData = {
@@ -12010,8 +12011,8 @@ TTMP Support Team
       }
 
       try {
-        // Get Stripe session status (TTTMP sessions are on the VLP Stripe account)
-        const stripeSession = await stripeGet(`/checkout/sessions/${sessionId}`, env, env.STRIPE_SECRET_KEY_VLP);
+        // Get Stripe session status (TTTMP sessions are on the TMP Stripe account)
+        const stripeSession = await stripeGet(`/checkout/sessions/${sessionId}`, env, env.STRIPE_SECRET_KEY);
         if (stripeSession.metadata?.account_id !== session.account_id) {
           return json({ ok: false, error: 'NOT_FOUND', message: 'Session not found' }, 404, request);
         }
