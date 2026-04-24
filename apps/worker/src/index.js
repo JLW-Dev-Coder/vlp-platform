@@ -12025,9 +12025,23 @@ TTMP Support Team
         // Authority for account_id is the Stripe session metadata (set at checkout creation),
         // not the caller's cookie — so this endpoint does not require auth.
         const stripeSession = await stripeGet(`/checkout/sessions/${sessionId}`, env, env.STRIPE_SECRET_KEY_TMP);
-        const accountId = stripeSession?.metadata?.account_id;
+        let accountId = stripeSession?.metadata?.account_id;
         if (!accountId) {
-          return json({ ok: false, error: 'INVALID_SESSION' }, 404, request);
+          // Fallback: the checkout was created without a signed-in TTTMP session,
+          // so account_id was never attached to metadata. Resolve it from the
+          // Stripe customer email instead.
+          const email = stripeSession?.customer_details?.email || stripeSession?.customer_email || null;
+          if (email) {
+            const acct = await env.DB.prepare('SELECT account_id FROM accounts WHERE email = ?')
+              .bind(email).first().catch(() => null);
+            if (acct?.account_id) {
+              accountId = acct.account_id;
+              console.warn('[tttmp/checkout/status] metadata.account_id missing; resolved via email fallback', { session_id: sessionId, email });
+            }
+          }
+          if (!accountId) {
+            return json({ ok: false, error: 'INVALID_SESSION' }, 404, request);
+          }
         }
 
         let creditsAdded = 0;
