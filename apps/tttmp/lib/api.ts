@@ -72,7 +72,7 @@ export interface TokenPackage {
 const TOKEN_PACKAGES: TokenPackage[] = [
   {
     sku: 'token_pack_small_30',
-    price_id: 'price_1TGTiqQEa4WBi79guSRnECvw',
+    price_id: 'price_1TPXNrQEa4WBi79gntpi5sj6',
     tokens: 30,
     amount: 999,
     currency: 'usd',
@@ -81,7 +81,7 @@ const TOKEN_PACKAGES: TokenPackage[] = [
   },
   {
     sku: 'token_pack_medium_80',
-    price_id: 'price_1TGTiqQEa4WBi79gScrpsUab',
+    price_id: 'price_1TPXO6QEa4WBi79gNV2sGx20',
     tokens: 80,
     amount: 1999,
     currency: 'usd',
@@ -91,7 +91,7 @@ const TOKEN_PACKAGES: TokenPackage[] = [
   },
   {
     sku: 'token_pack_large_200',
-    price_id: 'price_1TGTiqQEa4WBi79gpTsbsLIi',
+    price_id: 'price_1TPXOLQEa4WBi79gN0LHNfzp',
     tokens: 200,
     amount: 3999,
     currency: 'usd',

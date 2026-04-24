@@ -6904,9 +6904,9 @@ const ROUTES = [
             { price_id: env.STRIPE_PRICE_TTMP_100_TOKENS, quantity: 100, price_usd: 129, label: '100 Transcript Tokens' }
           ],
           tax_game: [
-            { price_id: env.STRIPE_PRICE_TTTMP_30_TOKENS || 'price_1TGTiqQEa4WBi79guSRnECvw', quantity: 30, price_usd: 9, label: '30 Game Tokens' },
-            { price_id: env.STRIPE_PRICE_TTTMP_80_TOKENS || 'price_1TGTiqQEa4WBi79gScrpsUab', quantity: 80, price_usd: 19, label: '80 Game Tokens' },
-            { price_id: env.STRIPE_PRICE_TTTMP_200_TOKENS || 'price_1TGTiqQEa4WBi79gpTsbsLIi', quantity: 200, price_usd: 39, label: '200 Game Tokens' }
+            { price_id: env.STRIPE_PRICE_TTTMP_30_TOKENS || 'price_1TPXNrQEa4WBi79gntpi5sj6', quantity: 30, price_usd: 9, label: '30 Game Tokens' },
+            { price_id: env.STRIPE_PRICE_TTTMP_80_TOKENS || 'price_1TPXO6QEa4WBi79gNV2sGx20', quantity: 80, price_usd: 19, label: '80 Game Tokens' },
+            { price_id: env.STRIPE_PRICE_TTTMP_200_TOKENS || 'price_1TPXOLQEa4WBi79gN0LHNfzp', quantity: 200, price_usd: 39, label: '200 Game Tokens' }
           ]
         }
       }, 200, _request);
