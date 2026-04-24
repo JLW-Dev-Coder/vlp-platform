@@ -352,6 +352,7 @@ Total routes: ~196
 | GET | `/v1/tcvlp/forms/843/:submission_id/download` | Download Form 843 | No (link) | TCVLP |
 | POST | `/v1/tcvlp/gala/intake` | Submit Gala intake | No | TCVLP |
 | GET | `/v1/tcvlp/gala/:filename` | Serve Gala video clip | No | TCVLP |
+| GET | `/v1/tcvlp/videos/kennedy/:clipId` | Serve Kennedy sales-video clip from R2 (`tcvlp/videos/kennedy/{clipId}.mp4`) | No | TCVLP |
 | — | (cron: Gala drip, 15:00 UTC) | 3-email welcome sequence to Gala intakes via Resend | Internal | TCVLP |
 
 ---

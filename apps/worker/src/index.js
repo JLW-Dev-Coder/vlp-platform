@@ -16995,6 +16995,30 @@ TTMP Support Team
     },
   },
 
+  // GET /v1/tcvlp/videos/kennedy/:clipId — serve Kennedy sales-video clips from R2 (public)
+  {
+    method: 'GET', pattern: '/v1/tcvlp/videos/kennedy/:clipId',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { clipId } = params;
+      if (!clipId || !/^[a-z0-9-]+$/.test(clipId)) {
+        return json({ ok: false, error: 'INVALID_CLIP_ID' }, 400, request);
+      }
+      const obj = await env.R2_VIRTUAL_LAUNCH.get(`tcvlp/videos/kennedy/${clipId}.mp4`);
+      if (!obj) {
+        return json({ ok: false, error: 'clip_not_found' }, 404, request);
+      }
+      const corsHeaders = getCorsHeaders(request);
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': 'video/mp4',
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Accept-Ranges': 'bytes',
+          ...corsHeaders,
+        },
+      });
+    },
+  },
+
   // POST /v1/tttmp/vesperi/intake — Vesperi game-guide email capture (public)
   {
     method: 'POST', pattern: '/v1/tttmp/vesperi/intake',
