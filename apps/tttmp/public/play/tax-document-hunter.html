@@ -262,6 +262,182 @@
 
   <!-- PARTIAL:footer -->
 
-  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const DOC_DB = [
+        { name: 'W-2', cat: 'Income', pts: 10, tier: 'common' },
+        { name: '1099-NEC', cat: 'Income', pts: 10, tier: 'common' },
+        { name: '1099-MISC', cat: 'Income', pts: 10, tier: 'common' },
+        { name: '1099-INT', cat: 'Income', pts: 10, tier: 'common' },
+        { name: '1099-DIV', cat: 'Income', pts: 10, tier: 'common' },
+        { name: 'K-1', cat: 'Income', pts: 25, tier: 'rare' },
+        { name: '1098', cat: 'Deduction', pts: 15, tier: 'common' },
+        { name: '1098-E', cat: 'Education', pts: 15, tier: 'common' },
+        { name: '1098-T', cat: 'Education', pts: 15, tier: 'common' },
+        { name: '1095-A', cat: 'Medical', pts: 15, tier: 'common' },
+        { name: '1095-B', cat: 'Medical', pts: 15, tier: 'common' },
+        { name: '1095-C', cat: 'Medical', pts: 15, tier: 'common' },
+        { name: '1099-R', cat: 'Investment', pts: 15, tier: 'common' },
+        { name: '5498', cat: 'Investment', pts: 15, tier: 'common' },
+        { name: '1099-K', cat: 'Freelance', pts: 15, tier: 'common' },
+        { name: 'Mileage Log', cat: 'Business', pts: 25, tier: 'rare' },
+        { name: 'Home Office Measurements', cat: 'Business', pts: 25, tier: 'rare' },
+        { name: 'Profit Loss Statement', cat: 'Business', pts: 25, tier: 'rare' },
+        { name: 'HUD-1', cat: 'Housing', pts: 25, tier: 'rare' },
+        { name: 'Closing Statement', cat: 'Housing', pts: 15, tier: 'common' },
+        { name: 'Property Tax Bill', cat: 'Housing', pts: 15, tier: 'common' },
+        { name: '1099-S', cat: 'Housing', pts: 25, tier: 'rare' },
+        { name: 'Prior Year Return', cat: 'Other', pts: 10, tier: 'common' },
+        { name: 'IP PIN', cat: 'Other', pts: 25, tier: 'rare' },
+        { name: 'Social Security Card', cat: 'Other', pts: 10, tier: 'common' },
+        { name: 'EIN Letter', cat: 'Business', pts: 15, tier: 'common' },
+        { name: 'ITIN Letter', cat: 'Other', pts: 15, tier: 'common' },
+        { name: 'Bank Statement', cat: 'Other', pts: 10, tier: 'common' },
+        { name: 'Cancelled Check', cat: 'Other', pts: 10, tier: 'common' },
+        { name: 'Direct Deposit Info', cat: 'Other', pts: 10, tier: 'common' },
+        { name: '1040-ES Payment Record', cat: 'Other', pts: 25, tier: 'rare' },
+        { name: 'State Estimated Payment Record', cat: 'Other', pts: 25, tier: 'rare' },
+        { name: 'Goodwill Donation Receipt', cat: 'Charitable', pts: 15, tier: 'common' },
+        { name: 'Cash Donation Receipt', cat: 'Charitable', pts: 15, tier: 'common' },
+        { name: '1099-B', cat: 'Investment', pts: 15, tier: 'common' }
+      ];
+
+      const TARGET_COUNT = 10;
+      const LEVELS = [
+        { min: 0,   name: 'ROOKIE' },
+        { min: 50,  name: 'BRONZE' },
+        { min: 150, name: 'SILVER' },
+        { min: 300, name: 'GOLD' },
+        { min: 500, name: 'LEGEND' }
+      ];
+
+      const state = { score: 0, collected: [] };
+
+      const norm = (s) => String(s || '').trim().toUpperCase().replace(/\s+/g, ' ').replace(/[^A-Z0-9\- ]/g, '');
+
+      const $ = (id) => document.getElementById(id);
+      const form = $('hunt-form');
+      const nameInput = $('doc-name');
+      const catSelect = $('doc-category');
+      const yearInput = $('doc-year');
+      const listEl = $('documents-list');
+      const emptyEl = $('empty-quest');
+      const scoreEl = $('total-score');
+      const countEl = $('doc-count');
+      const levelEl = $('level-display');
+      const toastEl = $('toast');
+      const toastMsg = $('toast-message');
+
+      function showToast(msg, color) {
+        toastMsg.textContent = msg;
+        toastEl.style.background = color || '#fbbf24';
+        toastEl.style.color = '#0f172a';
+        toastEl.classList.remove('translate-y-20', 'opacity-0');
+        toastEl.classList.add('translate-y-0', 'opacity-100');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => {
+          toastEl.classList.add('translate-y-20', 'opacity-0');
+          toastEl.classList.remove('translate-y-0', 'opacity-100');
+        }, 1800);
+      }
+
+      function findDoc(name, cat) {
+        const n = norm(name);
+        if (!n) return null;
+        return DOC_DB.find((d) => norm(d.name) === n && d.cat === cat) ||
+               DOC_DB.find((d) => norm(d.name) === n);
+      }
+
+      function updateLevel() {
+        let lvl = LEVELS[0].name;
+        for (const l of LEVELS) if (state.score >= l.min) lvl = l.name;
+        levelEl.textContent = lvl;
+      }
+
+      function renderItem(doc, year, matchedCat) {
+        if (emptyEl) emptyEl.style.display = 'none';
+        const row = document.createElement('div');
+        row.className = 'document-item flex items-center justify-between bg-slate-900/60 border border-gold/40 rounded-lg px-4 py-3';
+        row.innerHTML =
+          '<div class="flex items-center gap-3">' +
+            '<span class="text-2xl">' + (doc.tier === 'rare' ? '🎯' : '📄') + '</span>' +
+            '<div>' +
+              '<p class="font-bold text-white">' + doc.name + '</p>' +
+              '<p class="text-xs text-gray-400">' + matchedCat + (year ? ' • ' + year : '') + '</p>' +
+            '</div>' +
+          '</div>' +
+          '<span class="text-gold font-bold">+' + doc.pts + ' pts</span>';
+        listEl.appendChild(row);
+      }
+
+      function checkCompletion() {
+        if (state.collected.length >= TARGET_COUNT) {
+          setTimeout(showCompletion, 600);
+        }
+      }
+
+      function showCompletion() {
+        const main = document.querySelector('main');
+        if (!main || document.getElementById('complete-screen')) return;
+        const cats = Array.from(new Set(state.collected.map((c) => c.cat)));
+        const rareCount = state.collected.filter((c) => c.tier === 'rare').length;
+        const finalLevel = levelEl.textContent;
+        main.innerHTML =
+          '<div id="complete-screen" class="game-card rounded-2xl p-10 text-center max-w-2xl mx-auto my-8">' +
+            '<div class="text-6xl mb-4">🏆</div>' +
+            '<h2 class="text-4xl font-bold text-gold glow-text mb-4">QUEST COMPLETE!</h2>' +
+            '<p class="text-xl text-white mb-6">You’ve built a full document checklist.</p>' +
+            '<div class="grid grid-cols-3 gap-4 mb-8">' +
+              '<div class="bg-slate-900/60 rounded-lg p-4"><p class="text-xs text-gray-400 uppercase">Score</p><p class="text-3xl font-bold text-gold">' + state.score + '</p></div>' +
+              '<div class="bg-slate-900/60 rounded-lg p-4"><p class="text-xs text-gray-400 uppercase">Documents</p><p class="text-3xl font-bold text-neon">' + state.collected.length + '</p></div>' +
+              '<div class="bg-slate-900/60 rounded-lg p-4"><p class="text-xs text-gray-400 uppercase">Rank</p><p class="text-2xl font-bold level-badge">' + finalLevel + '</p></div>' +
+            '</div>' +
+            '<div class="bg-slate-900/40 rounded-lg p-4 mb-6 text-left">' +
+              '<p class="text-sm text-neon font-bold mb-2">Categories Covered (' + cats.length + ')</p>' +
+              '<p class="text-sm text-gray-300">' + cats.join(' • ') + '</p>' +
+              '<p class="text-sm text-purple-300 mt-3">Rare finds: ' + rareCount + '</p>' +
+            '</div>' +
+            '<button id="play-again" class="btn-collect text-white px-8 py-4 rounded-lg font-bold text-lg">🎮 PLAY AGAIN</button>' +
+          '</div>';
+        document.getElementById('play-again').addEventListener('click', () => location.reload());
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = nameInput.value;
+        const cat = catSelect.value;
+        const year = yearInput.value.trim();
+        if (!name.trim()) { showToast('Enter a document name', '#ef4444'); return; }
+
+        const doc = findDoc(name, cat);
+        if (!doc) {
+          showToast('Unknown document — try W-2, 1099-NEC, 1098, 1095-A...', '#ef4444');
+          return;
+        }
+
+        const key = norm(doc.name) + '|' + doc.cat;
+        if (state.collected.some((c) => c.key === key)) {
+          showToast('Already collected ' + doc.name, '#f59e0b');
+          return;
+        }
+
+        const matchedCat = doc.cat;
+        state.collected.push({ key: key, name: doc.name, cat: matchedCat, tier: doc.tier });
+        state.score += doc.pts;
+        scoreEl.textContent = state.score;
+        countEl.textContent = state.collected.length;
+        updateLevel();
+        renderItem(doc, year, matchedCat);
+        showToast('+' + doc.pts + ' pts — ' + doc.name + ' collected!');
+
+        nameInput.value = '';
+        yearInput.value = '';
+        nameInput.focus();
+        checkCompletion();
+      });
+
+      updateLevel();
+    });
+  </script>
 </body>
 </html>

@@ -378,6 +378,266 @@
 
   <!-- PARTIAL:footer -->
 
-  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const QUESTIONS = [
+        { q: 'For 2024, what is the maximum Child Tax Credit per qualifying child under 17?', a: ['$1,000', '$2,000', '$3,000', '$3,600'], correct: 1 },
+        { q: 'True or False: You can contribute to a traditional IRA for the prior tax year up until April 15.', a: ['True', 'False'], correct: 0 },
+        { q: 'What is the maximum student loan interest deduction on a single return?', a: ['$1,500', '$2,000', '$2,500', '$5,000'], correct: 2 },
+        { q: 'The Earned Income Tax Credit (EITC) is best described as:', a: ['A non-refundable credit for high earners', 'A refundable credit for low-to-moderate income workers', 'A deduction for business expenses', 'A credit only for homeowners'], correct: 1 },
+        { q: 'How much of a capital loss can you deduct against ordinary income in a single year?', a: ['$1,500', '$3,000', '$5,000', 'Unlimited'], correct: 1 },
+        { q: 'Filing as Head of Household vs Single typically gives you:', a: ['A smaller standard deduction', 'A larger standard deduction and wider brackets', 'No difference', 'Higher tax rates'], correct: 1 },
+        { q: 'True or False: A huge tax refund is really an interest-free loan you gave the IRS.', a: ['True', 'False'], correct: 0 },
+        { q: 'The educator expense deduction lets eligible K-12 teachers deduct up to:', a: ['$100', '$300', '$500', '$1,000'], correct: 1 },
+        { q: 'The American Opportunity Tax Credit is available for:', a: ['Any course at any time', 'The first 4 years of post-secondary education', 'Graduate school only', 'Continuing education only'], correct: 1 },
+        { q: 'Which credit is designed to reward low/moderate-income workers for contributing to retirement?', a: ['Saver’s Credit', 'Child Tax Credit', 'Foreign Tax Credit', 'Premium Tax Credit'], correct: 0 },
+        { q: 'HSA contributions (to a qualified account) are:', a: ['Taxable as income', 'Deductible above-the-line', 'Only deductible if you itemize', 'Never deductible'], correct: 1 },
+        { q: 'The Residential Clean Energy Credit covers which of the following?', a: ['Gas-powered generators', 'Solar panels, solar water heaters, geothermal', 'Traditional HVAC replacements', 'Kitchen remodels'], correct: 1 },
+        { q: 'True or False: The Premium Tax Credit helps offset the cost of Marketplace health insurance.', a: ['True', 'False'], correct: 0 },
+        { q: 'A state tax refund is taxable on your federal return only if:', a: ['You took the standard deduction last year', 'You itemized and deducted state taxes last year', 'You are self-employed', 'Always taxable'], correct: 1 },
+        { q: 'The Child and Dependent Care Credit helps with:', a: ['Groceries for kids', 'Care costs that let you work or look for work', 'Private school tuition', 'College savings'], correct: 1 },
+        { q: '"Bunching" charitable contributions means:', a: ['Giving only to one charity', 'Alternating years of giving to exceed the standard deduction', 'Giving monthly', 'Giving only cash'], correct: 1 },
+        { q: 'True or False: You may be able to claim a federal tax credit for buying a qualifying new electric vehicle.', a: ['True', 'False'], correct: 0 },
+        { q: 'Social Security benefits can become partially taxable once your combined income exceeds:', a: ['$10,000 single / $15,000 joint', '$25,000 single / $32,000 joint', '$50,000 single / $75,000 joint', 'Benefits are never taxable'], correct: 1 },
+        { q: 'Adjusting your W-4 withholding to better match your tax liability will:', a: ['Lower your refund but increase your paychecks', 'Always increase your refund', 'Have no effect', 'Trigger an audit'], correct: 0 },
+        { q: 'The Adoption Credit is:', a: ['A refundable credit with no limit', 'A non-refundable credit for qualifying adoption expenses', 'Only for international adoptions', 'Not a real credit'], correct: 1 }
+      ];
+
+      const POINTS_CORRECT = 100;
+      const STREAK_BONUS = 25;
+      const MAX_POWER_UPS = 2;
+
+      const state = {
+        name: '',
+        idx: 0,
+        score: 0,
+        correctCount: 0,
+        streak: 0,
+        maxStreak: 0,
+        fiftyLeft: MAX_POWER_UPS,
+        skipLeft: MAX_POWER_UPS,
+        locked: false,
+        skips: 0
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const screens = {
+        home: $('home-screen'),
+        game: $('game-screen'),
+        results: $('results-screen'),
+        leaderboard: $('leaderboard-screen')
+      };
+
+      function show(which) {
+        for (const k in screens) {
+          screens[k].classList.add('hidden');
+          screens[k].classList.remove('flex');
+        }
+        screens[which].classList.remove('hidden');
+        screens[which].classList.add('flex');
+      }
+
+      function renderQuestion() {
+        const item = QUESTIONS[state.idx];
+        $('question-number').textContent = String(state.idx + 1);
+        $('progress-bar').style.width = (((state.idx) / QUESTIONS.length) * 100 + 5) + '%';
+        $('current-score').textContent = state.score;
+        $('question-text').textContent = item.q;
+        $('feedback-text').textContent = '';
+        $('next-btn').classList.add('hidden');
+        state.locked = false;
+
+        const container = $('answers-container');
+        container.innerHTML = '';
+        item.a.forEach((ans, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'answer-btn';
+          btn.textContent = ans;
+          btn.addEventListener('click', () => selectAnswer(btn, i));
+          container.appendChild(btn);
+        });
+
+        if (state.streak > 0) {
+          $('streak-display').style.display = 'inline-block';
+          $('streak-count').textContent = state.streak;
+        } else {
+          $('streak-display').style.display = 'none';
+        }
+
+        updatePowerUps();
+      }
+
+      function updatePowerUps() {
+        const fifty = $('fifty-btn');
+        const skip = $('skip-btn');
+        fifty.textContent = '50/50 (' + state.fiftyLeft + ')';
+        skip.textContent = '⏭️ Skip (' + state.skipLeft + ')';
+        fifty.classList.toggle('used', state.fiftyLeft <= 0);
+        skip.classList.toggle('used', state.skipLeft <= 0);
+      }
+
+      function selectAnswer(btn, i) {
+        if (state.locked) return;
+        state.locked = true;
+        const item = QUESTIONS[state.idx];
+        const buttons = $('answers-container').querySelectorAll('.answer-btn');
+        buttons.forEach((b) => b.classList.add('disabled'));
+
+        if (i === item.correct) {
+          btn.classList.add('correct');
+          state.correctCount += 1;
+          state.streak += 1;
+          if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+          const gained = POINTS_CORRECT + (state.streak >= 3 ? STREAK_BONUS : 0);
+          state.score += gained;
+          $('feedback-text').textContent = state.streak >= 3
+            ? '✅ Correct! +' + gained + ' pts (🔥 streak bonus!)'
+            : '✅ Correct! +' + gained + ' pts';
+        } else {
+          btn.classList.add('incorrect');
+          buttons.forEach((b, idx) => { if (idx === item.correct) b.classList.add('correct'); });
+          state.streak = 0;
+          $('feedback-text').textContent = '❌ Not quite. Correct answer highlighted.';
+        }
+        $('current-score').textContent = state.score;
+        $('next-btn').classList.remove('hidden');
+        $('next-btn').textContent = state.idx === QUESTIONS.length - 1 ? 'SEE RESULTS →' : 'NEXT QUESTION →';
+      }
+
+      function nextQuestion() {
+        state.idx += 1;
+        if (state.idx >= QUESTIONS.length) return showResults();
+        renderQuestion();
+      }
+
+      function useFifty() {
+        if (state.fiftyLeft <= 0 || state.locked) return;
+        const item = QUESTIONS[state.idx];
+        const buttons = Array.from($('answers-container').querySelectorAll('.answer-btn'));
+        if (buttons.length <= 2) return;
+        const wrongIdx = buttons.map((_, i) => i).filter((i) => i !== item.correct);
+        for (let i = wrongIdx.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [wrongIdx[i], wrongIdx[j]] = [wrongIdx[j], wrongIdx[i]];
+        }
+        wrongIdx.slice(0, 2).forEach((i) => {
+          buttons[i].classList.add('disabled');
+          buttons[i].disabled = true;
+          buttons[i].style.visibility = 'hidden';
+        });
+        state.fiftyLeft -= 1;
+        updatePowerUps();
+      }
+
+      function useSkip() {
+        if (state.skipLeft <= 0 || state.locked) return;
+        state.skipLeft -= 1;
+        state.skips += 1;
+        state.streak = 0;
+        updatePowerUps();
+        if (state.idx === QUESTIONS.length - 1) return showResults();
+        state.idx += 1;
+        renderQuestion();
+      }
+
+      function showResults() {
+        $('result-name').textContent = state.name || 'Player';
+        $('final-score').textContent = state.correctCount;
+        const attempted = QUESTIONS.length - state.skips;
+        const acc = attempted > 0 ? Math.round((state.correctCount / QUESTIONS.length) * 100) : 0;
+        $('accuracy').textContent = acc;
+
+        const achievements = [];
+        if (state.correctCount >= 20) achievements.push({ e: '🏆', t: 'Perfect!' });
+        if (state.correctCount >= 15) achievements.push({ e: '🎯', t: 'Sharpshooter' });
+        if (state.maxStreak >= 5) achievements.push({ e: '🔥', t: 'On Fire' });
+        if (state.maxStreak >= 10) achievements.push({ e: '⚡', t: 'Unstoppable' });
+        if (state.fiftyLeft === MAX_POWER_UPS && state.skipLeft === MAX_POWER_UPS) achievements.push({ e: '💎', t: 'Purist' });
+        if (state.score >= 2000) achievements.push({ e: '💰', t: 'Big Refund' });
+
+        const ac = $('achievements-container');
+        ac.innerHTML = '';
+        if (achievements.length === 0) {
+          ac.innerHTML = '<p class="text-sm opacity-60">Keep practicing to unlock badges!</p>';
+        } else {
+          achievements.forEach((a) => {
+            const el = document.createElement('div');
+            el.className = 'achievement-badge unlocked';
+            el.title = a.t;
+            el.textContent = a.e;
+            ac.appendChild(el);
+          });
+        }
+
+        saveLeaderboard();
+        show('results');
+      }
+
+      function saveLeaderboard() {
+        try {
+          const key = 'tttmp_tips_leaderboard';
+          const prior = JSON.parse(localStorage.getItem(key) || '[]');
+          prior.push({ name: state.name || 'Player', score: state.score, correct: state.correctCount, ts: Date.now() });
+          prior.sort((a, b) => b.score - a.score);
+          localStorage.setItem(key, JSON.stringify(prior.slice(0, 10)));
+        } catch (e) {}
+      }
+
+      function renderLeaderboard() {
+        const list = $('leaderboard-list');
+        const empty = $('empty-leaderboard');
+        let entries = [];
+        try { entries = JSON.parse(localStorage.getItem('tttmp_tips_leaderboard') || '[]'); } catch (e) {}
+        list.innerHTML = '';
+        if (entries.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+        const medals = ['🥇', '🥈', '🥉'];
+        entries.forEach((e, i) => {
+          const row = document.createElement('div');
+          row.className = 'leaderboard-entry';
+          row.innerHTML =
+            '<div class="flex items-center">' +
+              '<span class="medal">' + (medals[i] || ('#' + (i + 1))) + '</span>' +
+              '<span class="player-rank">' + (e.name || 'Player') + '</span>' +
+            '</div>' +
+            '<div><strong>' + e.score + '</strong> pts · ' + e.correct + '/20</div>';
+          list.appendChild(row);
+        });
+      }
+
+      function resetState() {
+        state.idx = 0;
+        state.score = 0;
+        state.correctCount = 0;
+        state.streak = 0;
+        state.maxStreak = 0;
+        state.fiftyLeft = MAX_POWER_UPS;
+        state.skipLeft = MAX_POWER_UPS;
+        state.skips = 0;
+        state.locked = false;
+      }
+
+      $('start-game-btn').addEventListener('click', () => {
+        const n = $('player-name-input').value.trim();
+        state.name = n || 'Player';
+        resetState();
+        show('game');
+        renderQuestion();
+      });
+
+      $('leaderboard-btn').addEventListener('click', () => { renderLeaderboard(); show('leaderboard'); });
+      $('back-home-btn').addEventListener('click', () => show('home'));
+      $('next-btn').addEventListener('click', nextQuestion);
+      $('fifty-btn').addEventListener('click', useFifty);
+      $('skip-btn').addEventListener('click', useSkip);
+      $('play-again-btn').addEventListener('click', () => { resetState(); show('game'); renderQuestion(); });
+      $('home-btn').addEventListener('click', () => show('home'));
+
+      show('home');
+    });
+  </script>
 </body>
 </html>
