@@ -218,7 +218,7 @@
     </div>
 
     <!-- Quiz Screen -->
-    <div id="quiz-screen" class="hidden h-full w-full p-4 md:p-8 pb-24 overflow-auto">
+    <div id="quiz-screen" class="hidden min-h-full w-full p-4 md:p-8 pb-24 overflow-auto flex items-center justify-center">
       <div class="max-w-3xl mx-auto">
 
         <!-- Quiz Header -->
@@ -275,7 +275,7 @@
     </div>
 
     <!-- Results Screen -->
-    <div id="results-screen" class="hidden h-full w-full p-4 md:p-8 pb-24 overflow-auto">
+    <div id="results-screen" class="hidden min-h-full w-full p-4 md:p-8 pb-24 overflow-auto flex items-center justify-center">
       <div class="max-w-2xl mx-auto text-center">
         <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 animate-bounce-in">
           <div id="results-icon" class="text-8xl mb-4"></div>
@@ -311,7 +311,7 @@
     </div>
 
     <!-- Certification Screen -->
-    <div id="certification-screen" class="hidden h-full w-full p-4 md:p-8 pb-24 overflow-auto">
+    <div id="certification-screen" class="hidden min-h-full w-full p-4 md:p-8 pb-24 overflow-auto flex items-center justify-center">
       <div class="max-w-3xl mx-auto text-center">
         <div class="bg-gradient-to-br from-yellow-400/20 to-orange-500/20 backdrop-blur-sm rounded-3xl p-8 border-4 border-yellow-400/50 animate-bounce-in">
           <div class="text-8xl mb-4">🎓</div>
@@ -343,6 +343,384 @@
 
   <!-- PARTIAL:footer -->
 
-  
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const AVATARS = [
+      { id: 'cpa', emoji: '👩‍💼', name: 'The CPA' },
+      { id: 'ea', emoji: '🧑‍💼', name: 'The EA' },
+      { id: 'atty', emoji: '⚖️', name: 'The Attorney' },
+      { id: 'afsp', emoji: '📋', name: 'The AFSP Preparer' }
+    ];
+
+    const ZONES = [
+      {
+        id: 'z1', title: 'Zone 1 — Gates of Practice',
+        subtitle: 'Who may practice before the IRS',
+        color: 'from-indigo-500 to-blue-600', emoji: '🏛️',
+        badge: { emoji: '🎓', name: 'Gatekeeper' },
+        questions: [
+          { type: 'Who May Practice',
+            q: 'Under Circular 230, which group is GENERALLY authorized to practice before the IRS without limitation?',
+            options: ['Enrolled Agents', 'Annual Filing Season Program participants only', 'Unenrolled preparers', 'Any tax software user'],
+            answer: 0,
+            explain: 'Attorneys, CPAs, and Enrolled Agents have unlimited practice rights before the IRS under Circular 230 § 10.3.' },
+          { type: 'Practice Rights',
+            q: 'What limitation applies to Annual Filing Season Program (AFSP) participants?',
+            options: ['They have unlimited practice rights', 'They may only represent clients whose returns they prepared, before Revenue Agents, Customer Service Reps, and similar employees', 'They may represent anyone in Appeals', 'They may sign tax court petitions'],
+            answer: 1,
+            explain: 'AFSP participants have limited practice rights: only clients whose returns they prepared and signed, and only before certain IRS personnel (not Appeals or Counsel).' },
+          { type: 'Enrolled Status',
+            q: 'Who regulates Enrolled Agents?',
+            options: ['State bar associations', 'AICPA', 'The IRS Return Preparer Office', 'The SEC'],
+            answer: 2,
+            explain: 'The IRS Return Preparer Office oversees Enrolled Agents, who are federally licensed under Circular 230.' },
+          { type: 'Scope',
+            q: '"Practice before the IRS" includes all of the following EXCEPT:',
+            options: ['Preparing documents filed with the IRS', 'Representing a taxpayer at an IRS conference', 'Corresponding with the IRS on behalf of a client', 'Preparing a tax return only'],
+            answer: 3,
+            explain: 'Merely preparing a return is NOT "practice" under Circular 230 § 10.2. Representation, correspondence, and filings are.' },
+          { type: 'Credentials',
+            q: 'An Enrolled Retirement Plan Agent (ERPA) may practice before the IRS on matters involving:',
+            options: ['All tax matters', 'Only employee plans determination letter program and EPCRS', 'Only estate tax', 'Only collections'],
+            answer: 1,
+            explain: 'ERPAs are limited to certain retirement-plan matters per Circular 230 § 10.3(e).' }
+        ]
+      },
+      {
+        id: 'z2', title: 'Zone 2 — Duty & Diligence',
+        subtitle: 'Duties and restrictions on practice',
+        color: 'from-emerald-500 to-teal-600', emoji: '⚖️',
+        badge: { emoji: '🛡️', name: 'Diligence Guardian' },
+        questions: [
+          { type: 'Due Diligence',
+            q: 'Under § 10.22, a practitioner must exercise due diligence in:',
+            options: ['Only preparing returns', 'Preparing returns, determining correctness of representations, and determining correctness of oral/written representations to the Treasury', 'Only verbal advice', 'Only advertising'],
+            answer: 1,
+            explain: '§ 10.22 requires due diligence across preparation, representations to clients, and representations to Treasury.' },
+          { type: 'Conflicts',
+            q: 'A conflict of interest exists under § 10.29 when:',
+            options: ['Representation of one client is directly adverse to another, or there is a significant risk the representation will be materially limited', 'Clients are in different states', 'The practitioner charges different fees', 'The clients have never met'],
+            answer: 0,
+            explain: '§ 10.29 defines conflicts as direct adversity or material limitation. Waivable only with informed written consent.' },
+          { type: 'Contingent Fees',
+            q: 'Under § 10.27, contingent fees are generally:',
+            options: ['Always permitted', 'Prohibited except in narrow circumstances (e.g., IRS examination of an original return, judicial proceedings, § 7623 claims)', 'Permitted for all amended returns', 'Permitted only for estate returns'],
+            answer: 1,
+            explain: '§ 10.27 prohibits contingent fees except in limited contexts — examinations, judicial proceedings, whistleblower claims.' },
+          { type: 'Competence',
+            q: 'Under § 10.35, a practitioner must possess:',
+            options: ['A Ph.D.', 'Necessary competence to engage in practice, including knowledge, skill, thoroughness, and preparation', 'Only a CPA license', 'Ten years experience minimum'],
+            answer: 1,
+            explain: '§ 10.35 imposes a general competence standard — knowledge, skill, thoroughness, preparation.' },
+          { type: 'Records',
+            q: 'Under § 10.28, a practitioner must promptly return a client\'s records upon request. Fee dispute?',
+            options: ['Practitioner may withhold all records indefinitely', 'Must still return client records necessary for federal tax obligations, though may retain copies and other work product where state law permits', 'Must return only originals', 'May destroy records'],
+            answer: 1,
+            explain: '§ 10.28 requires return of client records necessary to comply with federal tax obligations, even in a fee dispute.' }
+        ]
+      },
+      {
+        id: 'z3', title: 'Zone 3 — Advice & Advertising',
+        subtitle: 'Written advice, solicitation, and fees',
+        color: 'from-purple-500 to-pink-600', emoji: '✍️',
+        badge: { emoji: '✒️', name: 'Counsel Keeper' },
+        questions: [
+          { type: 'Written Advice',
+            q: '§ 10.37 requires that written tax advice:',
+            options: ['Be at least 10 pages', 'Be based on reasonable factual/legal assumptions, consider all relevant facts, and not rely on unreasonable representations', 'Be reviewed by a judge', 'Always include a covered opinion disclosure'],
+            answer: 1,
+            explain: '§ 10.37 (post-2014 rewrite) requires reasonable assumptions, consideration of relevant facts, and reliance only on reasonable factual representations.' },
+          { type: 'Advertising',
+            q: 'Under § 10.30, a practitioner may NOT:',
+            options: ['Advertise fees', 'Use false, fraudulent, or coercive statements in advertising or solicitation', 'Display credentials', 'List areas of practice'],
+            answer: 1,
+            explain: '§ 10.30 prohibits false/misleading/coercive advertising. Truthful fee advertising is permitted.' },
+          { type: 'Negotiating Refund Checks',
+            q: 'Under § 10.31, a practitioner who is an income-tax return preparer:',
+            options: ['May endorse or negotiate any refund check issued to the client', 'May not endorse or otherwise negotiate any refund check issued to a client', 'May deposit it into a joint account', 'May sign it over to themselves with client consent'],
+            answer: 1,
+            explain: '§ 10.31 flatly prohibits negotiation of client refund checks by return preparers.' },
+          { type: 'Reliance on Others',
+            q: 'A practitioner relying on another person\'s work product in giving advice must:',
+            options: ['Always decline to rely', 'Use reasonable care in determining the other person is competent and qualified, and rely in good faith', 'Perform all the work themselves', 'Get a written indemnity'],
+            answer: 1,
+            explain: 'Reliance is permitted when the practitioner uses reasonable care to ensure competence (§ 10.37(b)).' },
+          { type: 'Errors/Omissions',
+            q: 'Under § 10.21, when a practitioner knows a client has NOT complied with revenue laws or made an error:',
+            options: ['Must report to the IRS', 'Must promptly advise the client of the noncompliance/error and the consequences', 'Must withdraw immediately', 'Must amend the return without client consent'],
+            answer: 1,
+            explain: '§ 10.21 requires the practitioner to inform the client — not report to the IRS or act unilaterally.' }
+        ]
+      },
+      {
+        id: 'z4', title: 'Zone 4 — Sanctions Arena',
+        subtitle: 'Disciplinary proceedings and sanctions',
+        color: 'from-red-500 to-orange-600', emoji: '⚔️',
+        badge: { emoji: '🏅', name: 'Sanctions Sentinel' },
+        questions: [
+          { type: 'Sanctions',
+            q: 'Under § 10.50, which sanctions may OPR impose on a practitioner for violating Circular 230?',
+            options: ['Jail time', 'Censure, suspension, disbarment, and monetary penalty', 'Only a warning letter', 'Revocation of state license'],
+            answer: 1,
+            explain: '§ 10.50 authorizes censure (public reprimand), suspension, disbarment, and monetary penalty.' },
+          { type: 'Incompetence/Disreputable',
+            q: 'Which is NOT an example of "incompetence and disreputable conduct" under § 10.51?',
+            options: ['Conviction of any criminal offense under federal tax laws', 'Giving false or misleading information to Treasury', 'Willful failure to file own federal tax return', 'Charging a reasonable fee for legitimate services'],
+            answer: 3,
+            explain: '§ 10.51 lists specific disreputable acts — reasonable fees are not among them.' },
+          { type: 'Monetary Penalty',
+            q: 'Monetary penalties under § 10.50(c) may be imposed up to:',
+            options: ['$100', 'The gross income derived (or to be derived) from the conduct giving rise to the penalty', 'Ten times the preparer\'s hourly rate', 'Always $10,000 flat'],
+            answer: 1,
+            explain: 'Penalty is capped at gross income from the conduct — and may be imposed on the firm as well.' },
+          { type: 'Proceedings',
+            q: 'Disciplinary proceedings under Circular 230 are conducted by:',
+            options: ['A jury of peers', 'An Administrative Law Judge, with appeals to the Treasury Appellate Authority', 'The U.S. Tax Court', 'The client directly'],
+            answer: 1,
+            explain: 'Proceedings are before an ALJ per § 10.70, with appeal to the Treasury Appellate Authority (§ 10.77).' },
+          { type: 'Reinstatement',
+            q: 'Under § 10.81, a disbarred or suspended practitioner may petition for reinstatement after:',
+            options: ['30 days', 'Five years following disbarment, and at any time after suspension ends', 'Never — disbarment is permanent', 'One year in all cases'],
+            answer: 1,
+            explain: '§ 10.81 allows a petition five years after disbarment; suspended practitioners may petition after the period ends.' }
+        ]
+      },
+      {
+        id: 'z5', title: 'Zone 5 — Grandmaster Trial',
+        subtitle: 'Integration & edge cases',
+        color: 'from-yellow-500 to-amber-600', emoji: '🏆',
+        badge: { emoji: '👑', name: 'Circular 230 Grandmaster' },
+        questions: [
+          { type: 'Best Practices',
+            q: 'Section 10.33 (best practices) is:',
+            options: ['Mandatory rules with sanctions', 'Aspirational guidance for all tax advisors', 'Rules for enrolled agents only', 'Repealed'],
+            answer: 1,
+            explain: '§ 10.33 is aspirational "best practices" — not a sanction-bearing rule.' },
+          { type: 'Firm Procedures',
+            q: 'Under § 10.36, a practitioner with principal authority over a firm\'s tax practice must:',
+            options: ['Personally review every return', 'Take reasonable steps to ensure the firm has adequate procedures for compliance with Circular 230', 'Share profits equally', 'File Form 2848 for every client'],
+            answer: 1,
+            explain: '§ 10.36 requires reasonable oversight procedures — not personal review of everything.' },
+          { type: 'Former Government Employees',
+            q: 'Under § 10.25, a former government employee is restricted from:',
+            options: ['Ever practicing before the IRS', 'Representing anyone in matters in which they personally and substantially participated in government service', 'Working for a CPA firm', 'Filing their own return'],
+            answer: 1,
+            explain: '§ 10.25 imposes "revolving door" restrictions on matters of personal substantial participation.' },
+          { type: 'Solicitation',
+            q: 'Targeted mail solicitations must, under § 10.30:',
+            options: ['Be handwritten', 'Clearly identify the solicitation as such and comply with other restrictions', 'Be sent only to existing clients', 'Include the Commissioner\'s signature'],
+            answer: 1,
+            explain: '§ 10.30 allows targeted solicitations if clearly identified as solicitations and not misleading.' },
+          { type: 'Applicability',
+            q: 'Who is subject to Circular 230?',
+            options: ['Only enrolled agents', 'Any individual presenting a matter to the IRS, whether enrolled or not, under § 10.7 and § 10.8', 'Only CPAs', 'Only attorneys licensed in DC'],
+            answer: 1,
+            explain: 'Circular 230 reaches all practitioners and, under § 10.8, covers anyone preparing returns or rendering written advice.' }
+        ]
+      }
+    ];
+
+    const state = {
+      avatar: AVATARS[0],
+      totalPoints: 0,
+      completedZones: {},
+      badges: [],
+      currentZone: null,
+      qIdx: 0,
+      quizScore: 0,
+      quizCorrect: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function show(id) {
+      ['loading-screen', 'main-menu', 'quiz-screen', 'results-screen', 'certification-screen'].forEach(s => {
+        const el = $(s);
+        if (el) el.classList.toggle('hidden', s !== id);
+      });
+      window.scrollTo(0, 0);
+    }
+
+    function renderAvatars() {
+      const c = $('avatar-selection');
+      c.innerHTML = '';
+      AVATARS.forEach(a => {
+        const b = document.createElement('button');
+        b.className = 'flex flex-col items-center gap-2 p-4 rounded-xl transition-all ' +
+          (state.avatar.id === a.id ? 'bg-white/30 ring-4 ring-yellow-400 scale-105' : 'bg-white/10 hover:bg-white/20');
+        b.innerHTML = '<span class="text-5xl">' + a.emoji + '</span><span class="text-white font-semibold">' + a.name + '</span>';
+        b.onclick = () => { state.avatar = a; renderAvatars(); };
+        c.appendChild(b);
+      });
+    }
+
+    function renderZones() {
+      const c = $('zone-map');
+      c.innerHTML = '';
+      ZONES.forEach((z, i) => {
+        const done = !!state.completedZones[z.id];
+        const prevDone = i === 0 || !!state.completedZones[ZONES[i - 1].id];
+        const locked = !prevDone && !done;
+        const card = document.createElement('div');
+        card.className = 'zone-card bg-gradient-to-br ' + z.color + ' rounded-2xl p-6 shadow-xl cursor-pointer ' + (locked ? 'opacity-50 cursor-not-allowed' : '');
+        card.innerHTML =
+          '<div class="text-5xl mb-3">' + z.emoji + '</div>' +
+          '<h3 class="font-display text-xl text-white mb-2">' + z.title + '</h3>' +
+          '<p class="text-white/90 text-sm mb-4">' + z.subtitle + '</p>' +
+          '<div class="flex items-center justify-between">' +
+            '<span class="text-white/80 text-sm">' + z.questions.length + ' questions</span>' +
+            '<span class="text-white font-bold">' + (done ? '✅ Completed' : locked ? '🔒 Locked' : '▶ Play') + '</span>' +
+          '</div>';
+        if (!locked) card.onclick = () => startZone(z);
+        c.appendChild(card);
+      });
+    }
+
+    function renderBadges() {
+      const c = $('badges-display');
+      c.innerHTML = '';
+      ZONES.forEach(z => {
+        const earned = state.badges.includes(z.id);
+        const d = document.createElement('div');
+        d.className = 'text-center ' + (earned ? '' : 'opacity-30');
+        d.innerHTML =
+          '<div class="w-20 h-20 rounded-full bg-gradient-to-br ' + z.color + ' flex items-center justify-center text-4xl shadow-lg mx-auto mb-2">' + z.badge.emoji + '</div>' +
+          '<p class="text-white text-xs font-semibold">' + z.badge.name + '</p>';
+        c.appendChild(d);
+      });
+      $('badges-earned').textContent = state.badges.length + '/' + ZONES.length;
+      $('total-points').textContent = state.totalPoints;
+      const total = ZONES.reduce((s, z) => s + z.questions.length, 0);
+      const done = Object.values(state.completedZones).reduce((s, v) => s + (v.correct || 0), 0);
+      $('progress-percent').textContent = Math.round((done / total) * 100) + '%';
+    }
+
+    function startZone(z) {
+      state.currentZone = z;
+      state.qIdx = 0;
+      state.quizScore = 0;
+      state.quizCorrect = 0;
+      $('zone-banner').className = 'rounded-2xl p-4 mb-6 text-center bg-gradient-to-r ' + z.color;
+      $('zone-title').textContent = z.emoji + ' ' + z.title;
+      $('zone-subtitle').textContent = z.subtitle;
+      $('total-questions').textContent = z.questions.length;
+      show('quiz-screen');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const z = state.currentZone;
+      const q = z.questions[state.qIdx];
+      $('current-question').textContent = state.qIdx + 1;
+      $('quiz-score').textContent = state.quizScore;
+      $('question-type').textContent = q.type;
+      $('question-text').textContent = q.q;
+      $('feedback-section').classList.add('hidden');
+      $('next-question').classList.add('hidden');
+      const oc = $('options-container');
+      oc.innerHTML = '';
+      q.options.forEach((opt, i) => {
+        const b = document.createElement('button');
+        b.className = 'quiz-option w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-400 bg-gray-50 text-gray-800 font-medium';
+        b.textContent = String.fromCharCode(65 + i) + '. ' + opt;
+        b.onclick = () => selectAnswer(i, b);
+        oc.appendChild(b);
+      });
+    }
+
+    function selectAnswer(i, btn) {
+      const z = state.currentZone;
+      const q = z.questions[state.qIdx];
+      const correct = i === q.answer;
+      const buttons = $('options-container').querySelectorAll('button');
+      buttons.forEach((b, idx) => {
+        b.disabled = true;
+        if (idx === q.answer) b.className = 'quiz-option w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 font-medium';
+        else if (idx === i) b.className = 'quiz-option w-full text-left p-4 rounded-xl border-2 border-red-500 bg-red-50 text-red-900 font-medium animate-shake';
+        else b.className = 'quiz-option w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-500 font-medium opacity-60';
+      });
+      if (correct) {
+        state.quizScore += 100;
+        state.quizCorrect += 1;
+        $('feedback-icon').textContent = '✅';
+        $('feedback-title').textContent = 'Correct! +100 points';
+        $('feedback-section').className = 'mt-6 p-4 rounded-xl bg-emerald-50 border-2 border-emerald-200';
+      } else {
+        $('feedback-icon').textContent = '❌';
+        $('feedback-title').textContent = 'Not quite.';
+        $('feedback-section').className = 'mt-6 p-4 rounded-xl bg-red-50 border-2 border-red-200';
+      }
+      $('feedback-explanation').textContent = q.explain;
+      $('feedback-section').classList.remove('hidden');
+      $('quiz-score').textContent = state.quizScore;
+      $('next-question').classList.remove('hidden');
+      $('next-question').textContent = state.qIdx + 1 >= z.questions.length ? 'See Results →' : 'Next Question →';
+    }
+
+    function nextQuestion() {
+      const z = state.currentZone;
+      state.qIdx += 1;
+      if (state.qIdx >= z.questions.length) finishZone();
+      else renderQuestion();
+    }
+
+    function finishZone() {
+      const z = state.currentZone;
+      const total = z.questions.length;
+      const correct = state.quizCorrect;
+      const pct = correct / total;
+      state.totalPoints += state.quizScore;
+      state.completedZones[z.id] = { correct, total };
+
+      let earnedBadge = false;
+      if (pct >= 0.8 && !state.badges.includes(z.id)) {
+        state.badges.push(z.id);
+        earnedBadge = true;
+      }
+
+      $('results-icon').textContent = pct === 1 ? '🏆' : pct >= 0.8 ? '🌟' : pct >= 0.6 ? '👍' : '💪';
+      $('results-title').textContent = pct === 1 ? 'Perfect!' : pct >= 0.8 ? 'Excellent!' : pct >= 0.6 ? 'Good Job!' : 'Keep Practicing';
+      $('results-message').textContent = pct >= 0.8 ? 'You\'ve mastered ' + z.title + '.' : 'Score 80%+ to earn the zone badge.';
+      $('final-score').textContent = state.quizScore;
+      $('correct-answers').textContent = correct + '/' + total;
+
+      if (earnedBadge) {
+        $('badge-earned-section').classList.remove('hidden');
+        $('earned-badge-display').textContent = z.badge.emoji;
+        $('earned-badge-name').textContent = z.badge.name;
+      } else {
+        $('badge-earned-section').classList.add('hidden');
+      }
+      show('results-screen');
+    }
+
+    function retryZone() {
+      if (state.currentZone) startZone(state.currentZone);
+    }
+
+    function backToMap() {
+      renderBadges();
+      renderZones();
+      if (state.badges.length === ZONES.length) {
+        show('certification-screen');
+      } else {
+        show('main-menu');
+      }
+    }
+
+    // Wire buttons
+    $('back-to-menu').onclick = backToMap;
+    $('next-question').onclick = nextQuestion;
+    $('retry-quiz').onclick = retryZone;
+    $('back-to-map').onclick = backToMap;
+    $('close-certification').onclick = () => show('main-menu');
+
+    // Init
+    renderAvatars();
+    renderZones();
+    renderBadges();
+    setTimeout(() => show('main-menu'), 300);
+  });
+  </script>
 </body>
 </html>

@@ -248,5 +248,210 @@
 
 <!-- PARTIAL:footer -->
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const ROUNDS = [
+    { excerpt: 'We received information from third parties (such as employers or financial institutions) that does not match the income or payments you reported on your return. As a result, we are proposing changes to your tax, and you may owe additional tax, interest, and penalties.', answer: 'CP2000', title: 'Underreporter Notice' },
+    { excerpt: 'You have an unpaid amount due on your account. If you do not pay the amount due immediately, we intend to levy certain assets, such as wages, bank accounts, and state tax refunds. This is your notice of intent to levy.', answer: 'CP504', title: 'Final Notice — Intent to Levy (State Refund)' },
+    { excerpt: 'Our records show you have an unpaid balance on your individual income tax account. This is the first notice that a balance is due. Please pay the amount shown by the due date to avoid additional penalties and interest.', answer: 'CP14', title: 'First Balance Due Notice' },
+    { excerpt: 'A Notice of Federal Tax Lien has been filed against all your property and rights to property. You have the right to a Collection Due Process hearing if you request one within 30 days from the date of this letter.', answer: 'LTR 3172', title: 'Notice of Federal Tax Lien Filing' },
+    { excerpt: 'We made changes to your return because we found a miscalculation. As a result of these changes, you now owe a balance. Review the changes and pay the amount due, or contact us if you disagree.', answer: 'CP11', title: 'Math Error — Balance Due' },
+    { excerpt: 'We made changes to your return based on information you provided. As a result of these changes, you have an overpayment on your account and will receive a refund in 4 to 6 weeks, assuming you owe no other taxes or debts.', answer: 'CP21', title: 'Adjustment — Refund Due' },
+    { excerpt: 'This is a reminder that you have an overdue tax balance. If you do not pay the full amount or make arrangements within 10 days, we may file a Notice of Federal Tax Lien.', answer: 'CP503', title: 'Second Reminder — Balance Due' },
+    { excerpt: 'We are examining your federal income tax return for the year shown. This letter constitutes our 30-day letter and the attached examination report proposes changes. You have 30 days to agree, appeal, or respond.', answer: 'LTR 525', title: '30-Day Letter — Exam Report' },
+    { excerpt: 'This is your final notice from the IRS. You must file your overdue return or explain why you are not required to file. Failure to respond may result in the IRS preparing a substitute return on your behalf.', answer: 'CP59', title: 'Unfiled Return Notice' },
+    { excerpt: 'You have the right to a hearing with the IRS Independent Office of Appeals before we levy. If you want a Collection Due Process hearing, you must request it in writing within 30 days from the date of this letter.', answer: 'LTR 1058', title: 'Final Notice — Right to a Hearing' }
+  ];
+
+  const ALL_NOTICES = ['CP2000', 'CP504', 'CP14', 'LTR 3172', 'CP11', 'CP21', 'CP503', 'LTR 525', 'CP59', 'LTR 1058', 'CP22', 'CP501'];
+
+  const state = { round: 0, score: 0, selected: null, rounds: [] };
+
+  const $ = (id) => document.getElementById(id);
+
+  function shuffle(a) {
+    const b = a.slice();
+    for (let i = b.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [b[i], b[j]] = [b[j], b[i]];
+    }
+    return b;
+  }
+
+  function showScreen(id) {
+    ['intro-screen', 'game-screen', 'win-screen', 'lose-screen'].forEach(s => {
+      const el = $(s);
+      if (el) el.classList.toggle('hidden', s !== id);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  function buildCards() {
+    const current = state.rounds[state.round];
+    const pool = new Set([current.answer]);
+    const others = shuffle(ALL_NOTICES.filter(n => n !== current.answer)).slice(0, 4);
+    others.forEach(n => pool.add(n));
+    const cards = shuffle(Array.from(pool));
+
+    const spread = $('card-spread');
+    spread.innerHTML = '';
+    cards.forEach((notice, i) => {
+      const c = document.createElement('div');
+      c.className = 'card-deal w-24 h-32 md:w-28 md:h-36 bg-gradient-to-br from-white to-gray-100 rounded-lg card-shadow cursor-pointer border-2 border-gray-300 flex flex-col items-center justify-center select-none hover:scale-105 transition-transform';
+      c.style.animationDelay = (i * 0.08) + 's';
+      c.draggable = true;
+      c.dataset.notice = notice;
+      c.innerHTML =
+        '<div class="text-[10px] text-gray-500 uppercase tracking-wider">IRS</div>' +
+        '<div class="text-lg md:text-xl font-black text-blue-900 mt-1">' + notice + '</div>' +
+        '<div class="text-[9px] text-gray-400 mt-1">Notice</div>';
+
+      c.addEventListener('dragstart', (e) => {
+        c.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', notice);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      c.addEventListener('dragend', () => c.classList.remove('dragging'));
+      c.addEventListener('click', () => selectCard(notice, c));
+      spread.appendChild(c);
+    });
+  }
+
+  function selectCard(notice, cardEl) {
+    state.selected = notice;
+    const spread = $('card-spread');
+    spread.querySelectorAll('div[data-notice]').forEach(el => {
+      el.classList.remove('ring-4', 'ring-yellow-400');
+    });
+    cardEl.classList.add('ring-4', 'ring-yellow-400');
+    renderDropZone();
+    $('reveal-btn').classList.remove('hidden');
+  }
+
+  function renderDropZone() {
+    const dz = $('drop-zone');
+    if (state.selected) {
+      dz.innerHTML =
+        '<div class="text-center">' +
+          '<div class="text-xs text-gray-400 uppercase">Your Answer</div>' +
+          '<div class="text-2xl md:text-3xl font-black text-yellow-300 mt-1">' + state.selected + '</div>' +
+        '</div>';
+    } else {
+      dz.innerHTML = '<p class="text-yellow-400/70 text-center px-4">Drop your answer card here</p>';
+    }
+  }
+
+  function setupDropZone() {
+    const dz = $('drop-zone');
+    dz.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dz.classList.add('drop-zone-active');
+    });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drop-zone-active'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dz.classList.remove('drop-zone-active');
+      const notice = e.dataTransfer.getData('text/plain');
+      if (!notice) return;
+      const cardEl = $('card-spread').querySelector('div[data-notice="' + notice + '"]');
+      if (cardEl) selectCard(notice, cardEl);
+    });
+  }
+
+  function renderQuestion() {
+    const r = state.rounds[state.round];
+    $('question-num').textContent = state.round + 1;
+    $('score').textContent = state.score;
+    $('question-text').textContent = r.excerpt;
+    state.selected = null;
+    renderDropZone();
+    $('reveal-btn').classList.add('hidden');
+    $('feedback-area').classList.add('hidden');
+    buildCards();
+  }
+
+  function reveal() {
+    if (!state.selected) return;
+    const r = state.rounds[state.round];
+    const correct = state.selected === r.answer;
+    if (correct) state.score += 1;
+    const fb = $('feedback-area');
+    const banner = $('feedback-banner');
+    const text = $('feedback-text');
+    if (correct) {
+      banner.textContent = '🎰 JACKPOT! Correct!';
+      banner.className = 'text-3xl md:text-4xl font-black mb-2 text-yellow-300';
+      text.innerHTML = '<strong>' + r.answer + '</strong> — ' + r.title + '.';
+    } else {
+      banner.textContent = '❌ Bust!';
+      banner.className = 'text-3xl md:text-4xl font-black mb-2 text-red-400';
+      text.innerHTML = 'You played <strong>' + state.selected + '</strong>. The correct answer was <strong>' + r.answer + '</strong> — ' + r.title + '.';
+    }
+    $('score').textContent = state.score;
+    fb.classList.remove('hidden');
+    $('reveal-btn').classList.add('hidden');
+    $('next-btn').textContent = state.round + 1 >= state.rounds.length ? 'See Results →' : 'Next Card →';
+  }
+
+  function nextRound() {
+    state.round += 1;
+    if (state.round >= state.rounds.length) {
+      finishGame();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function finishGame() {
+    if (state.score >= 3) {
+      $('final-score').textContent = state.score;
+      launchConfetti();
+      showScreen('win-screen');
+    } else {
+      $('lose-score').textContent = state.score;
+      showScreen('lose-screen');
+    }
+  }
+
+  function launchConfetti() {
+    const c = $('confetti-container');
+    c.innerHTML = '';
+    const colors = ['#ffd700', '#ff4444', '#44ff44', '#4488ff', '#ff44ff'];
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti absolute';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.top = '-20px';
+      p.style.width = '10px';
+      p.style.height = '14px';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDelay = (Math.random() * 2) + 's';
+      p.style.animationDuration = (2 + Math.random() * 2) + 's';
+      c.appendChild(p);
+    }
+  }
+
+  function startGame() {
+    state.round = 0;
+    state.score = 0;
+    state.rounds = shuffle(ROUNDS);
+    showScreen('game-screen');
+    renderQuestion();
+  }
+
+  // Wire buttons
+  const startBtn = $('start-btn');
+  startBtn.disabled = false;
+  startBtn.onclick = startGame;
+  $('reveal-btn').onclick = reveal;
+  $('next-btn').onclick = nextRound;
+  $('play-again-btn').onclick = startGame;
+  $('try-again-btn').onclick = startGame;
+  $('close-modal').onclick = () => $('letter-modal').classList.add('hidden');
+
+  setupDropZone();
+  showScreen('intro-screen');
+});
+</script>
 </body>
 </html>
