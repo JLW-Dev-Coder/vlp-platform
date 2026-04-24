@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // Strip legacy SDK script refs, Cloudflare challenge scripts, and
-// the tax-jargon-game login gate from every HTML file in public/games.
+// the tax-jargon-game login gate from every HTML file in public/play.
 // See .claude/CLAUDE.md — frontend is no longer gated by the legacy
 // Worker SDKs; those must be removed so games load directly.
 
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
 
-const GAMES_DIR = join(process.cwd(), "public", "games");
+const GAMES_DIR = join(process.cwd(), "public", "play");
 
 const SCRIPT_TAG_RE = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
 const SCRIPT_SELF_CLOSING_RE = /<script\b[^>]*\/\s*>/gi;

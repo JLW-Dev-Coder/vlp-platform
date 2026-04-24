@@ -76,7 +76,7 @@ export default function PlayClient({ slug, title }: { slug: string; title: strin
         </Link>
       </div>
       <iframe
-        src={`/games/${slug}.html`}
+        src={`/play/${slug}.html`}
         title={title}
         className={styles.frame}
         allow="fullscreen"
