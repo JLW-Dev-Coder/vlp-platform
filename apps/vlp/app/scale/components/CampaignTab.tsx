@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import CampaignPostsTab from './CampaignPostsTab'
+import CraigslistPostsTab from './CraigslistPostsTab'
 import styles from './CampaignTab.module.css'
 
 // ---------------------------------------------------------------------------
@@ -41,7 +42,7 @@ const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
 // ---------------------------------------------------------------------------
 // Mode selector
 // ---------------------------------------------------------------------------
-type Mode = 'youtube' | 'community' | 'campaign'
+type Mode = 'youtube' | 'community' | 'campaign' | 'craigslist_taxpayer'
 
 export default function CampaignTab() {
   const [mode, setMode] = useState<Mode>('youtube')
@@ -78,6 +79,7 @@ export default function CampaignTab() {
             <option value="youtube">YouTube Videos</option>
             <option value="community">Community Posts</option>
             <option value="campaign">Campaign Posts (LinkedIn + FB)</option>
+            <option value="craigslist_taxpayer">Craigslist Posts (Taxpayer Acq.)</option>
           </select>
         </div>
 
@@ -124,6 +126,7 @@ export default function CampaignTab() {
       )}
       {mode === 'community' && <CommunityPanel anthropicKey={anthropicKey} />}
       {mode === 'campaign' && <CampaignPostsTab />}
+      {mode === 'craigslist_taxpayer' && <CraigslistPostsTab anthropicKey={anthropicKey} />}
     </div>
   )
 }
