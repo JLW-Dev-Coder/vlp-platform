@@ -434,7 +434,7 @@
    <div class="relative z-10 min-h-full flex flex-col items-center justify-center p-4 md:p-8"><!-- Quiz Start Screen -->
     <div id="start-screen" class="quiz-container w-full max-w-3xl p-6 md:p-10 rounded-3xl border-2 border-opacity-50" style="border-color: var(--neon-teal);"><!-- Title with animations -->
      <div class="text-center mb-8">
-      <h1 id="main-title" class="quiz-title text-3xl md:text-5xl font-extrabold mb-4 break-words" style="font-family: 'Syne', sans-serif; word-wrap: break-word; overflow-wrap: break-word;">{{ quiz_title }}</h1>
+      <h1 id="main-title" class="quiz-title text-3xl md:text-5xl font-extrabold mb-4 break-words" style="font-family: 'Syne', sans-serif; word-wrap: break-word; overflow-wrap: break-word;">Tax Mythbusters Quiz</h1>
       <p id="main-subtitle" class="text-xl md:text-2xl font-medium" style="color: var(--neon-yellow); animation: float 3s ease-in-out infinite;">Can you separate fact from fiction?</p>
      </div><!-- Animated icons -->
      <div class="flex justify-center gap-8 mb-8">
@@ -544,5 +544,140 @@
    </div>
   </div>
   
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e8cdbce524c27c5',t:'MTc3NTYwNTAzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>
+  const QUESTIONS = [
+    {
+      statement: "You don't have to file a tax return if you made less than $10,000.",
+      answer: "myth",
+      explanation: "Filing thresholds depend on filing status, age, and income type. Self-employment income of $400+ requires a return regardless, and you may want to file to claim refundable credits."
+    },
+    {
+      statement: "The IRS can audit returns filed up to three years ago for most errors.",
+      answer: "fact",
+      explanation: "The standard statute of limitations is 3 years. It extends to 6 years for substantial under-reporting (25%+) and is unlimited for fraud or unfiled returns."
+    },
+    {
+      statement: "Getting a big tax refund means you did your taxes right.",
+      answer: "myth",
+      explanation: "A large refund means you overpaid all year — you gave the IRS an interest-free loan. Adjusting withholding can put that money in your pocket sooner."
+    },
+    {
+      statement: "Home office deductions automatically trigger an IRS audit.",
+      answer: "myth",
+      explanation: "Legitimate home office deductions are not a red flag. The space must be used regularly and exclusively for business, but claiming it correctly is perfectly safe."
+    },
+    {
+      statement: "Tax extensions give you more time to file, but not more time to pay.",
+      answer: "fact",
+      explanation: "Form 4868 extends your filing deadline to October, but any tax owed is still due by the April deadline. Interest and penalties accrue on unpaid balances."
+    }
+  ];
+
+  let currentQuestion = 0;
+  let score = 0;
+
+  const $ = (id) => document.getElementById(id);
+
+  function show(el) { el.classList.remove('hidden-anim'); el.classList.add('visible-anim'); }
+  function hide(el) { el.classList.add('hidden-anim'); el.classList.remove('visible-anim'); }
+
+  function startQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    hide($('start-screen'));
+    $('start-screen').style.display = 'none';
+    show($('quiz-screen'));
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const q = QUESTIONS[currentQuestion];
+    $('statement-text').textContent = q.statement;
+    $('question-badge').textContent = `QUESTION ${currentQuestion + 1}`;
+    $('progress-text').textContent = `${currentQuestion + 1}/${QUESTIONS.length}`;
+    $('score-display').textContent = String(score);
+
+    const circle = $('progress-circle');
+    const circumference = 283;
+    const progress = currentQuestion / QUESTIONS.length;
+    circle.style.strokeDashoffset = String(circumference - circumference * progress);
+
+    const card = $('statement-card');
+    card.classList.remove('correct', 'incorrect', 'reveal');
+    hide($('answer-reveal'));
+    document.querySelectorAll('#choice-buttons .choice-btn').forEach(b => b.disabled = false);
+  }
+
+  function selectAnswer(choice) {
+    const q = QUESTIONS[currentQuestion];
+    const correct = choice === q.answer;
+    if (correct) score++;
+
+    const card = $('statement-card');
+    card.classList.add(correct ? 'correct' : 'incorrect');
+    document.querySelectorAll('#choice-buttons .choice-btn').forEach(b => b.disabled = true);
+
+    const badge = $('answer-badge');
+    badge.textContent = q.answer.toUpperCase();
+    if (q.answer === 'myth') {
+      badge.style.background = 'linear-gradient(135deg, var(--neon-pink), #ff4444)';
+      badge.style.color = 'white';
+    } else {
+      badge.style.background = 'linear-gradient(135deg, var(--neon-teal), #00a896)';
+      badge.style.color = 'white';
+    }
+    $('result-icon').textContent = correct ? '🎉' : '💡';
+    $('explanation-text').textContent = q.explanation;
+    $('score-display').textContent = String(score);
+
+    show($('answer-reveal'));
+    $('answer-reveal').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function nextQuestion() {
+    currentQuestion++;
+    if (currentQuestion >= QUESTIONS.length) {
+      finishQuiz();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function finishQuiz() {
+    hide($('quiz-screen'));
+    show($('success-screen'));
+    $('final-score').textContent = `${score}/${QUESTIONS.length}`;
+    const pct = score / QUESTIONS.length;
+    let msg = 'Keep learning — tax myths are sneaky!';
+    if (pct === 1) msg = 'Perfect score! You\'re a tax myth buster!';
+    else if (pct >= 0.8) msg = 'Great job! You know your tax facts.';
+    else if (pct >= 0.6) msg = 'Nice work — a few myths slipped through.';
+    $('performance-msg').textContent = msg;
+  }
+
+  function restartQuiz() {
+    hide($('success-screen'));
+    $('start-screen').style.display = '';
+    show($('start-screen'));
+    currentQuestion = 0;
+    score = 0;
+  }
+
+  // Stars background
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('stars-container');
+    if (container) {
+      for (let i = 0; i < 50; i++) {
+        const s = document.createElement('div');
+        s.className = 'star';
+        const size = Math.random() * 3 + 1;
+        s.style.width = s.style.height = size + 'px';
+        s.style.left = Math.random() * 100 + '%';
+        s.style.top = Math.random() * 100 + '%';
+        s.style.animationDelay = (Math.random() * 2) + 's';
+        container.appendChild(s);
+      }
+    }
+  });
+ </script></body>
 </html>
