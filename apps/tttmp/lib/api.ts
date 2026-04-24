@@ -10,13 +10,18 @@ async function apiFetch<T>(
 ): Promise<T> {
   const { auth = true, ...fetchOptions } = options
 
+  const method = (fetchOptions.method || 'GET').toUpperCase()
+  const headers: Record<string, string> = {
+    ...(fetchOptions.headers as Record<string, string> | undefined),
+  }
+  if (method !== 'GET' && method !== 'HEAD' && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json'
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...fetchOptions,
     credentials: auth ? 'include' : 'omit',
-    headers: {
-      'Content-Type': 'application/json',
-      ...fetchOptions.headers,
-    },
+    headers,
   })
 
   if (!res.ok) {

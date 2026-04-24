@@ -149,6 +149,7 @@ function TokensContent() {
     if (searchParams.get('checkout') !== 'success') return
     const sessionId = searchParams.get('session_id')
     if (!sessionId) return
+    if (!session?.account_id) return
 
     let cancelled = false
     setPurchaseToast({ kind: 'processing', message: 'Processing your purchase…' })
@@ -190,7 +191,7 @@ function TokensContent() {
     return () => {
       cancelled = true
     }
-  }, [searchParams, router])
+  }, [searchParams, router, session?.account_id])
 
   const tokenBalance = balance?.tax_game_tokens ?? 0
   const planName = membership?.plan_name || null
