@@ -284,18 +284,8 @@ btn.classList.remove("opacity-60","cursor-not-allowed");
 
 <script>
 
-(async()=>{
-const ok=await gateAccess();
-if(!ok){
-setStatus('Access denied. Redirecting…');
-redirectToAbout();
-return;
-}
+// Access is gated by the parent Next.js PlayClient before this iframe renders.
 initializeApp();
-})().catch(()=>{
-setStatus('Error loading game. Redirecting…');
-redirectToAbout();
-});
 
 </script>
 
