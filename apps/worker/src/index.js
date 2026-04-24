@@ -6851,9 +6851,10 @@ const ROUTES = [
 
       try {
         // TTMP/TTTMP token package prices live in the TMP Stripe account (acct_1T81TPQEa4WBi79g).
-        const tmpSecretKey = env.STRIPE_SECRET_KEY;
+        // Deployed STRIPE_SECRET_KEY points to VLP — TMP-account operations require STRIPE_SECRET_KEY_TMP.
+        const tmpSecretKey = env.STRIPE_SECRET_KEY_TMP;
         if (!tmpSecretKey) {
-          return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY is not set' }, 503, request);
+          return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY_TMP is not set' }, 503, request);
         }
         // Create Stripe Checkout session for one-time payment
         const checkoutSession = await fetch('https://api.stripe.com/v1/checkout/sessions', {
@@ -11966,9 +11967,14 @@ TTMP Support Team
           checkoutParams.customer_email = email;
         }
 
-        // TTTMP token package prices live in the TMP Stripe account (acct_1T81TPQEa4WBi79g),
-        // so use STRIPE_SECRET_KEY (TMP) — not STRIPE_SECRET_KEY_VLP.
-        const checkoutSession = await stripePost('/checkout/sessions', checkoutParams, env, env.STRIPE_SECRET_KEY);
+        // TTTMP token package prices live in the TMP Stripe account (acct_1T81TPQEa4WBi79g).
+        // The deployed STRIPE_SECRET_KEY secret belongs to the VLP account (acct_1T99pl9ROeyeXOqe),
+        // so TTTMP/TMP must use a dedicated STRIPE_SECRET_KEY_TMP secret.
+        const tmpSecretKey = env.STRIPE_SECRET_KEY_TMP;
+        if (!tmpSecretKey) {
+          return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY_TMP is not set — TMP account sk_live_ key required' }, 503, request);
+        }
+        const checkoutSession = await stripePost('/checkout/sessions', checkoutParams, env, tmpSecretKey);
 
         // Store order in R2
         const orderData = {
@@ -12012,7 +12018,7 @@ TTMP Support Team
 
       try {
         // Get Stripe session status (TTTMP sessions are on the TMP Stripe account)
-        const stripeSession = await stripeGet(`/checkout/sessions/${sessionId}`, env, env.STRIPE_SECRET_KEY);
+        const stripeSession = await stripeGet(`/checkout/sessions/${sessionId}`, env, env.STRIPE_SECRET_KEY_TMP);
         if (stripeSession.metadata?.account_id !== session.account_id) {
           return json({ ok: false, error: 'NOT_FOUND', message: 'Session not found' }, 404, request);
         }
