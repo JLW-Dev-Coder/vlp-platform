@@ -35,7 +35,7 @@ function useCountdown(targetDate: string) {
 export default function KennedyPage() {
   const [currentId, setCurrentId] = useState<string>('entry')
   const [started, setStarted] = useState(false)
-  const [muted, setMuted] = useState(true)
+  const [muted, setMuted] = useState(false)
   const [clipEnded, setClipEnded] = useState(false)
   const [history, setHistory] = useState<string[]>([])
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -68,8 +68,9 @@ export default function KennedyPage() {
     track('kennedy_reset')
   }, [])
 
-  // Load + play the current clip when the node changes
+  // Load + play the current clip when the node changes (only after user has started)
   useEffect(() => {
+    if (!started) return
     const v = videoRef.current
     if (!v || !node) return
     if (!hasVideo) {
@@ -79,7 +80,7 @@ export default function KennedyPage() {
     v.src = node.clipUrl
     v.muted = muted
     v.play().catch(() => {})
-  }, [currentId, node, hasVideo, muted])
+  }, [started, currentId, node, hasVideo, muted])
 
   // Auto-advance
   useEffect(() => {
@@ -146,13 +147,13 @@ export default function KennedyPage() {
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight mb-4">
-            Add IRS penalty abatement
+            File Every Kwong-Eligible Claim
             <br />
-            <span className="text-yellow-500">to your practice.</span>
+            <span className="text-yellow-500">Before July.</span>
           </h1>
 
           <p className="text-lg text-zinc-400 max-w-2xl mx-auto mb-8">
-            Kennedy walks you through whether TaxClaim Pro fits your firm — in a few minutes. No account needed.
+            TaxClaim Pro automates Form 843 for CPAs, EAs, and tax attorneys. Talk to Kennedy to see how it fits your practice.
           </p>
 
           {!started && (
@@ -167,7 +168,7 @@ export default function KennedyPage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
               </svg>
-              Start with Kennedy
+              Talk to Kennedy
             </button>
           )}
         </div>
@@ -181,8 +182,6 @@ export default function KennedyPage() {
               ref={videoRef}
               className="w-full aspect-video object-cover bg-black"
               playsInline
-              autoPlay
-              muted={muted}
               controls={false}
               onEnded={() => {
                 setClipEnded(true)
