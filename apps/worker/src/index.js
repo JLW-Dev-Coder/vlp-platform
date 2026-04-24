@@ -12014,9 +12014,6 @@ TTMP Support Team
   {
     method: 'GET', pattern: '/v1/tttmp/checkout/status',
     handler: async (_method, _pattern, _params, request, env) => {
-      const { session, error } = await requireTttmpSession(request, env);
-      if (error) return error;
-
       const url = new URL(request.url);
       const sessionId = url.searchParams.get('session_id');
       if (!sessionId) {
@@ -12024,10 +12021,13 @@ TTMP Support Team
       }
 
       try {
-        // Get Stripe session status (TTTMP sessions are on the TMP Stripe account)
+        // Get Stripe session status (TTTMP sessions are on the TMP Stripe account).
+        // Authority for account_id is the Stripe session metadata (set at checkout creation),
+        // not the caller's cookie — so this endpoint does not require auth.
         const stripeSession = await stripeGet(`/checkout/sessions/${sessionId}`, env, env.STRIPE_SECRET_KEY_TMP);
-        if (stripeSession.metadata?.account_id !== session.account_id) {
-          return json({ ok: false, error: 'NOT_FOUND', message: 'Session not found' }, 404, request);
+        const accountId = stripeSession?.metadata?.account_id;
+        if (!accountId) {
+          return json({ ok: false, error: 'INVALID_SESSION' }, 404, request);
         }
 
         let creditsAdded = 0;
@@ -12042,10 +12042,9 @@ TTMP Support Team
             const receipt = await existingReceipt.json().catch(() => ({}));
             creditsAdded = Number(receipt.credits_added) || 0;
             const bal = await env.DB.prepare('SELECT tax_game_tokens FROM tokens WHERE account_id = ?')
-              .bind(session.account_id).first().catch(() => null);
+              .bind(accountId).first().catch(() => null);
             newBalance = bal?.tax_game_tokens ?? 0;
           } else {
-            // Read token count from metadata; fall back to price_id mapping.
             const TTTMP_TOKEN_COUNTS = {
               [env.STRIPE_PRICE_TTTMP_30_TOKENS]: 30,
               [env.STRIPE_PRICE_TTTMP_80_TOKENS]: 80,
@@ -12062,11 +12061,11 @@ TTMP Support Team
             }
 
             if (creditsAdded > 0) {
-              const tokenResult = await creditTokens(session.account_id, creditsAdded, 'tax_game', env);
+              const tokenResult = await creditTokens(accountId, creditsAdded, 'tax_game', env);
               newBalance = tokenResult.newBalance;
               await r2Put(env.R2_VIRTUAL_LAUNCH, receiptKey, {
                 session_id: sessionId,
-                account_id: session.account_id,
+                account_id: accountId,
                 credits_added: creditsAdded,
                 token_type: 'tax_game',
                 credited_at: new Date().toISOString(),

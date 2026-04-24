@@ -274,7 +274,7 @@ Total routes: ~196
 | GET | `/v1/tttmp/auth/session` | Get session | Yes | TTTMP |
 | POST | `/v1/tttmp/auth/logout` | Logout | Yes | TTTMP |
 | POST | `/v1/tttmp/checkout/sessions` | Create checkout session | No | TTTMP |
-| GET | `/v1/tttmp/checkout/status` | Checkout status | Yes | TTTMP |
+| GET | `/v1/tttmp/checkout/status` | Checkout status + token credit | No | TTTMP |
 | POST | `/v1/tttmp/support/tickets` | Create support ticket | Yes | TTTMP |
 | GET | `/v1/tttmp/support/tickets/:ticket_id` | Get ticket | Yes | TTTMP |
 | GET | `/v1/tttmp/tokens/balance` | Token balance | Yes | TTTMP |
