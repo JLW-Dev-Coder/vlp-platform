@@ -276,7 +276,171 @@ btn.classList.remove("opacity-60","cursor-not-allowed");
 
 <script>
 
-// Access is gated by the parent Next.js PlayClient before this iframe renders.
+// Access is gated by the parent Next.js PlayClient before this iframe renders,
+// so we skip gateAccess() here and run the game immediately.
+
+const IRS_CODES = [
+  { code: "150", meaning: "Tax return filed" },
+  { code: "290", meaning: "Additional tax assessed" },
+  { code: "420", meaning: "Examination (audit) indicator" },
+  { code: "570", meaning: "Additional account action pending (hold)" },
+  { code: "571", meaning: "Resolved additional account action" },
+  { code: "766", meaning: "Generated refundable credit allowance" },
+  { code: "768", meaning: "Earned Income Credit (EIC)" },
+  { code: "806", meaning: "W-2 or 1099 withholding" },
+  { code: "810", meaning: "Refund freeze" },
+  { code: "811", meaning: "Refund freeze released" },
+  { code: "826", meaning: "Refund applied to a non-IRS debt (offset)" },
+  { code: "846", meaning: "Refund issued" },
+  { code: "898", meaning: "Refund applied to non-IRS debt (TOP offset)" },
+  { code: "971", meaning: "Notice issued" }
+];
+
+const LEVELS_PER_GAME = 4;
+const POINTS_CORRECT = 200;
+const POINTS_SKIP = -100;
+const STREAK_BONUS = 50;
+
+let game = null;
+
+function pickQuestions(n){
+  const pool = IRS_CODES.slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, n);
+}
+
+function buildChoices(correct){
+  const wrong = IRS_CODES.filter(c => c.code !== correct.code);
+  for (let i = wrong.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [wrong[i], wrong[j]] = [wrong[j], wrong[i]];
+  }
+  const choices = [correct, wrong[0], wrong[1], wrong[2]];
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+  return choices;
+}
+
+function $(id){ return document.getElementById(id); }
+
+function show(id){ $(id).classList.remove("hidden"); }
+function hide(id){ $(id).classList.add("hidden"); }
+
+function renderQuestion(){
+  const q = game.questions[game.index];
+  $("question").textContent = "What does code " + q.code + " mean?";
+  $("level-display").textContent = (game.index + 1) + "/" + LEVELS_PER_GAME;
+  $("score-display").textContent = String(game.score);
+  $("streak-display").textContent = String(game.streak);
+
+  const container = $("cards-container");
+  container.innerHTML = "";
+  const choices = buildChoices(q);
+  choices.forEach(choice => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "card-reveal bg-detective/80 border-2 border-glow/60 rounded-lg p-4 text-left text-white hover:bg-glow/20 hover:border-glow transition-all focus:outline-none focus:ring-2 focus:ring-glow";
+    btn.textContent = choice.meaning;
+    btn.addEventListener("click", () => handleAnswer(btn, choice, q));
+    container.appendChild(btn);
+  });
+
+  hide("feedback");
+  hide("next-btn");
+  $("skip-btn").classList.remove("hidden");
+}
+
+function handleAnswer(btn, choice, q){
+  const buttons = $("cards-container").querySelectorAll("button");
+  buttons.forEach(b => { b.disabled = true; b.classList.add("opacity-70"); });
+
+  const feedback = $("feedback");
+  const feedbackText = $("feedback-text");
+  feedback.classList.remove("hidden","border-success","border-danger");
+
+  if (choice.code === q.code) {
+    game.streak += 1;
+    const bonus = (game.streak >= 2) ? STREAK_BONUS * (game.streak - 1) : 0;
+    const gained = POINTS_CORRECT + bonus;
+    game.score += gained;
+    btn.classList.add("bg-success/30","border-success","success-glow");
+    feedback.classList.add("border-success");
+    feedbackText.className = "text-center font-bold text-lg text-success";
+    feedbackText.textContent = "✅ Correct! +" + gained + (bonus ? " (streak bonus)" : "");
+  } else {
+    game.streak = 0;
+    btn.classList.add("bg-danger/30","border-danger","glitch");
+    buttons.forEach(b => {
+      const txt = b.textContent;
+      if (txt === q.meaning) b.classList.add("bg-success/30","border-success");
+    });
+    feedback.classList.add("border-danger");
+    feedbackText.className = "text-center font-bold text-lg text-danger";
+    feedbackText.textContent = "❌ Code " + q.code + " means: " + q.meaning;
+  }
+
+  $("score-display").textContent = String(game.score);
+  $("score-display").classList.add("pulse-score");
+  setTimeout(() => $("score-display").classList.remove("pulse-score"), 500);
+  $("streak-display").textContent = String(game.streak);
+
+  $("skip-btn").classList.add("hidden");
+  const isLast = game.index >= LEVELS_PER_GAME - 1;
+  const nextBtn = $("next-btn");
+  nextBtn.textContent = isLast ? "SEE RESULTS →" : "NEXT CASE →";
+  nextBtn.classList.remove("hidden");
+}
+
+function handleSkip(){
+  game.streak = 0;
+  game.score += POINTS_SKIP;
+  $("score-display").textContent = String(game.score);
+  $("streak-display").textContent = "0";
+  advance();
+}
+
+function advance(){
+  game.index += 1;
+  if (game.index >= LEVELS_PER_GAME) {
+    finishGame();
+  } else {
+    renderQuestion();
+  }
+}
+
+function finishGame(){
+  hide("game-screen");
+  show("results-screen");
+  $("final-score").textContent = String(game.score);
+  const msg = $("result-message");
+  if (game.score >= 700)      msg.textContent = "Case closed, Detective. You cracked the code like a pro.";
+  else if (game.score >= 400) msg.textContent = "Solid work — a few more cases and you'll be a master sleuth.";
+  else if (game.score >= 100) msg.textContent = "You're on the trail. Review the codes and try again.";
+  else                         msg.textContent = "The trail went cold. Time to study the IRS code book.";
+  endRun(game.score >= 400 ? "win" : "loss");
+}
+
+function startGame(){
+  game = { score: 0, streak: 0, index: 0, questions: pickQuestions(LEVELS_PER_GAME) };
+  hide("start-screen");
+  hide("results-screen");
+  show("game-screen");
+  renderQuestion();
+}
+
+function initializeApp(){
+  unlockStart();
+  $("start-btn").addEventListener("click", startGame);
+  $("skip-btn").addEventListener("click", handleSkip);
+  $("next-btn").addEventListener("click", advance);
+  $("restart-btn").addEventListener("click", startGame);
+}
+
 initializeApp();
 
 </script>
