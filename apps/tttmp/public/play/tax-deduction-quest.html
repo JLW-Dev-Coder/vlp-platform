@@ -102,7 +102,7 @@
   <!-- PARTIAL:header -->
 
   <div id="app" class="h-full w-full overflow-auto custom-scrollbar">
-    <div class="w-full min-h-full flex flex-col items-center px-4 py-6 md:py-8 mt-[50px]">
+    <div class="w-full min-h-full flex flex-col items-center justify-center px-4 py-6 md:py-8 mt-[50px]">
       <div id="welcome-screen" class="w-full max-w-4xl">
         <div class="text-center mb-12 animate-slide-up">
           <div class="inline-block mb-6 animate-bounce-subtle">
@@ -176,6 +176,224 @@
 
   <!-- PARTIAL:footer -->
 
-  
+  <script>
+    (function () {
+      const CATEGORIES = [
+        "Medical",
+        "Charitable",
+        "Business",
+        "Education",
+        "State/Local (SALT)",
+        "Retirement",
+        "Mortgage",
+        "Investment",
+        "Self-Employment",
+        "Moving (Military)",
+        "Casualty/Disaster",
+        "Alimony",
+        "HSA",
+        "Childcare (Trick!)",
+        "Miscellaneous"
+      ];
+
+      const ROUNDS = [
+        { item: "Prescription medications for a dependent child", category: "Medical", hint: "Out-of-pocket medical expenses over 7.5% of AGI." },
+        { item: "Dental cleaning and orthodontic work", category: "Medical", hint: "Dental and vision costs are deductible medical expenses." },
+        { item: "Self-employed health insurance premiums", category: "Self-Employment", hint: "SE taxpayers deduct health premiums as an adjustment to income." },
+        { item: "Cash donation of $500 to a qualified 501(c)(3)", category: "Charitable", hint: "Cash gifts to qualified charities." },
+        { item: "Clothing and furniture donated to Goodwill (FMV)", category: "Charitable", hint: "Non-cash charitable contributions at fair market value." },
+        { item: "14¢/mile driven while volunteering for charity", category: "Charitable", hint: "Charitable mileage rate is 14¢/mile." },
+        { item: "Home office — 200 sq ft used regularly and exclusively", category: "Business", hint: "Home-office deduction, either actual or simplified method." },
+        { item: "Flight and hotel for an out-of-town client meeting", category: "Business", hint: "Ordinary and necessary business travel." },
+        { item: "Office supplies, software subscriptions, and toner", category: "Business", hint: "Operating supplies for a trade or business." },
+        { item: "Student loan interest up to $2,500/year", category: "Education", hint: "Above-the-line deduction for qualifying student loan interest." },
+        { item: "Up to $300 of K-12 teacher classroom supplies", category: "Education", hint: "Educator expense deduction for K-12 teachers." },
+        { item: "State income tax withheld from wages", category: "State/Local (SALT)", hint: "State/local income or sales taxes, capped with property tax at $10K." },
+        { item: "Property tax on your primary residence", category: "State/Local (SALT)", hint: "Real-estate taxes — part of the $10K SALT cap." },
+        { item: "$7,000 traditional IRA contribution", category: "Retirement", hint: "Traditional IRA contributions may be deductible." },
+        { item: "Self-employed SEP-IRA contribution", category: "Retirement", hint: "SEP/SIMPLE/solo-401(k) contributions for SE taxpayers." },
+        { item: "Home mortgage interest on up to $750K of acquisition debt", category: "Mortgage", hint: "Itemized mortgage interest deduction." },
+        { item: "Points paid at closing on a home purchase", category: "Mortgage", hint: "Points are deductible mortgage interest (usually over the loan life)." },
+        { item: "Capital losses up to $3,000 against ordinary income", category: "Investment", hint: "Net capital losses limited to $3K/year against ordinary income." },
+        { item: "50% of self-employment tax paid", category: "Self-Employment", hint: "Above-the-line deduction for half of SE tax." },
+        { item: "PCS move expenses for an active-duty service member", category: "Moving (Military)", hint: "Only active-duty military moving expenses remain deductible post-TCJA." },
+        { item: "Uninsured losses from a federally declared disaster", category: "Casualty/Disaster", hint: "Only federally declared disaster losses are currently deductible." },
+        { item: "Alimony payments under a 2017 divorce decree", category: "Alimony", hint: "Pre-2019 divorce agreements still allow alimony deduction." },
+        { item: "HSA contribution of $4,150 (self-only coverage)", category: "HSA", hint: "HSA contributions are above-the-line deductions." },
+        { item: "Daycare for a 4-year-old so both parents can work", category: "Childcare (Trick!)", hint: "Trick! Childcare is a credit (Child & Dependent Care Credit), not a deduction." },
+        { item: "Tax preparation fees paid by an individual (post-TCJA)", category: "Miscellaneous", hint: "Miscellaneous 2% deductions were suspended through 2025 by TCJA." }
+      ];
+
+      const TOTAL = 15;
+      const STORAGE_KEY = "tttmp_deduction_quest_stats";
+
+      const welcomeScreen = document.getElementById("welcome-screen");
+      const gameScreen = document.getElementById("game-screen");
+      const endScreen = document.getElementById("end-screen");
+      const nameInput = document.getElementById("player-name-input");
+      const startBtn = document.getElementById("start-game-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const playerNameEl = document.getElementById("game-player-name");
+      const levelEl = document.getElementById("game-level");
+      const scoreEl = document.getElementById("game-score");
+      const questionTextEl = document.getElementById("question-text");
+      const questionSubtextEl = document.getElementById("question-subtext");
+      const answersGrid = document.getElementById("answers-grid");
+      const streakEl = document.getElementById("streak");
+      const foundCountEl = document.getElementById("found-count");
+      const finalScoreEl = document.getElementById("final-score");
+      const endMessageEl = document.getElementById("end-message");
+      const pointsContainer = document.getElementById("points-container");
+
+      let state = null;
+      let roundStart = 0;
+
+      function show(el) {
+        [welcomeScreen, gameScreen, endScreen].forEach(s => s.classList.add("hidden"));
+        el.classList.remove("hidden");
+      }
+
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function pickDistractors(correct, count) {
+        return shuffle(CATEGORIES.filter(c => c !== correct)).slice(0, count);
+      }
+
+      function initState(name) {
+        state = {
+          name,
+          rounds: shuffle(ROUNDS).slice(0, TOTAL),
+          index: 0,
+          score: 0,
+          streak: 0,
+          bestStreak: 0,
+          found: 0,
+          locked: false
+        };
+        playerNameEl.textContent = name;
+        levelEl.textContent = "1";
+        scoreEl.textContent = "0";
+        streakEl.textContent = "0";
+        foundCountEl.textContent = "0";
+      }
+
+      function renderRound() {
+        const r = state.rounds[state.index];
+        levelEl.textContent = String(state.index + 1);
+        questionTextEl.textContent = r.item;
+        questionSubtextEl.textContent = "Which category does this deduction belong to?";
+        const distractors = pickDistractors(r.category, 5);
+        const choices = shuffle([r.category, ...distractors]);
+        answersGrid.innerHTML = "";
+        choices.forEach(choice => {
+          const btn = document.createElement("button");
+          btn.className = "card-reveal p-5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-left transition-all hover:scale-105 focus:outline-none";
+          btn.textContent = choice;
+          btn.addEventListener("click", () => handleAnswer(choice, btn, r));
+          answersGrid.appendChild(btn);
+        });
+        roundStart = Date.now();
+      }
+
+      function floatPoints(text, color) {
+        const el = document.createElement("div");
+        el.className = "float-points absolute text-3xl font-bold";
+        el.style.color = color;
+        el.style.left = (40 + Math.random() * 20) + "%";
+        el.style.top = "40%";
+        el.textContent = text;
+        pointsContainer.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+      }
+
+      function handleAnswer(choice, btn, r) {
+        if (state.locked) return;
+        state.locked = true;
+        const elapsed = (Date.now() - roundStart) / 1000;
+        const buttons = answersGrid.querySelectorAll("button");
+        buttons.forEach(b => {
+          b.disabled = true;
+          if (b.textContent === r.category) {
+            b.classList.remove("bg-white/15", "hover:bg-white/25");
+            b.classList.add("bg-trust-green", "border-trust-green");
+          } else if (b === btn) {
+            b.classList.remove("bg-white/15", "hover:bg-white/25");
+            b.classList.add("bg-red-500", "border-red-500");
+          }
+        });
+
+        if (choice === r.category) {
+          state.found += 1;
+          state.streak += 1;
+          if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+          let points = 100;
+          if (elapsed < 3) points += 50;
+          else if (elapsed < 6) points += 25;
+          if (state.streak >= 3) points += 25;
+          state.score += points;
+          floatPoints("+" + points, "#FFD600");
+        } else {
+          state.streak = 0;
+        }
+        scoreEl.textContent = String(state.score);
+        streakEl.textContent = String(state.streak);
+        foundCountEl.textContent = String(state.found);
+
+        const tip = document.createElement("div");
+        tip.className = "col-span-full bg-white/10 border border-white/20 rounded-xl p-4 text-white text-center card-reveal";
+        tip.innerHTML = "<p class=\"font-bold mb-1\">" + (choice === r.category ? "✅ Correct!" : "❌ The correct category was " + r.category + ".") + "</p><p class=\"text-sm text-gray-300\">" + r.hint + "</p>";
+        answersGrid.appendChild(tip);
+
+        setTimeout(() => {
+          state.index += 1;
+          state.locked = false;
+          if (state.index >= TOTAL) {
+            finish();
+          } else {
+            renderRound();
+          }
+        }, 1600);
+      }
+
+      function finish() {
+        finalScoreEl.textContent = String(state.score);
+        const pct = state.found / TOTAL;
+        let msg;
+        if (pct === 1) msg = "Perfect quest! You found every deduction. 🏆";
+        else if (pct >= 0.8) msg = "Excellent! You know your way around Schedule A.";
+        else if (pct >= 0.6) msg = "Solid run — a few more categories to master.";
+        else msg = "Keep exploring — those deductions are waiting to be found!";
+        endMessageEl.textContent = msg + " Best streak: 🔥 " + state.bestStreak + " • Deductions found: " + state.found + "/" + TOTAL;
+        try {
+          const stats = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          stats.unshift({ name: state.name, score: state.score, found: state.found, total: TOTAL, bestStreak: state.bestStreak, date: new Date().toISOString() });
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(stats.slice(0, 20)));
+        } catch (e) { /* ignore */ }
+        show(endScreen);
+      }
+
+      nameInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") startBtn.click();
+      });
+      startBtn.addEventListener("click", () => {
+        const name = nameInput.value.trim() || "Player";
+        initState(name);
+        show(gameScreen);
+        renderRound();
+      });
+      resetBtn.addEventListener("click", () => {
+        initState(state ? state.name : (nameInput.value.trim() || "Player"));
+        show(gameScreen);
+        renderRound();
+      });
+    })();
+  </script>
 </body>
 </html>

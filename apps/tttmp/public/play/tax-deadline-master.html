@@ -162,7 +162,7 @@
        <p class="text-xs mt-4" style="color: #94a3b8;">Your scores are saved automatically! 📊</p>
       </div>
      </div><!-- Game Screen -->
-     <div id="game-screen" class="w-full p-6" style="display: none;">
+     <div id="game-screen" class="w-full h-full flex flex-col items-center justify-center p-6" style="display: none;">
       <div class="max-w-4xl mx-auto"><!-- Game Header -->
        <div class="flex justify-between items-center mb-8">
         <div>
@@ -213,7 +213,7 @@
        </div><button id="play-again-button" class="card-button w-full py-3 rounded-xl font-bold text-white mb-3 shadow-lg" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"> Play Again </button> <button id="view-leaderboard-button" class="card-button w-full py-3 rounded-xl font-bold text-white shadow-lg" style="background: #3b82f6; color: white;"> View My Stats </button>
       </div>
      </div><!-- Leaderboard Screen -->
-     <div id="leaderboard-screen" class="w-full p-6" style="display: none;">
+     <div id="leaderboard-screen" class="w-full h-full flex flex-col items-center justify-center p-6" style="display: none;">
       <div class="max-w-2xl mx-auto"><button id="back-to-welcome" class="mb-6 px-4 py-2 rounded-lg font-bold" style="background: #e5e7eb; color: #1e3a5f;">← Back</button>
        <h2 class="text-3xl font-bold mb-6" style="color: #1e3a5f;">Your Game Stats</h2>
        <div id="leaderboard-container" class="space-y-3"><!-- Dynamically populated -->
@@ -227,6 +227,291 @@
 
   <!-- PARTIAL:footer -->
 
-  
+  <script>
+    (function () {
+      const QUESTIONS = [
+        {
+          q: "When are individual Form 1040 tax returns due for most taxpayers?",
+          choices: ["March 15", "April 15", "May 15", "June 15"],
+          correct: 1,
+          explain: "April 15 is the standard Form 1040 deadline (shifts if it falls on a weekend or holiday)."
+        },
+        {
+          q: "When are S-corporation (Form 1120-S) and partnership (Form 1065) returns due?",
+          choices: ["March 15", "April 15", "September 15", "October 15"],
+          correct: 0,
+          explain: "S-corps and partnerships file by March 15 — one month before individuals."
+        },
+        {
+          q: "The first-quarter (Q1) estimated tax payment is due on what date?",
+          choices: ["January 15", "April 15", "June 15", "September 15"],
+          correct: 1,
+          explain: "Q1 estimated taxes are due April 15, the same day as individual returns."
+        },
+        {
+          q: "When is the second-quarter (Q2) estimated tax payment due?",
+          choices: ["April 15", "June 15", "July 15", "September 15"],
+          correct: 1,
+          explain: "Q2 estimated tax is due June 15 — only two months after Q1."
+        },
+        {
+          q: "The third-quarter (Q3) estimated tax payment is due on what date?",
+          choices: ["August 15", "September 15", "October 15", "November 15"],
+          correct: 1,
+          explain: "Q3 estimated tax is due September 15."
+        },
+        {
+          q: "If you file Form 4868 for an extension, when is the extended individual return due?",
+          choices: ["August 15", "September 15", "October 15", "December 31"],
+          correct: 2,
+          explain: "October 15 is the extended Form 1040 deadline — an additional six months."
+        },
+        {
+          q: "When must employers furnish W-2 forms to employees and 1099-NEC forms to recipients?",
+          choices: ["January 31", "February 28", "March 31", "April 15"],
+          correct: 0,
+          explain: "W-2s and 1099-NECs must be delivered to recipients by January 31."
+        },
+        {
+          q: "When must 1099 forms be electronically filed with the IRS?",
+          choices: ["January 31", "February 28", "March 31", "April 15"],
+          correct: 2,
+          explain: "Paper 1099s are due to the IRS by Feb 28; electronic filings are due March 31."
+        },
+        {
+          q: "U.S. citizens living abroad get an automatic extension — when is their return due?",
+          choices: ["April 15", "June 15", "September 15", "October 15"],
+          correct: 1,
+          explain: "Expats receive an automatic 2-month extension, making their deadline June 15."
+        },
+        {
+          q: "Trust and estate income tax returns (Form 1041) are generally due on what date?",
+          choices: ["March 15", "April 15", "May 15", "September 15"],
+          correct: 1,
+          explain: "Form 1041 is due April 15 for calendar-year trusts and estates."
+        },
+        {
+          q: "Nonprofit returns (Form 990) for calendar-year organizations are due on what date?",
+          choices: ["April 15", "May 15", "July 15", "November 15"],
+          correct: 1,
+          explain: "Form 990 is due the 15th day of the 5th month after year-end — May 15."
+        },
+        {
+          q: "If the regular April deadline falls on a weekend or D.C. holiday, returns are typically due:",
+          choices: [
+            "The Friday before",
+            "April 18 or the next business day",
+            "Automatically extended to October",
+            "No adjustment — still April 15"
+          ],
+          correct: 1,
+          explain: "When April 15 lands on a weekend/holiday, the deadline shifts to the next business day (often April 17 or 18)."
+        }
+      ];
+
+      const nameInput = document.getElementById("player-name-input");
+      const startBtn = document.getElementById("start-button");
+      const welcomeScreen = document.getElementById("welcome-screen");
+      const gameScreen = document.getElementById("game-screen");
+      const resultsScreen = document.getElementById("results-screen");
+      const leaderboardScreen = document.getElementById("leaderboard-screen");
+      const qNum = document.getElementById("question-number");
+      const progressBar = document.getElementById("progress-bar");
+      const gameScore = document.getElementById("game-score");
+      const questionText = document.getElementById("question-text");
+      const answersContainer = document.getElementById("answers-container");
+      const streakDisplay = document.getElementById("streak-display");
+      const resultsStars = document.getElementById("results-stars");
+      const resultsTitle = document.getElementById("results-title");
+      const resultsMessage = document.getElementById("results-message");
+      const finalScore = document.getElementById("final-score");
+      const correctCount = document.getElementById("correct-count");
+      const bestStreakEl = document.getElementById("best-streak");
+      const playAgainBtn = document.getElementById("play-again-button");
+      const viewLeaderboardBtn = document.getElementById("view-leaderboard-button");
+      const leaderboardContainer = document.getElementById("leaderboard-container");
+      const backToWelcomeBtn = document.getElementById("back-to-welcome");
+
+      const TOTAL = 10;
+      const STORAGE_KEY = "tttmp_deadline_master_stats";
+      let state = null;
+
+      function showOnly(el) {
+        [welcomeScreen, gameScreen, resultsScreen, leaderboardScreen].forEach(s => {
+          s.style.display = s === el ? (el === welcomeScreen || el === resultsScreen || el === leaderboardScreen ? "flex" : "block") : "none";
+        });
+      }
+
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function initState(name) {
+        state = {
+          name,
+          questions: shuffle(QUESTIONS).slice(0, TOTAL),
+          index: 0,
+          score: 0,
+          correct: 0,
+          streak: 0,
+          bestStreak: 0,
+          locked: false
+        };
+      }
+
+      function renderQuestion() {
+        const q = state.questions[state.index];
+        qNum.textContent = String(state.index + 1);
+        progressBar.style.width = ((state.index) / TOTAL * 100) + "%";
+        gameScore.textContent = String(state.score);
+        streakDisplay.innerHTML = "🔥 " + state.streak;
+        questionText.textContent = q.q;
+        answersContainer.innerHTML = "";
+        q.choices.forEach((choice, i) => {
+          const btn = document.createElement("button");
+          btn.className = "card-button p-5 rounded-xl text-lg font-bold text-left shadow-md";
+          btn.style.background = "#ffffff";
+          btn.style.color = "#1e3a5f";
+          btn.style.border = "3px solid #e5e7eb";
+          btn.textContent = choice;
+          btn.addEventListener("click", () => handleAnswer(i, btn, q));
+          answersContainer.appendChild(btn);
+        });
+      }
+
+      function handleAnswer(chosen, btn, q) {
+        if (state.locked) return;
+        state.locked = true;
+        const buttons = answersContainer.querySelectorAll("button");
+        buttons.forEach((b, i) => {
+          b.disabled = true;
+          if (i === q.correct) {
+            b.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+            b.style.color = "#ffffff";
+            b.style.borderColor = "#059669";
+          } else if (i === chosen) {
+            b.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+            b.style.color = "#ffffff";
+            b.style.borderColor = "#dc2626";
+          }
+        });
+
+        if (chosen === q.correct) {
+          state.correct += 1;
+          state.streak += 1;
+          if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+          const bonus = state.streak >= 3 ? 5 : 0;
+          state.score += 10 + bonus;
+        } else {
+          state.streak = 0;
+        }
+        gameScore.textContent = String(state.score);
+        streakDisplay.innerHTML = "🔥 " + state.streak;
+
+        const explain = document.createElement("div");
+        explain.className = "md:col-span-2 rounded-xl p-4 mt-2 slide-in";
+        explain.style.background = "#f1f5f9";
+        explain.style.color = "#1e3a5f";
+        explain.innerHTML = "<p class=\"text-sm font-bold mb-1\">💡 " + (chosen === q.correct ? "Correct!" : "Not quite.") + "</p><p class=\"text-sm\">" + q.explain + "</p>";
+        answersContainer.appendChild(explain);
+
+        setTimeout(() => {
+          state.index += 1;
+          state.locked = false;
+          if (state.index >= TOTAL) {
+            showResults();
+          } else {
+            renderQuestion();
+          }
+        }, 1800);
+      }
+
+      function showResults() {
+        progressBar.style.width = "100%";
+        const pct = state.correct / TOTAL;
+        let stars = "⭐⭐⭐";
+        let title = "Fantastic Job!";
+        let message = "You've mastered the tax deadlines!";
+        if (pct < 0.5) { stars = "⭐"; title = "Keep Practicing!"; message = "Brush up on those IRS dates and try again."; }
+        else if (pct < 0.8) { stars = "⭐⭐"; title = "Nice Work!"; message = "You're getting there — a few more and you'll be a pro."; }
+        resultsStars.textContent = stars;
+        resultsTitle.textContent = title;
+        resultsMessage.textContent = message;
+        finalScore.textContent = String(state.score);
+        correctCount.textContent = state.correct + " / " + TOTAL;
+        bestStreakEl.textContent = "🔥 " + state.bestStreak;
+        saveStat({
+          name: state.name,
+          score: state.score,
+          correct: state.correct,
+          total: TOTAL,
+          bestStreak: state.bestStreak,
+          date: new Date().toISOString()
+        });
+        showOnly(resultsScreen);
+      }
+
+      function saveStat(entry) {
+        try {
+          const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          existing.unshift(entry);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(existing.slice(0, 20)));
+        } catch (e) { /* ignore */ }
+      }
+
+      function loadStats() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+        catch (e) { return []; }
+      }
+
+      function renderLeaderboard() {
+        const stats = loadStats();
+        leaderboardContainer.innerHTML = "";
+        if (!stats.length) {
+          leaderboardContainer.innerHTML = "<p class=\"text-center\" style=\"color: #64748b;\">No games played yet. Play your first round!</p>";
+          return;
+        }
+        stats.forEach((s, i) => {
+          const row = document.createElement("div");
+          row.className = "rounded-xl p-4 flex justify-between items-center shadow-sm";
+          row.style.background = "#ffffff";
+          const when = new Date(s.date).toLocaleDateString();
+          row.innerHTML = "<div><p class=\"font-bold\" style=\"color: #1e3a5f;\">#" + (i + 1) + " " + s.name + "</p><p class=\"text-xs\" style=\"color: #94a3b8;\">" + when + " • " + s.correct + "/" + s.total + " correct • 🔥 " + s.bestStreak + "</p></div><p class=\"text-2xl font-bold\" style=\"color: #10b981;\">" + s.score + "</p>";
+          leaderboardContainer.appendChild(row);
+        });
+      }
+
+      nameInput.addEventListener("input", () => {
+        startBtn.disabled = nameInput.value.trim().length === 0;
+      });
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !startBtn.disabled) startBtn.click();
+      });
+      startBtn.addEventListener("click", () => {
+        const name = nameInput.value.trim();
+        if (!name) return;
+        initState(name);
+        showOnly(gameScreen);
+        renderQuestion();
+      });
+      playAgainBtn.addEventListener("click", () => {
+        initState(state ? state.name : (nameInput.value.trim() || "Player"));
+        showOnly(gameScreen);
+        renderQuestion();
+      });
+      viewLeaderboardBtn.addEventListener("click", () => {
+        renderLeaderboard();
+        showOnly(leaderboardScreen);
+      });
+      backToWelcomeBtn.addEventListener("click", () => {
+        showOnly(welcomeScreen);
+      });
+    })();
+  </script>
  </body>
 </html>
