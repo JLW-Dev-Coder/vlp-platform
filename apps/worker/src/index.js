@@ -222,12 +222,15 @@ async function d1Run(db, sql, params) {
 function d1RowToProfileCard(row) {
   const professions = row.profession ? row.profession.split(', ').filter(Boolean) : [];
   const specialtiesList = row.specialties ? row.specialties.split(', ').filter(Boolean) : [];
+  const tier = row.tier === 'scale' || row.tier === 'pro' ? row.tier : 'free';
   return {
     profile: {
       name: row.display_name || '',
       slug: row.professional_id,
       status: 'standard',
     },
+    tier,
+    featured: tier !== 'free',
     professional: {
       profession: professions,
       years_experience: 0,
@@ -615,8 +618,35 @@ function normalizeStateFilter(input) {
   return trimmed;
 }
 
+// Map a Stripe-aligned plan_key to the simplified speed-to-lead tier
+// the directory + notification system uses. Legacy 4-tier plan_keys
+// (vlp_starter, vlp_advanced) collapse onto the closest 3-tier slot so
+// existing paying members don't lose tier benefits.
+function tierFromPlanKey(planKey) {
+  const k = String(planKey || '').toLowerCase();
+  if (k === 'vlp_scale' || k === 'vlp_advanced') return 'scale';
+  if (k === 'vlp_pro' || k === 'vlp_starter') return 'pro';
+  return 'free';
+}
+
+// Look up the active membership for an account and return its 3-tier slot.
+// Defaults to 'free' on any miss.
+async function getTierForAccount(env, accountId) {
+  if (!accountId) return 'free';
+  try {
+    const row = await env.DB.prepare(
+      "SELECT plan_key FROM memberships WHERE account_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1"
+    ).bind(accountId).first();
+    return tierFromPlanKey(row?.plan_key);
+  } catch {
+    return 'free';
+  }
+}
+
 // Build the D1 projection row values from the nested profile.
-function profileD1ProjectionValues(nested) {
+// `tier` is computed from the active membership at the call site (the
+// nested profile carries no membership data); pass 'free' for no membership.
+function profileD1ProjectionValues(nested, tier = 'free') {
   const professions = Array.isArray(nested?.professional?.profession)
     ? nested.professional.profession
     : [];
@@ -641,6 +671,7 @@ function profileD1ProjectionValues(nested) {
     !!stateValue &&
     services.length > 0;
   const status = (!isHidden && isComplete) ? 'active' : 'draft';
+  const normalizedTier = tier === 'scale' || tier === 'pro' ? tier : 'free';
   return {
     display_name: name,
     bio: bioParagraphs.join('\n\n') || nested?.bio?.bio_short || '',
@@ -656,6 +687,8 @@ function profileD1ProjectionValues(nested) {
     state: stateValue,
     zip: nested?.location?.zip || null,
     status,
+    tier: normalizedTier,
+    featured: normalizedTier === 'free' ? 0 : 1,
   };
 }
 
@@ -5486,6 +5519,20 @@ const ROUTES = [
                   'UPDATE sessions SET membership = ? WHERE account_id = ?',
                   [tier, account_id]
                 );
+
+                // Sync profile tier so directory ordering + notification priority
+                // reflect the new plan immediately. Maps 4-tier Stripe plan_keys
+                // onto the simplified 3-tier (free/pro/scale) speed-to-lead model.
+                const profileTier = tierFromPlanKey(plan_key);
+                const profileFeatured = profileTier === 'free' ? 0 : 1;
+                try {
+                  await d1Run(env.DB,
+                    'UPDATE profiles SET tier = ?, featured = ?, updated_at = ? WHERE account_id = ?',
+                    [profileTier, profileFeatured, now, account_id]
+                  );
+                } catch (e) {
+                  console.error('profile tier sync (activation) failed:', e?.message);
+                }
               }
             }
 
@@ -5686,6 +5733,20 @@ const ROUTES = [
                 'UPDATE memberships SET status = \'cancelled\', updated_at = ? WHERE membership_id = ?',
                 [now, membership_id]
               );
+
+              // Reset profile tier to free on cancellation so the directory
+              // ordering and notification priority drop the pro out of paid tiers.
+              try {
+                const accountId = memRecord.accountId || memRecord.account_id || null;
+                if (accountId) {
+                  await d1Run(env.DB,
+                    'UPDATE profiles SET tier = ?, featured = ?, updated_at = ? WHERE account_id = ?',
+                    ['free', 0, now, accountId]
+                  );
+                }
+              } catch (e) {
+                console.error('profile tier sync (cancellation) failed:', e?.message);
+              }
             }
             break;
           }
@@ -6579,11 +6640,12 @@ const ROUTES = [
             if (!merged.createdAt) merged.createdAt = existing.createdAt || now;
             deriveProfileFields(merged);
             await r2Put(env.R2_VIRTUAL_LAUNCH, `profiles/${existingRow.professional_id}.json`, merged);
-            const p = profileD1ProjectionValues(merged);
+            const tier = await getTierForAccount(env, session.account_id);
+            const p = profileD1ProjectionValues(merged, tier);
             try {
               await d1Run(env.DB,
-                `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, updated_at=? WHERE professional_id=?`,
-                [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, now, existingRow.professional_id]
+                `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, tier=?, featured=?, updated_at=? WHERE professional_id=?`,
+                [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, now, existingRow.professional_id]
               );
             } catch (e) { console.error('D1 profile update error (POST upsert):', e); }
             return json({ ok: true, professional_id: existingRow.professional_id, profile: merged }, 200, request);
@@ -6605,12 +6667,13 @@ const ROUTES = [
       await r2Put(env.R2_VIRTUAL_LAUNCH, `profiles/${professionalId}.json`, profile);
 
       // D1 projection
-      const p = profileD1ProjectionValues(profile);
+      const tier = await getTierForAccount(env, session.account_id);
+      const p = profileD1ProjectionValues(profile, tier);
       try {
         await d1Run(env.DB,
-          `INSERT INTO profiles (professional_id, account_id, display_name, bio, specialties, profession, phone, availability_text, business_hours, cal_booking_url, website, firm_name, city, state, zip, status, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [professionalId, session.account_id, p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, now, now]
+          `INSERT INTO profiles (professional_id, account_id, display_name, bio, specialties, profession, phone, availability_text, business_hours, cal_booking_url, website, firm_name, city, state, zip, status, tier, featured, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [professionalId, session.account_id, p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, now, now]
         );
       } catch (e) {
         // If D1 insert fails (e.g. duplicate), still return success since R2 is authoritative
@@ -6676,11 +6739,12 @@ const ROUTES = [
       await r2Put(env.R2_VIRTUAL_LAUNCH, `profiles/${params.professional_id}.json`, merged);
 
       // D1 projection — rebuild from merged nested profile.
-      const p = profileD1ProjectionValues(merged);
+      const tier = await getTierForAccount(env, merged.accountId);
+      const p = profileD1ProjectionValues(merged, tier);
       try {
         await d1Run(env.DB,
-          `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, updated_at=? WHERE professional_id=?`,
-          [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, now, params.professional_id]
+          `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, tier=?, featured=?, updated_at=? WHERE professional_id=?`,
+          [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, now, params.professional_id]
         );
       } catch (e) {
         console.error('D1 profile update error:', e);
@@ -12734,9 +12798,14 @@ TTMP Support Team
 
         const result = await env.DB.prepare(
           `SELECT professional_id, display_name, bio, specialties, profession,
-                  firm_name, city, state, status, created_at
+                  firm_name, city, state, status, tier, featured, created_at
            FROM profiles ${where}
-           ORDER BY created_at DESC LIMIT ? OFFSET ?`
+           ORDER BY CASE
+             WHEN tier = 'scale' THEN 1
+             WHEN tier = 'pro' THEN 2
+             ELSE 3
+           END, display_name ASC
+           LIMIT ? OFFSET ?`
         ).bind(...filterParams, limit, offset).all();
 
         const profiles = (result.results || []).map(row => d1RowToProfileCard(row));
@@ -13248,19 +13317,25 @@ TTMP Support Team
       // emails dispatch via ctx.waitUntil so the POST response is not delayed,
       // and any failure is logged but never bubbles up — R2 inquiry is already
       // authoritative at this point.
+      //
+      // Tier-aware: scale + pro tier matched pros get notified immediately;
+      // free tier matches get a pending-notifications record for delayed
+      // delivery (30 min) so paying pros always see leads first.
+      // TODO: Add cron handler to process pending-notifications/ and send delayed emails
       const notifyTask = (async () => {
         const stateFullName = US_STATE_CODE_TO_NAME[state] || state;
         const formattedTimestamp = now;
         const errors = [];
         let matchedPros = [];
         let prosEmailed = 0;
+        let prosDeferred = 0;
         let taxpayerSent = false;
 
         try {
           const stateLike = `%${stateFullName}%`;
           const serviceLike = `%${serviceNeeded}%`;
           const rows = await env.DB.prepare(
-            `SELECT p.professional_id, p.display_name, p.specialties, a.email
+            `SELECT p.professional_id, p.display_name, p.specialties, p.tier, a.email
                FROM profiles p
                LEFT JOIN accounts a ON a.account_id = p.account_id
               WHERE p.status = 'active'
@@ -13271,6 +13346,7 @@ TTMP Support Team
             professional_id: r.professional_id,
             display_name: r.display_name,
             email: r.email,
+            tier: r.tier === 'scale' || r.tier === 'pro' ? r.tier : 'free',
           }));
         } catch (e) {
           console.error('tmp/inquiries: profile match query failed', e?.message);
@@ -13296,7 +13372,10 @@ The fastest response wins the client.
 
 — Virtual Launch Pro`;
 
-        for (const pro of matchedPros) {
+        const immediatePros = matchedPros.filter(p => p.tier === 'scale' || p.tier === 'pro');
+        const delayedPros = matchedPros.filter(p => p.tier !== 'scale' && p.tier !== 'pro');
+
+        for (const pro of immediatePros) {
           if (!pro.email || !env.RESEND_API_KEY) continue;
           try {
             const res = await fetch('https://api.resend.com/emails', {
@@ -13322,6 +13401,30 @@ The fastest response wins the client.
           } catch (e) {
             console.error(`tmp/inquiries: pro email send threw for ${pro.professional_id}`, e?.message);
             errors.push({ stage: 'pro_email', professional_id: pro.professional_id, message: String(e?.message || e) });
+          }
+        }
+
+        const recipientsForDelay = delayedPros.filter(p => p.email);
+        if (recipientsForDelay.length > 0) {
+          const sendAfter = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+          try {
+            await r2Put(env.R2_VIRTUAL_LAUNCH, `pending-notifications/${inquiryId}-free.json`, {
+              inquiry_id: inquiryId,
+              tier: 'free',
+              created_at: now,
+              send_after: sendAfter,
+              subject: proSubject,
+              body_text: proBody,
+              recipients: recipientsForDelay.map(r => ({
+                professional_id: r.professional_id,
+                email: r.email,
+                display_name: r.display_name,
+              })),
+            });
+            prosDeferred = recipientsForDelay.length;
+          } catch (e) {
+            console.error('tmp/inquiries: pending-notifications write failed', e?.message);
+            errors.push({ stage: 'pending_notifications', message: String(e?.message || e) });
           }
         }
 
@@ -13362,7 +13465,10 @@ A credentialed tax professional will review your inquiry and reach out to you sh
           await r2Put(env.R2_VIRTUAL_LAUNCH, `notifications/${inquiryId}.json`, {
             inquiry_id: inquiryId,
             matched_professionals: matchedPros.map(p => p.professional_id),
+            immediate_professionals: immediatePros.map(p => p.professional_id),
+            delayed_professionals: delayedPros.map(p => p.professional_id),
             emails_sent_to_pros: prosEmailed,
+            pros_deferred_for_free_tier: prosDeferred,
             taxpayer_confirmation_sent: taxpayerSent,
             timestamp: new Date().toISOString(),
             errors,
