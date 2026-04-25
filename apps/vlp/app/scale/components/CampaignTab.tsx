@@ -126,7 +126,7 @@ export default function CampaignTab() {
       )}
       {mode === 'community' && <CommunityPanel anthropicKey={anthropicKey} />}
       {mode === 'campaign' && <CampaignPostsTab />}
-      {mode === 'craigslist_taxpayer' && <CraigslistPostsTab anthropicKey={anthropicKey} />}
+      {mode === 'craigslist_taxpayer' && <CraigslistPostsTab />}
     </div>
   )
 }

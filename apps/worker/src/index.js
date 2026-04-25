@@ -20603,6 +20603,352 @@ TTMP Support Team
   },
 
   // -------------------------------------------------------------------------
+  // Craigslist Taxpayer Acquisition Campaign Generator
+  // Generates posts via Anthropic, creates ClickUp doc page + tasks
+  // -------------------------------------------------------------------------
+
+  // POST /v1/scale/campaigns/craigslist/generate
+  {
+    method: 'POST', pattern: '/v1/scale/campaigns/craigslist/generate',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await request.json().catch(() => null);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const required = ['angle', 'angle_label', 'angle_description', 'city', 'city_label', 'campaign_name', 'start_date'];
+      for (const k of required) {
+        if (!body[k] || typeof body[k] !== 'string') {
+          return json({ ok: false, error: 'MISSING_FIELD', field: k }, 400, request);
+        }
+      }
+
+      if (!env.ANTHROPIC_API_KEY) {
+        return json({ ok: false, error: 'ANTHROPIC_API_KEY_NOT_SET' }, 500, request);
+      }
+
+      // ---- 1. Generate posts via Anthropic ----
+      const systemPrompt = `You are writing 10 Craigslist posts for the "services > financial" or "services > tax services" category. These posts target TAXPAYERS (not tax professionals) in ${body.city_label}.
+
+Angle: ${body.angle_label} — ${body.angle_description}
+
+Rules:
+- Each post has a TITLE (max 70 chars) and BODY (150-250 words)
+- Write for people scrolling Craigslist looking for help, not professionals
+- No jargon. No acronyms (IRS is fine). No platform names.
+- Tone: helpful, direct, trustworthy. Like a neighbor who happens to be a tax expert.
+- Each post takes a slightly different angle or hook on the same theme
+- Include "Licensed Enrolled Agent" or "licensed tax professional" in every post body
+- Include the city name naturally in at least 5 of the 10 posts
+- End each post with a clear call to action: "Message me" or "Reply to this post"
+- Do NOT include URLs, links, or web addresses (Craigslist prohibits them in some categories)
+- Do NOT include phone numbers in the post body
+- Do NOT include email addresses — Craigslist provides its own anonymous reply system
+- For the Kwong/penalty angle: explain that the IRS may owe them money, don't assume they know what Kwong is
+- If the city is "National (no city reference)", do not reference any specific city — write for a general US audience
+- Posts should feel like they were written by a real person, not a company
+
+Output format — return ONLY a JSON array, no markdown, no preamble:
+[
+  { "title": "...", "body": "...", "angle_note": "one line on why this hook" },
+  ...
+]`;
+
+      let posts;
+      try {
+        const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 8192,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: 'Generate 10 Craigslist posts now.' }],
+          }),
+        });
+        if (!anthropicRes.ok) {
+          const errText = await anthropicRes.text();
+          return json({ ok: false, error: 'ANTHROPIC_ERROR', status: anthropicRes.status, detail: errText.slice(0, 500) }, 502, request);
+        }
+        const data = await anthropicRes.json();
+        const text = data?.content?.[0]?.text;
+        if (typeof text !== 'string') {
+          return json({ ok: false, error: 'ANTHROPIC_BAD_RESPONSE' }, 502, request);
+        }
+        let s = text.trim();
+        if (s.startsWith('```')) s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+        const start = s.indexOf('[');
+        const end = s.lastIndexOf(']');
+        if (start === -1 || end === -1) {
+          return json({ ok: false, error: 'ANTHROPIC_NO_JSON', sample: text.slice(0, 300) }, 502, request);
+        }
+        posts = JSON.parse(s.slice(start, end + 1));
+        if (!Array.isArray(posts) || posts.length === 0) {
+          return json({ ok: false, error: 'ANTHROPIC_EMPTY_ARRAY' }, 502, request);
+        }
+      } catch (e) {
+        return json({ ok: false, error: 'ANTHROPIC_FETCH_FAILED', detail: String(e).slice(0, 300) }, 502, request);
+      }
+
+      // ---- 2. ClickUp integration (best-effort — never block post delivery) ----
+      const WORKSPACE_ID = '8402511';
+      const DOC_ID = '80djf-83197';
+      const CAMPAIGN_LIST_ID = '901712954596';
+      const POSTS_LIST_ID = '901700028238';
+
+      const clickup = {
+        campaign_task_id: null,
+        campaign_task_url: null,
+        doc_page_url: null,
+        doc_page_id: null,
+        post_task_ids: [],
+        post_count: 0,
+        errors: [],
+      };
+
+      if (!env.CLICKUP_API_TOKEN) {
+        clickup.errors.push({ stage: 'init', error: 'CLICKUP_API_TOKEN_NOT_SET' });
+        return json({
+          ok: true,
+          campaign_name: body.campaign_name,
+          content_type: 'craigslist_taxpayer',
+          angle: body.angle,
+          city: body.city,
+          posts,
+          clickup,
+        }, 200, request);
+      }
+
+      const cuHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': env.CLICKUP_API_TOKEN,
+      };
+
+      // Helper to format date
+      const addDays = (iso, n) => {
+        const [y, m, d] = iso.split('-').map(Number);
+        const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
+        dt.setUTCDate(dt.getUTCDate() + n);
+        return dt;
+      };
+      const formatShortDate = (dt) => `${dt.getUTCMonth() + 1}/${dt.getUTCDate()}/${dt.getUTCFullYear()}`;
+      const dayOfWeek = (dt) => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dt.getUTCDay()];
+
+      // 2a. Find or create "Craigslist" parent page in Campaigns doc
+      let craigslistPageId = null;
+      try {
+        const listRes = await fetch(
+          `https://api.clickup.com/api/v3/workspaces/${WORKSPACE_ID}/docs/${DOC_ID}/pages`,
+          { method: 'GET', headers: cuHeaders }
+        );
+        if (listRes.ok) {
+          const pagesData = await listRes.json();
+          const pages = Array.isArray(pagesData) ? pagesData : (pagesData.pages || []);
+          const existing = pages.find((p) => (p.name || '').trim().toLowerCase() === 'craigslist');
+          if (existing) craigslistPageId = existing.id;
+        }
+      } catch (e) {
+        clickup.errors.push({ stage: 'list_pages', detail: String(e).slice(0, 200) });
+      }
+
+      if (!craigslistPageId) {
+        try {
+          const createRes = await fetch(
+            `https://api.clickup.com/api/v3/workspaces/${WORKSPACE_ID}/docs/${DOC_ID}/pages`,
+            {
+              method: 'POST',
+              headers: cuHeaders,
+              body: JSON.stringify({
+                name: 'Craigslist',
+                content: 'Craigslist taxpayer acquisition campaigns.',
+                content_format: 'text/md',
+              }),
+            }
+          );
+          if (createRes.ok) {
+            const data = await createRes.json();
+            craigslistPageId = data?.id || data?.page?.id || null;
+          } else {
+            const errText = await createRes.text();
+            clickup.errors.push({ stage: 'create_parent_page', status: createRes.status, detail: errText.slice(0, 300) });
+          }
+        } catch (e) {
+          clickup.errors.push({ stage: 'create_parent_page', detail: String(e).slice(0, 200) });
+        }
+      }
+
+      // 2b. Build campaign doc markdown
+      const startDt = addDays(body.start_date, 0);
+      const endDt = addDays(body.start_date, 9);
+      const scheduleRows = posts.map((p, i) => {
+        const dt = addDays(body.start_date, i);
+        return `| ${i + 1} | ${formatShortDate(dt)} | ${p.title || ''} |`;
+      }).join('\n');
+      const postSections = posts.map((p, i) => {
+        return `### Day ${i + 1} — ${p.title || ''}\n\n${p.body || ''}\n\n*Angle: ${p.angle_note || ''}*\n\n---\n`;
+      }).join('\n');
+      const campaignDocContent = `# 10-Post Craigslist Campaign — ${body.campaign_name}
+
+#### Content Focus
+${body.angle_label} — ${body.angle_description}
+
+#### Target City
+${body.city_label}
+
+#### Platform
+Craigslist — Services > Financial / Tax Services
+
+#### Audience
+Taxpayers with IRS issues (supply-side acquisition)
+
+#### Campaign Start
+${body.start_date} (Day 1)
+
+#### Campaign End
+${endDt.toISOString().slice(0, 10)} (Day 10)
+
+#### Tone
+Helpful, direct, trustworthy. Like a neighbor who happens to be a tax expert.
+
+---
+
+## Posting Schedule
+
+| Day | Date | Post Title |
+| --- | --- | --- |
+${scheduleRows}
+
+---
+
+## Posts
+
+${postSections}`;
+
+      // 2c. Create campaign page under Craigslist parent
+      try {
+        const pageBody = {
+          name: `${body.campaign_name} (${body.city_label})`,
+          sub_title: `${body.angle_label} — Craigslist Taxpayer Acquisition`,
+          content: campaignDocContent,
+          content_format: 'text/md',
+        };
+        if (craigslistPageId) pageBody.parent_page_id = craigslistPageId;
+        const pageRes = await fetch(
+          `https://api.clickup.com/api/v3/workspaces/${WORKSPACE_ID}/docs/${DOC_ID}/pages`,
+          { method: 'POST', headers: cuHeaders, body: JSON.stringify(pageBody) }
+        );
+        if (pageRes.ok) {
+          const pageData = await pageRes.json();
+          const pageId = pageData?.id || pageData?.page?.id || null;
+          clickup.doc_page_id = pageId;
+          if (pageId) clickup.doc_page_url = `https://app.clickup.com/${WORKSPACE_ID}/v/dc/${DOC_ID}/${pageId}`;
+        } else {
+          const errText = await pageRes.text();
+          clickup.errors.push({ stage: 'create_campaign_page', status: pageRes.status, detail: errText.slice(0, 300) });
+        }
+      } catch (e) {
+        clickup.errors.push({ stage: 'create_campaign_page', detail: String(e).slice(0, 200) });
+      }
+
+      // 2d. Create Campaign task
+      try {
+        const taskBody = {
+          name: `Campaign — ${body.campaign_name} (${body.city_label})`,
+          description: `Craigslist taxpayer acquisition campaign\nAngle: ${body.angle_label}\nCity: ${body.city_label}\n10 posts, starting ${body.start_date}`,
+          status: 'to do',
+          custom_fields: [
+            { id: '8b7fc025-d728-4eb6-916f-fb5ad7eae1f7', value: 2 },
+          ],
+        };
+        const taskRes = await fetch(
+          `https://api.clickup.com/api/v2/list/${CAMPAIGN_LIST_ID}/task`,
+          { method: 'POST', headers: cuHeaders, body: JSON.stringify(taskBody) }
+        );
+        if (taskRes.ok) {
+          const taskData = await taskRes.json();
+          clickup.campaign_task_id = taskData?.id || null;
+          if (clickup.campaign_task_id) {
+            clickup.campaign_task_url = taskData?.url || `https://app.clickup.com/t/${clickup.campaign_task_id}`;
+          }
+        } else {
+          const errText = await taskRes.text();
+          clickup.errors.push({ stage: 'create_campaign_task', status: taskRes.status, detail: errText.slice(0, 300) });
+        }
+      } catch (e) {
+        clickup.errors.push({ stage: 'create_campaign_task', detail: String(e).slice(0, 200) });
+      }
+
+      // 2e. Create 10 Post tasks sequentially
+      for (let i = 0; i < posts.length; i++) {
+        const p = posts[i];
+        const dt = addDays(body.start_date, i);
+        const postDateMs = Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate(), 9, 0, 0);
+        const taskName = `${body.angle_label} | Day ${i + 1} (${dayOfWeek(dt)}, ${formatShortDate(dt)}) — ${p.title || ''}`;
+        const imagePrompt = `Clean, professional infographic-style graphic for Craigslist post. Bold headline text at top: '${p.title || ''}'. Simple illustration related to ${body.angle_label}. At the bottom: 'Licensed Enrolled Agent · ${body.city_label}.' Colors: dark navy blue background, white text, green and gold accents. No stock photo people. No logos. Minimal, trustworthy. 1200x900 pixels.`;
+
+        const customFields = [
+          { id: 'bc5a79a8-8d63-40e8-ac34-1fc622888991', value: 3 },
+          { id: '0bbb7df3-ddcd-49a3-a180-7c9764a425dd', value: postDateMs },
+          { id: '52a1014a-1af7-43c1-8768-c3348323de7f', value: 1 },
+          { id: '0174470b-3afe-4a90-9eaa-161440067878', value: 2 },
+          { id: 'a4363773-666b-433e-bc78-052c9a251b06', value: imagePrompt },
+          { id: 'f6c085aa-aa96-4ed7-8170-cbb82b1860fd', value: 0 },
+        ];
+        if (clickup.campaign_task_id) {
+          customFields.push({
+            id: '4a33cc26-cfd8-4617-953f-10be1014d629',
+            value: { add: [clickup.campaign_task_id] },
+          });
+        }
+
+        const postTaskBody = {
+          name: taskName,
+          markdown_description: p.body || '',
+          task_type: 'Post',
+          custom_fields: customFields,
+        };
+
+        try {
+          const postRes = await fetch(
+            `https://api.clickup.com/api/v2/list/${POSTS_LIST_ID}/task`,
+            { method: 'POST', headers: cuHeaders, body: JSON.stringify(postTaskBody) }
+          );
+          if (postRes.ok) {
+            const postData = await postRes.json();
+            if (postData?.id) {
+              clickup.post_task_ids.push(postData.id);
+              clickup.post_count++;
+            }
+          } else {
+            const errText = await postRes.text();
+            clickup.errors.push({ stage: 'create_post_task', index: i, status: postRes.status, detail: errText.slice(0, 300) });
+          }
+        } catch (e) {
+          clickup.errors.push({ stage: 'create_post_task', index: i, detail: String(e).slice(0, 200) });
+        }
+      }
+
+      return json({
+        ok: true,
+        campaign_name: body.campaign_name,
+        content_type: 'craigslist_taxpayer',
+        angle: body.angle,
+        city: body.city,
+        posts,
+        clickup,
+      }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Campaign Post Update — PATCH individual campaign posts
   // -------------------------------------------------------------------------
 

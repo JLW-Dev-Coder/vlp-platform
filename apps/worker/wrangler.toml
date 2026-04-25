@@ -302,6 +302,13 @@ STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
 # YOUTUBE_OAUTH_CLIENT_SECRET  — OAuth client secret for YouTube Analytics API. Set via `wrangler secret put YOUTUBE_OAUTH_CLIENT_SECRET`.
 
 # =================================================
+# SCALE Campaign Generation (Anthropic + ClickUp)
+# =================================================
+
+# ANTHROPIC_API_KEY
+# CLICKUP_API_TOKEN
+
+# =================================================
 # Optional / Future Integrations
 # =================================================
 

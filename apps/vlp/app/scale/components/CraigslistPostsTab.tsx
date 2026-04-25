@@ -12,8 +12,17 @@ interface CraigslistPost {
   angle_note: string
 }
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514'
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
+interface ClickupMeta {
+  campaign_task_id: string | null
+  campaign_task_url: string | null
+  doc_page_url: string | null
+  doc_page_id: string | null
+  post_task_ids: string[]
+  post_count: number
+  errors?: Array<Record<string, unknown>>
+}
+
+const API = 'https://api.virtuallaunch.pro'
 
 const ANGLES: Array<{ value: string; label: string; description: string }> = [
   {
@@ -73,53 +82,17 @@ const CITIES: Array<{ value: string; label: string }> = [
   { value: 'national', label: 'National (no city reference)' },
 ]
 
-function buildSystemPrompt(cityLabel: string, angleLabel: string, angleDescription: string): string {
-  return `You are writing 10 Craigslist posts for the "services > financial" or "services > tax services" category. These posts target TAXPAYERS (not tax professionals) in ${cityLabel}.
-
-Angle: ${angleLabel} — ${angleDescription}
-
-Rules:
-- Each post has a TITLE (max 70 chars) and BODY (150-250 words)
-- Write for people scrolling Craigslist looking for help, not professionals
-- No jargon. No acronyms (IRS is fine). No platform names.
-- Tone: helpful, direct, trustworthy. Like a neighbor who happens to be a tax expert.
-- Each post takes a slightly different angle or hook on the same theme
-- Include "Licensed Enrolled Agent" or "licensed tax professional" in every post body
-- Include the city name naturally in at least 5 of the 10 posts
-- End each post with a clear call to action: "Message me" or "Reply to this post"
-- Do NOT include URLs, links, or web addresses (Craigslist prohibits them in some categories)
-- Do NOT include phone numbers in the post body
-- Do NOT include email addresses — Craigslist provides its own anonymous reply system
-- For the Kwong/penalty angle: explain that the IRS may owe them money, don't assume they know what Kwong is
-- If the city is "National (no city reference)", do not reference any specific city — write for a general US audience
-- Posts should feel like they were written by a real person, not a company
-
-Output format — return ONLY a JSON array, no markdown, no preamble:
-[
-  { "title": "...", "body": "...", "angle_note": "one line on why this hook" },
-  ...
-]`
-}
-
-function parseJsonArray<T>(raw: string): T[] {
-  let s = raw.trim()
-  if (s.startsWith('```')) s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')
-  const start = s.indexOf('[')
-  const end = s.lastIndexOf(']')
-  if (start === -1 || end === -1) throw new Error('Could not find JSON array in model output')
-  return JSON.parse(s.slice(start, end + 1)) as T[]
-}
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export default function CraigslistPostsTab({ anthropicKey }: { anthropicKey: string }) {
+export default function CraigslistPostsTab() {
   const [angle, setAngle] = useState<string>('penalty_refund')
   const [city, setCity] = useState<string>('san_diego')
   const [campaignName, setCampaignName] = useState('')
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10))
 
   const [posts, setPosts] = useState<CraigslistPost[]>([])
+  const [clickup, setClickup] = useState<ClickupMeta | null>(null)
   const [generating, setGenerating] = useState(false)
 
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -127,7 +100,7 @@ export default function CraigslistPostsTab({ anthropicKey }: { anthropicKey: str
   const showToast = useCallback((type: 'success' | 'error', text: string) => {
     setToast({ type, text })
     clearTimeout(toastTimer.current)
-    toastTimer.current = setTimeout(() => setToast(null), 3000)
+    toastTimer.current = setTimeout(() => setToast(null), 4000)
   }, [])
 
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -142,41 +115,40 @@ export default function CraigslistPostsTab({ anthropicKey }: { anthropicKey: str
   }
 
   const handleGenerate = async () => {
-    if (!anthropicKey) {
-      showToast('error', 'Anthropic API key is required. Open the parent "API Keys" panel to add it.')
-      return
-    }
     const angleDef = ANGLES.find((a) => a.value === angle)!
     const cityDef = CITIES.find((c) => c.value === city)!
     setGenerating(true)
     try {
-      const system = buildSystemPrompt(cityDef.label, angleDef.label, angleDef.description)
-      const user = `Generate 10 Craigslist posts now. Angle: ${angleDef.label}. City: ${cityDef.label}. Return only the JSON array.`
-      const res = await fetch(ANTHROPIC_URL, {
+      const res = await fetch(`${API}/v1/scale/campaigns/craigslist/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': anthropicKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: ANTHROPIC_MODEL,
-          max_tokens: 6000,
-          system,
-          messages: [{ role: 'user', content: user }],
+          angle,
+          angle_label: angleDef.label,
+          angle_description: angleDef.description,
+          city,
+          city_label: cityDef.label,
+          campaign_name: campaignName || `${angleDef.label} — ${cityDef.label}`,
+          start_date: startDate,
         }),
       })
       if (!res.ok) {
         const errText = await res.text()
-        throw new Error(`Anthropic ${res.status}: ${errText.slice(0, 300)}`)
+        throw new Error(`Worker ${res.status}: ${errText.slice(0, 300)}`)
       }
       const data = await res.json()
-      const text = data?.content?.[0]?.text
-      if (typeof text !== 'string') throw new Error('Unexpected Anthropic response shape')
-      const parsed = parseJsonArray<CraigslistPost>(text)
-      setPosts(parsed)
-      showToast('success', `Generated ${parsed.length} Craigslist posts`)
+      if (!data.ok || !Array.isArray(data.posts)) {
+        throw new Error('Unexpected response shape')
+      }
+      setPosts(data.posts)
+      setClickup(data.clickup || null)
+      const cuErrors = data.clickup?.errors?.length || 0
+      if (cuErrors > 0) {
+        showToast('success', `Generated ${data.posts.length} posts · ClickUp sync had ${cuErrors} issue(s)`)
+      } else {
+        showToast('success', `Generated ${data.posts.length} posts · ClickUp campaign created`)
+      }
     } catch (e) {
       showToast('error', e instanceof Error ? e.message : 'Failed to generate posts')
     } finally {
@@ -254,6 +226,50 @@ export default function CraigslistPostsTab({ anthropicKey }: { anthropicKey: str
           </button>
         </div>
       </div>
+
+      {clickup && (clickup.campaign_task_url || clickup.doc_page_url) && (
+        <div
+          style={{
+            marginTop: '1rem',
+            padding: '0.75rem 1rem',
+            borderRadius: '0.5rem',
+            background: 'rgba(34,197,94,0.08)',
+            border: '1px solid rgba(34,197,94,0.3)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            alignItems: 'center',
+            fontSize: '0.875rem',
+          }}
+        >
+          <span>✓ Campaign created in ClickUp — {clickup.post_count} posts queued</span>
+          {clickup.campaign_task_url && (
+            <a
+              href={clickup.campaign_task_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#22c55e', fontWeight: 600 }}
+            >
+              View Campaign Task ↗
+            </a>
+          )}
+          {clickup.doc_page_url && (
+            <a
+              href={clickup.doc_page_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#22c55e', fontWeight: 600 }}
+            >
+              View Campaign Doc ↗
+            </a>
+          )}
+          {clickup.errors && clickup.errors.length > 0 && (
+            <span style={{ opacity: 0.7, fontSize: '0.75rem' }}>
+              ({clickup.errors.length} ClickUp sync issue(s))
+            </span>
+          )}
+        </div>
+      )}
 
       {posts.length === 0 ? (
         <div className={styles.emptyState}>
