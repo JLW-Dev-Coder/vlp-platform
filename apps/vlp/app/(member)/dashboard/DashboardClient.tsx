@@ -1,62 +1,36 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
-  Coins,
-  CalendarCheck,
-  FileText,
-  HeadphonesIcon,
-  Video,
-  RefreshCw,
-  Plus,
   MessageSquare,
-  Shield,
+  Eye,
+  TrendingUp,
   AlertCircle,
+  ArrowRight,
+  Inbox,
 } from 'lucide-react'
-import { KPICard, HeroCard } from '@vlp/member-ui'
-import ActivityItem from '../components/ActivityItem'
+import { KPICard, ContentCard } from '@vlp/member-ui'
 import { getDashboard } from '@/lib/api/dashboard'
+import { getProfile } from '@/lib/api/member'
 import type { DashboardPayload } from '@/lib/api/types'
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; data: DashboardPayload }
+  | {
+      status: 'ready'
+      dashboard: DashboardPayload
+      profile: Record<string, unknown> | null
+    }
 
-function formatRelative(iso: string | null | undefined): string {
-  if (!iso) return ''
-  const then = new Date(iso).getTime()
-  if (Number.isNaN(then)) return ''
-  const now = Date.now()
-  const diffMs = now - then
-  const mins = Math.round(diffMs / 60_000)
-  if (mins < 1) return 'Just now'
-  if (mins < 60) return `${mins} min${mins === 1 ? '' : 's'} ago`
-  const hours = Math.round(mins / 60)
-  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
-  const days = Math.round(hours / 24)
-  if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`
-  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-function formatMemberSince(iso: string | null | undefined): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
-}
-
-function formatBookingTime(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
-}
-
-function activityDotFor(type: string): string {
-  if (type === 'report') return 'bg-emerald-400'
-  if (type === 'booking') return 'bg-blue-400'
-  if (type === 'support') return 'bg-white/30'
-  return 'bg-brand-primary'
+function isProfileComplete(profile: Record<string, unknown> | null): boolean {
+  if (!profile) return false
+  const required = ['profile', 'contact', 'services']
+  return required.every((k) => {
+    const section = profile[k]
+    return section && typeof section === 'object' && Object.keys(section as Record<string, unknown>).length > 0
+  })
 }
 
 export default function DashboardClient() {
@@ -64,212 +38,120 @@ export default function DashboardClient() {
 
   useEffect(() => {
     let cancelled = false
-    getDashboard()
-      .then((data) => {
-        if (!cancelled) setState({ status: 'ready', data })
-      })
-      .catch((err) => {
-        if (!cancelled) setState({ status: 'error', message: err?.message ?? 'Unknown error' })
-      })
+    ;(async () => {
+      try {
+        const dashboard = await getDashboard()
+        let profile: Record<string, unknown> | null = null
+        if (dashboard.account.professional_id) {
+          try {
+            profile = await getProfile(dashboard.account.professional_id)
+          } catch {
+            profile = null
+          }
+        }
+        if (!cancelled) setState({ status: 'ready', dashboard, profile })
+      } catch (err) {
+        if (!cancelled) setState({ status: 'error', message: (err as Error)?.message ?? 'Unknown error' })
+      }
+    })()
     return () => {
       cancelled = true
     }
   }, [])
 
-  if (state.status === 'loading') {
-    return <DashboardSkeleton />
-  }
+  if (state.status === 'loading') return <DashboardSkeleton />
+  if (state.status === 'error') return <DashboardFallback message={state.message} />
 
-  if (state.status === 'error') {
-    return <DashboardFallback message={state.message} />
-  }
-
-  const { account, tokens, bookings, reports, support, activity } = state.data
-
-  const kpis = [
-    {
-      label: 'Token Balance',
-      value: String(tokens.balance),
-      subtitle: tokens.monthly_allocation > 0 ? `+${tokens.monthly_allocation}/mo` : 'No monthly allocation',
-      trend: 'neutral' as const,
-      icon: Coins,
-    },
-    {
-      label: 'Bookings This Month',
-      value: String(bookings.this_month),
-      subtitle: bookings.upcoming.length > 0 ? `${bookings.upcoming.length} upcoming` : 'No upcoming',
-      trend: 'neutral' as const,
-      icon: CalendarCheck,
-    },
-    {
-      label: 'Reports Generated',
-      value: String(reports.generated_this_month),
-      subtitle: 'This month',
-      trend: 'neutral' as const,
-      icon: FileText,
-    },
-    {
-      label: 'Support Tickets',
-      value: String(support.open_tickets),
-      subtitle: support.open_tickets > 0 ? 'Open' : 'None open',
-      trend: 'neutral' as const,
-      icon: HeadphonesIcon,
-    },
-  ]
-
-  const nextBooking = bookings.upcoming[0] ?? null
+  const { dashboard, profile } = state
+  const profileComplete = isProfileComplete(profile)
+  const inquiriesThisMonth = 0
+  const profileViews = 0
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
         <p className="mt-1 text-sm text-white/50">
-          Welcome back. Here&apos;s your operational overview.
+          Welcome back{dashboard.account.name ? `, ${dashboard.account.name.split(' ')[0]}` : ''}.
         </p>
       </div>
 
-      {/* Hero welcome card */}
-      <HeroCard brandColor="#f97316">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-brand-primary/70">Welcome back</p>
-            <h2 className="mt-1 text-xl font-semibold text-white">
-              {account.name}
-              {account.credential ? `, ${account.credential}` : ''}
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-white/60">
-              <span>
-                <span className="text-white/40">Tier:</span>{' '}
-                <span className="font-medium text-brand-primary">{account.tier}</span>
-              </span>
-              <span>
-                <span className="text-white/40">Plan:</span>{' '}
-                <span className="text-white/80">{account.plan_name}</span>
-              </span>
-              {account.tier_renewal_date && (
-                <span>
-                  <span className="text-white/40">Renews:</span>{' '}
-                  <span className="text-white/80">
-                    {new Date(account.tier_renewal_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </span>
-                </span>
-              )}
+      {!profileComplete && (
+        <div className="rounded-xl border border-brand-primary/40 bg-gradient-to-br from-brand-primary/10 to-brand-primary/5 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-widest text-brand-primary">Action Required</p>
+              <h2 className="mt-1 text-xl font-semibold text-white">
+                Complete Your Profile to Start Receiving Leads
+              </h2>
+              <p className="mt-2 text-sm text-white/70">
+                Add your credential, location, and services to go live in the directory.
+                Taxpayers in your area are searching right now.
+              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-brand-primary/60" />
-            <div>
-              <p className="text-[11px] uppercase tracking-widest text-white/40">Member since</p>
-              <p className="text-sm font-medium text-white/80">{formatMemberSince(account.member_since) || '—'}</p>
-            </div>
+            <Link
+              href="/profile"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+            >
+              Complete Profile
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
-      </HeroCard>
+      )}
 
-      {/* KPI row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((kpi) => (
-          <KPICard key={kpi.label} {...kpi} />
-        ))}
-      </div>
-
-      {/* Two-column grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Next Scheduled Session */}
-        <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
-          <h3 className="text-xs uppercase tracking-widest text-white/40">Next Scheduled Session</h3>
-          {nextBooking ? (
-            <>
-              <div className="mt-4 space-y-2">
-                <p className="text-lg font-semibold text-white">
-                  {nextBooking.booking_type.replace(/_/g, ' ')}
-                </p>
-                <p className="text-sm text-white/60">Status: {nextBooking.status}</p>
-                <p className="text-sm text-white/50">{formatBookingTime(nextBooking.scheduled_at)}</p>
-              </div>
-              <div className="mt-5 flex gap-3">
-                <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
-                  <Video className="h-4 w-4" />
-                  Join Now
-                </button>
-                <button className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10">
-                  <RefreshCw className="h-4 w-4" />
-                  Reschedule
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="mt-4 text-sm text-white/50">
-              No upcoming sessions scheduled.
-            </div>
-          )}
-        </div>
-
-        {/* Token Balance highlight */}
-        <HeroCard brandColor="#f97316">
-          <h3 className="text-xs uppercase tracking-widest text-brand-primary/70">Token Balance</h3>
-          <p className="mt-3 text-4xl font-bold text-white">{tokens.balance}</p>
-          <p className="mt-1 text-sm text-white/50">Transcript tokens available</p>
-          <div className="mt-2 text-xs text-white/40">
-            Monthly allocation: {tokens.monthly_allocation} tokens
-          </div>
-          <button className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90">
-            <Plus className="h-4 w-4" />
-            Refill Tokens
-          </button>
-        </HeroCard>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
-        <h3 className="text-xs uppercase tracking-widest text-white/40">Recent Activity</h3>
-        <div className="mt-2 divide-y divide-[--member-border]">
-          {activity.length === 0 ? (
-            <p className="py-6 text-sm text-white/40">No recent activity.</p>
-          ) : (
-            activity.map((a, i) => (
-              <ActivityItem
-                key={i}
-                title={a.title}
-                timestamp={formatRelative(a.timestamp)}
-                dotColor={activityDotFor(a.type)}
-              />
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Quick Actions */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <button className="flex items-center gap-3 rounded-xl border border-brand-primary/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-primary/40">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10">
-            <CalendarCheck className="h-5 w-5 text-brand-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-white">New Booking</p>
-            <p className="text-xs text-white/40">Schedule a consultation</p>
-          </div>
-        </button>
-        <button className="flex items-center gap-3 rounded-xl border border-brand-primary/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-primary/40">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10">
-            <FileText className="h-5 w-5 text-brand-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-white">Generate Report</p>
-            <p className="text-xs text-white/40">Run an IRS transcript analysis</p>
-          </div>
-        </button>
-        <button className="flex items-center gap-3 rounded-xl border border-brand-primary/20 bg-[--member-card] p-5 text-left transition hover:bg-[--member-card-hover] hover:border-brand-primary/40">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10">
-            <MessageSquare className="h-5 w-5 text-brand-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-white">Contact Support</p>
-            <p className="text-xs text-white/40">Open a support ticket</p>
-          </div>
-        </button>
+        <KPICard
+          label="Inquiries This Month"
+          value={String(inquiriesThisMonth)}
+          subtitle={inquiriesThisMonth === 0 ? 'No inquiries yet' : 'This month'}
+          icon={MessageSquare}
+        />
+        <KPICard
+          label="Profile Views"
+          value={String(profileViews)}
+          subtitle={profileComplete ? 'This month' : 'Profile not live'}
+          icon={Eye}
+        />
+        <KPICard
+          label="Response Rate"
+          value="—"
+          subtitle="Awaiting first inquiry"
+          icon={TrendingUp}
+        />
       </div>
+
+      <ContentCard title="Recent Inquiries">
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-primary/10">
+            <Inbox className="h-6 w-6 text-brand-primary" />
+          </div>
+          <p className="mt-4 text-sm font-medium text-white">No inquiries yet</p>
+          <p className="mt-1 max-w-sm text-sm text-white/50">
+            {profileComplete
+              ? 'Once a taxpayer in your area submits an inquiry, it will appear here.'
+              : 'Complete your profile to start receiving leads from taxpayers in your area.'}
+          </p>
+          {!profileComplete && (
+            <Link
+              href="/profile"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90"
+            >
+              Complete Profile
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+          {profileComplete && (
+            <Link
+              href="/inquiries"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
+            >
+              View All Inquiries
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
+      </ContentCard>
     </div>
   )
 }
@@ -282,14 +164,10 @@ function DashboardSkeleton() {
         <p className="mt-1 text-sm text-white/50">Loading your overview…</p>
       </div>
       <div className="h-32 animate-pulse rounded-xl border border-[--member-border] bg-[--member-card]" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => (
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
           <div key={i} className="h-28 animate-pulse rounded-xl border border-[--member-border] bg-[--member-card]" />
         ))}
-      </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="h-48 animate-pulse rounded-xl border border-[--member-border] bg-[--member-card]" />
-        <div className="h-48 animate-pulse rounded-xl border border-[--member-border] bg-[--member-card]" />
       </div>
       <div className="h-56 animate-pulse rounded-xl border border-[--member-border] bg-[--member-card]" />
     </div>
@@ -310,11 +188,6 @@ function DashboardFallback({ message }: { message: string }) {
           <p className="mt-1 text-amber-200/70">{message}</p>
         </div>
       </div>
-      <HeroCard brandColor="#f97316">
-        <p className="text-xs uppercase tracking-widest text-brand-primary/70">Welcome back</p>
-        <h2 className="mt-1 text-xl font-semibold text-white">Member</h2>
-        <p className="mt-2 text-sm text-white/60">Your dashboard will populate once the API is reachable.</p>
-      </HeroCard>
     </div>
   )
 }

@@ -25,10 +25,17 @@ export const vlpConfig: PlatformConfig = {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
-        { label: 'Analytics', href: '/analytics', icon: 'BarChart3' },
-        { label: 'Calendar', href: '/calendar', icon: 'Calendar' },
         { label: 'Inquiries', href: '/inquiries', icon: 'MessageSquare' },
+        { label: 'Directory Profile', href: '/profile', icon: 'IdCard' },
+        { label: 'Calendar', href: '/calendar', icon: 'Calendar' },
+        { label: 'Notifications', href: '/notifications', icon: 'Bell' },
+      ],
+    },
+    {
+      title: 'TOOLS',
+      items: [
         { label: 'Tokens', href: '/tokens', icon: 'Coins' },
+        { label: 'Analytics', href: '/analytics', icon: 'BarChart3' },
       ],
     },
     {
