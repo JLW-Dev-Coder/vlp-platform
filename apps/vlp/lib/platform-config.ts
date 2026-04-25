@@ -85,10 +85,10 @@ export const vlpConfig: PlatformConfig = {
     supportEmail: 'outreach@virtuallaunch.pro',
   },
   marketing: {
-    tagline: 'Launch systems for tax professionals',
-    summary: 'Membership platform for tax professionals who want calmer launches, cleaner operations, and a repeatable client acquisition system.',
-    ctaLabel: 'Start Here',
-    ctaPath: '/contact',
+    tagline: 'Speed to Lead',
+    summary: 'The fastest way for tax professionals to find and respond to new clients.',
+    ctaLabel: 'Get Your First Leads',
+    ctaPath: '/sign-in',
     megaMenu: {
       discover: [
         { label: 'About', href: '/about', description: 'Why Virtual Launch Pro exists' },
@@ -96,21 +96,19 @@ export const vlpConfig: PlatformConfig = {
         { label: 'Blog', href: '/blog', description: 'Insights and growth content for tax pros' },
       ],
       explore: [
-        { label: 'Booking', href: '/features/booking', description: 'See the booking workflow in action' },
-        { label: 'Public Profile', href: '/features/public-profile', description: 'Preview the professional profile experience' },
+        { label: 'Pricing', href: '/pricing', description: 'Plans and what you get at each tier' },
         { label: 'Help Center', href: '/help', description: 'Answers, guides, and support' },
-        { label: 'Pricing', href: '/pricing' },
       ],
       toolsExtras: [
-        { label: 'Platform Overview', href: '/features' },
-        { label: 'Integration Guide', href: '/how-it-works' },
+        { label: 'How It Works', href: '/how-it-works' },
+        { label: 'Directory Profile', href: '/features/public-profile' },
         { label: 'Partner Program', href: '/affiliate' },
       ],
-      ctaText: 'Need a cleaner launch system than duct tape, calendar links, and prayer?',
-      ctaMagnetLabel: 'Contact Sales',
-      ctaMagnetPath: '/contact',
+      ctaText: 'Your next client is already looking for you. Get listed and start receiving leads.',
+      ctaMagnetLabel: 'Get Your First Leads',
+      ctaMagnetPath: '/sign-in',
     },
-    footerTagline: 'Calm launch systems',
+    footerTagline: 'Speed to lead for tax pros',
     footerResources: [
       { label: 'Blog', href: '/blog' },
       { label: 'Transcript Central', href: 'https://taxmonitor.pro/resources/transcript-central', external: true },
