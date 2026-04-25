@@ -409,6 +409,8 @@ export const api = {
     state?: string | null
     entity_type?: string
     source?: string
+    language_preference?: string
+    selected_professional_id?: string
   }) =>
     apiFetch('/v1/tmp/inquiries', {
       method: 'POST',

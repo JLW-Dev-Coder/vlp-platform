@@ -272,3 +272,41 @@ export async function getProfile(professionalId: string): Promise<Record<string,
   )
   return data.profile
 }
+
+// ---------------------------------------------------------------------------
+// Inquiries — GET /v1/tmp/inquiries/by-professional/:professional_id
+// ---------------------------------------------------------------------------
+
+export interface InquiryRow {
+  inquiry_id: string
+  first_name?: string | null
+  last_name?: string | null
+  email?: string | null
+  phone?: string | null
+  business_types?: string[]
+  services_needed?: string[]
+  preferred_state?: string | null
+  preferred_city?: string | null
+  status?: string | null
+  assigned_professional_id?: string | null
+  response_message?: string | null
+  created_at?: string
+  updated_at?: string
+  [key: string]: unknown
+}
+
+export async function getInquiriesByProfessional(
+  professionalId: string
+): Promise<InquiryRow[]> {
+  const data = await apiGet<{ ok: boolean; inquiries: InquiryRow[] }>(
+    `/v1/tmp/inquiries/by-professional/${professionalId}`
+  )
+  return data.inquiries ?? []
+}
+
+export async function getInquiry(inquiryId: string): Promise<Record<string, unknown>> {
+  const data = await apiGet<{ ok: boolean; inquiry: Record<string, unknown> }>(
+    `/v1/inquiries/${inquiryId}`
+  )
+  return data.inquiry
+}

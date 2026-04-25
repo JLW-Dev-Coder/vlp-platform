@@ -29,6 +29,22 @@ const US_STATES = [
   'West Virginia', 'Wisconsin', 'Wyoming',
 ]
 
+const STATE_NAME_TO_CODE: Record<string, string> = {
+  'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR',
+  'California': 'CA', 'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE',
+  'District of Columbia': 'DC', 'Florida': 'FL', 'Georgia': 'GA', 'Hawaii': 'HI',
+  'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+  'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME',
+  'Maryland': 'MD', 'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN',
+  'Mississippi': 'MS', 'Missouri': 'MO', 'Montana': 'MT', 'Nebraska': 'NE',
+  'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM',
+  'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+  'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI',
+  'South Carolina': 'SC', 'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX',
+  'Utah': 'UT', 'Vermont': 'VT', 'Virginia': 'VA', 'Washington': 'WA',
+  'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY',
+}
+
 const SERVICES = [
   'Appeals',
   'Audit Defense',
@@ -164,13 +180,18 @@ function InquiryFlow() {
     setContactSubmitting(true)
     setContactError('')
     try {
+      const stateCode = STATE_NAME_TO_CODE[selectedState] || selectedState
       await api.createInquiry({
-        professional_id: professionalSlug,
         name: contactName.trim(),
         email: contactEmail.trim(),
-        subject: `Inquiry for ${professionalSlug}`,
         message: contactMessage.trim(),
-        source_page: '/inquiry',
+        description: contactMessage.trim(),
+        state: stateCode,
+        service_needed: selectedService,
+        entity_type: selectedEntity,
+        language_preference: selectedLanguage || undefined,
+        selected_professional_id: professionalSlug,
+        source: 'inquiry_form',
       })
       setContactSuccess(professionalSlug)
       setContactOpenFor(null)

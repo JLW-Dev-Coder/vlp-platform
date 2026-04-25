@@ -589,6 +589,32 @@ function deriveProfileFields(profile) {
   return profile;
 }
 
+// 2-letter US state code → full state name. Used to normalize directory
+// filters since profiles persist full state names but callers may pass either.
+const US_STATE_CODE_TO_NAME = {
+  AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
+  CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
+  DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii',
+  ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa',
+  KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine',
+  MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota',
+  MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska',
+  NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico',
+  NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio',
+  OK: 'Oklahoma', OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island',
+  SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas',
+  UT: 'Utah', VT: 'Vermont', VA: 'Virginia', WA: 'Washington',
+  WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
+};
+function normalizeStateFilter(input) {
+  if (!input) return null;
+  const trimmed = String(input).trim();
+  if (trimmed.length === 2) {
+    return US_STATE_CODE_TO_NAME[trimmed.toUpperCase()] || trimmed;
+  }
+  return trimmed;
+}
+
 // Build the D1 projection row values from the nested profile.
 function profileD1ProjectionValues(nested) {
   const professions = Array.isArray(nested?.professional?.profession)
@@ -603,8 +629,20 @@ function profileD1ProjectionValues(nested) {
   const wa = Array.isArray(nested?.contact?.weekly_availability)
     ? nested.contact.weekly_availability
     : [];
+  const name = nested?.profile?.name || '';
+  const stateValue = nested?.location?.state || null;
+  // Publish gate: only project as 'active' if the pro has filled out the
+  // essentials (name, profession, state, at least one service) AND has not
+  // explicitly hidden the profile. Otherwise stays out of the directory.
+  const isHidden = nested?.profile?.status === 'hidden';
+  const isComplete =
+    !!name &&
+    professions.length > 0 &&
+    !!stateValue &&
+    services.length > 0;
+  const status = (!isHidden && isComplete) ? 'active' : 'draft';
   return {
-    display_name: nested?.profile?.name || '',
+    display_name: name,
     bio: bioParagraphs.join('\n\n') || nested?.bio?.bio_short || '',
     specialties: services.join(', '),
     profession: professions.join(', '),
@@ -615,9 +653,9 @@ function profileD1ProjectionValues(nested) {
     website: nested?.contact?.website || null,
     firm_name: nested?.professional?.firm_name || null,
     city: nested?.location?.city || null,
-    state: nested?.location?.state || null,
+    state: stateValue,
     zip: nested?.location?.zip || null,
-    status: nested?.profile?.status === 'hidden' ? 'inactive' : 'active',
+    status,
   };
 }
 
@@ -6404,7 +6442,7 @@ const ROUTES = [
     handler: async (_method, _pattern, _params, request, env) => {
       try {
         const url = new URL(request.url);
-        const stateFilter = url.searchParams.get('state') || null;
+        const stateFilter = normalizeStateFilter(url.searchParams.get('state'));
         const professionFilter = url.searchParams.get('profession') || null;
         const serviceFilter = url.searchParams.get('service') || null;
         const cityFilter = url.searchParams.get('city') || null;
@@ -9805,6 +9843,58 @@ const ROUTES = [
   },
 
   {
+    method: 'GET', pattern: '/v1/tmp/inquiries/by-professional/:professional_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const profile = await env.DB.prepare(
+          'SELECT professional_id, account_id, state, specialties FROM profiles WHERE professional_id = ? LIMIT 1'
+        ).bind(params.professional_id).first();
+        if (!profile) {
+          return json({ ok: false, error: 'NOT_FOUND', message: 'Professional not found' }, 404, request);
+        }
+        if (profile.account_id !== session.account_id && session.role !== 'operator' && session.role !== 'admin') {
+          return json({ ok: false, error: 'FORBIDDEN', message: 'Not authorized' }, 403, request);
+        }
+
+        const proStateRaw = (profile.state || '').trim();
+        const stateCode = proStateRaw.length === 2 ? proStateRaw.toUpperCase() : proStateRaw;
+        const stateName = US_STATE_CODE_TO_NAME[stateCode] || proStateRaw;
+        const stateLike = stateName ? `%${stateName}%` : null;
+
+        const rows = await env.DB.prepare(
+          `SELECT * FROM inquiries
+            WHERE assigned_professional_id = ?
+               OR (? IS NOT NULL AND (preferred_state = ? OR preferred_state LIKE ?))
+            ORDER BY created_at DESC
+            LIMIT 200`
+        ).bind(params.professional_id, stateLike, stateName, stateLike).all();
+
+        const specialties = (profile.specialties || '').toLowerCase();
+        const inquiries = (rows.results ?? [])
+          .map((row) => ({
+            ...row,
+            business_types: (() => { try { return JSON.parse(row.business_types ?? '[]'); } catch { return []; } })(),
+            services_needed: (() => { try { return JSON.parse(row.services_needed ?? '[]'); } catch { return []; } })(),
+          }))
+          .filter((row) => {
+            if (row.assigned_professional_id === params.professional_id) return true;
+            if (!specialties) return true;
+            const services = Array.isArray(row.services_needed) ? row.services_needed.join(' ').toLowerCase() : '';
+            if (!services) return true;
+            return services.split(/[,\s]+/).some((s) => s && specialties.includes(s));
+          });
+
+        return json({ ok: true, inquiries }, 200, request);
+      } catch (e) {
+        console.error('GET /v1/tmp/inquiries/by-professional error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to fetch inquiries' }, 500, request);
+      }
+    },
+  },
+
+  {
     method: 'PATCH', pattern: '/v1/inquiries/:inquiry_id',
     handler: async (_method, _pattern, params, request, env) => {
       const { error } = await requireSession(request, env);
@@ -12622,7 +12712,7 @@ TTMP Support Team
       const url = new URL(request.url);
       const specialty = url.searchParams.get('specialty') || null;
       const city = url.searchParams.get('city') || null;
-      const state = url.searchParams.get('state') || null;
+      const state = normalizeStateFilter(url.searchParams.get('state'));
       const zip = url.searchParams.get('zip') || null;
       const page = Math.max(1, Math.min(100, parseInt(url.searchParams.get('page')) || 1));
       const limit = 20;
@@ -12975,7 +13065,7 @@ TTMP Support Team
   // Public taxpayer intake — no auth. Writes canonical to R2 + receipt + best-effort D1.
   {
     method: 'POST', pattern: '/v1/tmp/inquiries',
-    handler: async (_method, _pattern, _params, request, env) => {
+    handler: async (_method, _pattern, _params, request, env, ctx) => {
       const contentType = request.headers.get('content-type') || '';
       if (!contentType.toLowerCase().includes('application/json')) {
         return json({ ok: false, error: 'validation_failed', message: 'Content-Type must be application/json' }, 400, request);
@@ -13152,6 +13242,140 @@ TTMP Support Team
         );
       } catch (e) {
         // Table shape drift or constraint miss — R2 is authoritative, swallow.
+      }
+
+      // Step 4 — best-effort notifications (pros + taxpayer). Non-blocking:
+      // emails dispatch via ctx.waitUntil so the POST response is not delayed,
+      // and any failure is logged but never bubbles up — R2 inquiry is already
+      // authoritative at this point.
+      const notifyTask = (async () => {
+        const stateFullName = US_STATE_CODE_TO_NAME[state] || state;
+        const formattedTimestamp = now;
+        const errors = [];
+        let matchedPros = [];
+        let prosEmailed = 0;
+        let taxpayerSent = false;
+
+        try {
+          const stateLike = `%${stateFullName}%`;
+          const serviceLike = `%${serviceNeeded}%`;
+          const rows = await env.DB.prepare(
+            `SELECT p.professional_id, p.display_name, p.specialties, a.email
+               FROM profiles p
+               LEFT JOIN accounts a ON a.account_id = p.account_id
+              WHERE p.status = 'active'
+                AND LOWER(p.state) LIKE LOWER(?)
+                AND (p.specialties IS NULL OR p.specialties = '' OR LOWER(p.specialties) LIKE LOWER(?))`
+          ).bind(stateLike, serviceLike).all();
+          matchedPros = (rows?.results || []).map(r => ({
+            professional_id: r.professional_id,
+            display_name: r.display_name,
+            email: r.email,
+          }));
+        } catch (e) {
+          console.error('tmp/inquiries: profile match query failed', e?.message);
+          errors.push({ stage: 'match', message: String(e?.message || e) });
+        }
+
+        if (matchedPros.length === 0) {
+          console.log(`tmp/inquiries: no matching active pros for state=${state} service=${serviceNeeded}`);
+        }
+
+        const proSubject = `New taxpayer inquiry — ${serviceNeeded} in ${stateFullName}`;
+        const proBody = `A taxpayer has submitted an inquiry that matches your profile.
+
+Service needed: ${serviceNeeded}
+Entity type: ${entityType}
+State: ${stateFullName}
+Submitted: ${formattedTimestamp}
+
+Log in to your dashboard to view the full inquiry and respond:
+https://virtuallaunch.pro/inquiries
+
+The fastest response wins the client.
+
+— Virtual Launch Pro`;
+
+        for (const pro of matchedPros) {
+          if (!pro.email || !env.RESEND_API_KEY) continue;
+          try {
+            const res = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+                to: [pro.email],
+                subject: proSubject,
+                text: proBody,
+              }),
+            });
+            if (res.ok) {
+              prosEmailed += 1;
+            } else {
+              const err = await res.json().catch(() => ({}));
+              console.error(`tmp/inquiries: Resend error for pro ${pro.professional_id}: ${res.status}`, JSON.stringify(err));
+              errors.push({ stage: 'pro_email', professional_id: pro.professional_id, status: res.status });
+            }
+          } catch (e) {
+            console.error(`tmp/inquiries: pro email send threw for ${pro.professional_id}`, e?.message);
+            errors.push({ stage: 'pro_email', professional_id: pro.professional_id, message: String(e?.message || e) });
+          }
+        }
+
+        if (env.RESEND_API_KEY) {
+          try {
+            const res = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: 'Tax Monitor Pro <noreply@virtuallaunch.pro>',
+                to: [email],
+                subject: 'Your inquiry has been received',
+                text: `Thank you for reaching out. Your inquiry has been matched to qualified tax professionals in your area.
+
+What happens next:
+A credentialed tax professional will review your inquiry and reach out to you shortly.
+
+— Tax Monitor Pro`,
+              }),
+            });
+            if (res.ok) {
+              taxpayerSent = true;
+            } else {
+              const err = await res.json().catch(() => ({}));
+              console.error(`tmp/inquiries: Resend error for taxpayer: ${res.status}`, JSON.stringify(err));
+              errors.push({ stage: 'taxpayer_email', status: res.status });
+            }
+          } catch (e) {
+            console.error('tmp/inquiries: taxpayer email send threw', e?.message);
+            errors.push({ stage: 'taxpayer_email', message: String(e?.message || e) });
+          }
+        }
+
+        try {
+          await r2Put(env.R2_VIRTUAL_LAUNCH, `notifications/${inquiryId}.json`, {
+            inquiry_id: inquiryId,
+            matched_professionals: matchedPros.map(p => p.professional_id),
+            emails_sent_to_pros: prosEmailed,
+            taxpayer_confirmation_sent: taxpayerSent,
+            timestamp: new Date().toISOString(),
+            errors,
+          });
+        } catch (e) {
+          console.error('tmp/inquiries: notification log write failed', e?.message);
+        }
+      })();
+
+      if (ctx && typeof ctx.waitUntil === 'function') {
+        ctx.waitUntil(notifyTask);
+      } else {
+        notifyTask.catch(() => {});
       }
 
       return json({ ok: true, inquiry_id: inquiryId }, 200, request);
