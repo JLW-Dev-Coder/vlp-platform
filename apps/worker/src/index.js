@@ -2884,6 +2884,387 @@ function f2848_uint8ToBase64(bytes) {
   return btoa(binary);
 }
 
+// -------------------------------------------------------------------------
+// Craigslist taxpayer acquisition post templates
+// 7 angles × 10 posts each = 70 templates. {city} is replaced at generation
+// time. When city_label is "National (no city reference)", {city} becomes ""
+// and resulting double spaces / dangling prepositions are cleaned up.
+// -------------------------------------------------------------------------
+const CRAIGSLIST_TEMPLATES = {
+
+  penalty_refund: [
+    {
+      title: "Got Hit With an IRS Penalty Between 2020-2023? You May Be Owed Money",
+      body: "If you received an IRS penalty between January 2020 and July 2023, a recent court ruling may entitle you to a full refund of that penalty. The IRS will not tell you about this. You have to file a claim yourself.\n\nThe deadline to file is July 2026. After that, the window closes permanently.\n\nI am a licensed Enrolled Agent in {city}. I can help you check if you qualify and file the claim. It is free to find out if you are eligible.\n\nMessage me with what year you got the penalty and what it was for. I will tell you if this ruling applies to your case.",
+      angle_note: "Direct awareness hook — most people don't know about the Kwong ruling"
+    },
+    {
+      title: "IRS Penalty Refund — Deadline July 2026",
+      body: "A federal court ruled that certain IRS penalties issued between 2020 and 2023 were improperly assessed. That means if you paid one of these penalties, you could be entitled to a full refund.\n\nThis is not a scam or a gimmick. The case is called Kwong v. United States and it is a real federal ruling. But the IRS is not going to send you a check automatically. You have to file Form 843 to request the refund.\n\nThe filing deadline is July 2026. After that, you lose the right to claim it.\n\nI am a licensed tax professional in {city} and I can help you determine if your penalty qualifies. There is no charge to check.\n\nReply to this post with some details about your penalty and I will let you know if you have a case.",
+      angle_note: "Legitimacy framing — addresses skepticism by naming the case"
+    },
+    {
+      title: "Did the IRS Fine You in 2020, 2021, 2022, or 2023?",
+      body: "If the IRS hit you with a penalty during those years, there is a chance you are owed that money back. A court ruling changed the rules on how certain penalties were calculated, and the IRS has to refund them if you file the right paperwork.\n\nMost people have no idea this exists. The IRS certainly is not advertising it.\n\nI help people in {city} figure out if they qualify and file the claim. I am a licensed Enrolled Agent, which means I am federally authorized to represent you before the IRS.\n\nThe deadline to file is July 2026. Once it passes, the money is gone.\n\nMessage me and tell me a little about your situation. I will let you know if you have a claim.",
+      angle_note: "Year-specific hook — people remember the year they got penalized"
+    },
+    {
+      title: "You Might Be Owed Money From the IRS — Seriously",
+      body: "I know that sounds like every scam email you have ever received. But this one is real.\n\nA federal court case called Kwong v. United States found that the IRS miscalculated certain penalties between January 2020 and July 2023. If you were one of the people who paid those penalties, you can file for a full refund.\n\nThe catch is that nobody is going to do it for you. The IRS does not send refund checks for this automatically. You have to file a specific form, and you have to do it before July 2026.\n\nI am a licensed Enrolled Agent in {city}. I have been helping people file these claims. It costs nothing to check if you qualify.\n\nReply to this post or message me directly. Tell me what year you got the penalty and roughly what it was for.",
+      angle_note: "Skepticism-first hook — acknowledges it sounds too good to be true"
+    },
+    {
+      title: "IRS Owes You Money? Here Is How to Find Out",
+      body: "If you received an IRS penalty anytime between January 2020 and July 2023, a recent federal court ruling may mean you are entitled to get that money back.\n\nThe ruling found that the IRS applied certain penalties incorrectly during that period. The fix is simple — you file Form 843 and request a refund. But you have to do it before the July 2026 deadline.\n\nI am a licensed tax professional and I help people navigate exactly this process. I work with clients in {city} and can tell you within a few minutes whether your penalty qualifies.\n\nThere is no fee to check. If you qualify, I can help you file. If you do not, at least you will know.\n\nMessage me with the details of your penalty and I will give you a straight answer.",
+      angle_note: "Process-oriented hook — explains the mechanism simply"
+    },
+    {
+      title: "Free Check — Does the IRS Owe You a Penalty Refund?",
+      body: "Between 2020 and 2023, the IRS issued penalties that a federal court later found were improperly calculated. If you paid one of those penalties, you may be owed a refund.\n\nI am offering a free check for anyone in {city} who thinks they might qualify. All I need is the year of the penalty and a brief description of what it was for. I can usually tell you within one conversation whether you have a case.\n\nI am a licensed Enrolled Agent. That means I am authorized by the federal government to represent taxpayers before the IRS. This is what I do.\n\nThe deadline to file your claim is July 2026. After that, the refund window closes for good.\n\nReply to this post and I will get back to you.",
+      angle_note: "Free offer hook — lowers the barrier to first contact"
+    },
+    {
+      title: "Tax Penalty From 2020-2023? You Have Until July 2026 to Get It Back",
+      body: "There is a deadline coming up that most people do not know about. If the IRS penalized you between January 2020 and July 2023, you may have the right to a full refund of that penalty. But you have to file before July 2026.\n\nThis is based on a federal court ruling that found the IRS applied certain penalties incorrectly. The ruling means those penalties can be refunded, but only if you file the paperwork.\n\nI am a licensed Enrolled Agent in {city} who specializes in IRS penalty issues. I can help you figure out if your specific penalty qualifies and handle the filing if it does.\n\nDo not let this deadline pass without at least checking. Message me with your situation and I will tell you what I think.",
+      angle_note: "Urgency hook — leads with the deadline"
+    },
+    {
+      title: "Were You Penalized by the IRS? A Court Ruling May Help You",
+      body: "A federal court recently ruled that certain IRS penalties from 2020 through 2023 were assessed incorrectly. This means thousands of taxpayers could be owed refunds.\n\nThe problem is that most people do not know this ruling exists. And the IRS is not going to contact you about it. You have to take action yourself by filing Form 843 before the July 2026 deadline.\n\nIf you are in {city} and you received an IRS penalty during that period, I can help. I am a licensed Enrolled Agent and I handle these cases regularly.\n\nThe initial check is free. I just need to know what year you were penalized and what the penalty was for. Reply to this post and I will follow up.",
+      angle_note: "Scale hook — 'thousands of taxpayers' creates social proof"
+    },
+    {
+      title: "IRS Penalty Refund Help in {city}",
+      body: "If you paid an IRS penalty between 2020 and 2023, you should know that a federal court ruled many of those penalties were applied incorrectly. That means you could be owed a refund.\n\nI am a licensed Enrolled Agent based in {city} and I help people file these refund claims. The process involves Form 843, and the deadline to file is July 2026.\n\nHere is what I need from you to check if you qualify: the year you received the penalty and a brief description of what it was related to. That is it. I can usually give you an answer the same day.\n\nThere is no cost to find out. If you qualify, we can talk about next steps. If you do not, no harm done.\n\nMessage me and let us figure it out.",
+      angle_note: "Local hook — city in the title for Craigslist search"
+    },
+    {
+      title: "Last Chance to Claim Your IRS Penalty Refund — July 2026 Deadline",
+      body: "The clock is ticking on one of the biggest taxpayer refund opportunities in years. A court case called Kwong v. United States opened a window for people who received IRS penalties between January 2020 and July 2023 to get their money back.\n\nBut that window closes in July 2026. After that, no more claims.\n\nI have been helping people in {city} file these claims. I am a licensed Enrolled Agent, which means I am federally authorized to deal with the IRS on your behalf.\n\nIf you think you might qualify, reach out. I offer a free check to see if your penalty is eligible. All I need is some basic information about when you were penalized and why.\n\nReply to this post. Let us make sure you do not leave money on the table.",
+      angle_note: "Final urgency hook — 'last chance' framing"
+    }
+  ],
+
+  back_taxes: [
+    {
+      title: "Owe the IRS? There Are Options You Probably Do Not Know About",
+      body: "If you owe back taxes, the worst thing you can do is ignore it. The IRS adds penalties and interest every month, and eventually they start levying your bank accounts and garnishing your wages.\n\nBut there are legitimate ways to resolve it. Payment plans, offers in compromise, penalty abatement, and sometimes just getting your returns filed correctly can reduce what you owe significantly.\n\nI am a licensed Enrolled Agent in {city}. I help people who owe the IRS figure out the best path forward. Every situation is different, and what works depends on your income, assets, and how much you owe.\n\nIf you have been avoiding this, now is the time to deal with it. Message me and tell me a little about your situation. I will give you a straight answer about what your options are.",
+      angle_note: "Fear-to-action hook — acknowledges the avoidance pattern"
+    },
+    {
+      title: "Behind on Your Taxes? Let Me Help You Get Current",
+      body: "Whether you have one unfiled return or five, getting caught up with the IRS is not as scary as it seems. Most people who come to me expecting the worst end up relieved when they see what their actual options are.\n\nThe IRS offers payment plans for almost any balance. If you qualify, an offer in compromise can settle your debt for less than you owe. And if you have been penalized for filing late, there are ways to get those penalties reduced or removed.\n\nI am a licensed tax professional in {city} and I have helped dozens of people in your exact situation. The first step is always the same — figure out where you stand.\n\nMessage me with how many years you are behind and a rough idea of what you think you might owe. I will tell you what I would recommend as a next step.",
+      angle_note: "Reassurance hook — 'not as scary as it seems'"
+    },
+    {
+      title: "Unfiled Tax Returns? Here Is What Actually Happens",
+      body: "A lot of people think the IRS is going to show up at their door if they have unfiled returns. That is not how it works. But ignoring it does make things worse over time.\n\nHere is what actually happens: the IRS files a substitute return for you, and they are not generous about it. They claim zero deductions and zero credits for you, so the bill is always higher than it should be. Then they start adding penalties and interest.\n\nThe good news is that filing your actual returns usually reduces the amount you owe, sometimes dramatically. And once you are current, you can set up a payment plan for whatever is left.\n\nI am a licensed Enrolled Agent in {city}. I help people get their returns filed and their IRS issues resolved. If you have been putting this off, message me. The sooner you deal with it, the less it costs you.",
+      angle_note: "Myth-busting hook — corrects common fears"
+    },
+    {
+      title: "IRS Sent You a Letter? Do Not Panic — Read This",
+      body: "Getting a letter from the IRS is stressful. But most IRS letters are not as bad as they seem. Some are just asking for information. Some are notices about a balance. And some are serious enough that you need professional help.\n\nThe mistake most people make is either ignoring the letter or trying to handle it themselves without understanding what the IRS is actually asking for.\n\nI am a licensed Enrolled Agent in {city}. I read IRS letters every day. If you got one and you are not sure what to do, message me with the notice number in the top right corner. I can usually tell you exactly what it means and whether you need help.\n\nThis is what I do for a living. No judgment about how you got here. Let us just figure out the next step.",
+      angle_note: "Immediate trigger hook — targets people who just received a letter"
+    },
+    {
+      title: "Owe Back Taxes? You Have More Options Than You Think",
+      body: "The IRS has several programs designed to help people who owe money they cannot pay all at once. Most people do not know about them because the IRS does not exactly advertise.\n\nInstallment agreements let you pay monthly over time. Currently not collectible status pauses collections if you genuinely cannot pay. Offer in compromise lets you settle for less than you owe. And penalty abatement can remove some of the fees the IRS tacked on.\n\nWhich option works for you depends on your specific situation — your income, expenses, assets, and the amount you owe.\n\nI am a licensed tax professional in {city} and I help people figure out which IRS program is the right fit. Message me with a rough idea of what you owe and I will tell you what options are on the table.",
+      angle_note: "Options framing — lists specific programs"
+    },
+    {
+      title: "Five Years Behind on Taxes — Where Do You Even Start?",
+      body: "If you have not filed in several years, the thought of catching up can feel overwhelming. Where do you even begin? Which years do you need to file? How much do you owe? Is the IRS going to come after you?\n\nTake a breath. Here is the truth: the IRS usually only requires you to file the last six years of returns to get current. And once you file your actual returns with your real deductions and credits, the amount you owe is almost always less than what the IRS thinks you owe.\n\nI am a licensed Enrolled Agent in {city} and I have walked people through this process many times. It is not fun, but it is not the end of the world either.\n\nMessage me and tell me how many years you are behind. I will tell you exactly what needs to happen and what it will cost to get right.",
+      angle_note: "Overwhelm hook — speaks to multi-year filers"
+    },
+    {
+      title: "Need to File Back Taxes? Licensed Tax Help in {city}",
+      body: "If you have unfiled returns or owe the IRS money, the best time to deal with it was years ago. The second best time is now.\n\nEvery month you wait, the IRS adds penalties and interest to what you owe. And eventually they move from sending letters to taking action — liens, levies, wage garnishment.\n\nI am a licensed Enrolled Agent, which means I am federally authorized to represent you directly with the IRS. I work with people in {city} who need to get caught up on their taxes and resolve their IRS debt.\n\nThe first conversation is free. Message me with your situation — how many years you are behind, whether you have gotten any IRS notices, and roughly what you think you owe. I will give you honest advice about what to do next.",
+      angle_note: "Local credibility hook — city in title, credentials in body"
+    },
+    {
+      title: "Stop Ignoring the IRS — It Only Gets More Expensive",
+      body: "I know you have been putting this off. Everyone does. But here is what happens when you wait: the IRS charges a failure-to-file penalty of five percent per month, plus a failure-to-pay penalty, plus interest. A tax bill that started at five thousand dollars can double in a couple of years just from penalties alone.\n\nThe good news is that once you start dealing with it, the IRS is usually more reasonable than people expect. They would rather work with you than against you. Payment plans are easy to set up. Penalty abatement is possible. And if your situation is truly difficult, there are hardship programs.\n\nI am a licensed tax professional in {city}. I help people stop the bleeding and get a plan in place. Message me. Let us figure this out before it gets worse.",
+      angle_note: "Cost-of-inaction hook — quantifies the penalty math"
+    },
+    {
+      title: "Tax Help for People Who Have Been Avoiding the IRS",
+      body: "No judgment. A lot of people end up in this situation. Maybe you missed a year and then another year went by. Maybe you got a letter and it felt too stressful to open. Maybe you just did not know where to start.\n\nWhatever the reason, the path forward is the same: figure out what you owe, file what needs to be filed, and set up a plan to resolve the balance.\n\nI am a licensed Enrolled Agent in {city} and I specialize in helping people who are behind on their taxes. I have seen every situation you can imagine. Nothing shocks me.\n\nReach out and tell me where you are. I will tell you what needs to happen and what it will realistically cost. No pressure, no sales pitch. Just honest tax help.",
+      angle_note: "No-judgment hook — removes shame barrier"
+    },
+    {
+      title: "IRS Payment Plan Help — Licensed Enrolled Agent in {city}",
+      body: "If you owe the IRS money and you cannot pay it all at once, you are not stuck. The IRS has payment plan options that most people do not know about.\n\nA standard installment agreement lets you pay monthly over up to 72 months. If you owe less than fifty thousand dollars, you can usually set one up without even providing financial statements. And if your situation is more complex, there are other options too.\n\nI am a licensed Enrolled Agent and I help people in {city} set up IRS payment plans and negotiate with the IRS on their behalf. I am federally authorized to represent you, which means you do not have to deal with the IRS directly.\n\nMessage me with how much you owe and I will tell you what kind of plan you would qualify for. The initial consultation is free.",
+      angle_note: "Specific solution hook — payment plan is the most common need"
+    }
+  ],
+
+  small_biz_tax: [
+    {
+      title: "Small Business Tax Help in {city} — LLC, S-Corp, Sole Prop",
+      body: "Running a small business is hard enough without trying to figure out your own taxes. Whether you are an LLC, S-Corp, sole proprietor, or partnership, the tax rules are different for each structure and getting it wrong can cost you.\n\nI am a licensed Enrolled Agent in {city} and I help small business owners stay compliant, minimize their tax burden, and deal with the IRS when things get complicated.\n\nServices I offer: business tax preparation, quarterly estimated payments, entity structure advice, IRS notice resolution, and back tax filing.\n\nIf you have been doing your own taxes or using software and you are not confident you are getting it right, message me. I will take a look at your situation and tell you if there is a better way.\n\nReply to this post with a brief description of your business and what you need help with.",
+      angle_note: "Broad service hook — covers all entity types"
+    },
+    {
+      title: "New Business? Make Sure Your Taxes Are Set Up Right From Day One",
+      body: "The decisions you make in your first year of business — what entity type to choose, how to handle estimated taxes, what you can deduct — will follow you for years. Getting it right from the start saves you money and headaches down the road.\n\nI work with new business owners in {city} to make sure their tax setup is solid. That includes choosing the right entity structure, setting up quarterly estimated payments so you do not get hit with penalties, and making sure you are tracking the deductions you are entitled to.\n\nI am a licensed tax professional with experience across LLCs, S-Corps, and sole proprietorships. If you just started a business or you are planning to, message me. I offer a free initial conversation to go over your situation.\n\nDo not wait until tax season to think about this. The setup matters more than the filing.",
+      angle_note: "New business hook — targets people just starting out"
+    },
+    {
+      title: "Fell Behind on Business Taxes? Let Us Get You Caught Up",
+      body: "If your business has unfiled returns or unpaid taxes, you are not alone. It happens more often than you think, especially for small business owners who are busy running the actual business.\n\nThe problem is that the IRS treats business tax debt more aggressively than personal tax debt. They can file federal tax liens, levy your business accounts, and even assess a trust fund recovery penalty if you have employees and fell behind on payroll taxes.\n\nI am a licensed Enrolled Agent in {city} and I help small business owners get current with the IRS. We figure out what needs to be filed, negotiate with the IRS on any balance due, and set up a plan so you do not fall behind again.\n\nMessage me with your situation. How many years are you behind? Do you have employees? What type of entity? I will tell you what the priority is.",
+      angle_note: "Behind-on-taxes hook — specific to business owners"
+    },
+    {
+      title: "Should Your Business Be an S-Corp? It Could Save You Thousands",
+      body: "If you are running your business as a sole proprietor or single-member LLC and making decent money, you could be paying more in self-employment tax than you need to.\n\nAn S-Corp election lets you split your income between a reasonable salary and distributions. You only pay self-employment tax on the salary portion. For a lot of business owners, this saves several thousand dollars a year.\n\nBut it is not right for everyone. There are additional requirements — payroll, separate tax returns, reasonable compensation rules — and if your income is not high enough, the costs outweigh the savings.\n\nI am a licensed tax professional in {city} and I can run the numbers for your specific situation. Message me with your approximate annual revenue and I will tell you whether an S-Corp election makes sense for you.\n\nNo cost to check. Just reply to this post.",
+      angle_note: "Tax savings hook — S-Corp election is a common opportunity"
+    },
+    {
+      title: "Stop Overpaying on Business Taxes — Licensed Tax Help",
+      body: "Most small business owners leave money on the table because they do not know what they can deduct. Home office, vehicle expenses, health insurance, retirement contributions, equipment, software — the list is long and the rules are specific.\n\nI work with small business owners in {city} to make sure they are taking every deduction they are entitled to. Not aggressive positions. Not sketchy write-offs. Just the legitimate deductions that most people miss.\n\nI am a licensed Enrolled Agent. That means I am federally authorized to prepare taxes and represent you before the IRS. I work with LLCs, S-Corps, sole proprietors, and partnerships.\n\nIf you have been doing your own taxes or using generic software, there is a good chance you are overpaying. Message me with a brief description of your business and I will tell you if I can help.",
+      angle_note: "Money-on-the-table hook — targets DIY filers"
+    },
+    {
+      title: "Quarterly Estimated Taxes — Are You Paying the Right Amount?",
+      body: "If you are self-employed or own a business, the IRS expects you to pay taxes four times a year — not just in April. If you underpay, you get hit with penalties. If you overpay, you are giving the IRS an interest-free loan.\n\nGetting your quarterly estimates right is one of the most important things you can do as a business owner. It keeps you out of trouble with the IRS and helps with cash flow planning.\n\nI help small business owners in {city} calculate their quarterly payments based on their actual income, not guesswork. I am a licensed Enrolled Agent and I work with all entity types.\n\nIf you are not sure whether you are paying the right amount, or if you have not been paying quarterly at all, message me. Let us get your estimates dialed in before the next deadline.\n\nReply to this post with your business type and approximate income.",
+      angle_note: "Quarterly payment hook — common pain point for self-employed"
+    },
+    {
+      title: "Small Business Owner? Do Not Wait Until April to Think About Taxes",
+      body: "Tax planning is not something you do once a year. The business owners who pay the least in taxes are the ones who plan throughout the year — timing income, maximizing deductions, making retirement contributions, and structuring things properly.\n\nIf you are only thinking about taxes when it is time to file, you are probably paying more than you need to.\n\nI am a licensed tax professional in {city} and I offer year-round tax planning for small business owners. Whether you are an LLC, S-Corp, or sole proprietor, I can help you build a tax strategy that actually reduces your liability.\n\nThis is not about gaming the system. It is about using the tax code the way it was designed to be used.\n\nMessage me with your business type and what your biggest tax frustration is. I will tell you if I can help.",
+      angle_note: "Planning hook — positions tax planning as year-round"
+    },
+    {
+      title: "Freelancer? Independent Contractor? You Need Real Tax Help",
+      body: "If you are a freelancer or independent contractor, your tax situation is more complicated than a W-2 employee. You are responsible for your own self-employment tax, quarterly estimated payments, tracking deductions, and making sure you are reporting everything correctly.\n\nMost freelancers I work with are either overpaying because they miss deductions, or underpaying because they do not realize how much they owe in self-employment tax. Both are problems.\n\nI am a licensed Enrolled Agent in {city} and I specialize in working with self-employed individuals. I can help you get your taxes filed correctly, set up a system for tracking expenses, and make sure your quarterly payments are right.\n\nIf you have been winging it, message me. Let us get you set up properly. The first conversation is free.",
+      angle_note: "Freelancer hook — targets 1099 workers specifically"
+    },
+    {
+      title: "IRS Audit or Notice for Your Business? I Can Help",
+      body: "Getting an IRS notice or audit letter for your business is scary. But in most cases, it is manageable — as long as you respond correctly and on time.\n\nThe biggest mistake business owners make is either ignoring IRS correspondence or responding without understanding what the IRS is actually asking for. Both can make things worse.\n\nI am a licensed Enrolled Agent in {city}, which means I am federally authorized to represent your business before the IRS. I handle audits, notices, and disputes for small business owners. I can communicate with the IRS on your behalf so you do not have to.\n\nIf you got a letter from the IRS about your business, message me with the notice number from the top right corner. I will tell you what it means and what we need to do.",
+      angle_note: "Audit hook — targets business owners with IRS contact"
+    },
+    {
+      title: "Bookkeeping Mess? Let Us Clean It Up Before Tax Season",
+      body: "If your business books are a disaster — receipts in a shoebox, transactions you cannot remember, QuickBooks that has not been reconciled in months — you are not alone. A lot of small business owners struggle with bookkeeping.\n\nBut messy books lead to messy taxes. And messy taxes lead to overpaying, missed deductions, and potential IRS problems.\n\nI help small business owners in {city} clean up their books and get their finances organized. I am a licensed tax professional and I understand what the IRS needs to see.\n\nWhether you need a full catch-up or just someone to review what you have, message me. Let us get your books in order so your taxes are accurate and you are not leaving money on the table.\n\nReply to this post with your business type and how far behind you are.",
+      angle_note: "Bookkeeping hook — addresses the upstream problem"
+    }
+  ],
+
+  construction_trades: [
+    {
+      title: "Construction Worker Tax Help — W-2, 1099, and IRS Issues",
+      body: "If you work in construction, your tax situation is probably more complicated than you think. Maybe you have gotten both W-2s and 1099s in the same year. Maybe a contractor paid you cash and you are not sure how to report it. Maybe the IRS sent you a letter about unreported income.\n\nI work with construction workers and tradespeople in {city} who need help sorting out their taxes. Whether you are a carpenter, electrician, plumber, roofer, or general laborer, I understand the industry and the common tax issues that come up.\n\nI am a licensed Enrolled Agent, which means I can prepare your taxes and represent you before the IRS if there are any issues.\n\nMessage me with your situation. I will tell you what we need to do and what it will cost.",
+      angle_note: "Broad trades hook — covers the W-2/1099 confusion"
+    },
+    {
+      title: "Got 1099s From Multiple Contractors? Here Is What You Need to Know",
+      body: "A lot of construction workers get 1099s from several different contractors in the same year. That means the IRS considers you self-employed, and you owe self-employment tax on top of income tax.\n\nIf you did not make quarterly estimated payments, you are probably looking at penalties too. And if you have expenses related to work — tools, materials, gas, work boots — those are deductible but only if you track them.\n\nI help construction workers and tradespeople in {city} file their taxes correctly and minimize what they owe. I am a licensed tax professional and I understand how the construction industry works.\n\nIf you have a stack of 1099s and you do not know where to start, message me. I will walk you through it.",
+      angle_note: "Multiple 1099 hook — very common in construction"
+    },
+    {
+      title: "Contractor Owes You Taxes? IRS Thinks YOU Owe Them",
+      body: "Here is something a lot of construction workers do not realize: if a contractor pays you as a 1099 and does not withhold taxes, the IRS holds YOU responsible for paying those taxes. Not the contractor.\n\nThat means if you got paid thirty thousand dollars on a 1099 and did not set anything aside for taxes, you could owe six or seven thousand dollars when you file. Plus penalties if you did not make estimated payments.\n\nI work with construction workers in {city} who are dealing with exactly this situation. I am a licensed Enrolled Agent and I can help you file your return, figure out what you owe, and set up a payment plan if you need one.\n\nDo not ignore it. The longer you wait, the more penalties and interest add up. Message me and let us figure out a plan.",
+      angle_note: "Misclassification hook — contractor vs employee confusion"
+    },
+    {
+      title: "Electricians, Plumbers, HVAC — Tax Help for Tradespeople",
+      body: "If you work in the trades, you know the work is hard. The taxes should not be. But between 1099 income, tool deductions, vehicle expenses, and trying to figure out estimated payments, a lot of tradespeople end up either overpaying or falling behind.\n\nI specialize in tax preparation for tradespeople in {city}. Electricians, plumbers, HVAC techs, welders, painters, roofers — I have worked with all of them. I know what deductions you are entitled to and I know what the IRS looks for.\n\nI am a licensed Enrolled Agent. That means I can prepare your return and deal with the IRS on your behalf if you have any issues.\n\nMessage me with your trade and a brief summary of your situation. I will tell you how I can help.",
+      angle_note: "Trade-specific hook — lists specific trades for recognition"
+    },
+    {
+      title: "Cash Jobs and Unreported Income — How to Get Right With the IRS",
+      body: "If you have done cash work in construction and did not report it, you are not the only one. But the IRS has gotten much better at tracking unreported income, especially when contractors file 1099s for part of your pay but you also received cash for other jobs.\n\nThe good news is that voluntarily filing your taxes and reporting your income — even if it is late — is always better than waiting for the IRS to catch it. Penalties for voluntary filing are much lower than penalties for getting caught.\n\nI am a licensed tax professional in {city} and I help construction workers get their tax situation sorted out. No judgment. I have seen everything.\n\nMessage me if you need help getting current. The first conversation is confidential and free.",
+      angle_note: "Cash income hook — addresses the elephant in the room"
+    },
+    {
+      title: "Construction Subcontractor? Make Sure You Are Deducting Everything",
+      body: "If you are a subcontractor in construction, you are leaving money on the table if you are not deducting all your business expenses. Tools, safety equipment, work vehicle, fuel, materials you buy, phone, insurance — these all reduce your tax bill.\n\nBut you need to track them properly. The IRS requires records, and if you ever get audited, you need receipts or bank statements to back up your deductions.\n\nI work with subcontractors in {city} and I make sure they are claiming every deduction they are entitled to. I am a licensed Enrolled Agent and I have been doing this for years.\n\nIf you have been using TurboTax or doing your taxes yourself, there is a good chance you are missing deductions. Message me with your trade and approximate income. I will tell you if I can save you money.",
+      angle_note: "Deductions hook — money-saving angle for subcontractors"
+    },
+    {
+      title: "IRS Sent You a Notice? Construction Worker Tax Representation",
+      body: "If you work in construction and the IRS sent you a notice about unreported income, missing returns, or a balance due, do not try to handle it yourself. The IRS does not negotiate in your favor.\n\nI am a licensed Enrolled Agent in {city}. That means I am federally authorized to represent you before the IRS. I can respond to notices, attend audits, and negotiate on your behalf. You do not have to talk to the IRS directly.\n\nI work specifically with construction workers and tradespeople. I understand the industry and the common issues — 1099 confusion, unreported cash income, missing estimated payments. I have seen it all and I can help.\n\nMessage me with the notice number from the top right corner of the IRS letter. I will tell you what it means and what we need to do. First consultation is free.",
+      angle_note: "Representation hook — positions as IRS intermediary"
+    },
+    {
+      title: "Do You Work Construction and Owe the IRS? Here Are Your Options",
+      body: "A lot of construction workers end up owing the IRS because they received 1099 income and did not set money aside for taxes. It happens. The important thing is dealing with it before it gets worse.\n\nThe IRS offers payment plans that let you pay monthly. If you owe less than fifty thousand dollars, you can usually set one up without providing financial statements. If your situation is more severe, there are options like offer in compromise or currently not collectible status.\n\nI help construction workers in {city} resolve their IRS debt. I am a licensed tax professional and I can negotiate with the IRS on your behalf.\n\nMessage me with roughly how much you owe and whether you have gotten any IRS notices. I will tell you what your best option is. No charge to find out.",
+      angle_note: "Debt resolution hook — specific to construction workers"
+    },
+    {
+      title: "Seasonal Construction Work? Here Is How to Handle Your Taxes",
+      body: "If you do seasonal construction work, your taxes can get complicated fast. You might have income from multiple states, different contractors, some W-2 and some 1099, and gaps where you are collecting unemployment.\n\nThe IRS does not care that your income is inconsistent. They still expect you to report everything and make estimated payments when you are working.\n\nI am a licensed Enrolled Agent in {city} and I help seasonal construction workers file their taxes correctly. I understand the industry and I know how to handle multi-state income, mixed W-2 and 1099 reporting, and all the deductions you are entitled to.\n\nIf your tax situation is a mess because of seasonal work, message me. Let us get it sorted out. Reply to this post with your situation.",
+      angle_note: "Seasonal hook — targets irregular income patterns"
+    },
+    {
+      title: "General Contractor Tax Preparation and Planning in {city}",
+      body: "If you are a general contractor, your tax situation is more complex than most. You might have subcontractors you need to issue 1099s to, payroll taxes for employees, materials and equipment deductions, vehicle expenses, insurance, and multiple projects running at once.\n\nGetting this wrong is expensive. The IRS takes payroll tax issues especially seriously, and misclassifying workers as contractors when they should be employees can result in significant penalties.\n\nI am a licensed Enrolled Agent and I work with general contractors in {city}. I handle tax preparation, quarterly estimates, payroll tax compliance, and IRS issue resolution.\n\nIf you are doing your own taxes or using basic software, you are probably missing something. Message me and let us make sure your tax setup is right. The first conversation is free.",
+      angle_note: "GC-specific hook — targets general contractors with employees"
+    }
+  ],
+
+  real_estate: [
+    {
+      title: "Real Estate Investor Tax Help — Depreciation, 1031s, and More",
+      body: "If you own rental properties, flip houses, or invest in real estate, your tax situation has layers that most tax preparers do not handle well. Depreciation schedules, 1031 exchanges, passive activity rules, cost segregation, and the qualified business income deduction all factor into how much you owe.\n\nI am a licensed Enrolled Agent in {city} and I specialize in real estate investor taxes. Whether you own one rental or twenty, I can make sure you are taking full advantage of the tax benefits available to you.\n\nIf you have been using generic tax software or a preparer who does not understand real estate, you are almost certainly overpaying. Message me with a brief description of your portfolio and I will tell you if I can help.",
+      angle_note: "Comprehensive hook — lists real estate-specific tax topics"
+    },
+    {
+      title: "Rental Property Taxes — Are You Depreciating Correctly?",
+      body: "If you own rental property and you are not taking depreciation, you are leaving thousands of dollars on the table every year. Depreciation lets you deduct the cost of your property over time, even though the property might actually be going up in value.\n\nBut depreciation is not automatic. You have to calculate it correctly, apply it to the right assets, and keep proper records. And when you sell, you need to understand depreciation recapture.\n\nI help landlords and rental property owners in {city} maximize their depreciation deductions. I am a licensed tax professional with experience in real estate taxation.\n\nIf you are not sure whether you are depreciating your properties correctly, message me. I can review your situation and tell you if you are missing deductions. Reply to this post with how many properties you own.",
+      angle_note: "Depreciation hook — most commonly missed deduction"
+    },
+    {
+      title: "Sold a Property? Plan Before You Get Hit With a Huge Tax Bill",
+      body: "If you recently sold an investment property, or you are thinking about selling, you need to plan for the tax consequences before you close. Capital gains taxes and depreciation recapture can eat up a significant chunk of your profit.\n\nA 1031 exchange can defer those taxes by rolling the proceeds into a new property. But it has strict timing requirements — 45 days to identify replacement properties and 180 days to close. If you miss those deadlines, the exchange fails and you owe the full tax.\n\nI am a licensed Enrolled Agent in {city} and I help real estate investors plan their exits and minimize their tax liability. If you are selling or thinking about selling, message me before you list the property. Planning ahead can save you tens of thousands.\n\nReply to this post with your situation.",
+      angle_note: "Sale planning hook — targets investors thinking about selling"
+    },
+    {
+      title: "Landlord in {city}? Make Sure Your Taxes Are Right",
+      body: "Being a landlord comes with real tax benefits — mortgage interest deduction, property tax deduction, depreciation, repairs, insurance, management fees. But it also comes with complexity. Passive activity rules, at-risk limitations, and the net investment income tax all affect what you actually owe.\n\nMost landlords I work with are either missing deductions they should be taking or not handling depreciation correctly. Both cost money.\n\nI am a licensed tax professional and I work with landlords and property owners in {city}. I make sure your rental income and expenses are reported correctly and that you are taking every deduction available.\n\nIf you are managing your own rental property taxes, message me with how many units you own. I will tell you if a professional review makes sense for your situation.",
+      angle_note: "Landlord hook — city in title for local search"
+    },
+    {
+      title: "House Flipping Taxes — What You Need to Know Before You File",
+      body: "If you flip houses, the IRS treats your profits differently than a regular real estate investor. Flipping income is generally classified as ordinary income, not capital gains. That means you pay a higher tax rate and you also owe self-employment tax.\n\nA lot of flippers do not realize this until they file and get hit with a much bigger tax bill than expected. And if you are not making quarterly estimated payments, there are penalties on top of that.\n\nI am a licensed Enrolled Agent in {city} and I work with house flippers to make sure their taxes are set up correctly. That includes proper entity structure, maximizing deductions, and planning estimated payments so you do not get surprised.\n\nIf you flip properties and you are not working with a tax professional who understands the flipping business, message me. Let us make sure you are set up right.",
+      angle_note: "Flipper hook — ordinary income vs capital gains distinction"
+    },
+    {
+      title: "Short-Term Rental Tax Help — Airbnb, VRBO, and More",
+      body: "If you rent your property on Airbnb, VRBO, or any short-term rental platform, your tax situation is different from a traditional landlord. The IRS has specific rules for short-term rentals that depend on how many days you rent it out and how many days you use it yourself.\n\nGet the classification wrong and you could lose deductions or owe more tax than necessary.\n\nI help short-term rental owners in {city} navigate the tax rules. From calculating the correct rental versus personal use days to maximizing deductions like cleaning fees, platform fees, supplies, and insurance, I make sure everything is reported correctly.\n\nI am a licensed tax professional. If you are running a short-term rental and doing your own taxes, message me. There is a good chance I can save you money. Reply to this post with your situation.",
+      angle_note: "Short-term rental hook — targets Airbnb/VRBO hosts"
+    },
+    {
+      title: "Real Estate IRS Audit? Licensed Representation Available",
+      body: "Real estate investors are more likely to be audited than the average taxpayer. The IRS knows that rental property deductions, depreciation, and 1031 exchanges are areas where mistakes and aggressive positions are common.\n\nIf you received an audit notice related to your real estate investments, do not try to handle it alone. An audit requires documentation, proper responses, and knowledge of the tax code. One wrong answer can cost you thousands.\n\nI am a licensed Enrolled Agent in {city} and I represent real estate investors in IRS audits. I know what the IRS is looking for and how to present your case.\n\nMessage me with your notice number and a brief description of what the IRS is asking about. I will tell you what to expect and how I can help. First consultation is free.",
+      angle_note: "Audit defense hook — targets investors who received IRS contact"
+    },
+    {
+      title: "Multi-Property Owner? Your Taxes Are More Complex Than You Think",
+      body: "If you own multiple investment properties, your taxes involve depreciation schedules for each property, passive activity grouping elections, potentially different entity structures, and cross-property loss allocation.\n\nMost tax preparers handle one or two rentals fine. But when you get to three, five, ten properties, the complexity increases and so do the opportunities to save money through proper planning.\n\nI am a licensed Enrolled Agent in {city} who works with multi-property real estate investors. I handle portfolios of all sizes and I make sure each property is optimized from a tax perspective.\n\nIf you are managing a growing portfolio and your current tax situation feels like it is not keeping up, message me. Let us review your setup. Reply to this post with how many properties you own.",
+      angle_note: "Portfolio scale hook — targets investors with multiple properties"
+    },
+    {
+      title: "Real Estate Tax Planning for {city} Investors",
+      body: "The best time to plan your real estate taxes is before you buy, sell, or exchange a property. Too many investors make decisions first and think about taxes later, and it costs them.\n\nWhether you are evaluating a new investment, considering a 1031 exchange, thinking about converting a rental to a primary residence, or deciding on an entity structure for your holdings, the tax implications should be part of the decision.\n\nI am a licensed tax professional in {city} and I do tax planning for real estate investors. I help you understand the tax impact of your decisions before you make them, so you can keep more of your returns.\n\nMessage me with what you are considering and I will tell you how the taxes work. No obligation. Reply to this post.",
+      angle_note: "Planning-first hook — positions as advisor, not just preparer"
+    },
+    {
+      title: "Cost Segregation — The Tax Strategy Most Landlords Miss",
+      body: "If you own commercial or residential rental property, cost segregation is one of the most powerful tax strategies available to you. It accelerates your depreciation deductions by reclassifying components of your building — electrical, plumbing, fixtures, landscaping — into shorter depreciation periods.\n\nInstead of depreciating your entire building over 27.5 or 39 years, parts of it can be depreciated over 5, 7, or 15 years. That means much larger deductions in the early years of ownership.\n\nMost landlords and investors I talk to in {city} have never heard of cost segregation, or they think it is only for large commercial properties. It is not. It can work for properties valued as low as a few hundred thousand dollars.\n\nI am a licensed Enrolled Agent and I can evaluate whether cost segregation makes sense for your property. Message me with your property type and approximate value.",
+      angle_note: "Advanced strategy hook — positions expertise and differentiates"
+    }
+  ],
+
+  gig_workers: [
+    {
+      title: "Rideshare Driver? Delivery Driver? You Need Tax Help",
+      body: "If you drive for Uber, Lyft, DoorDash, Instacart, or any other gig platform, the IRS considers you self-employed. That means you owe self-employment tax on top of income tax, and you are responsible for making quarterly estimated payments.\n\nMost gig workers I talk to do not realize this until they file and owe way more than they expected. The good news is that you also have a lot of deductions available — mileage, phone, insurance, car maintenance, and more.\n\nI am a licensed Enrolled Agent in {city} and I help gig workers file their taxes correctly and minimize what they owe. I understand how the platforms report income and what the IRS expects.\n\nMessage me with which platforms you drive for and roughly how much you made last year. I will tell you what deductions you are missing and what your real tax picture looks like.",
+      angle_note: "Platform-specific hook — targets rideshare and delivery drivers"
+    },
+    {
+      title: "Are You Tracking Your Mileage? You Could Be Saving Thousands",
+      body: "If you drive for a living — rideshare, delivery, courier work — your biggest tax deduction is mileage. The IRS lets you deduct around 67 cents per mile for every business mile you drive. Over a year, that adds up fast.\n\nBut you have to track it. The IRS requires a contemporaneous log — meaning you tracked it as it happened, not reconstructed it later. If you get audited and cannot produce records, the deduction gets thrown out.\n\nI work with gig workers in {city} to make sure they are claiming every mile they are entitled to and keeping records that hold up. I am a licensed tax professional and I have seen what works and what does not.\n\nIf you have not been tracking mileage, or you are not sure if you are doing it right, message me. Let us get this fixed before tax season.",
+      angle_note: "Mileage hook — biggest deduction most gig workers underclaim"
+    },
+    {
+      title: "1099 Income From DoorDash, Uber, Instacart? Read This",
+      body: "Every gig platform sends you a 1099 if you made enough money. And every one of those 1099s also gets sent to the IRS. That means you cannot leave any of it off your return without the IRS noticing.\n\nThe problem is that the platforms do not withhold any taxes from your earnings. So if you made twenty thousand dollars across a few platforms, you might owe three or four thousand dollars when you file — plus penalties if you did not make quarterly payments.\n\nI am a licensed Enrolled Agent in {city} and I help gig workers handle multi-platform 1099 income. I know what deductions you can take, how to handle the platforms that do and do not send 1099s, and how to set up quarterly payments going forward.\n\nMessage me with which platforms you worked for. I will tell you what your situation looks like.",
+      angle_note: "Multi-platform hook — addresses 1099 matching by IRS"
+    },
+    {
+      title: "Got a Surprise Tax Bill From Driving Last Year? Let Us Fix It",
+      body: "If you drove for Uber, Lyft, DoorDash, or any gig platform last year and ended up owing a tax bill you cannot pay, you are not alone. It happens every year to thousands of gig workers who did not realize they needed to set money aside for taxes.\n\nThe IRS has options. Payment plans let you pay monthly. Penalty abatement might remove some of the fees. And making sure you claimed every deduction you are entitled to often reduces the bill significantly.\n\nI am a licensed tax professional in {city}. I help gig workers deal with surprise tax bills, set up payment plans, and get their tax setup straight so it does not happen again next year.\n\nMessage me with roughly what you owe and which platforms you drove for. The first conversation is free.",
+      angle_note: "Surprise bill hook — targets last-tax-season pain"
+    },
+    {
+      title: "Gig Worker Tax Help in {city} — Licensed Enrolled Agent",
+      body: "Gig work has its own tax rules. You are self-employed, even if it does not feel like it. That means quarterly estimated payments, self-employment tax, mileage deductions, and a stack of 1099s every January.\n\nI specialize in helping gig workers in {city} get their taxes right. Whether you drive rideshare, deliver food, run errands on TaskRabbit, do gig modeling, or work multiple platforms at once, I understand the income patterns and the deductions available.\n\nI am a licensed Enrolled Agent. That means I am federally authorized to prepare your taxes and represent you before the IRS if any issues come up.\n\nIf you have been doing your own taxes or using basic software, there is a good chance you are overpaying. Message me with what you do and I will tell you how I can help.",
+      angle_note: "Local credentials hook — gig work breadth in body"
+    },
+    {
+      title: "Did You Make Money on the Side Last Year? You Probably Owe Taxes",
+      body: "Side gigs add up fast. A few hundred bucks a week from delivering food, plus some weekend driving, plus a freelance project here and there — and suddenly you have ten thousand dollars in unreported income the IRS expects you to declare.\n\nIf you did not get a 1099, you still have to report the income. And if you got 1099s but did not file, the IRS already knows about that money.\n\nI help people in {city} get their side hustle taxes filed correctly. I am a licensed Enrolled Agent and I work with everyone from full-time gig workers to people with one or two part-time gigs on top of a regular job.\n\nMessage me with what you did and roughly what you made. I will tell you what your tax situation looks like and what you need to do to get right.",
+      angle_note: "Side income hook — targets people with mixed W-2 and gig income"
+    },
+    {
+      title: "TaskRabbit, Rover, Wag — Yes, You Owe Taxes On That Too",
+      body: "Any money you make from a gig platform is taxable. That includes platforms that do not send 1099s if you make under six hundred dollars. The IRS still expects you to report it.\n\nA lot of gig workers I talk to assume that if they did not get a 1099, they do not have to report the income. That is not how it works. The IRS holds you responsible for reporting all your income, with or without a form.\n\nI am a licensed tax professional in {city} and I help gig workers report income from all platforms — TaskRabbit, Rover, Wag, Care.com, Fiverr, Upwork, you name it. I make sure your taxes are filed correctly and that you are taking every deduction available.\n\nMessage me with which platforms you worked for. Let us get your taxes sorted out properly.",
+      angle_note: "Lesser-known platforms hook — addresses sub-$600 reporting myth"
+    },
+    {
+      title: "Quarterly Estimated Payments for Gig Workers — Here Is How It Works",
+      body: "If you are a full-time gig worker, the IRS expects you to pay taxes four times a year, not just in April. Miss those deadlines and you get hit with underpayment penalties on top of what you owe.\n\nThe good news is that quarterly payments are not complicated once you understand them. You estimate what you will owe for the year, divide by four, and pay that amount each quarter. As long as you pay enough to avoid the safe harbor penalty, you are fine.\n\nI work with gig workers in {city} to set up their quarterly estimated payments correctly. I am a licensed Enrolled Agent and I can run the numbers for your specific situation.\n\nIf you are doing gig work full-time and not paying quarterly, message me. Let us get this set up before the next deadline.",
+      angle_note: "Quarterly payment hook — most overlooked gig worker obligation"
+    },
+    {
+      title: "Behind on Gig Work Taxes? Let Us Get You Caught Up",
+      body: "If you have been doing gig work for a couple of years and have not filed your taxes — or you filed but did not pay — you are not stuck. There are paths forward, and the longer you wait, the worse it gets.\n\nThe IRS adds penalties and interest every month. They eventually start sending notices. And if you ignore those long enough, they can levy your bank accounts or garnish payments from the gig platforms themselves.\n\nI am a licensed Enrolled Agent in {city} and I help gig workers get caught up on back taxes. We file what needs to be filed, calculate what you actually owe with all your deductions, and set up a plan to handle the balance.\n\nMessage me with how many years you are behind and which platforms you worked for. The first conversation is free and confidential.",
+      angle_note: "Catch-up hook — targets multi-year non-filers"
+    },
+    {
+      title: "Self-Employment Tax — Why Your Gig Tax Bill Is So High",
+      body: "Most gig workers are shocked by how much they owe at tax time. The reason is self-employment tax — an extra 15.3 percent on top of regular income tax that covers Social Security and Medicare.\n\nWhen you have a regular job, your employer pays half of that for you. When you are self-employed, you pay all of it yourself. That is why gig income hits so much harder than W-2 income.\n\nThe good news is there are ways to reduce it. Tracking your real expenses, deducting mileage, claiming a home office if you qualify, and considering an entity structure if your income is high enough — all of these can lower your effective tax rate.\n\nI am a licensed tax professional in {city} who works with gig workers. Message me with your situation. I will tell you what we can do to bring that bill down.",
+      angle_note: "SE tax explainer hook — addresses the source of the surprise"
+    }
+  ],
+
+  general: [
+    {
+      title: "Need Help With Your Taxes? Licensed Enrolled Agent in {city}",
+      body: "Tax season is stressful. Whether you are a W-2 employee, self-employed, a small business owner, or somewhere in between, getting your taxes right matters. The wrong filing can cost you money or trigger an IRS notice.\n\nI am a licensed Enrolled Agent in {city}. That means I am federally authorized to prepare taxes and represent you before the IRS. I work with individuals, families, and small businesses to make sure their taxes are accurate and they are taking every deduction they are entitled to.\n\nIf you have been doing your own taxes and you are not confident, or if you used a chain preparer last year and felt rushed, message me. I take time with every client and I am here year-round, not just during tax season.\n\nReply with a brief description of your situation and I will tell you how I can help.",
+      angle_note: "General service hook — broad audience, credentials forward"
+    },
+    {
+      title: "Tax Preparation in {city} — Honest, Licensed, Year-Round",
+      body: "I am a licensed tax professional based in {city}. I prepare individual and small business tax returns, help people deal with IRS issues, and provide tax planning year-round.\n\nWhat sets me apart is that I take time to understand your situation. I do not run you through a checklist and rush you out the door. Every return I prepare gets reviewed carefully, and I am available for questions long after tax season ends.\n\nI work with W-2 employees, self-employed individuals, freelancers, gig workers, small business owners, and rental property owners. If your situation has any complexity at all, I can help.\n\nMessage me with a brief overview of your tax situation. I will tell you what I can do and what it would cost. No pressure, no upsell.",
+      angle_note: "Trust hook — emphasizes care and year-round availability"
+    },
+    {
+      title: "Did You Get a Letter From the IRS? I Can Help",
+      body: "An IRS letter can mean a lot of things. Some are routine — notices about a small balance, requests for more information, or confirmation of changes. Others are serious — audit notices, levy warnings, or balance due demands.\n\nThe worst thing you can do is ignore it. The IRS has deadlines, and missing them limits your options.\n\nI am a licensed Enrolled Agent in {city}. I am federally authorized to communicate with the IRS on your behalf, which means you do not have to deal with them directly.\n\nIf you got a letter and you are not sure what it means, message me with the notice number from the top right corner. I can usually tell you within one conversation whether it is something you can handle yourself or whether you need representation.\n\nFirst consultation is free.",
+      angle_note: "IRS notice hook — broad trigger across all taxpayers"
+    },
+    {
+      title: "Owe Taxes You Cannot Pay? You Have Options",
+      body: "If you owe the IRS and cannot pay all at once, you are not stuck. The IRS has several programs that let you handle a balance over time or sometimes for less than the full amount.\n\nInstallment agreements let you pay monthly, often without providing financial details if you owe under fifty thousand dollars. Currently not collectible status pauses collections if you genuinely cannot pay anything right now. Offer in compromise can settle your debt for less than you owe if you qualify. Penalty abatement removes certain fees the IRS tacked on.\n\nI am a licensed tax professional in {city} and I help people figure out which option fits their situation. I am also federally authorized to negotiate with the IRS directly on your behalf.\n\nMessage me with roughly what you owe and how you got there. I will tell you what your best options are. No charge to find out.",
+      angle_note: "Resolution options hook — covers full menu of IRS programs"
+    },
+    {
+      title: "Tax Questions? Free First Consultation in {city}",
+      body: "If you have a tax question and you are not sure who to ask, message me. I offer a free first consultation for anyone in {city} who needs tax advice.\n\nI am a licensed Enrolled Agent. That is a federal credential — it means I am authorized to prepare taxes, give tax advice, and represent you before the IRS. I am not a chain preparer. I am not a salesperson. I am someone who does taxes for a living and knows the rules.\n\nWhether you have a simple question, a complicated situation, or just want a second opinion on something a previous preparer told you, reach out. The conversation is free and there is no obligation.\n\nReply to this post with your question. If I can answer it quickly, I will. If it needs more time, we can set up a call.",
+      angle_note: "Free consult hook — lowest-friction entry point"
+    },
+    {
+      title: "Did Not File Last Year? Or the Year Before? Let Us Fix It",
+      body: "If you have unfiled tax returns, you are not alone — and you are not in as much trouble as you probably think. The IRS deals with millions of late filers every year, and there is a clear path back to compliance.\n\nMost people who avoid filing assume the worst. The truth is usually better than they expect. Once you file your actual returns with your real income and deductions, the amount you owe is often lower than what the IRS calculates on its own.\n\nI am a licensed Enrolled Agent in {city} and I help people file back returns. I have walked dozens of clients through this process. Nothing shocks me.\n\nMessage me with how many years you are behind. I will tell you what we need to do, what it will cost, and how long it will take to get current.",
+      angle_note: "Non-filer hook — broad reassurance for late filers"
+    },
+    {
+      title: "Honest Tax Help in {city} — No Gimmicks, No Pressure",
+      body: "There are a lot of tax services out there making big promises. Settle your IRS debt for pennies on the dollar. Get a huge refund this year. Pay no taxes legally.\n\nMost of those promises are either misleading or outright scams. The truth about taxes is usually less exciting — file accurately, take legitimate deductions, plan ahead, and deal with issues as they come up.\n\nI am a licensed Enrolled Agent in {city}. I do not advertise miracles. I do good, careful tax work for individuals and small businesses, and I tell you the truth about your situation.\n\nIf you have been burned by a previous tax service, or if you just want someone honest to handle your taxes, message me. Reply to this post with a brief description of what you need.",
+      angle_note: "Anti-scam hook — differentiates from aggressive marketers"
+    },
+    {
+      title: "Self-Employed? You Need a Tax Pro Who Gets It",
+      body: "Self-employment taxes are different from W-2 taxes. You owe self-employment tax on top of regular income tax. You are responsible for quarterly estimated payments. You have to track deductions yourself. And you can deduct things a regular employee cannot.\n\nIf your tax preparer treats your self-employment income like a side note, you are probably overpaying or underprepared.\n\nI am a licensed tax professional in {city} and I work with self-employed individuals across every industry — freelancers, contractors, consultants, creatives, gig workers, and small business owners. I understand what you can deduct, how to handle estimated payments, and how to keep you out of trouble with the IRS.\n\nMessage me with what you do for a living and roughly what you make. I will tell you if your current setup is right and where there is room to save.",
+      angle_note: "Self-employed hook — broad self-employment audience"
+    },
+    {
+      title: "Tax Audit? Get Licensed Representation",
+      body: "If the IRS notified you of an audit, do not try to handle it alone. Audits are document-driven, and one wrong response can cost you thousands in additional tax, penalties, and interest.\n\nI am a licensed Enrolled Agent in {city}. That is one of three credentials — along with CPAs and tax attorneys — that allows full IRS representation. I can attend the audit on your behalf, respond to requests for documents, and negotiate the outcome.\n\nMost audits are about specific items — a deduction that looked unusual, a discrepancy between what you reported and what a third party reported, or an issue with a particular schedule. With proper documentation and a clear response, most audits end with little or no change.\n\nMessage me with the type of audit notice you received. I will tell you what to expect and how I can help.",
+      angle_note: "Audit defense hook — emphasizes the credential and outcomes"
+    },
+    {
+      title: "Year-Round Tax Help — Not Just in April",
+      body: "Most people only think about taxes once a year. But the people who pay the least and have the fewest problems with the IRS are the ones who think about taxes year-round.\n\nMid-year planning lets you adjust withholding, time income and deductions, and make decisions that lower your bill before the year ends. Quarterly check-ins keep estimated payments accurate. And having a tax professional on call for questions throughout the year prevents small issues from becoming big ones.\n\nI am a licensed Enrolled Agent in {city} and I work with clients year-round. Tax preparation is one part of what I do. The rest is planning, advising, and resolving issues as they come up.\n\nIf you want a tax professional who is available beyond April 15, message me. Let us talk about your situation and how I can help.",
+      angle_note: "Year-round hook — positions ongoing relationship over one-time prep"
+    }
+  ]
+
+};
+
 const ROUTES = [
 
   // -------------------------------------------------------------------------
@@ -20627,76 +21008,40 @@ TTMP Support Team
         }
       }
 
-      if (!env.ANTHROPIC_API_KEY) {
-        return json({ ok: false, error: 'ANTHROPIC_API_KEY_NOT_SET' }, 500, request);
+      // ---- 1. Load posts from hardcoded templates ----
+      const templates = CRAIGSLIST_TEMPLATES[body.angle];
+      if (!Array.isArray(templates) || templates.length === 0) {
+        return json({ ok: false, error: 'UNKNOWN_ANGLE', angle: body.angle }, 400, request);
       }
 
-      // ---- 1. Generate posts via Anthropic ----
-      const systemPrompt = `You are writing 10 Craigslist posts for the "services > financial" or "services > tax services" category. These posts target TAXPAYERS (not tax professionals) in ${body.city_label}.
-
-Angle: ${body.angle_label} — ${body.angle_description}
-
-Rules:
-- Each post has a TITLE (max 70 chars) and BODY (150-250 words)
-- Write for people scrolling Craigslist looking for help, not professionals
-- No jargon. No acronyms (IRS is fine). No platform names.
-- Tone: helpful, direct, trustworthy. Like a neighbor who happens to be a tax expert.
-- Each post takes a slightly different angle or hook on the same theme
-- Include "Licensed Enrolled Agent" or "licensed tax professional" in every post body
-- Include the city name naturally in at least 5 of the 10 posts
-- End each post with a clear call to action: "Message me" or "Reply to this post"
-- Do NOT include URLs, links, or web addresses (Craigslist prohibits them in some categories)
-- Do NOT include phone numbers in the post body
-- Do NOT include email addresses — Craigslist provides its own anonymous reply system
-- For the Kwong/penalty angle: explain that the IRS may owe them money, don't assume they know what Kwong is
-- If the city is "National (no city reference)", do not reference any specific city — write for a general US audience
-- Posts should feel like they were written by a real person, not a company
-
-Output format — return ONLY a JSON array, no markdown, no preamble:
-[
-  { "title": "...", "body": "...", "angle_note": "one line on why this hook" },
-  ...
-]`;
-
-      let posts;
-      try {
-        const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 8192,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: 'Generate 10 Craigslist posts now.' }],
-          }),
-        });
-        if (!anthropicRes.ok) {
-          const errText = await anthropicRes.text();
-          return json({ ok: false, error: 'ANTHROPIC_ERROR', status: anthropicRes.status, detail: errText.slice(0, 500) }, 502, request);
+      const isNational = body.city_label === 'National (no city reference)';
+      const cityToken = isNational ? '' : body.city_label;
+      const fillCity = (s) => {
+        if (typeof s !== 'string') return s;
+        let out = s.replace(/\{city\}/g, cityToken);
+        if (isNational) {
+          // clean up artifacts left when {city} was removed
+          out = out
+            .replace(/ in \. /g, '. ')
+            .replace(/ in \./g, '.')
+            .replace(/ in ,/g, ',')
+            .replace(/ in \?/g, '?')
+            .replace(/ in !/g, '!')
+            .replace(/ in $/gm, '')
+            .replace(/ for \. /g, '. ')
+            .replace(/ for \./g, '.')
+            .replace(/ in the \. /g, '. ')
+            .replace(/ {2,}/g, ' ')
+            .replace(/^ +| +$/gm, '');
         }
-        const data = await anthropicRes.json();
-        const text = data?.content?.[0]?.text;
-        if (typeof text !== 'string') {
-          return json({ ok: false, error: 'ANTHROPIC_BAD_RESPONSE' }, 502, request);
-        }
-        let s = text.trim();
-        if (s.startsWith('```')) s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
-        const start = s.indexOf('[');
-        const end = s.lastIndexOf(']');
-        if (start === -1 || end === -1) {
-          return json({ ok: false, error: 'ANTHROPIC_NO_JSON', sample: text.slice(0, 300) }, 502, request);
-        }
-        posts = JSON.parse(s.slice(start, end + 1));
-        if (!Array.isArray(posts) || posts.length === 0) {
-          return json({ ok: false, error: 'ANTHROPIC_EMPTY_ARRAY' }, 502, request);
-        }
-      } catch (e) {
-        return json({ ok: false, error: 'ANTHROPIC_FETCH_FAILED', detail: String(e).slice(0, 300) }, 502, request);
-      }
+        return out;
+      };
+
+      const posts = templates.map((t) => ({
+        title: fillCity(t.title),
+        body: fillCity(t.body),
+        angle_note: t.angle_note,
+      }));
 
       // ---- 2. ClickUp integration (best-effort — never block post delivery) ----
       const WORKSPACE_ID = '8402511';
