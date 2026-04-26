@@ -1,16 +1,27 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
+import Script from 'next/script'
 import { vlpConfig } from '@/lib/platform-config'
 
 const API_BASE = 'https://api.virtuallaunch.pro'
 const SUPPORT_POST = `${API_BASE}/v1/support/tickets`
 const SUPPORT_STATUS_GET = `${API_BASE}/v1/support/tickets/`
 
-const CAL_LINK = vlpConfig.calIntroSlug
-const CAL_NS   = vlpConfig.calIntroNamespace
+const CAL_INTRO_LINK = vlpConfig.calIntroSlug
+const CAL_INTRO_NS = vlpConfig.calIntroNamespace
+const CAL_SUPPORT_LINK = vlpConfig.calBookingSlug
+const CAL_SUPPORT_NS = vlpConfig.calBookingNamespace
+const CAL_CONFIG = '{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
 
-const contactOptions = [
+type CalKind = 'intro' | 'support'
+
+const contactOptions: {
+  title: string
+  body: string
+  icon: React.ReactNode
+  kind: CalKind
+}[] = [
   {
     title: 'General Questions',
     body: 'Ask about memberships, profiles, onboarding, or how Virtual Launch Pro fits your business.',
@@ -19,6 +30,7 @@ const contactOptions = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
+    kind: 'intro',
   },
   {
     title: 'Book a call',
@@ -28,6 +40,7 @@ const contactOptions = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     ),
+    kind: 'intro',
   },
   {
     title: 'Onboarding Help',
@@ -37,6 +50,7 @@ const contactOptions = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     ),
+    kind: 'intro',
   },
   {
     title: 'Client support',
@@ -46,6 +60,7 @@ const contactOptions = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     ),
+    kind: 'support',
   },
 ]
 
@@ -69,8 +84,6 @@ interface StatusMsg {
 }
 
 export default function ContactPage() {
-  const calLoaded = useRef(false)
-
   // Lookup state
   const [lookupId, setLookupId] = useState('')
   const [lookupStatus, setLookupStatus] = useState<StatusMsg | null>(null)
@@ -86,35 +99,6 @@ export default function ContactPage() {
   const [supportId, setSupportId] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [eventId] = useState(() => newEventId())
-
-  // Load Cal.com embed script once
-  useEffect(() => {
-    if (calLoaded.current) return
-    calLoaded.current = true
-    const script = document.createElement('script')
-    script.src = 'https://app.cal.com/embed/embed.js'
-    script.async = true
-    script.onload = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Cal = (window as any).Cal
-      if (!Cal) return
-      Cal('init', CAL_NS, { origin: 'https://app.cal.com' })
-      Cal.ns[CAL_NS]('ui', {
-        cssVarsPerTheme: { dark: { 'cal-brand': vlpConfig.brandColor } },
-        hideEventTypeDetails: false,
-        layout: 'month_view',
-      })
-    }
-    document.head.appendChild(script)
-  }, [])
-
-  function openCal() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Cal = (window as any).Cal
-    if (Cal?.ns?.[CAL_NS]) {
-      Cal.ns[CAL_NS]('ui', { layout: 'month_view' })
-    }
-  }
 
   async function handleLookup() {
     const id = lookupId.trim()
@@ -197,9 +181,15 @@ export default function ContactPage() {
           </p>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row mb-8">
-            <a href="#contact-options" className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-slate-950 shadow-lg shadow-amber-500/25 transition-all duration-200 hover:scale-105 hover:from-amber-400 hover:to-amber-500">
+            <button
+              type="button"
+              data-cal-link={CAL_INTRO_LINK}
+              data-cal-namespace={CAL_INTRO_NS}
+              data-cal-config={CAL_CONFIG}
+              className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-slate-950 shadow-lg shadow-amber-500/25 transition-all duration-200 hover:scale-105 hover:from-amber-400 hover:to-amber-500"
+            >
               Book a call
-            </a>
+            </button>
             <a href="#support-ticket" className="inline-block rounded-lg border border-slate-700 bg-slate-900/60 px-8 py-4 text-lg font-semibold text-slate-100 transition-all duration-200 hover:bg-slate-800/80">
               Create a ticket
             </a>
@@ -224,10 +214,9 @@ export default function ContactPage() {
               <button
                 key={opt.title}
                 type="button"
-                onClick={openCal}
-                data-cal-link={CAL_LINK}
-                data-cal-namespace={CAL_NS}
-                data-cal-config='{"layout":"month_view"}'
+                data-cal-link={opt.kind === 'support' ? CAL_SUPPORT_LINK : CAL_INTRO_LINK}
+                data-cal-namespace={opt.kind === 'support' ? CAL_SUPPORT_NS : CAL_INTRO_NS}
+                data-cal-config={CAL_CONFIG}
                 className="text-left flex items-start gap-4 p-6 rounded-2xl bg-slate-900/40 border border-white/5 transition-all duration-200 hover:border-amber-500/35 hover:-translate-y-1"
               >
                 <div className="shrink-0 w-12 h-12 rounded-xl bg-[#070a10]/60 flex items-center justify-center border border-white/10">
@@ -449,9 +438,15 @@ export default function ContactPage() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Connect?</h2>
           <p className="text-slate-400 text-lg mb-10">Pick a path above and we will take it from there.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <a href="#contact-options" className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-slate-950 shadow-lg shadow-amber-500/25 transition-all duration-200 hover:scale-105 hover:from-amber-400 hover:to-amber-500">
+            <button
+              type="button"
+              data-cal-link={CAL_INTRO_LINK}
+              data-cal-namespace={CAL_INTRO_NS}
+              data-cal-config={CAL_CONFIG}
+              className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-slate-950 shadow-lg shadow-amber-500/25 transition-all duration-200 hover:scale-105 hover:from-amber-400 hover:to-amber-500"
+            >
               Book a call
-            </a>
+            </button>
             <a href="#support-ticket" className="inline-block rounded-lg border border-slate-700 bg-slate-900/60 px-8 py-4 text-lg font-semibold text-slate-100 transition-all duration-200 hover:bg-slate-800/80">
               Create a ticket
             </a>
@@ -459,6 +454,15 @@ export default function ContactPage() {
           <p className="text-sm text-slate-500">Your inquiry is confidential. We will respond thoughtfully and without obligation.</p>
         </div>
       </section>
+
+      {/* Cal.com init script — element-click popup pattern */}
+      <Script id="cal-init-vlp" strategy="afterInteractive">{`
+(function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+Cal("init", ${JSON.stringify(CAL_INTRO_NS)}, {origin:"https://app.cal.com"});
+Cal.ns[${JSON.stringify(CAL_INTRO_NS)}]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":${JSON.stringify(vlpConfig.brandColor)}}},"hideEventTypeDetails":false,"layout":"month_view"});
+Cal("init", ${JSON.stringify(CAL_SUPPORT_NS)}, {origin:"https://app.cal.com"});
+Cal.ns[${JSON.stringify(CAL_SUPPORT_NS)}]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":${JSON.stringify(vlpConfig.brandColor)}}},"hideEventTypeDetails":false,"layout":"month_view"});
+`}</Script>
     </div>
   )
 }
