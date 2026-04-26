@@ -3,10 +3,10 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function InquiriesRedirect() {
+export default function DirectoryProfileRedirect() {
   const router = useRouter()
   useEffect(() => {
-    router.replace('/messages')
+    router.replace('/profile/onboarding')
   }, [router])
   return null
 }

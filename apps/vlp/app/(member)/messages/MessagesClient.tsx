@@ -68,7 +68,7 @@ type LoadState =
   | { status: 'no-profile' }
   | { status: 'ready'; inquiries: InquiryRow[] }
 
-export default function InquiriesClient() {
+export default function MessagesClient() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [tab, setTab] = useState<Tab>('All')
   const [query, setQuery] = useState('')
@@ -153,7 +153,7 @@ export default function InquiriesClient() {
       status: statusBadge(i.status),
       action: (
         <Link
-          href={`/inquiries/${i.inquiry_id}`}
+          href={`/messages/${i.inquiry_id}`}
           className="text-xs font-medium text-brand-primary hover:underline"
         >
           View
@@ -165,9 +165,9 @@ export default function InquiriesClient() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Inquiries</h1>
+        <h1 className="text-2xl font-semibold text-white">Messaging</h1>
         <p className="mt-1 text-sm text-white/50">
-          Taxpayer intake requests waiting for your response.
+          Matched taxpayer inquiries waiting for your response.
         </p>
       </div>
 

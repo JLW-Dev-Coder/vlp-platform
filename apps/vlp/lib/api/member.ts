@@ -310,3 +310,62 @@ export async function getInquiry(inquiryId: string): Promise<Record<string, unkn
   )
   return data.inquiry
 }
+
+// ---------------------------------------------------------------------------
+// Billing — payment methods, receipts, portal
+//   GET  /v1/billing/payment-methods/:account_id
+//   GET  /v1/billing/receipts/:account_id
+//   POST /v1/billing/portal/sessions
+// ---------------------------------------------------------------------------
+
+export interface PaymentMethod {
+  id: string
+  type?: string
+  card?: {
+    brand?: string
+    last4?: string
+    exp_month?: number
+    exp_year?: number
+  } | null
+  [key: string]: unknown
+}
+
+export async function getPaymentMethods(accountId: string): Promise<PaymentMethod[]> {
+  const data = await apiGet<{ ok: boolean; methods: PaymentMethod[] }>(
+    `/v1/billing/payment-methods/${accountId}`
+  )
+  return data.methods ?? []
+}
+
+export interface BillingReceipt {
+  eventId?: string
+  accountId?: string
+  customerId?: string
+  event?: string
+  paymentMethodId?: string
+  amount?: number
+  description?: string
+  status?: string
+  created_at?: string
+  [key: string]: unknown
+}
+
+export async function getBillingReceipts(accountId: string): Promise<BillingReceipt[]> {
+  const data = await apiGet<{ ok: boolean; receipts: BillingReceipt[] }>(
+    `/v1/billing/receipts/${accountId}`
+  )
+  return data.receipts ?? []
+}
+
+export async function openBillingPortal(input: {
+  accountId: string
+  customerId: string
+  returnUrl: string
+}): Promise<string | null> {
+  const eventId = `EVT_${crypto.randomUUID()}`
+  const data = await apiPost<{ ok: boolean; url?: string }>(
+    `/v1/billing/portal/sessions`,
+    { ...input, eventId }
+  )
+  return data.url ?? null
+}

@@ -1,15 +1,19 @@
-import type { Metadata } from 'next'
-import InquiryDetailClient from './InquiryDetailClient'
+'use client'
 
-export const metadata: Metadata = { title: 'Inquiry' }
+import { useEffect, use } from 'react'
+import { useRouter } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
-export default async function InquiryDetailPage({
+export default function InquiryDetailRedirect({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  return <InquiryDetailClient id={id} />
+  const { id } = use(params)
+  const router = useRouter()
+  useEffect(() => {
+    router.replace(`/messages/${id}`)
+  }, [router, id])
+  return null
 }

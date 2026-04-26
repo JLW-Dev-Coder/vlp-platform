@@ -13366,7 +13366,7 @@ State: ${stateFullName}
 Submitted: ${formattedTimestamp}
 
 Log in to your dashboard to view the full inquiry and respond:
-https://virtuallaunch.pro/inquiries
+https://virtuallaunch.pro/messages
 
 The fastest response wins the client.
 

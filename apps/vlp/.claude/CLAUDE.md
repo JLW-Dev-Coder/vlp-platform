@@ -40,7 +40,7 @@ VLP passes `vlpConfig` (defined in `lib/platform-config.ts`) to `AppShell`.
 `/`, `/about`, `/blog`, `/blog/[slug]`, `/asset/[slug]`, `/contact`, `/features`, `/features/booking`, `/features/public-profile`, `/help`, `/how-it-works`, `/legal/privacy`, `/legal/terms`, `/legal/refund`, `/pricing`, `/profile/[id]`, `/sign-in`, `/checkout/success`
 
 ### Member (protected — vlp_session cookie)
-`/dashboard`, `/analytics`, `/calendar`, `/inquiries`, `/tokens`, `/affiliate`, `/payouts`, `/account`, `/account/payments`, `/profile`, `/profile/onboarding`, `/profile/preview`, `/support`, `/support/create`, `/usage`, `/notifications`, `/client-pool`, `/client-pool/[clientId]`, `/client-pool/[clientId]/compliance`, `/client-pool/[clientId]/report`
+`/dashboard`, `/analytics`, `/calendar`, `/messages` (with `/inquiries` redirect for legacy email links), `/tokens`, `/affiliate`, `/payouts`, `/account`, `/account/payments`, `/profile`, `/profile/onboarding`, `/profile/preview`, `/profile/directory`, `/support`, `/support/create`, `/usage`, `/notifications`, `/client-pool`, `/client-pool/[clientId]`, `/client-pool/[clientId]/compliance`, `/client-pool/[clientId]/report`
 
 ### Scale (operator only)
 `/scale`, `/scale/analytics/[platform]`, `/scale/calendar`, `/scale/crm`, `/scale/crm/clients`, `/scale/crm/clients/[accountId]`, `/scale/crm/prospects`, `/scale/crm/prospects/[slug]`, `/scale/sales`, `/scale/support`, `/scale/workflow`

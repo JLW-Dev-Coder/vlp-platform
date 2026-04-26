@@ -25,47 +25,26 @@ export const vlpConfig: PlatformConfig = {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
-        { label: 'Inquiries', href: '/inquiries', icon: 'MessageSquare' },
-        { label: 'Directory Profile', href: '/profile', icon: 'IdCard' },
+        { label: 'Booking Analytics', href: '/analytics', icon: 'BarChart3' },
         { label: 'Calendar', href: '/calendar', icon: 'Calendar' },
-        { label: 'Notifications', href: '/notifications', icon: 'Bell' },
-      ],
-    },
-    {
-      title: 'TOOLS',
-      items: [
-        { label: 'Tokens', href: '/tokens', icon: 'Coins' },
-        { label: 'Analytics', href: '/analytics', icon: 'BarChart3' },
+        { label: 'Messaging', href: '/messages', icon: 'Mail' },
       ],
     },
     {
       title: 'EARNINGS',
       items: [
         { label: 'Affiliate', href: '/affiliate', icon: 'Link2' },
+        { label: 'Client Pool', href: '/client-pool', icon: 'Users' },
         { label: 'Payouts', href: '/payouts', icon: 'Wallet' },
       ],
     },
     {
       title: 'SETTINGS',
       items: [
-        {
-          label: 'Account',
-          href: '/account',
-          icon: 'Settings',
-          children: [
-            { label: 'Payments', href: '/account/payments', icon: 'Wallet' },
-          ],
-        },
-        {
-          label: 'Profile',
-          href: '/profile',
-          icon: 'UserCircle',
-          children: [
-            { label: 'Onboarding', href: '/profile/onboarding', icon: 'User' },
-            { label: 'Preview', href: '/profile/preview', icon: 'User' },
-          ],
-        },
-        { label: 'Support', href: '/support', icon: 'HelpCircle' },
+        { label: 'Account', href: '/account', icon: 'Settings' },
+        { label: 'Profile', href: '/profile', icon: 'UserCircle' },
+        { label: 'Directory Profile', href: '/profile/directory', icon: 'IdCard' },
+        { label: 'Support', href: '/support', icon: 'LifeBuoy' },
         { label: 'Usage', href: '/usage', icon: 'Activity' },
       ],
     },

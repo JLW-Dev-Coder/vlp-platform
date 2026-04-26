@@ -143,10 +143,10 @@ export default function DashboardClient() {
           )}
           {profileComplete && (
             <Link
-              href="/inquiries"
+              href="/messages"
               className="mt-5 inline-flex items-center gap-2 rounded-lg border border-brand-primary/30 px-4 py-2 text-sm font-medium text-brand-primary transition hover:bg-brand-primary/10"
             >
-              View All Inquiries
+              View Messaging
               <ArrowRight className="h-4 w-4" />
             </Link>
           )}
