@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import {
@@ -27,6 +27,19 @@ import StepCard from './components/StepCard'
 import type { StepDef, StepStatus } from './components/StepCard'
 import StepDetailPanel from './components/StepDetailPanel'
 import type { StepActionConfig } from './components/StepDetailPanel'
+import StatusBadge from '../../components/StatusBadge'
+import {
+  getClientPoolCase,
+  releaseClientPoolCase,
+  completeClientPoolCase,
+  type CasePoolRecord,
+} from '@/lib/api/client-pool'
+import { getDashboard } from '@/lib/api/dashboard'
+
+function centsToDollars(cents: number | undefined | null): string | null {
+  if (cents == null || Number.isNaN(cents)) return null
+  return `$${(cents / 100).toFixed(2)}`
+}
 
 /* ── placeholder client data ─────────────────────────────────────── */
 
@@ -330,6 +343,85 @@ export default function ClientRecordPage() {
     steps.find((s) => s.status === 'current') ?? null
   )
 
+  const [liveCase, setLiveCase] = useState<CasePoolRecord | null>(null)
+  const [callerProfessionalId, setCallerProfessionalId] = useState<string | null>(null)
+  const [actionPending, setActionPending] = useState<'release' | 'complete' | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const [caseResp, dashboard] = await Promise.all([
+          getClientPoolCase(clientId).catch(() => null),
+          getDashboard().catch(() => null),
+        ])
+        if (cancelled) return
+        if (caseResp?.ok && caseResp.case) setLiveCase(caseResp.case)
+        if (dashboard?.account?.professional_id) setCallerProfessionalId(dashboard.account.professional_id)
+      } catch {
+        /* fall back to placeholder data */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [clientId])
+
+  const claimedBySelf = !!(
+    liveCase &&
+    callerProfessionalId &&
+    (liveCase.servicing_professional_id === callerProfessionalId ||
+      liveCase.claimed_by === callerProfessionalId)
+  )
+  const claimedActiveStatuses = new Set(['claimed', 'assigned', 'in_progress'])
+  const canRelease = claimedBySelf && claimedActiveStatuses.has(String(liveCase?.status ?? ''))
+  const canComplete = claimedBySelf && claimedActiveStatuses.has(String(liveCase?.status ?? ''))
+
+  async function handleRelease() {
+    if (actionPending) return
+    setActionError(null)
+    setActionSuccess(null)
+    setActionPending('release')
+    try {
+      const res = await releaseClientPoolCase(clientId)
+      if (res.ok) {
+        setActionSuccess('Case released back to the pool.')
+        setLiveCase((prev) =>
+          prev ? { ...prev, status: 'funded', servicing_professional_id: null, claimed_by: null } : prev
+        )
+      } else {
+        setActionError(res.message ?? res.error ?? 'Could not release case.')
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not release case.')
+    } finally {
+      setActionPending(null)
+    }
+  }
+
+  async function handleComplete() {
+    if (actionPending) return
+    setActionError(null)
+    setActionSuccess(null)
+    setActionPending('complete')
+    try {
+      const res = await completeClientPoolCase(clientId)
+      if (res.ok) {
+        setActionSuccess('Case marked complete. Payout will be processed.')
+        const refreshed = await getClientPoolCase(clientId).catch(() => null)
+        if (refreshed?.ok && refreshed.case) setLiveCase(refreshed.case)
+      } else {
+        setActionError(res.message ?? res.error ?? 'Could not complete case.')
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not complete case.')
+    } finally {
+      setActionPending(null)
+    }
+  }
+
   const phases = phaseNames.map((name, i) => ({
     number: i,
     name,
@@ -400,22 +492,83 @@ export default function ClientRecordPage() {
       </Link>
 
       {/* Client header */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">{clientData.name}</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold text-white">
+              {liveCase?.taxpayer_name ?? liveCase?.client_name ?? clientData.name}
+            </h1>
+            {liveCase?.status && (
+              <StatusBadge
+                status={String(liveCase.status)
+                  .split('_')
+                  .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+                  .join(' ')}
+              />
+            )}
+          </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-white/40">
-            <span>{clientData.plan} Plan</span>
+            <span>
+              {liveCase?.service_type ?? liveCase?.service_plan ?? clientData.plan} Plan
+            </span>
             <span className="text-white/10">|</span>
-            <span>{clientData.filing}</span>
+            <span>{liveCase?.filing_status ?? clientData.filing}</span>
             <span className="text-white/10">|</span>
-            <span>{clientData.fee}</span>
+            <span>
+              {centsToDollars(
+                (liveCase?.amount_total_cents as number | undefined) ??
+                  (liveCase?.service_fee_cents as number | undefined) ??
+                  (liveCase?.plan_fee_cents as number | undefined)
+              ) ?? clientData.fee}
+            </span>
             <span className="text-white/10">|</span>
-            <span>{mask(clientData.contact_email, clientData.consentGranted)}</span>
+            <span>
+              {mask(
+                (liveCase?.taxpayer_email as string | undefined) ?? clientData.contact_email,
+                clientData.consentGranted
+              )}
+            </span>
             <span className="text-white/10">|</span>
             <span>{mask(clientData.phone, clientData.consentGranted)}</span>
           </div>
         </div>
+        {claimedBySelf && (canRelease || canComplete) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {canComplete && (
+              <button
+                type="button"
+                onClick={handleComplete}
+                disabled={actionPending !== null}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {actionPending === 'complete' ? 'Completing…' : 'Mark Complete'}
+              </button>
+            )}
+            {canRelease && (
+              <button
+                type="button"
+                onClick={handleRelease}
+                disabled={actionPending !== null}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-white/80 transition hover:border-amber-400/40 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {actionPending === 'release' ? 'Releasing…' : 'Release Case'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {(actionError || actionSuccess) && (
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${
+            actionError
+              ? 'border-red-400/30 bg-red-500/10 text-red-200'
+              : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200'
+          }`}
+        >
+          {actionError ?? actionSuccess}
+        </div>
+      )}
 
       {/* Zone A — Phase Progress Bar */}
       <PhaseProgressBar phases={phases} />
