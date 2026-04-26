@@ -83,6 +83,17 @@ const LANGUAGES = [
   'Tagalog', 'Vietnamese',
 ]
 
+// Map inquiry service display name → /checkout service_type key
+function serviceForCheckoutKey(serviceLabel: string): string {
+  const s = serviceLabel.toLowerCase()
+  if (s.includes('audit')) return 'audit_representation'
+  if (s.includes('penalty')) return 'penalty_abatement'
+  if (s.includes('preparation')) return 'tax_prep_individual'
+  if (s.includes('planning') || s.includes('consulting') || s.includes('advisory')) return 'tax_planning'
+  if (s.includes('resolution') || s.includes('collections') || s.includes('offer in compromise') || s.includes('appeals')) return 'irs_resolution'
+  return 'irs_resolution'
+}
+
 interface MatchedProfile {
   slug: string
   name: string
@@ -633,6 +644,30 @@ function InquiryFlow() {
                 </p>
                 <Link href="/contact" className={styles.btnPrimary}>
                   Contact Tax Monitor Pro
+                </Link>
+              </div>
+            )}
+
+            {!matchesLoading && (
+              <div style={{
+                marginTop: 24,
+                background: '#fff7ed',
+                border: '1px solid #fed7aa',
+                borderRadius: 12,
+                padding: 20,
+                textAlign: 'center',
+              }}>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#9a3412', marginBottom: 6 }}>
+                  Or skip the back-and-forth — pay to get started
+                </h3>
+                <p style={{ color: '#7c2d12', fontSize: 14, marginBottom: 16 }}>
+                  Pre-pay for your service and enter our Client Pool. Qualified professionals will claim your case and contact you directly. Full refund available before a professional claims it.
+                </p>
+                <Link
+                  href={`/checkout?service=${encodeURIComponent(serviceForCheckoutKey(selectedService))}&state=${encodeURIComponent(selectedState)}&entity=${encodeURIComponent(selectedEntity)}`}
+                  className={styles.btnPrimary}
+                >
+                  Pay to Get Started
                 </Link>
               </div>
             )}

@@ -395,6 +395,29 @@ export const api = {
     }>(`/v1/profiles${qs ? '?' + qs : ''}`, { auth: false })
   },
 
+  // Client Pool checkout (paid taxpayer flow → funded case enters pool)
+  createClientPoolCheckout: (data: {
+    service_type: string
+    entity_type?: string
+    state: string
+    tax_years?: string
+    taxpayer_email: string
+    taxpayer_name: string
+  }) =>
+    apiFetch<{
+      ok: boolean
+      checkout_url: string
+      session_id: string
+      case_id: string
+      amount_cents: number
+      platform_fee_cents: number
+      pro_payout_cents: number
+    }>('/v1/tmp/client-pool/checkout', {
+      method: 'POST',
+      auth: false,
+      body: JSON.stringify(data),
+    }),
+
   // Inquiries
   createInquiry: (data: {
     professional_id?: string

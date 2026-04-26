@@ -16,7 +16,7 @@ export default function RefundPage() {
       config={tmpConfig}
       title="Refund Policy"
       subtitle="Digital Service Purchases"
-      lastUpdated="April 17, 2026"
+      lastUpdated="April 26, 2026"
       currentPage="refund"
     >
       <LegalSection>
@@ -70,11 +70,35 @@ export default function RefundPage() {
         </ol>
       </LegalSection>
 
-      <LegalSection title="F. Chargebacks">
+      <LegalSection title="F. Client Pool — Pre-Paid Service Cases">
+        <p className="mb-4">
+          When you pay for a service through our Client Pool (e.g. IRS Issue Resolution, Audit Representation), funds are held by Tax Monitor Pro until a tax professional claims your case. This section covers refunds and disputes specific to Client Pool purchases.
+        </p>
+        <ul className="space-y-2">
+          {[
+            'Unclaimed cases: full refund available at any time before a professional claims your case. The full amount, including the platform fee, is returned to your original payment method.',
+            'Claimed cases — work has not begun: full refund available upon platform review. Refund decisions are made within 3 business days.',
+            'Claimed cases — work in progress: dispute resolution. We review the work product, messaging history, and compliance records before determining a fair outcome (full refund, partial refund, or no refund).',
+            'Completed cases: not eligible for refund except in cases of platform-verified non-delivery.',
+            'Pro abandonment: if a professional releases your claimed case before completing it, your case re-enters the pool and you receive an email when re-matched. No refund is needed.',
+            'Chargebacks: handled through Stripe’s dispute process. Initiating a chargeback may pause matching and any in-progress work while the matter is reviewed.',
+            'Refund timeline: approved refunds are processed to your original payment method within 5–10 business days.',
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+        <p className="mt-4 text-sm">
+          To request a refund or open a dispute on a Client Pool case, contact us through the{' '}
+          <Link href="/contact" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">support page</Link>{' '}
+          and include your case reference number.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="G. Chargebacks">
         <p>Initiating a chargeback or payment dispute may result in temporary suspension of access, pausing of project work, or withholding of undelivered items while the matter is reviewed.</p>
       </LegalSection>
 
-      <LegalSection title="G. Policy Changes">
+      <LegalSection title="H. Policy Changes">
         <p>We may update this policy from time to time. The last updated date reflects the most recent revision.</p>
       </LegalSection>
     </LegalPageLayout>

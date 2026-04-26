@@ -12,8 +12,9 @@ import {
 } from '@/lib/api/client-pool'
 import { getDashboard } from '@/lib/api/dashboard'
 
-type DisplayStatus = 'Available' | 'Assigned' | 'In Progress' | 'Completed' | 'Paid Out'
+type DisplayStatus = 'Available' | 'Funded' | 'Assigned' | 'In Progress' | 'Completed' | 'Paid Out'
 type TabKey = 'available' | 'mine' | 'completed'
+type CallerTier = 'scale' | 'pro' | 'free'
 
 interface PoolCase {
   id: string
@@ -29,6 +30,7 @@ interface PoolCase {
 
 const STATUS_LABELS: Record<string, DisplayStatus> = {
   available: 'Available',
+  funded: 'Funded',
   assigned: 'Assigned',
   in_progress: 'In Progress',
   completed: 'Completed',
@@ -135,10 +137,17 @@ interface ToastState {
   message: string
 }
 
+const TIER_COPY: Record<CallerTier, { label: string; description: string }> = {
+  scale: { label: 'Scale', description: 'You see funded cases immediately.' },
+  pro: { label: 'Pro', description: 'You see funded cases 30 minutes after they post.' },
+  free: { label: 'Free', description: 'You see funded cases 2 hours after they post. Upgrade to Pro or Scale for earlier access.' },
+}
+
 export default function ClientPoolTable() {
   const [activeTab, setActiveTab] = useState<TabKey>('available')
   const [professionalId, setProfessionalId] = useState<string | null>(null)
   const [profError, setProfError] = useState<string | null>(null)
+  const [callerTier, setCallerTier] = useState<CallerTier | null>(null)
   const [tabs, setTabs] = useState<Record<TabKey, TabState>>({
     available: initialTabState,
     mine: initialTabState,
@@ -161,7 +170,7 @@ export default function ClientPoolTable() {
       try {
         let response
         if (tab === 'available') {
-          response = await getClientPoolCases({ status: 'available', limit: 100 })
+          response = await getClientPoolCases({ status: 'available,funded', limit: 100 })
         } else if (tab === 'mine') {
           if (!proId) {
             setTabs((prev) => ({
@@ -190,6 +199,9 @@ export default function ClientPoolTable() {
           })
         }
         const mapped = (response.cases ?? []).map(adaptCase)
+        if (response.caller_tier) {
+          setCallerTier(response.caller_tier)
+        }
         setTabs((prev) => ({
           ...prev,
           [tab]: { loading: false, error: null, cases: mapped, loaded: true },
@@ -283,8 +295,20 @@ export default function ClientPoolTable() {
       ? 'No assigned cases yet. Accept a case from the Available tab.'
       : 'No completed cases yet.'
 
+  const tierInfo = callerTier ? TIER_COPY[callerTier] : null
+
   return (
     <div>
+      {/* Tier badge */}
+      {tierInfo && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-[--member-border] bg-[--member-card] px-4 py-3">
+          <span className="inline-flex items-center rounded-full bg-brand-primary/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-primary">
+            {tierInfo.label} tier
+          </span>
+          <span className="text-sm text-white/60">{tierInfo.description}</span>
+        </div>
+      )}
+
       {/* Profile-resolution warning — only shown if My Cases tab needs a pro ID */}
       {profError && activeTab !== 'available' && (
         <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">

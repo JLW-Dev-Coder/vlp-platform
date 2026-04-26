@@ -1,7 +1,7 @@
 # canonical-site-nav.md — VLP Ecosystem Site Navigation
 
 **Status:** Authoritative
-**Last updated:** 2026-04-17
+**Last updated:** 2026-04-26
 **Owner:** JLW (Principal Engineer review required for changes)
 **Scope:** All 8 apps in the vlp-platform monorepo
 **Parent:** `canonical-app-blueprint.md` (see §1 hierarchy)
@@ -196,7 +196,7 @@ components).
 | Dashboard | ALL | /dashboard |
 | Booking Analytics | VLP | /dashboard/bookings |
 | Calendar | VLP (includes Scheduling) | /dashboard/calendar |
-| Client Pool | VLP | /dashboard/clients |
+| Client Pool | VLP | /client-pool |
 | Discounts / Entitlements | TMP | /dashboard/discounts |
 | Directory Profile | DVLP, VLP | /dashboard/profile/directory |
 | Premium Domain Hosting | WLVLP | /dashboard/hosting |

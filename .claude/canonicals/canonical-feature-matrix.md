@@ -8,7 +8,7 @@ Parent: canonical-app-blueprint.md
 
 # canonical-feature-matrix.md — VLP Ecosystem Feature Matrix
 
-Last updated: 2026-04-19
+Last updated: 2026-04-26
 
 ---
 
@@ -80,7 +80,7 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 | Feature | Worker Route | R2 Key | D1 Table | Frontend Path | Status |
 |---------|-------------|--------|----------|---------------|--------|
 | Booking Analytics | GET /v1/bookings/analytics | bookings/analytics/{date}.json | bookings | /dashboard/bookings | partial — route exists, analytics dashboard incomplete |
-| Client Pool | GET /v1/clients/by-professional/{id} | clients/{pro_id}/{client_id}.json | clients | /dashboard/clients | planned |
+| Client Pool | GET /v1/tmp/client-pool, POST /v1/tmp/client-pool/accept, POST /v1/tmp/client-pool/checkout, GET /v1/tmp/client-pool/:case_id, POST /v1/tmp/client-pool/:case_id/complete, POST /v1/tmp/client-pool/:case_id/refund, POST /v1/tmp/client-pool/:case_id/dispute, POST /v1/tmp/client-pool/:case_id/release | client_pool/{case_id}.json | client_pool, client_pool_disputes | (member)/client-pool | partial — Worker list/accept/compliance routes exist; checkout/payout/dispute routes planned; VLP pages exist (compliance API-wired, list/detail/report use placeholder data) |
 | Directory Profile | GET /v1/profiles/{id}, PATCH /v1/profiles/{id} | profiles/{id}.json | profiles | /dashboard/profile/directory | live |
 | Messaging (Pro - Taxpayer) | POST /v1/messages, GET /v1/messages/by-thread/{id} | messages/{thread_id}/{msg_id}.json | messages | /dashboard/messages | planned |
 | Profile Visibility | PATCH /v1/profiles/{id} (visibility field) | profiles/{id}.json | profiles | /dashboard/profile (toggle) | live |

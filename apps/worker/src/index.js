@@ -5308,6 +5308,196 @@ const ROUTES = [
               }
             }
 
+            // Handle TMP Client Pool funded case
+            if (obj.metadata?.case_type === 'client_pool') {
+              try {
+                const md = obj.metadata || {};
+                const caseId = md.case_id || `CP_${crypto.randomUUID()}`;
+                const canonicalKey = `client_pool/${caseId}.json`;
+
+                // Idempotency: skip if already processed
+                const existing = await r2Get(env.R2_VIRTUAL_LAUNCH, canonicalKey);
+                if (existing) {
+                  console.log(`Client Pool webhook replay for ${caseId}, skipping`);
+                  break;
+                }
+
+                const amountTotalCents = parseInt(md.amount_total_cents || '0', 10) || 0;
+                const platformFeeCents = parseInt(md.platform_fee_cents || '0', 10) || 0;
+                const proPayoutCents = parseInt(md.pro_payout_cents || String(amountTotalCents - platformFeeCents), 10) || 0;
+
+                const caseRecord = {
+                  case_id: caseId,
+                  status: 'funded',
+                  service_type: md.service_type || null,
+                  service_label: md.service_label || null,
+                  entity_type: md.entity_type || null,
+                  state: md.state || null,
+                  tax_years: md.tax_years || null,
+                  taxpayer_name: md.taxpayer_name || null,
+                  taxpayer_email: md.taxpayer_email || null,
+                  amount_total_cents: amountTotalCents,
+                  platform_fee_cents: platformFeeCents,
+                  pro_payout_cents: proPayoutCents,
+                  stripe_session_id: obj.id,
+                  stripe_payment_intent_id: obj.payment_intent || null,
+                  servicing_professional_id: null,
+                  claimed_by: null,
+                  claimed_at: null,
+                  created_at: now,
+                  updated_at: now,
+                };
+
+                // Write receipt
+                await r2Put(env.R2_VIRTUAL_LAUNCH, `receipts/tmp/client-pool/funded/${caseId}.json`, {
+                  event: 'CLIENT_POOL_CASE_FUNDED',
+                  case_id: caseId,
+                  stripe_session_id: obj.id,
+                  stripe_payment_intent_id: obj.payment_intent || null,
+                  amount_total_cents: amountTotalCents,
+                  platform_fee_cents: platformFeeCents,
+                  pro_payout_cents: proPayoutCents,
+                  timestamp: now,
+                });
+
+                // Write canonical
+                await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, caseRecord);
+
+                // D1 projection (best-effort)
+                try {
+                  await d1Run(env.DB,
+                    `INSERT OR REPLACE INTO client_pool
+                     (case_id, status, service_type, entity_type, state, tax_years,
+                      taxpayer_name, taxpayer_email, amount_total_cents, platform_fee_cents,
+                      pro_payout_cents, stripe_session_id, stripe_payment_intent_id,
+                      created_at, updated_at)
+                     VALUES (?, 'funded', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [caseId, md.service_type || null, md.entity_type || null, md.state || null,
+                     md.tax_years || null, md.taxpayer_name || null, md.taxpayer_email || null,
+                     amountTotalCents, platformFeeCents, proPayoutCents,
+                     obj.id, obj.payment_intent || null, now, now]
+                  );
+                } catch (e) {
+                  console.error('client_pool D1 insert failed (R2 authoritative):', e?.message);
+                }
+
+                // Notify all matching pros immediately with tier-specific availability time
+                if (env.RESEND_API_KEY) {
+                  try {
+                    const stateLike = `%${md.state || ''}%`;
+                    const serviceLike = `%${md.service_label || md.service_type || ''}%`;
+                    const rows = await env.DB.prepare(
+                      `SELECT p.professional_id, p.display_name, p.tier, a.email
+                         FROM profiles p
+                         LEFT JOIN accounts a ON a.account_id = p.account_id
+                        WHERE p.status = 'active'
+                          AND LOWER(p.state) LIKE LOWER(?)
+                          AND (p.specialties IS NULL OR p.specialties = '' OR LOWER(p.specialties) LIKE LOWER(?))`
+                    ).bind(stateLike, serviceLike).all();
+
+                    const matchedPros = (rows?.results || []).map(r => ({
+                      professional_id: r.professional_id,
+                      display_name: r.display_name,
+                      email: r.email,
+                      tier: r.tier === 'scale' || r.tier === 'pro' ? r.tier : 'free',
+                    }));
+
+                    const fundedAt = new Date(now);
+                    const proAvailableAt = new Date(fundedAt.getTime() + 30 * 60 * 1000);
+                    const freeAvailableAt = new Date(fundedAt.getTime() + 2 * 60 * 60 * 1000);
+                    const fmt = (d) => d.toLocaleString('en-US', { timeZone: 'America/New_York', dateStyle: 'medium', timeStyle: 'short' });
+                    const payoutDollars = (proPayoutCents / 100).toFixed(2);
+
+                    const subject = `New funded case — ${md.service_label || md.service_type} in ${md.state} — $${payoutDollars}`;
+
+                    for (const pro of matchedPros) {
+                      if (!pro.email) continue;
+                      let availability;
+                      if (pro.tier === 'scale') {
+                        availability = 'Available now — claim this case immediately.';
+                      } else if (pro.tier === 'pro') {
+                        availability = `Available to you at ${fmt(proAvailableAt)} — set a reminder.`;
+                      } else {
+                        availability = `Available to you at ${fmt(freeAvailableAt)} — upgrade to Pro or Scale for earlier access.`;
+                      }
+
+                      const text = `A new pre-paid case is in the Client Pool.
+
+Service: ${md.service_label || md.service_type}
+Entity: ${md.entity_type || 'Individual'}
+State: ${md.state}
+Your payout: $${payoutDollars} (88% of $${(amountTotalCents / 100).toFixed(2)})
+
+${availability}
+
+Log in to claim:
+https://virtuallaunch.pro/client-pool
+
+— Virtual Launch Pro`;
+
+                      try {
+                        await fetch('https://api.resend.com/emails', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+                            to: [pro.email],
+                            subject,
+                            text,
+                          }),
+                        });
+                      } catch (e) {
+                        console.error(`client_pool: pro email send failed for ${pro.professional_id}`, e?.message);
+                      }
+                    }
+
+                    // Confirmation email to taxpayer
+                    if (md.taxpayer_email) {
+                      try {
+                        await fetch('https://api.resend.com/emails', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            from: 'Tax Monitor Pro <noreply@virtuallaunch.pro>',
+                            to: [md.taxpayer_email],
+                            subject: `Your case has been submitted — reference ${caseId}`,
+                            text: `Thank you, ${md.taxpayer_name || 'there'}.
+
+Your payment of $${(amountTotalCents / 100).toFixed(2)} for ${md.service_label || md.service_type} has been received and your case has entered our Client Pool.
+
+What happens next:
+A qualified tax professional in ${md.state} will review and claim your case. We'll email you as soon as a professional is assigned.
+
+Reference number: ${caseId}
+
+Refund Policy:
+You may request a full refund any time before a professional claims your case. After a professional has claimed it, refund requests are reviewed on a case-by-case basis.
+https://taxmonitor.pro/legal/refund
+
+— Tax Monitor Pro`,
+                          }),
+                        });
+                      } catch (e) {
+                        console.error('client_pool: taxpayer confirmation email failed', e?.message);
+                      }
+                    }
+
+                    console.log(`Client Pool case funded: ${caseId}, notified ${matchedPros.length} pros`);
+                  } catch (e) {
+                    console.error('client_pool notify pros failed:', e?.message);
+                  }
+                }
+              } catch (e) {
+                console.error('Client Pool funded case handling error:', e);
+              }
+            }
+
             // Handle WLVLP site purchase
             if (platform === 'wlvlp' && obj.metadata?.slug) {
               try {
@@ -5927,6 +6117,58 @@ const ROUTES = [
             await r2Put(env.R2_VIRTUAL_LAUNCH, `billing_payment_intents/${piId}.json`, {
               paymentIntentId: piId, status: 'failed', failedAt: now,
             });
+            break;
+          }
+
+          case 'charge.dispute.created': {
+            // Stripe chargeback. Find linked Client Pool case by payment_intent.
+            try {
+              const paymentIntentId = obj.payment_intent;
+              if (paymentIntentId) {
+                const row = await env.DB.prepare(
+                  "SELECT case_id FROM client_pool WHERE stripe_payment_intent_id = ? LIMIT 1"
+                ).bind(paymentIntentId).first();
+                if (row?.case_id) {
+                  const caseId = row.case_id;
+                  const canonicalKey = `client_pool/${caseId}.json`;
+                  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, canonicalKey);
+                  if (raw) {
+                    const caseRecord = JSON.parse(raw);
+                    const updated = { ...caseRecord, status: 'chargeback', updated_at: now };
+                    await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, updated);
+                  }
+                  await env.DB.prepare(
+                    "UPDATE client_pool SET status = 'chargeback', updated_at = ? WHERE case_id = ?"
+                  ).bind(now, caseId).run();
+
+                  const disputeId = `DSP_${crypto.randomUUID()}`;
+                  await env.DB.prepare(
+                    `INSERT INTO client_pool_disputes
+                     (dispute_id, case_id, initiated_by, reason, status, refund_amount_cents,
+                      stripe_refund_id, resolved_by, created_at)
+                     VALUES (?, ?, 'taxpayer', ?, 'chargebacked', ?, ?, 'stripe', ?)`
+                  ).bind(disputeId, caseId, `Stripe chargeback (${obj.reason || 'unknown'})`,
+                         obj.amount || null, obj.id, now).run().catch(() => {});
+
+                  // Alert platform owner — manual clawback may be needed if pro paid out.
+                  if (env.RESEND_API_KEY) {
+                    const ownerEmail = env.PLATFORM_OWNER_EMAIL || 'jamie.williams@virtuallaunch.pro';
+                    await fetch('https://api.resend.com/emails', {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+                        to: [ownerEmail],
+                        subject: `CHARGEBACK on Client Pool case ${caseId}`,
+                        text: `Stripe chargeback received on case ${caseId}.\n\nDispute ID: ${obj.id}\nAmount: $${((obj.amount || 0) / 100).toFixed(2)}\nReason: ${obj.reason || 'unknown'}\n\nIf the pro was already paid out, manual transfer reversal is required.\n\n— Virtual Launch Pro`,
+                      }),
+                    }).catch(() => {});
+                  }
+                }
+              }
+            } catch (e) {
+              console.error('charge.dispute.created handler error:', e?.message);
+            }
             break;
           }
 
@@ -13061,10 +13303,16 @@ TTMP Support Team
   // GET /v1/tmp/client-pool
   // Contract: /contracts/tmp/tmp.client-pool.list.v1.json (pending — read-model)
   // Lists cases from R2 under client_pool/ prefix. Filters:
-  //   ?status=available              → only cases with that status
-  //   ?status=assigned,in_progress   → comma-separated list = union match
+  //   ?status=available|funded|assigned,in_progress   → status match
   //   ?professional_id={id}          → only cases assigned to that pro
   //   ?page=1&limit=20               → pagination (default page 1, limit 20, max 100)
+  //
+  // Tier-gated access for funded cases (taxpayer pre-paid):
+  //   - Scale tier: sees funded cases immediately
+  //   - Pro tier:   sees funded cases ≥ 30 minutes after funding
+  //   - Free tier:  sees funded cases ≥ 2 hours after funding
+  // Tier gating is bypassed when the caller asks for cases assigned to themselves
+  // (?professional_id=<self>) so pros can always view their own work.
   {
     method: 'GET', pattern: '/v1/tmp/client-pool',
     handler: async (_method, _pattern, _params, request, env) => {
@@ -13077,6 +13325,21 @@ TTMP Support Team
         const professionalIdFilter = url.searchParams.get('professional_id');
         const page = Math.max(1, parseInt(url.searchParams.get('page')) || 1);
         const limit = Math.max(1, Math.min(100, parseInt(url.searchParams.get('limit')) || 20));
+
+        // Resolve caller's professional profile + tier (best-effort).
+        let callerTier = 'free';
+        let callerProfessionalId = null;
+        let callerState = null;
+        try {
+          const profileRow = await env.DB.prepare(
+            "SELECT professional_id, tier, state FROM profiles WHERE account_id = ?"
+          ).bind(session.account_id).first();
+          if (profileRow) {
+            callerProfessionalId = profileRow.professional_id || null;
+            callerTier = profileRow.tier === 'scale' || profileRow.tier === 'pro' ? profileRow.tier : 'free';
+            callerState = profileRow.state || null;
+          }
+        } catch (_) {}
 
         const listResult = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'client_pool/', limit: 1000 });
         const objectsOnly = (listResult.objects || []).filter(obj => obj.key.endsWith('.json'));
@@ -13107,6 +13370,51 @@ TTMP Support Team
           cases = cases.filter(c => c.servicing_professional_id === professionalIdFilter);
         }
 
+        // Tier-gated visibility for funded (unclaimed paid) cases.
+        // Only apply when the caller isn't asking for their own claimed cases.
+        const askingForOwn = professionalIdFilter && callerProfessionalId && professionalIdFilter === callerProfessionalId;
+        if (!askingForOwn) {
+          const nowMs = Date.now();
+          const PRO_DELAY_MS = 30 * 60 * 1000;
+          const FREE_DELAY_MS = 2 * 60 * 60 * 1000;
+          cases = cases.filter((c) => {
+            if (c.status !== 'funded') return true;
+            const createdAt = Date.parse(c.created_at || c.updated_at || '') || 0;
+            const ageMs = nowMs - createdAt;
+            if (callerTier === 'scale') return true;
+            if (callerTier === 'pro') return ageMs >= PRO_DELAY_MS;
+            return ageMs >= FREE_DELAY_MS;
+          });
+
+          // Optional state-match filter for funded cases when caller has a state.
+          if (callerState) {
+            cases = cases.filter((c) => {
+              if (c.status !== 'funded') return true;
+              if (!c.state) return true;
+              return String(c.state).toLowerCase() === String(callerState).toLowerCase()
+                || String(c.state).toLowerCase().includes(String(callerState).toLowerCase());
+            });
+          }
+
+          // Annotate each funded case with when this caller's tier could see it.
+          cases = cases.map((c) => {
+            if (c.status !== 'funded') return c;
+            const createdAt = Date.parse(c.created_at || c.updated_at || '') || 0;
+            const proAvail = new Date(createdAt + PRO_DELAY_MS).toISOString();
+            const freeAvail = new Date(createdAt + FREE_DELAY_MS).toISOString();
+            return {
+              ...c,
+              tier_availability: {
+                scale: c.created_at || null,
+                pro: proAvail,
+                free: freeAvail,
+                caller_tier: callerTier,
+                caller_available_at: callerTier === 'scale' ? (c.created_at || null) : (callerTier === 'pro' ? proAvail : freeAvail),
+              }
+            };
+          });
+        }
+
         cases.sort((a, b) => {
           const ta = a.created_at || a.updated_at || '';
           const tb = b.created_at || b.updated_at || '';
@@ -13120,6 +13428,7 @@ TTMP Support Team
         return json({
           ok: true,
           cases: pageCases,
+          caller_tier: callerTier,
           pagination: { page, limit, total, total_pages: Math.ceil(total / limit) || 1 }
         }, 200, request);
       } catch (e) {
@@ -13540,15 +13849,18 @@ A credentialed tax professional will review your inquiry and reach out to you sh
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read case record' }, 500, request);
       }
 
-      if (caseRecord.status !== 'available') {
+      // Allow claiming both legacy 'available' cases and new 'funded' cases.
+      const claimable = caseRecord.status === 'available' || caseRecord.status === 'funded';
+      if (!claimable) {
         // First-claim-wins: if already assigned to the same pro, return the existing record as success
         // (idempotent replay). Otherwise reject.
-        if (caseRecord.status === 'assigned' && caseRecord.servicing_professional_id === professionalId) {
+        if ((caseRecord.status === 'assigned' || caseRecord.status === 'in_progress')
+            && caseRecord.servicing_professional_id === professionalId) {
           return json({
             ok: true,
             deduped: true,
             eventId: caseId,
-            status: 'assigned',
+            status: caseRecord.status,
             case_id: caseId,
             professional_id: professionalId,
             assigned_at: caseRecord.assigned_at || null
@@ -13559,6 +13871,32 @@ A credentialed tax professional will review your inquiry and reach out to you sh
           error: 'case_not_available',
           message: 'This case has already been accepted by another professional.'
         }, 409, request);
+      }
+
+      // Tier-gated claim window: scale=immediate, pro=30min, free=2hr.
+      // Applied only to funded (paid) cases; legacy 'available' cases bypass.
+      if (caseRecord.status === 'funded') {
+        let callerTier = 'free';
+        try {
+          const tierRow = await env.DB.prepare(
+            "SELECT tier FROM profiles WHERE account_id = ?"
+          ).bind(session.account_id).first();
+          callerTier = tierRow?.tier === 'scale' || tierRow?.tier === 'pro' ? tierRow.tier : 'free';
+        } catch (_) {}
+
+        const createdAt = Date.parse(caseRecord.created_at || '') || 0;
+        const ageMs = Date.now() - createdAt;
+        const requiredMs = callerTier === 'scale' ? 0 : callerTier === 'pro' ? 30 * 60 * 1000 : 2 * 60 * 60 * 1000;
+        if (ageMs < requiredMs) {
+          const availableAt = new Date(createdAt + requiredMs).toISOString();
+          return json({
+            ok: false,
+            error: 'tier_locked',
+            message: `This case becomes available to your tier (${callerTier}) at ${availableAt}.`,
+            available_at: availableAt,
+            caller_tier: callerTier,
+          }, 403, request);
+        }
       }
 
       const now = new Date().toISOString();
@@ -13598,10 +13936,66 @@ A credentialed tax professional will review your inquiry and reach out to you sh
       // Step 3: D1 projection (best-effort — table may not exist yet)
       try {
         await env.DB.prepare(
-          "UPDATE client_pool SET status = ?, servicing_professional_id = ?, assigned_at = ?, updated_at = ? WHERE case_id = ?"
-        ).bind('assigned', professionalId, now, now, caseId).run();
+          "UPDATE client_pool SET status = ?, servicing_professional_id = ?, claimed_by = ?, assigned_at = ?, claimed_at = ?, updated_at = ? WHERE case_id = ?"
+        ).bind('assigned', professionalId, professionalId, now, now, now, caseId).run();
       } catch (e) {
         // Table may not exist yet — R2 is authoritative, swallow and continue.
+      }
+
+      // Step 4: notify taxpayer + pro (best-effort)
+      if (env.RESEND_API_KEY) {
+        try {
+          const taxpayerEmail = caseRecord.taxpayer_email || null;
+          const taxpayerName = caseRecord.taxpayer_name || 'there';
+          if (taxpayerEmail) {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                from: 'Tax Monitor Pro <noreply@virtuallaunch.pro>',
+                to: [taxpayerEmail],
+                subject: `A qualified professional has accepted your case (${caseId})`,
+                text: `Hi ${taxpayerName},
+
+Good news — a qualified tax professional has claimed your case and will be in touch shortly to begin work.
+
+Case reference: ${caseId}
+
+— Tax Monitor Pro`,
+              }),
+            });
+          }
+
+          const proEmailRow = await env.DB.prepare(
+            "SELECT a.email FROM profiles p LEFT JOIN accounts a ON a.account_id = p.account_id WHERE p.professional_id = ?"
+          ).bind(professionalId).first();
+          if (proEmailRow?.email) {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+                to: [proEmailRow.email],
+                subject: `You've claimed case ${caseId}`,
+                text: `You've successfully claimed case ${caseId}.
+
+Service: ${caseRecord.service_label || caseRecord.service_type || 'See dashboard'}
+State: ${caseRecord.state || 'See dashboard'}
+Your payout: $${((caseRecord.pro_payout_cents || 0) / 100).toFixed(2)}
+
+Next steps:
+1. Review the case details and contact the taxpayer.
+2. Complete Form 2848 (Power of Attorney) at https://virtuallaunch.pro/client-pool/${caseId}/2848
+3. Build the compliance record at https://virtuallaunch.pro/client-pool/${caseId}/compliance
+4. When the engagement is complete, mark it done to receive payout.
+
+— Virtual Launch Pro`,
+              }),
+            });
+          }
+        } catch (e) {
+          console.error('client-pool/accept: email notify failed', e?.message);
+        }
       }
 
       return json({
@@ -13611,6 +14005,817 @@ A credentialed tax professional will review your inquiry and reach out to you sh
         professional_id: professionalId,
         assigned_at: now
       }, 200, request);
+    },
+  },
+
+  // POST /v1/tmp/client-pool/checkout
+  // Public taxpayer flow: select a Client Pool service → Stripe checkout.
+  // On checkout.session.completed (handled in /v1/webhooks/stripe), a funded
+  // case is created in R2 + D1 with status 'funded' and platform fee retained.
+  {
+    method: 'POST', pattern: '/v1/tmp/client-pool/checkout',
+    handler: async (_method, _pattern, _params, request, env) => {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return json({ ok: false, error: 'validation_failed', message: 'Invalid JSON body' }, 400, request);
+      }
+
+      const SERVICE_PRICING = {
+        'irs_resolution':       { label: 'IRS Issue Resolution',       amount_cents: 29900 },
+        'tax_prep_individual':  { label: 'Tax Preparation (Individual)', amount_cents: 19900 },
+        'tax_prep_business':   { label: 'Tax Preparation (Business)',   amount_cents: 39900 },
+        'tax_planning':        { label: 'Tax Planning / Advisory',     amount_cents: 24900 },
+        'audit_representation': { label: 'Audit Representation',       amount_cents: 49900 },
+        'penalty_abatement':   { label: 'Penalty Abatement',           amount_cents: 19900 },
+      };
+
+      const serviceType = typeof body?.service_type === 'string' ? body.service_type.trim() : '';
+      const entityType = typeof body?.entity_type === 'string' ? body.entity_type.trim() : '';
+      const state = typeof body?.state === 'string' ? body.state.trim() : '';
+      const taxpayerEmail = typeof body?.taxpayer_email === 'string' ? body.taxpayer_email.trim().toLowerCase() : '';
+      const taxpayerName = typeof body?.taxpayer_name === 'string' ? body.taxpayer_name.trim() : '';
+      const taxYears = typeof body?.tax_years === 'string' ? body.tax_years.trim() : '';
+
+      const service = SERVICE_PRICING[serviceType];
+      if (!service) {
+        return json({ ok: false, error: 'invalid_service', message: 'Unknown service_type' }, 400, request);
+      }
+      if (!state || !taxpayerEmail || !taxpayerName) {
+        return json({ ok: false, error: 'validation_failed', message: 'state, taxpayer_email, taxpayer_name are required' }, 400, request);
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(taxpayerEmail)) {
+        return json({ ok: false, error: 'invalid_email' }, 400, request);
+      }
+
+      const caseId = `CP_${crypto.randomUUID()}`;
+      const platformFeeCents = Math.round(service.amount_cents * 0.12);
+
+      try {
+        const checkoutSession = await stripePost('/checkout/sessions', {
+          mode: 'payment',
+          line_items: [{
+            'price_data[currency]': 'usd',
+            'price_data[product_data][name]': `${service.label} — ${state}`,
+            'price_data[product_data][description]': `Pre-paid Client Pool case (${entityType || 'individual'})`,
+            'price_data[unit_amount]': String(service.amount_cents),
+            quantity: 1,
+          }],
+          customer_email: taxpayerEmail,
+          'payment_intent_data[application_fee_amount]': String(platformFeeCents),
+          success_url: 'https://taxmonitor.pro/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+          cancel_url: 'https://taxmonitor.pro/inquiry',
+          metadata: {
+            platform: 'tmp',
+            case_type: 'client_pool',
+            case_id: caseId,
+            service_type: serviceType,
+            service_label: service.label,
+            entity_type: entityType || '',
+            state,
+            tax_years: taxYears,
+            taxpayer_email: taxpayerEmail,
+            taxpayer_name: taxpayerName,
+            amount_total_cents: String(service.amount_cents),
+            platform_fee_cents: String(platformFeeCents),
+            pro_payout_cents: String(service.amount_cents - platformFeeCents),
+          },
+        }, env);
+
+        return json({
+          ok: true,
+          checkout_url: checkoutSession.url,
+          session_id: checkoutSession.id,
+          case_id: caseId,
+          amount_cents: service.amount_cents,
+          platform_fee_cents: platformFeeCents,
+          pro_payout_cents: service.amount_cents - platformFeeCents,
+        }, 200, request);
+      } catch (e) {
+        console.error('client-pool/checkout error:', e?.message, e?.stack);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to create checkout session' }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/tmp/client-pool/:case_id
+  // Returns the full canonical case record. Authenticated. Visible if:
+  //   - Case is unclaimed (any pro can read), OR
+  //   - Caller is the assigned pro (servicing_professional_id)
+  {
+    method: 'GET', pattern: '/v1/tmp/client-pool/:case_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const caseId = params.case_id;
+      if (!caseId) {
+        return json({ ok: false, error: 'validation_failed', message: 'case_id required' }, 400, request);
+      }
+
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`);
+        if (!raw) {
+          return json({ ok: false, error: 'case_not_found' }, 404, request);
+        }
+        const caseRecord = JSON.parse(raw);
+
+        // Auth: any authed pro can view unclaimed cases. Once claimed, only the
+        // servicing pro can view (with admin/staff bypass via accounts.role).
+        const claimed = caseRecord.servicing_professional_id || caseRecord.claimed_by;
+        if (claimed) {
+          let callerProfessionalId = null;
+          let callerRole = null;
+          try {
+            const row = await env.DB.prepare(
+              "SELECT p.professional_id, a.role FROM profiles p LEFT JOIN accounts a ON a.account_id = p.account_id WHERE p.account_id = ?"
+            ).bind(session.account_id).first();
+            callerProfessionalId = row?.professional_id || null;
+            callerRole = row?.role || null;
+          } catch (_) {}
+          const isStaff = callerRole === 'admin' || callerRole === 'operator' || callerRole === 'staff';
+          if (claimed !== callerProfessionalId && !isStaff) {
+            return json({ ok: false, error: 'forbidden' }, 403, request);
+          }
+        }
+
+        return json({ ok: true, case: caseRecord }, 200, request);
+      } catch (e) {
+        console.error('client-pool/:case_id error:', e?.message);
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/tmp/client-pool/:case_id/complete
+  // Pro marks an assigned case as completed and triggers payout via Stripe
+  // transfer to their connected account. If no connected account is on file
+  // status moves to 'completed_pending_payout' and an email CTA is sent.
+  {
+    method: 'POST', pattern: '/v1/tmp/client-pool/:case_id/complete',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const caseId = params.case_id;
+      if (!caseId) {
+        return json({ ok: false, error: 'validation_failed' }, 400, request);
+      }
+
+      // Resolve pro's professional_id and connect account.
+      let professionalId = null;
+      let connectAccountId = null;
+      let proEmail = null;
+      try {
+        const row = await env.DB.prepare(
+          `SELECT p.professional_id, p.stripe_connect_account_id, a.email
+             FROM profiles p
+             LEFT JOIN accounts a ON a.account_id = p.account_id
+            WHERE p.account_id = ?`
+        ).bind(session.account_id).first();
+        professionalId = row?.professional_id || null;
+        connectAccountId = row?.stripe_connect_account_id || null;
+        proEmail = row?.email || null;
+      } catch (_) {}
+
+      if (!professionalId) {
+        return json({ ok: false, error: 'profile_required' }, 403, request);
+      }
+
+      // Fall back to affiliate Connect record if not mirrored on profile yet.
+      if (!connectAccountId) {
+        try {
+          const aff = await env.DB.prepare(
+            "SELECT stripe_connect_account_id FROM affiliates WHERE account_id = ? AND connect_status = 'active'"
+          ).bind(session.account_id).first();
+          connectAccountId = aff?.stripe_connect_account_id || null;
+        } catch (_) {}
+      }
+
+      const canonicalKey = `client_pool/${caseId}.json`;
+      let caseRecord;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, canonicalKey);
+        if (!raw) return json({ ok: false, error: 'case_not_found' }, 404, request);
+        caseRecord = JSON.parse(raw);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      const claimedBy = caseRecord.servicing_professional_id || caseRecord.claimed_by;
+      if (claimedBy !== professionalId) {
+        return json({ ok: false, error: 'forbidden' }, 403, request);
+      }
+      const allowedFromStatuses = ['assigned', 'in_progress'];
+      if (!allowedFromStatuses.includes(caseRecord.status)) {
+        return json({ ok: false, error: 'invalid_status', message: `Case is ${caseRecord.status}.` }, 400, request);
+      }
+
+      const now = new Date().toISOString();
+      const payoutCents = caseRecord.pro_payout_cents || caseRecord.payout_cents || 0;
+
+      // Receipt
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `receipts/tmp/client-pool/complete/${caseId}.json`, {
+          event: 'CLIENT_POOL_CASE_COMPLETED',
+          case_id: caseId,
+          professional_id: professionalId,
+          account_id: session.account_id,
+          payout_cents: payoutCents,
+          completed_at: now,
+        });
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      // If no Connect account, complete-pending-payout and email CTA.
+      if (!connectAccountId) {
+        const updated = { ...caseRecord, status: 'completed_pending_payout', completed_at: now, updated_at: now };
+        try {
+          await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, updated);
+          await env.DB.prepare(
+            "UPDATE client_pool SET status = ?, completed_at = ?, updated_at = ? WHERE case_id = ?"
+          ).bind('completed_pending_payout', now, now, caseId).run();
+        } catch (_) {}
+
+        if (env.RESEND_API_KEY && proEmail) {
+          try {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+                to: [proEmail],
+                subject: `Case ${caseId} complete — set up payouts to receive $${(payoutCents / 100).toFixed(2)}`,
+                text: `Great work — case ${caseId} is marked complete.
+
+Your payout of $${(payoutCents / 100).toFixed(2)} is waiting. Set up your Stripe payout account to receive it:
+
+https://virtuallaunch.pro/payouts
+
+— Virtual Launch Pro`,
+              }),
+            });
+          } catch (_) {}
+        }
+
+        return json({
+          ok: true,
+          status: 'completed_pending_payout',
+          case_id: caseId,
+          payout_cents: payoutCents,
+          message: 'Case completed. Set up Stripe Connect to receive payout.',
+        }, 200, request);
+      }
+
+      // Issue Stripe transfer.
+      let transferId = null;
+      let payoutStatus = 'pending';
+      let failureReason = null;
+      try {
+        const transfer = await stripePost('/transfers', {
+          amount: String(payoutCents),
+          currency: 'usd',
+          destination: connectAccountId,
+          'metadata[case_id]': caseId,
+          'metadata[professional_id]': professionalId,
+        }, env, env.STRIPE_SECRET_KEY_VLP || env.STRIPE_SECRET_KEY);
+        transferId = transfer?.id || null;
+        payoutStatus = 'paid';
+      } catch (e) {
+        failureReason = String(e?.message || e);
+        console.error('client-pool/complete: transfer failed', failureReason);
+      }
+
+      const finalStatus = transferId ? 'paid_out' : 'completed_pending_payout';
+      const updatedRecord = {
+        ...caseRecord,
+        status: finalStatus,
+        completed_at: now,
+        paid_out_at: transferId ? now : null,
+        stripe_transfer_id: transferId,
+        updated_at: now,
+      };
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, canonicalKey, updatedRecord);
+      } catch (_) {}
+      try {
+        await env.DB.prepare(
+          "UPDATE client_pool SET status = ?, completed_at = ?, paid_out_at = ?, stripe_transfer_id = ?, updated_at = ? WHERE case_id = ?"
+        ).bind(finalStatus, now, transferId ? now : null, transferId, now, caseId).run();
+      } catch (_) {}
+
+      // Log payout
+      try {
+        const payoutId = `PO_${crypto.randomUUID()}`;
+        await env.DB.prepare(
+          `INSERT INTO client_pool_payouts
+           (payout_id, case_id, professional_id, account_id, stripe_connect_account_id,
+            amount_cents, status, stripe_transfer_id, failure_reason, created_at, completed_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(payoutId, caseId, professionalId, session.account_id, connectAccountId,
+               payoutCents, payoutStatus, transferId, failureReason, now,
+               transferId ? now : null).run();
+      } catch (_) {}
+
+      // Notify pro
+      if (env.RESEND_API_KEY && proEmail) {
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+              to: [proEmail],
+              subject: transferId
+                ? `Payout of $${(payoutCents / 100).toFixed(2)} initiated for case ${caseId}`
+                : `Payout for case ${caseId} needs your attention`,
+              text: transferId
+                ? `Your payout of $${(payoutCents / 100).toFixed(2)} has been initiated for case ${caseId}. Funds typically arrive in your bank within 1-2 business days.
+
+— Virtual Launch Pro`
+                : `Case ${caseId} is complete but the payout transfer failed. Please contact support.
+
+— Virtual Launch Pro`,
+            }),
+          });
+        } catch (_) {}
+      }
+
+      return json({
+        ok: true,
+        status: finalStatus,
+        case_id: caseId,
+        payout_cents: payoutCents,
+        stripe_transfer_id: transferId,
+        message: transferId ? 'Payout initiated.' : 'Payout failed; please contact support.',
+      }, transferId ? 200 : 502, request);
+    },
+  },
+
+  // POST /v1/tmp/client-pool/:case_id/refund
+  // Taxpayer (or staff) requests a refund. For unclaimed funded cases the
+  // refund is automatic + full. For claimed cases this opens a dispute and
+  // notifies the platform owner for manual review (no auto-refund).
+  {
+    method: 'POST', pattern: '/v1/tmp/client-pool/:case_id/refund',
+    handler: async (_method, _pattern, params, request, env) => {
+      const caseId = params.case_id;
+      let body = {};
+      try { body = await request.json(); } catch (_) {}
+      const reason = typeof body?.reason === 'string' ? body.reason.trim() : '';
+
+      let caseRecord;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`);
+        if (!raw) return json({ ok: false, error: 'case_not_found' }, 404, request);
+        caseRecord = JSON.parse(raw);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      // Allow public refund requests by matching taxpayer_email; staff may also
+      // act via session role admin/operator. Pros cannot initiate refunds —
+      // they release uncompleted cases via /release.
+      const session = await getSessionFromRequest(request, env).catch(() => null);
+      let isStaff = false;
+      if (session) {
+        try {
+          const row = await env.DB.prepare("SELECT role FROM accounts WHERE account_id = ?").bind(session.account_id).first();
+          isStaff = ['admin', 'operator', 'staff'].includes(row?.role);
+        } catch (_) {}
+      }
+      const taxpayerMatches =
+        typeof body?.taxpayer_email === 'string' &&
+        caseRecord.taxpayer_email &&
+        body.taxpayer_email.trim().toLowerCase() === String(caseRecord.taxpayer_email).toLowerCase();
+      if (!isStaff && !taxpayerMatches) {
+        return json({ ok: false, error: 'forbidden', message: 'Provide the taxpayer email used at checkout to request a refund.' }, 403, request);
+      }
+
+      const now = new Date().toISOString();
+      const disputeId = `DSP_${crypto.randomUUID()}`;
+
+      // Auto-refund if case is unclaimed (funded, no claimer).
+      const isUnclaimed = caseRecord.status === 'funded' && !(caseRecord.servicing_professional_id || caseRecord.claimed_by);
+
+      if (isUnclaimed) {
+        let refundId = null;
+        try {
+          if (caseRecord.stripe_payment_intent_id) {
+            const refund = await stripePost('/refunds', {
+              payment_intent: caseRecord.stripe_payment_intent_id,
+              refund_application_fee: 'true',
+              reverse_transfer: 'true',
+              'metadata[case_id]': caseId,
+              'metadata[dispute_id]': disputeId,
+            }, env);
+            refundId = refund?.id || null;
+          }
+        } catch (e) {
+          console.error('client-pool/refund: stripe refund failed', e?.message);
+          return json({ ok: false, error: 'refund_failed', message: e?.message || 'Refund failed' }, 502, request);
+        }
+
+        const updated = { ...caseRecord, status: 'refunded', updated_at: now, refunded_at: now };
+        try { await r2Put(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`, updated); } catch (_) {}
+        try {
+          await env.DB.prepare(
+            "UPDATE client_pool SET status = ?, updated_at = ? WHERE case_id = ?"
+          ).bind('refunded', now, caseId).run();
+        } catch (_) {}
+        try {
+          await env.DB.prepare(
+            `INSERT INTO client_pool_disputes
+             (dispute_id, case_id, initiated_by, reason, status, refund_amount_cents,
+              stripe_refund_id, resolved_by, resolved_at, created_at)
+             VALUES (?, ?, 'taxpayer', ?, 'resolved_refund', ?, ?, 'auto', ?, ?)`
+          ).bind(disputeId, caseId, reason || 'Unclaimed-case refund',
+                 caseRecord.amount_total_cents || null, refundId, now, now).run();
+        } catch (_) {}
+
+        if (env.RESEND_API_KEY && caseRecord.taxpayer_email) {
+          try {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                from: 'Tax Monitor Pro <noreply@virtuallaunch.pro>',
+                to: [caseRecord.taxpayer_email],
+                subject: `Refund processed for case ${caseId}`,
+                text: `Your full refund of $${((caseRecord.amount_total_cents || 0) / 100).toFixed(2)} has been processed and will appear on your card within 5-10 business days.
+
+— Tax Monitor Pro`,
+              }),
+            });
+          } catch (_) {}
+        }
+
+        return json({
+          ok: true,
+          refund_status: 'processed',
+          case_id: caseId,
+          dispute_id: disputeId,
+          stripe_refund_id: refundId,
+        }, 200, request);
+      }
+
+      // Otherwise: open a dispute (claimed or in-progress).
+      if (!['claimed', 'assigned', 'in_progress', 'completed', 'completed_pending_payout'].includes(caseRecord.status)) {
+        return json({ ok: false, error: 'not_eligible', message: `Case is ${caseRecord.status}.` }, 400, request);
+      }
+
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`, {
+          ...caseRecord, status: 'disputed', updated_at: now
+        });
+        await env.DB.prepare(
+          "UPDATE client_pool SET status = ?, updated_at = ? WHERE case_id = ?"
+        ).bind('disputed', now, caseId).run();
+      } catch (_) {}
+
+      try {
+        await env.DB.prepare(
+          `INSERT INTO client_pool_disputes
+           (dispute_id, case_id, initiated_by, reason, status, created_at)
+           VALUES (?, ?, 'taxpayer', ?, 'open', ?)`
+        ).bind(disputeId, caseId, reason || null, now).run();
+      } catch (_) {}
+
+      // Notify all parties.
+      if (env.RESEND_API_KEY) {
+        const ownerEmail = env.PLATFORM_OWNER_EMAIL || 'jamie.williams@virtuallaunch.pro';
+        const send = (to, subject, text) => fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>', to: [to], subject, text }),
+        }).catch(() => {});
+
+        if (caseRecord.taxpayer_email) {
+          await send(caseRecord.taxpayer_email,
+            `Dispute received for case ${caseId}`,
+            `Your dispute has been received. We will review and respond within 3 business days.\n\n— Tax Monitor Pro`);
+        }
+        await send(ownerEmail,
+          `Dispute opened on claimed case ${caseId} — needs review`,
+          `A dispute has been opened on case ${caseId}.\n\nReason: ${reason || '(not provided)'}\nClaimed by: ${caseRecord.servicing_professional_id || caseRecord.claimed_by}\nAmount: $${((caseRecord.amount_total_cents || 0) / 100).toFixed(2)}\n\nReview at: https://virtuallaunch.pro/scale/support\n\n— Virtual Launch Pro`);
+
+        if (caseRecord.servicing_professional_id) {
+          try {
+            const proRow = await env.DB.prepare(
+              "SELECT a.email FROM profiles p LEFT JOIN accounts a ON a.account_id = p.account_id WHERE p.professional_id = ?"
+            ).bind(caseRecord.servicing_professional_id).first();
+            if (proRow?.email) {
+              await send(proRow.email,
+                `A taxpayer has disputed case ${caseId}`,
+                `The taxpayer has opened a dispute on case ${caseId}. We are reviewing and will be in touch.\n\n— Virtual Launch Pro`);
+            }
+          } catch (_) {}
+        }
+      }
+
+      return json({
+        ok: true,
+        refund_status: 'dispute_opened',
+        case_id: caseId,
+        dispute_id: disputeId,
+      }, 200, request);
+    },
+  },
+
+  // POST /v1/tmp/client-pool/:case_id/dispute
+  // Allow either party (taxpayer with email match, or assigned pro) to open a
+  // dispute on an active case.
+  {
+    method: 'POST', pattern: '/v1/tmp/client-pool/:case_id/dispute',
+    handler: async (_method, _pattern, params, request, env) => {
+      const caseId = params.case_id;
+      let body = {};
+      try { body = await request.json(); } catch (_) {}
+      const reason = typeof body?.reason === 'string' ? body.reason.trim() : '';
+
+      let caseRecord;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`);
+        if (!raw) return json({ ok: false, error: 'case_not_found' }, 404, request);
+        caseRecord = JSON.parse(raw);
+      } catch (_) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      const session = await getSessionFromRequest(request, env).catch(() => null);
+      let initiatedBy = null;
+      let proAccountId = null;
+      if (session) {
+        try {
+          const row = await env.DB.prepare(
+            "SELECT professional_id FROM profiles WHERE account_id = ?"
+          ).bind(session.account_id).first();
+          if (row?.professional_id && row.professional_id === (caseRecord.servicing_professional_id || caseRecord.claimed_by)) {
+            initiatedBy = 'pro';
+            proAccountId = session.account_id;
+          }
+        } catch (_) {}
+      }
+      if (!initiatedBy) {
+        const taxpayerMatches =
+          typeof body?.taxpayer_email === 'string' &&
+          caseRecord.taxpayer_email &&
+          body.taxpayer_email.trim().toLowerCase() === String(caseRecord.taxpayer_email).toLowerCase();
+        if (taxpayerMatches) initiatedBy = 'taxpayer';
+      }
+      if (!initiatedBy) {
+        return json({ ok: false, error: 'forbidden' }, 403, request);
+      }
+
+      const allowed = ['claimed', 'assigned', 'in_progress', 'completed', 'completed_pending_payout'];
+      if (!allowed.includes(caseRecord.status)) {
+        return json({ ok: false, error: 'not_eligible', message: `Case is ${caseRecord.status}.` }, 400, request);
+      }
+
+      const now = new Date().toISOString();
+      const disputeId = `DSP_${crypto.randomUUID()}`;
+
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`, {
+          ...caseRecord, status: 'disputed', updated_at: now
+        });
+        await env.DB.prepare("UPDATE client_pool SET status = ?, updated_at = ? WHERE case_id = ?")
+          .bind('disputed', now, caseId).run();
+      } catch (_) {}
+
+      try {
+        await env.DB.prepare(
+          `INSERT INTO client_pool_disputes
+           (dispute_id, case_id, initiated_by, reason, status, created_at)
+           VALUES (?, ?, ?, ?, 'open', ?)`
+        ).bind(disputeId, caseId, initiatedBy, reason || null, now).run();
+      } catch (_) {}
+
+      // Email all parties (best-effort, similar to /refund path).
+      if (env.RESEND_API_KEY) {
+        const ownerEmail = env.PLATFORM_OWNER_EMAIL || 'jamie.williams@virtuallaunch.pro';
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'Virtual Launch Pro <noreply@virtuallaunch.pro>',
+            to: [ownerEmail],
+            subject: `Dispute opened on case ${caseId} (by ${initiatedBy})`,
+            text: `A dispute has been opened on case ${caseId}.\n\nInitiated by: ${initiatedBy}\nReason: ${reason || '(not provided)'}\nStatus before: ${caseRecord.status}\n\n— Virtual Launch Pro`,
+          }),
+        }).catch(() => {});
+      }
+
+      return json({ ok: true, dispute_id: disputeId, case_id: caseId }, 200, request);
+    },
+  },
+
+  // POST /v1/tmp/client-pool/:case_id/release
+  // Pro releases an uncompleted case back to the pool. Blocked once a payout
+  // has been issued — at that point only dispute resolution can return funds.
+  {
+    method: 'POST', pattern: '/v1/tmp/client-pool/:case_id/release',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const caseId = params.case_id;
+      let professionalId = null;
+      try {
+        const row = await env.DB.prepare("SELECT professional_id FROM profiles WHERE account_id = ?").bind(session.account_id).first();
+        professionalId = row?.professional_id || null;
+      } catch (_) {}
+      if (!professionalId) return json({ ok: false, error: 'profile_required' }, 403, request);
+
+      let caseRecord;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`);
+        if (!raw) return json({ ok: false, error: 'case_not_found' }, 404, request);
+        caseRecord = JSON.parse(raw);
+      } catch (_) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      if ((caseRecord.servicing_professional_id || caseRecord.claimed_by) !== professionalId) {
+        return json({ ok: false, error: 'forbidden' }, 403, request);
+      }
+      if (!['assigned', 'in_progress'].includes(caseRecord.status)) {
+        return json({ ok: false, error: 'not_eligible', message: `Case is ${caseRecord.status}.` }, 400, request);
+      }
+      if (caseRecord.stripe_transfer_id || caseRecord.paid_out_at) {
+        return json({ ok: false, error: 'payout_issued', message: 'Payout already issued; please open a dispute.' }, 409, request);
+      }
+
+      const now = new Date().toISOString();
+      const releasedStatus = caseRecord.amount_total_cents ? 'funded' : 'available';
+      const updated = {
+        ...caseRecord,
+        status: releasedStatus,
+        servicing_professional_id: null,
+        claimed_by: null,
+        assigned_at: null,
+        claimed_at: null,
+        released_at: now,
+        released_by: professionalId,
+        updated_at: now,
+      };
+
+      try { await r2Put(env.R2_VIRTUAL_LAUNCH, `client_pool/${caseId}.json`, updated); } catch (_) {}
+      try {
+        await env.DB.prepare(
+          "UPDATE client_pool SET status = ?, servicing_professional_id = NULL, claimed_by = NULL, assigned_at = NULL, claimed_at = NULL, updated_at = ? WHERE case_id = ?"
+        ).bind(releasedStatus, now, caseId).run();
+      } catch (_) {}
+
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `receipts/tmp/client-pool/release/${caseId}-${now}.json`, {
+          event: 'CLIENT_POOL_CASE_RELEASED',
+          case_id: caseId,
+          released_by: professionalId,
+          released_at: now,
+        });
+      } catch (_) {}
+
+      if (env.RESEND_API_KEY && caseRecord.taxpayer_email) {
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'Tax Monitor Pro <noreply@virtuallaunch.pro>',
+              to: [caseRecord.taxpayer_email],
+              subject: `Case ${caseId} returned to the pool`,
+              text: `The professional who claimed your case has returned it to our pool. We're matching you with another qualified professional and will email you when it's claimed.\n\n— Tax Monitor Pro`,
+            }),
+          });
+        } catch (_) {}
+      }
+
+      return json({ ok: true, case_id: caseId, status: releasedStatus }, 200, request);
+    },
+  },
+
+  // POST /v1/billing/connect/onboard
+  // Thin alias of the affiliate Connect onboarding so pros can set up payouts
+  // from the Client Pool flow without going through the affiliate UI. Reuses
+  // the same OAuth callback at /v1/affiliates/connect/callback, which now also
+  // writes profiles.stripe_connect_account_id.
+  {
+    method: 'POST', pattern: '/v1/billing/connect/onboard',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      let returnUrl = '';
+      try {
+        const body = await parseBody(request);
+        if (body && typeof body.return_url === 'string') returnUrl = body.return_url;
+      } catch (_) {}
+
+      const allowedReturnOrigins = [
+        'https://virtuallaunch.pro',
+        'https://taxmonitor.pro',
+        'https://transcript.taxmonitor.pro',
+        'https://taxtools.taxmonitor.pro',
+        'https://developers.virtuallaunch.pro',
+        'https://games.virtuallaunch.pro',
+        'https://taxclaim.virtuallaunch.pro',
+        'https://websitelotto.virtuallaunch.pro',
+      ];
+      let safeReturnUrl = '';
+      if (returnUrl) {
+        try {
+          const parsed = new URL(returnUrl);
+          const origin = `${parsed.protocol}//${parsed.host}`;
+          if (allowedReturnOrigins.includes(origin)) {
+            safeReturnUrl = parsed.toString();
+          }
+        } catch (_) {}
+      }
+
+      // Ensure an affiliates row exists so the callback's UPDATE can write.
+      try {
+        await d1Run(env.DB,
+          `INSERT OR IGNORE INTO affiliates (account_id, created_at, updated_at)
+           VALUES (?, ?, ?)`,
+          [session.account_id, new Date().toISOString(), new Date().toISOString()]
+        );
+      } catch (_) {}
+
+      const returnPart = safeReturnUrl
+        ? btoa(safeReturnUrl).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+        : '';
+      const state = `${session.account_id}|${returnPart}`;
+      const onboardUrl = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=${env.STRIPE_CONNECT_CLIENT_ID}&scope=read_write&redirect_uri=https://api.virtuallaunch.pro/v1/affiliates/connect/callback&state=${encodeURIComponent(state)}`;
+      return json({ ok: true, onboard_url: onboardUrl }, 200, request);
+    },
+  },
+
+  // GET /v1/billing/connect/status
+  // Returns the pro's Stripe Connect status for Client Pool payouts.
+  {
+    method: 'GET', pattern: '/v1/billing/connect/status',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      try {
+        const profileRow = await env.DB.prepare(
+          "SELECT stripe_connect_account_id, connect_status FROM profiles WHERE account_id = ?"
+        ).bind(session.account_id).first();
+
+        let connectAccountId = profileRow?.stripe_connect_account_id || null;
+        let connectStatus = profileRow?.connect_status || null;
+
+        if (!connectAccountId) {
+          const aff = await env.DB.prepare(
+            "SELECT stripe_connect_account_id, connect_status FROM affiliates WHERE account_id = ?"
+          ).bind(session.account_id).first();
+          connectAccountId = aff?.stripe_connect_account_id || null;
+          connectStatus = aff?.connect_status || null;
+        }
+
+        return json({
+          ok: true,
+          connected: !!connectAccountId && connectStatus === 'active',
+          connect_status: connectStatus,
+          stripe_connect_account_id: connectAccountId ? `${connectAccountId.slice(0, 8)}…` : null,
+        }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/billing/payouts
+  // Returns the pro's Client Pool payout history.
+  {
+    method: 'GET', pattern: '/v1/billing/payouts',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      try {
+        const profileRow = await env.DB.prepare(
+          "SELECT professional_id FROM profiles WHERE account_id = ?"
+        ).bind(session.account_id).first();
+        const professionalId = profileRow?.professional_id;
+        if (!professionalId) {
+          return json({ ok: true, payouts: [] }, 200, request);
+        }
+        const rows = await env.DB.prepare(
+          `SELECT payout_id, case_id, amount_cents, status, stripe_transfer_id, created_at, completed_at
+             FROM client_pool_payouts
+            WHERE professional_id = ?
+            ORDER BY created_at DESC
+            LIMIT 200`
+        ).bind(professionalId).all();
+        return json({ ok: true, payouts: rows?.results || [] }, 200, request);
+      } catch (e) {
+        return json({ ok: true, payouts: [] }, 200, request);
+      }
     },
   },
 
@@ -19798,6 +21003,17 @@ A credentialed tax professional will review your inquiry and reach out to you sh
           affiliateRecord.connect_status = 'active';
           affiliateRecord.updated_at = now;
           await r2Put(env.R2_VIRTUAL_LAUNCH, `affiliates/${accountId}.json`, affiliateRecord);
+        }
+
+        // Also mirror onto profiles so Client Pool payouts can use the same
+        // Stripe connected account without requiring an affiliate row.
+        try {
+          await d1Run(env.DB,
+            'UPDATE profiles SET stripe_connect_account_id = ?, connect_status = ?, updated_at = ? WHERE account_id = ?',
+            [connectAccountId, 'active', now, accountId]
+          );
+        } catch (e) {
+          console.error('connect callback: profiles mirror failed (non-fatal):', e?.message);
         }
 
         return new Response('', {

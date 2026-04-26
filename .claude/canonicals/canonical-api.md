@@ -1,6 +1,6 @@
 <!--
 Status: Authoritative
-Last updated: 2026-04-23
+Last updated: 2026-04-26
 Owner: JLW (Principal Engineer review required for changes)
 Scope: All 8 apps in the vlp-platform monorepo
 Parent: canonical-app-blueprint.md
@@ -10,7 +10,7 @@ Parent: canonical-app-blueprint.md
 
 Master API endpoint registry for the VLP Worker (`apps/worker/src/index.js`).
 
-Last updated: 2026-04-23
+Last updated: 2026-04-26
 Total routes: ~196
 
 ---
@@ -259,6 +259,12 @@ Total routes: ~196
 | GET | `/v1/tmp/client-pool` | Available clients | Yes | TMP |
 | POST | `/v1/tmp/inquiries` | Create TMP inquiry | Yes | TMP |
 | POST | `/v1/tmp/client-pool/accept` | Accept client | Yes | TMP |
+| POST | `/v1/tmp/client-pool/checkout` | Create Client Pool checkout session | No | TMP |
+| GET | `/v1/tmp/client-pool/:case_id` | Get case details | Yes | VLP |
+| POST | `/v1/tmp/client-pool/:case_id/complete` | Mark case completed, trigger payout | Yes | VLP |
+| POST | `/v1/tmp/client-pool/:case_id/refund` | Request refund on a case | Yes | TMP |
+| POST | `/v1/tmp/client-pool/:case_id/dispute` | Open dispute on a case | Yes | TMP, VLP |
+| POST | `/v1/tmp/client-pool/:case_id/release` | Pro releases uncompleted case back to pool | Yes | VLP |
 | POST | `/v1/tmp/compliance-records` | Create compliance record | Yes | TMP |
 | GET | `/v1/tmp/compliance-records/:order_id` | Get compliance record | Yes | TMP |
 | GET | `/v1/tmp/compliance-records/:order_id/report` | Compliance report | Yes | TMP |

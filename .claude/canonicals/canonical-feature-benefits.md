@@ -1,6 +1,6 @@
 <!--
 Status: Authoritative
-Last updated: 2026-04-15
+Last updated: 2026-04-26
 Owner: JLW (Principal Engineer review required for changes)
 Scope: All 8 apps in the vlp-platform monorepo
 Parent: canonical-app-blueprint.md
@@ -53,7 +53,7 @@ This file complements `canonical-feature-matrix.md` (which maps features to rout
 | Feature | What It Does For You |
 |---------|---------------------|
 | Booking Analytics | See which booking slots get filled, which get cancelled, and how prospects found you. Data-driven scheduling — stop guessing when to be available and start knowing. |
-| Client Pool | Pre-paid taxpayer cases available for you to claim based on your membership tier. Taxpayers complete intake, review their service offer, sign the agreement, and pay — all before you see the case. Every opportunity in the pool is qualified and funded. Active members get standard access to cases. Featured members get early access. Premier members get priority. A 12% platform fee applies on conversion through the intake flow. Cases include the taxpayer's issue type, tax years, and service needs so you evaluate fit before claiming. When the engagement ends, the client returns to the shared pool. Direct contact requires taxpayer approval — the platform protects both sides. |
+| Client Pool | Pre-paid taxpayer cases available for you to claim based on your membership tier. Taxpayers complete intake, review their service offer, sign the agreement, and pay — all before you see the case. Every opportunity in the pool is qualified and funded. Free tier members see cases 2 hours after funding. Pro tier members see cases 30 minutes after funding. Scale tier members see cases immediately. A 12% platform fee applies on conversion through the intake flow. Cases include the taxpayer's issue type, tax years, and service needs so you evaluate fit before claiming. When the engagement ends, the client returns to the shared pool. Direct contact requires taxpayer approval — the platform protects both sides. A dispute resolution process protects both parties. Taxpayers may request refunds for unclaimed cases. For claimed cases where work has not begun, full refunds are available. For cases where work has begun, the platform reviews and determines fair resolution. See the Refund Policy on each platform for full details. |
 | Directory Profile | A public-facing profile in the Tax Monitor Pro directory. Taxpayers searching for a professional in your city, with your credential, find you. Your profile shows your services, location, and availability. Visibility you do not have to maintain manually. |
 | Messaging (Pro to Taxpayer) | Communicate with clients directly through the platform. No personal email or phone number exposed. Conversations are logged, searchable, and tied to the client record. Professional boundaries with zero friction. |
 | Profile Visibility | One toggle controls whether taxpayers can find you in the directory. Taking a vacation? Toggle off. Ready for new clients? Toggle on. You control when you are discoverable. |

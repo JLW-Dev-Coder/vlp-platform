@@ -14,7 +14,7 @@ export default function RefundPage() {
       config={vlpConfig}
       title="Refund Policy"
       subtitle="Digital Service Purchases"
-      lastUpdated="April 17, 2026"
+      lastUpdated="April 26, 2026"
       currentPage="refund"
     >
       <LegalSection>
@@ -68,11 +68,28 @@ export default function RefundPage() {
         </ol>
       </LegalSection>
 
-      <LegalSection title="F. Chargebacks">
+      <LegalSection title="F. Client Pool — Pro Payouts and Disputes">
+        <p className="mb-4">
+          Virtual Launch Pro operates a Client Pool marketplace where taxpayers pay for services upfront, cases are matched to professionals based on tier, and professionals receive 88% of the case value (Virtual Launch Pro retains a 12% platform fee). The following terms apply to professionals receiving Client Pool payouts.
+        </p>
+        <ul className="space-y-2">
+          {[
+            'Payouts are issued via Stripe Connect after you mark a case completed. You must connect your payout account before payouts can be released.',
+            'If you release an uncompleted case before payout, the case returns to the pool and you receive nothing for that case. You may not release a case after payout has been issued.',
+            'If a taxpayer disputes a case after you have begun work, Virtual Launch Pro will review the work product, messaging, and compliance records before determining a fair outcome (full refund, partial split, or no refund).',
+            'A taxpayer chargeback after payout has been issued may result in a clawback of your payout. Virtual Launch Pro will notify you and contest the chargeback where appropriate.',
+            'Repeated unresponsiveness, abandonment, or low-quality work may result in profile flags and reduced access to the pool.',
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
+          ))}
+        </ul>
+      </LegalSection>
+
+      <LegalSection title="G. Chargebacks">
         <p>Initiating a chargeback or payment dispute may result in temporary suspension of access, pausing of project work, or withholding of undelivered items while the matter is reviewed.</p>
       </LegalSection>
 
-      <LegalSection title="G. Policy Changes">
+      <LegalSection title="H. Policy Changes">
         <p>We may update this policy from time to time. The last updated date reflects the most recent revision.</p>
       </LegalSection>
     </LegalPageLayout>
