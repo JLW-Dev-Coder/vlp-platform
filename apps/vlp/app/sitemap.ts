@@ -12,6 +12,7 @@ export default function sitemap() {
     { path: '/contact', changeFrequency: 'monthly', priority: 0.5 },
     { path: '/blog', changeFrequency: 'weekly', priority: 0.7 },
     { path: '/help', changeFrequency: 'monthly', priority: 0.5 },
+    { path: '/reviews', changeFrequency: 'weekly', priority: 0.7 },
     { path: '/legal/privacy', changeFrequency: 'yearly', priority: 0.3 },
     { path: '/legal/terms', changeFrequency: 'yearly', priority: 0.3 },
     { path: '/legal/refund', changeFrequency: 'yearly', priority: 0.3 },
