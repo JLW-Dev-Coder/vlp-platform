@@ -158,12 +158,6 @@ export default function HomePage() {
 
       {/* Pricing Preview */}
       <section id="pricing" className="border-t border-white/10">
-        <div className="mx-auto max-w-[77.5rem] px-4 pt-16 md:pt-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-xs font-semibold tracking-widest text-orange-400">PRICING</p>
-            <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">Start free. Upgrade when you&apos;re ready.</h2>
-          </div>
-        </div>
         <HomePricingSection />
       </section>
 
