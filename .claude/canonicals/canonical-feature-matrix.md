@@ -251,7 +251,7 @@ Paths shown as `/dashboard/*` canonical. Grandfathered exceptions per `canonical
 | /dashboard/reports | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | 🟡 | ❌ |
 | /dashboard/bookings | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | /dashboard/calendar | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
-| /dashboard/clients | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| /client-pool | ✅ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | /dashboard/discounts | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | /dashboard/profile/directory | ⚪ | ❌ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | /dashboard/hosting | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ❌ |
