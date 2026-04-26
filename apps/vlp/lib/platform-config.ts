@@ -42,8 +42,8 @@ export const vlpConfig: PlatformConfig = {
       title: 'SETTINGS',
       items: [
         { label: 'Account', href: '/account', icon: 'Settings' },
-        { label: 'Profile', href: '/profile', icon: 'UserCircle' },
-        { label: 'Directory Profile', href: '/profile/directory', icon: 'IdCard' },
+        { label: 'Profile', href: '/profile', icon: 'User' },
+        { label: 'Directory Profile', href: '/profile/directory', icon: 'BookUser' },
         { label: 'Support', href: '/support', icon: 'LifeBuoy' },
         { label: 'Usage', href: '/usage', icon: 'Activity' },
       ],
