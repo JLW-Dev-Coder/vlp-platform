@@ -22840,18 +22840,15 @@ ${postSections}`;
   },
 
   // -------------------------------------------------------------------------
-  // Kwong (TaxClaim Pro) Social Media Campaign — generate + auto-post
+  // Kwong (TaxClaim Pro) Social Media Campaign — auto-posting (R2 content)
   // -------------------------------------------------------------------------
 
-  // POST /v1/scale/campaigns/social/generate
-  // Operator manual trigger. Body: { weekStart?: "YYYY-MM-DD", publish?: boolean }
-  // - generates one week of FB Page (×14), FB Personal (×7), LinkedIn (×7),
-  //   IG cross-posts (×7) via Anthropic
-  // - if publish !== false, schedules FB Page + IG via Meta Graph API
-  // - FB Personal posts always returned with channel:"manual" + clipboard copy
-  // - LinkedIn posts are scheduled by the daily 0 15 * * 1-5 cron, not here
+  // POST /v1/scale/campaigns/social/trigger
+  // Operator manual trigger. Body: { action: "schedule-week" | "post-linkedin-today" }
+  // - schedule-week: runs the Sunday weekly scheduler now (FB Page + IG)
+  // - post-linkedin-today: publishes today's LinkedIn post now
   {
-    method: 'POST', pattern: '/v1/scale/campaigns/social/generate',
+    method: 'POST', pattern: '/v1/scale/campaigns/social/trigger',
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
@@ -22860,60 +22857,74 @@ ${postSections}`;
       }
 
       const body = await request.json().catch(() => ({}));
-      const weekStart = (body && body.weekStart) || kwongNextMondayIso(new Date());
-      const shouldPublish = body && body.publish === false ? false : true;
-
-      const gen = await generateSocialContent(env, weekStart);
-      if (gen.error) {
-        return json({ ok: false, error: gen.error, detail: gen.errors, weekStart }, 502, request);
+      const action = body && body.action;
+      if (action !== 'schedule-week' && action !== 'post-linkedin-today') {
+        return json({ ok: false, error: 'INVALID_ACTION', detail: 'action must be "schedule-week" or "post-linkedin-today"' }, 400, request);
       }
 
-      let fb = null;
-      if (shouldPublish) {
-        fb = await publishToFacebook(env, gen.content.posts);
-        await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/campaigns/${weekStart}/scheduled.json`, {
-          weekStart,
-          generatedAt: gen.content.generatedAt || new Date().toISOString(),
-          scheduledAt: new Date().toISOString(),
-          fb,
-          triggered_by: session.email,
-        }).catch(() => {});
+      let log;
+      if (action === 'schedule-week') {
+        log = await handleSocialWeeklySchedule(env);
+      } else {
+        log = await handleSocialDailyLinkedIn(env);
       }
 
-      // Surface FB Personal posts as manual clipboard cards.
-      const manualPosts = (gen.content.posts || []).map(p => ({
-        day: p.day,
-        date: p.date,
-        channel: 'manual',
-        platform: 'fb_personal',
-        copy: p.fbPersonal?.copy || '',
-      })).filter(p => p.copy);
+      // Pull the latest stored result from R2 if a weekStart is known.
+      let stored = null;
+      const weekStart = log.weekStart || (action === 'post-linkedin-today' ? getMondayOfWeek(getTodayPT()) : null);
+      if (weekStart) {
+        const filename = action === 'schedule-week' ? 'scheduled.json' : 'daily.json';
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${weekStart}/${filename}`);
+        if (raw) {
+          try { stored = JSON.parse(raw); } catch { stored = null; }
+        }
+      }
 
       return json({
-        ok: true,
-        weekStart,
-        published: shouldPublish,
-        content: gen.content,
-        fb,
-        manual: manualPosts,
-      }, 200, request);
+        ok: log.status === 'OK' || log.status === 'PARTIAL',
+        action,
+        log,
+        stored,
+        triggered_by: session.email,
+      }, log.status === 'ERROR' ? 502 : 200, request);
     },
   },
 
-  // POST /v1/scale/cron/social-publish
-  // Internal cron entrypoint — runs the Sunday weekly generate+publish flow.
-  // Also callable by an admin operator for manual re-runs.
+  // GET /v1/scale/campaigns/social/manual-posts
+  // Returns today's FB Personal copy (and any other manual-only posts) for
+  // the operator to copy/paste. Auto-posted FB Page + LinkedIn copy is also
+  // returned for reference/preview.
   {
-    method: 'POST', pattern: '/v1/scale/cron/social-publish',
+    method: 'GET', pattern: '/v1/scale/campaigns/social/manual-posts',
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
       if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
-      const body = await request.json().catch(() => ({}));
-      const log = await handleKwongSocialPublishCron(env, { weekStart: body && body.weekStart });
-      return json({ ok: log.status !== 'ERROR', log }, log.status === 'ERROR' ? 502 : 200, request);
+
+      const content = await loadSocialContent(env);
+      if (!content) {
+        return json({ ok: false, error: 'CONTENT_NOT_FOUND' }, 404, request);
+      }
+
+      const today = getTodayPT();
+      const dayPosts = getPostsForDate(content, today);
+      if (!dayPosts) {
+        return json({ ok: true, date: today, posts: [], message: 'No posts scheduled for today' }, 200, request);
+      }
+
+      return json({
+        ok: true,
+        date: today,
+        daysRemaining: dayPosts.daysRemaining,
+        fbPersonal: dayPosts.fbPersonal,
+        imagePrompt: dayPosts.imagePrompt,
+        autoPosted: {
+          fbPage: dayPosts.fbPage,
+          linkedin: dayPosts.linkedin,
+        },
+      }, 200, request);
     },
   },
 
@@ -28002,449 +28013,291 @@ async function handleClientPoolHealthCheck(env) {
 }
 
 // ---------------------------------------------------------------------------
-// Kwong (TaxClaim Pro) social media campaign — content generation + posting
+// Kwong (TaxClaim Pro) social media auto-posting pipeline
 // ---------------------------------------------------------------------------
-// Pipeline:
-//   Sunday 14:00 UTC cron → generate week's content via Anthropic →
-//     schedule 14 FB Page posts (2/day Mon–Sun) + 7 IG cross-posts (1/day,
-//     same as FB Page slot 1) via Meta Graph API → store results in R2.
-//   Mon–Fri 15:00 UTC cron → publish today's LinkedIn post via UGC API.
-//   FB Personal posts are flagged manual (Meta does not allow Graph API
-//   posting to personal profiles) — operator copies from the scale page.
+// Pipeline (no AI generation — all content pre-loaded in R2):
+//   Sunday 14:00 UTC cron → read next week's posts from
+//     scale/social/kwong-campaign-content.json → schedule FB Page posts +
+//     cross-post to Instagram via Meta Graph API → store results in R2.
+//   Mon–Fri 15:00 UTC cron → read today's LinkedIn post from the same R2
+//     file → publish via LinkedIn UGC API (LinkedIn has no scheduling API).
+//   FB Personal + Craigslist posts remain manual (Meta does not allow Graph
+//   API posting to personal profiles); the operator copies them from the
+//   scale page via GET /v1/scale/campaigns/social/manual-posts.
 //
-// All R2 keys live under scale/social/campaigns/{week-iso}/.
+// R2 content file schema:
+//   {
+//     "campaign": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" },
+//     "weeks": [
+//       { "weekNumber": 1, "days": [
+//         { "date": "YYYY-MM-DD", "daysRemaining": 73,
+//           "fbPage":     [ { "time": "09:00", "copy": "..." }, ... ],
+//           "fbPersonal": { "copy": "..." },
+//           "linkedin":   { "copy": "..." },
+//           "imagePrompt": "..." }
+//       ] }
+//     ]
+//   }
+// Result keys:
+//   scale/social/results/{weekStart}/scheduled.json   (Sunday cron)
+//   scale/social/results/{weekStart}/daily.json       (weekday LinkedIn cron)
 
-const KWONG_WEEK_THEMES = [
-  { week: 1, theme: 'Launch — what 843 + bypass do' },
-  { week: 2, theme: 'Who Qualifies — the 4 pillars' },
-  { week: 3, theme: 'Tax Pro Dropped the Ball + 843 Demo' },
-  { week: 4, theme: 'Bypass for the Long Wait' },
-  { week: 5, theme: 'Time Is Running Out — Window Closing' },
-  { week: 6, theme: 'Real Stories — Refunds and Wins' },
-  { week: 7, theme: 'Tax Pros: New Revenue Stream' },
-  { week: 8, theme: 'Common Objections Answered' },
-  { week: 9, theme: 'Last Two Weeks — Final Push' },
-  { week: 10, theme: 'July 10 Deadline — File Today' },
-];
-
-function kwongMondayIso(d) {
-  const dt = new Date(d);
-  const day = dt.getUTCDay();
-  // Monday = 1; shift back to Monday (Sunday → next Monday handled by getNextMondayIso)
-  const offset = day === 0 ? 1 : 1 - day;
-  dt.setUTCDate(dt.getUTCDate() + offset);
-  return dt.toISOString().slice(0, 10);
-}
-
-function kwongNextMondayIso(fromDate) {
-  const dt = new Date(fromDate);
-  const day = dt.getUTCDay();
-  const daysUntilMonday = day === 1 ? 7 : ((8 - day) % 7) || 7;
-  dt.setUTCDate(dt.getUTCDate() + daysUntilMonday);
-  return dt.toISOString().slice(0, 10);
-}
-
-function kwongAddDaysIso(iso, n) {
-  const [y, m, d] = iso.split('-').map(Number);
-  const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
-  dt.setUTCDate(dt.getUTCDate() + n);
-  return dt.toISOString().slice(0, 10);
-}
-
-function kwongDaysBetween(aIso, bIso) {
-  const a = Date.UTC(...aIso.split('-').map((s, i) => i === 1 ? Number(s) - 1 : Number(s)));
-  const b = Date.UTC(...bIso.split('-').map((s, i) => i === 1 ? Number(s) - 1 : Number(s)));
-  return Math.round((b - a) / (24 * 60 * 60 * 1000));
-}
-
-function kwongWeekNumber(weekStartIso, campaignStartIso) {
-  const days = kwongDaysBetween(campaignStartIso, weekStartIso);
-  return Math.max(1, Math.floor(days / 7) + 1);
-}
-
-function kwongStripFences(s) {
-  if (typeof s !== 'string') return s;
-  return s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-}
-
-async function generateSocialContent(env, weekStartIso) {
-  const result = { error: null, content: null, errors: [] };
-
-  // 1. Load campaign plan context from R2.
-  let plan;
+async function loadSocialContent(env) {
+  const key = env.SOCIAL_CONTENT_R2_KEY || 'scale/social/kwong-campaign-content.json';
+  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
+  if (!raw) return null;
   try {
-    const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, 'scale/social/config/campaign-plan.json');
-    if (!raw) {
-      result.error = 'CAMPAIGN_PLAN_MISSING';
-      return result;
-    }
-    plan = JSON.parse(raw);
-  } catch (e) {
-    result.error = 'CAMPAIGN_PLAN_PARSE_ERROR';
-    result.errors.push({ step: 'load_plan', detail: String(e).slice(0, 200) });
-    return result;
-  }
-
-  if (!env.ANTHROPIC_API_KEY) {
-    result.error = 'ANTHROPIC_API_KEY_NOT_SET';
-    return result;
-  }
-
-  const campaignStart = env.KWONG_CAMPAIGN_START || '2026-04-28';
-  const campaignEnd = env.KWONG_CAMPAIGN_END || '2026-07-10';
-  const weekNumber = kwongWeekNumber(weekStartIso, campaignStart);
-  const themeEntry = KWONG_WEEK_THEMES.find(t => t.week === weekNumber) || KWONG_WEEK_THEMES[KWONG_WEEK_THEMES.length - 1];
-  const daysRemaining = Math.max(0, kwongDaysBetween(weekStartIso, campaignEnd));
-
-  const displacementHook = plan.displacement_hook || 'Tax pros routinely miss filing protective claims under §6511 — taxpayers can file their own.';
-  const complianceRule = plan.compliance_rule || 'Every taxpayer-facing post must include a compliance disclaimer stating that filing a protective claim does not guarantee a refund.';
-  const toneRules = plan.tone_rules || [
-    'No emoji.',
-    'No exclamation marks.',
-    'Use contractions naturally.',
-    'Vary sentence length.',
-    'Conversational, not promotional.',
-  ];
-  const hardRules = plan.hard_rules || [
-    'Never guarantee a refund.',
-    'Never use the phrase "penalty relief" — this is a refund claim, not a penalty matter.',
-    'Never imply the IRS will pay interest.',
-    'Never mention specific dollar refund amounts.',
-  ];
-  const productInfo = plan.product_info || {
-    site: 'https://taxclaim.virtuallaunch.pro',
-    price: '$10/mo',
-    pages: { gala: '/gala', kennedy: '/kennedy', inquiry: '/inquiry' },
-    book_call: 'https://cal.com/tax-monitor-pro/tcvlp-intro',
-  };
-
-  const systemPrompt = `You are a social media content writer for Tax Claim Pro (TCVLP), a $10/month tool that helps taxpayers and tax professionals file protective refund claims under IRS §6511 before the July 10, 2026 deadline.
-
-CAMPAIGN CONTEXT:
-- This is week ${weekNumber} of 10 (theme: "${themeEntry.theme}").
-- Days remaining until July 10, 2026 deadline: ${daysRemaining}.
-- Week starts: ${weekStartIso} (Monday).
-
-DISPLACEMENT HOOK (the angle that justifies talking about this):
-${displacementHook}
-
-COMPLIANCE RULE:
-${complianceRule}
-
-TONE RULES:
-${toneRules.map(r => `- ${r}`).join('\n')}
-
-HARD RULES (never break these):
-${hardRules.map(r => `- ${r}`).join('\n')}
-
-PRODUCT INFO:
-- Site: ${productInfo.site}
-- Price: ${productInfo.price}
-- Key pages: /gala (Gala v Commissioner case), /kennedy (Kennedy half tax credit), /inquiry (intake form)
-- Book a call: ${productInfo.book_call}
-
-PLATFORM-SPECIFIC INSTRUCTIONS:
-- fbPage (2 posts/day, Mon–Sun = 14 posts): taxpayer-facing. Each post MUST include a compliance disclaimer in the "compliance" field. Schedule slot 1 at "09:00" (morning) and slot 2 at "15:00" (afternoon), local times in copy, but emit "time" as 24h "HH:MM" (Pacific time). Copy: 80–180 words. Include a soft CTA on at least one slot per day.
-- fbPersonal (1 post/day): conversational, first-person, asks for DMs. Shorter (60–120 words). No compliance disclaimer needed (personal account).
-- linkedin (1 post/day): tax-pro-facing ONLY. Frame the displacement: clients are filing without you, here's the tool that turns this into recurring $10/client/mo revenue plus your prep work. 100–220 words.
-- imagePrompt (1 per day): describe a clean infographic-style image to generate (dark navy + white + green/gold accents, no stock photo people, no logos).
-
-Generate exactly 7 days of content (Day 1 = ${weekStartIso} = Monday, Day 7 = Sunday).
-
-OUTPUT FORMAT — return a single JSON object, no prose, no markdown fences:
-{
-  "weekNumber": ${weekNumber},
-  "theme": "${themeEntry.theme}",
-  "weekStart": "${weekStartIso}",
-  "posts": [
-    {
-      "day": 1,
-      "date": "YYYY-MM-DD",
-      "fbPage": [
-        { "time": "09:00", "copy": "...", "compliance": "Filing a protective claim does not guarantee a refund." },
-        { "time": "15:00", "copy": "...", "compliance": "..." }
-      ],
-      "fbPersonal": { "copy": "..." },
-      "linkedin": { "copy": "..." },
-      "imagePrompt": "..."
-    }
-  ]
-}`;
-
-  // 2. Call Anthropic API.
-  let anthropicJson;
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 8192,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: `Generate the week ${weekNumber} JSON now. Theme: ${themeEntry.theme}. Week starts ${weekStartIso}. Return only the JSON object.` },
-        ],
-      }),
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      result.error = 'ANTHROPIC_API_ERROR';
-      result.errors.push({ step: 'anthropic', status: res.status, detail: errText.slice(0, 500) });
-      return result;
-    }
-    anthropicJson = await res.json();
-  } catch (e) {
-    result.error = 'ANTHROPIC_FETCH_FAILED';
-    result.errors.push({ step: 'anthropic', detail: String(e).slice(0, 200) });
-    return result;
-  }
-
-  const text = anthropicJson?.content?.[0]?.text || '';
-  let parsed;
-  try {
-    parsed = JSON.parse(kwongStripFences(text));
-  } catch (e) {
-    result.error = 'ANTHROPIC_PARSE_ERROR';
-    result.errors.push({ step: 'parse', detail: String(e).slice(0, 200), raw: text.slice(0, 500) });
-    return result;
-  }
-
-  // 3. Persist generated content to R2.
-  try {
-    await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/campaigns/${weekStartIso}/generated.json`, {
-      ...parsed,
-      generatedAt: new Date().toISOString(),
-    });
-  } catch (e) {
-    result.errors.push({ step: 'r2_write', detail: String(e).slice(0, 200) });
-  }
-
-  result.content = parsed;
-  return result;
-}
-
-async function loadGeneratedSocialContent(env, weekStartIso) {
-  try {
-    const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `scale/social/campaigns/${weekStartIso}/generated.json`);
-    if (!raw) return null;
     return JSON.parse(raw);
   } catch {
     return null;
   }
 }
 
-async function publishToFacebook(env, posts) {
-  const results = { fbPage: [], instagram: [], errors: [] };
-  if (!env.META_PAGE_ACCESS_TOKEN || !env.META_PAGE_ID) {
-    results.errors.push({ step: 'init', error: 'META_TOKENS_NOT_SET' });
-    return results;
-  }
-  const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
-  const igUserId = env.META_IG_USER_ID || null;
-  // Pacific offset varies (PDT -7 / PST -8). Campaign runs Apr–Jul → PDT (UTC-7).
-  const ptOffsetHours = 7;
-
-  for (const day of (posts || [])) {
-    const date = day.date;
-    const fbSlots = Array.isArray(day.fbPage) ? day.fbPage : [];
-
-    // FB Page: schedule both slots.
-    for (let i = 0; i < fbSlots.length; i++) {
-      const slot = fbSlots[i];
-      try {
-        const [hh, mm] = String(slot.time || '09:00').split(':').map(Number);
-        const utcHour = (hh || 0) + ptOffsetHours;
-        const scheduledAt = `${date}T${String(utcHour).padStart(2, '0')}:${String(mm || 0).padStart(2, '0')}:00Z`;
-        const unixTime = Math.floor(new Date(scheduledAt).getTime() / 1000);
-        // Meta requires scheduled_publish_time to be at least 10 minutes in the future and within 6 months.
-        const message = [slot.copy || '', slot.compliance ? `\n\n${slot.compliance}` : ''].join('').trim();
-
-        const res = await fetch(`https://graph.facebook.com/${apiVersion}/${env.META_PAGE_ID}/feed`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            message,
-            published: 'false',
-            scheduled_publish_time: String(unixTime),
-            access_token: env.META_PAGE_ACCESS_TOKEN,
-          }),
-        });
-        const data = await res.json();
-        results.fbPage.push({
-          day: day.day, date, slot: i + 1, time: slot.time,
-          ok: res.ok, post_id: data?.id || null, error: res.ok ? null : (data?.error?.message || `HTTP ${res.status}`),
-        });
-      } catch (e) {
-        results.fbPage.push({ day: day.day, date, slot: i + 1, ok: false, error: String(e).slice(0, 200) });
-      }
-    }
-
-    // Instagram cross-post: same caption as fbPage slot 1.
-    if (igUserId && fbSlots[0]?.copy) {
-      const caption = [fbSlots[0].copy, fbSlots[0].compliance ? `\n\n${fbSlots[0].compliance}` : ''].join('').trim();
-      try {
-        const containerRes = await fetch(`https://graph.facebook.com/${apiVersion}/${igUserId}/media`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            caption,
-            image_url: 'https://taxclaim.virtuallaunch.pro/og-image.png',
-            access_token: env.META_PAGE_ACCESS_TOKEN,
-          }),
-        });
-        const containerData = await containerRes.json();
-        if (!containerRes.ok || !containerData?.id) {
-          results.instagram.push({
-            day: day.day, date, ok: false,
-            error: containerData?.error?.message || `container HTTP ${containerRes.status}`,
-          });
-          continue;
-        }
-        const publishRes = await fetch(`https://graph.facebook.com/${apiVersion}/${igUserId}/media_publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            creation_id: containerData.id,
-            access_token: env.META_PAGE_ACCESS_TOKEN,
-          }),
-        });
-        const publishData = await publishRes.json();
-        results.instagram.push({
-          day: day.day, date,
-          ok: publishRes.ok, post_id: publishData?.id || null,
-          error: publishRes.ok ? null : (publishData?.error?.message || `HTTP ${publishRes.status}`),
-        });
-      } catch (e) {
-        results.instagram.push({ day: day.day, date, ok: false, error: String(e).slice(0, 200) });
-      }
-    }
-  }
-
-  return results;
+function getTodayPT() {
+  const now = new Date();
+  const pt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  return pt.toISOString().split('T')[0];
 }
 
-async function publishToLinkedIn(env, text) {
+function getMondayOfWeek(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00Z');
+  const day = d.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+function getPostsForDate(content, targetDate) {
+  for (const week of (content.weeks || [])) {
+    for (const day of (week.days || [])) {
+      if (day.date === targetDate) return day;
+    }
+  }
+  return null;
+}
+
+function getPostsForWeek(content, mondayDate) {
+  const monday = new Date(mondayDate + 'T12:00:00Z');
+  const sunday = new Date(monday);
+  sunday.setUTCDate(sunday.getUTCDate() + 6);
+  const posts = [];
+  for (const week of (content.weeks || [])) {
+    for (const day of (week.days || [])) {
+      const d = new Date(day.date + 'T12:00:00Z');
+      if (d >= monday && d <= sunday) posts.push(day);
+    }
+  }
+  return posts;
+}
+
+async function scheduleFacebookPost(env, message, scheduledDateTimeISO) {
+  if (!env.META_PAGE_ACCESS_TOKEN || !env.META_PAGE_ID) {
+    return { ok: false, error: 'META_TOKENS_NOT_SET' };
+  }
+  const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
+  const unixTime = Math.floor(new Date(scheduledDateTimeISO).getTime() / 1000);
+  const res = await fetch(
+    `https://graph.facebook.com/${apiVersion}/${env.META_PAGE_ID}/feed`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        message,
+        published: 'false',
+        scheduled_publish_time: String(unixTime),
+        access_token: env.META_PAGE_ACCESS_TOKEN,
+      }),
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (data.error) {
+    return { ok: false, error: data.error.message, code: data.error.code };
+  }
+  return { ok: true, postId: data.id };
+}
+
+async function postToInstagram(env, caption, imageUrl) {
+  if (!env.META_PAGE_ACCESS_TOKEN || !env.META_IG_USER_ID) {
+    return { ok: false, error: 'META_IG_NOT_CONFIGURED' };
+  }
+  const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
+
+  const containerRes = await fetch(
+    `https://graph.facebook.com/${apiVersion}/${env.META_IG_USER_ID}/media`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        caption,
+        image_url: imageUrl || 'https://taxclaim.virtuallaunch.pro/og-image.png',
+        access_token: env.META_PAGE_ACCESS_TOKEN,
+      }),
+    }
+  );
+  const container = await containerRes.json().catch(() => ({}));
+  if (container.error || !container.id) {
+    return { ok: false, error: container.error?.message || `container HTTP ${containerRes.status}` };
+  }
+
+  const publishRes = await fetch(
+    `https://graph.facebook.com/${apiVersion}/${env.META_IG_USER_ID}/media_publish`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        creation_id: container.id,
+        access_token: env.META_PAGE_ACCESS_TOKEN,
+      }),
+    }
+  );
+  const published = await publishRes.json().catch(() => ({}));
+  if (published.error) {
+    return { ok: false, error: published.error.message };
+  }
+  return { ok: true, mediaId: published.id };
+}
+
+async function postToLinkedIn(env, text) {
   if (!env.LINKEDIN_ACCESS_TOKEN || !env.LINKEDIN_PERSON_URN) {
     return { ok: false, error: 'LINKEDIN_TOKENS_NOT_SET' };
   }
-  try {
-    const res = await fetch('https://api.linkedin.com/v2/ugcPosts', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${env.LINKEDIN_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-        'X-Restli-Protocol-Version': '2.0.0',
-      },
-      body: JSON.stringify({
-        author: env.LINKEDIN_PERSON_URN,
-        lifecycleState: 'PUBLISHED',
-        specificContent: {
-          'com.linkedin.ugc.ShareContent': {
-            shareCommentary: { text },
-            shareMediaCategory: 'NONE',
-          },
+  const res = await fetch('https://api.linkedin.com/v2/ugcPosts', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.LINKEDIN_ACCESS_TOKEN}`,
+      'Content-Type': 'application/json',
+      'X-Restli-Protocol-Version': '2.0.0',
+    },
+    body: JSON.stringify({
+      author: env.LINKEDIN_PERSON_URN,
+      lifecycleState: 'PUBLISHED',
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          shareCommentary: { text },
+          shareMediaCategory: 'NONE',
         },
-        visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' },
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    return {
-      ok: res.ok,
-      post_id: data?.id || null,
-      error: res.ok ? null : (data?.message || `HTTP ${res.status}`),
-    };
-  } catch (e) {
-    return { ok: false, error: String(e).slice(0, 200) };
+      },
+      visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' },
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status >= 400) {
+    return { ok: false, error: data?.message || JSON.stringify(data), status: res.status };
   }
+  return { ok: true, postUrn: data.id || null };
 }
 
-async function handleKwongSocialPublishCron(env, options) {
-  const opts = options || {};
+async function handleSocialWeeklySchedule(env) {
+  const log = { type: 'kwong_social_weekly_schedule', timestamp: new Date().toISOString() };
+  const content = await loadSocialContent(env);
+  if (!content) {
+    log.status = 'NO_CONTENT';
+    return log;
+  }
+
+  const today = getTodayPT();
+  // Sunday cron — schedule the upcoming Monday's week.
+  const nextMonday = new Date(today + 'T12:00:00Z');
+  nextMonday.setUTCDate(nextMonday.getUTCDate() + 1);
+  const mondayStr = nextMonday.toISOString().split('T')[0];
+  log.weekStart = mondayStr;
+
+  if (content.campaign?.end && mondayStr > content.campaign.end) {
+    log.status = 'CAMPAIGN_ENDED';
+    return log;
+  }
+
+  const weekPosts = getPostsForWeek(content, mondayStr);
+  if (weekPosts.length === 0) {
+    log.status = 'NO_POSTS_FOR_WEEK';
+    return log;
+  }
+
+  const results = { fb: [], ig: [], errors: [] };
+
+  for (const day of weekPosts) {
+    for (const fbPost of (day.fbPage || [])) {
+      const scheduledTime = `${day.date}T${fbPost.time}:00-07:00`;
+      try {
+        const result = await scheduleFacebookPost(env, fbPost.copy, scheduledTime);
+        results.fb.push({ date: day.date, time: fbPost.time, ...result });
+      } catch (err) {
+        results.errors.push({ platform: 'fb', date: day.date, error: String(err && err.message || err).slice(0, 200) });
+      }
+    }
+
+    if (day.fbPage && day.fbPage[0]) {
+      try {
+        const result = await postToInstagram(env, day.fbPage[0].copy);
+        results.ig.push({ date: day.date, ...result });
+      } catch (err) {
+        results.errors.push({ platform: 'ig', date: day.date, error: String(err && err.message || err).slice(0, 200) });
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${mondayStr}/scheduled.json`, {
+    ...results,
+    scheduledAt: new Date().toISOString(),
+    weekStart: mondayStr,
+  }).catch((e) => results.errors.push({ step: 'r2_write', error: String(e).slice(0, 200) }));
+
+  log.fb_count = results.fb.length;
+  log.fb_ok = results.fb.filter(r => r.ok).length;
+  log.ig_count = results.ig.length;
+  log.ig_ok = results.ig.filter(r => r.ok).length;
+  log.errors = results.errors.length;
+  log.status = results.errors.length ? 'PARTIAL' : 'OK';
+  return log;
+}
+
+async function handleSocialDailyLinkedIn(env) {
   const nowIso = new Date().toISOString();
-  const log = { type: 'kwong_social_publish', timestamp: nowIso, weekStart: null, errors: [] };
-
-  try {
-    const weekStart = opts.weekStart || kwongNextMondayIso(new Date());
-    log.weekStart = weekStart;
-
-    const gen = await generateSocialContent(env, weekStart);
-    if (gen.error) {
-      log.errors.push({ step: 'generate', error: gen.error, detail: gen.errors });
-      await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/campaigns/${weekStart}/errors.json`, {
-        timestamp: nowIso,
-        errors: log.errors,
-      }).catch(() => {});
-      return log;
-    }
-
-    const fbResults = await publishToFacebook(env, gen.content.posts);
-    log.fb_page_count = fbResults.fbPage.length;
-    log.fb_page_ok = fbResults.fbPage.filter(r => r.ok).length;
-    log.ig_count = fbResults.instagram.length;
-    log.ig_ok = fbResults.instagram.filter(r => r.ok).length;
-
-    await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/campaigns/${weekStart}/scheduled.json`, {
-      weekStart,
-      generatedAt: gen.content.generatedAt || nowIso,
-      scheduledAt: nowIso,
-      fb: fbResults,
-    }).catch((e) => log.errors.push({ step: 'r2_scheduled', detail: String(e).slice(0, 200) }));
-
-    log.status = log.errors.length || fbResults.errors.length ? 'PARTIAL' : 'OK';
-    return log;
-  } catch (e) {
-    log.status = 'ERROR';
-    log.errors.push({ step: 'top_level', error: String(e && e.message || e) });
+  const log = { type: 'kwong_social_daily_linkedin', timestamp: nowIso };
+  const content = await loadSocialContent(env);
+  if (!content) {
+    log.status = 'NO_CONTENT';
     return log;
   }
-}
 
-async function handleKwongLinkedInDailyCron(env) {
-  const nowIso = new Date().toISOString();
-  const today = nowIso.slice(0, 10);
-  const log = { type: 'kwong_linkedin_daily', timestamp: nowIso, today, errors: [] };
+  const today = getTodayPT();
+  log.today = today;
 
-  try {
-    const weekStart = kwongMondayIso(today);
-    log.weekStart = weekStart;
-
-    const content = await loadGeneratedSocialContent(env, weekStart);
-    if (!content) {
-      log.status = 'NO_CONTENT';
-      return log;
-    }
-    const todayPost = (content.posts || []).find(p => p.date === today);
-    if (!todayPost?.linkedin?.copy) {
-      log.status = 'NO_POST_TODAY';
-      return log;
-    }
-
-    const result = await publishToLinkedIn(env, todayPost.linkedin.copy);
-    log.linkedin = result;
-    log.status = result.ok ? 'OK' : 'FAILED';
-
-    // Append today's result to scheduled.json under linkedin[].
-    try {
-      const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `scale/social/campaigns/${weekStart}/scheduled.json`);
-      const scheduled = raw ? JSON.parse(raw) : { weekStart, fb: { fbPage: [], instagram: [], errors: [] } };
-      scheduled.linkedin = scheduled.linkedin || [];
-      scheduled.linkedin.push({ date: today, ...result, publishedAt: nowIso });
-      await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/campaigns/${weekStart}/scheduled.json`, scheduled);
-    } catch (e) {
-      log.errors.push({ step: 'r2_append', detail: String(e).slice(0, 200) });
-    }
-
-    return log;
-  } catch (e) {
-    log.status = 'ERROR';
-    log.errors.push({ step: 'top_level', error: String(e && e.message || e) });
+  if (content.campaign?.end && today > content.campaign.end) {
+    log.status = 'CAMPAIGN_ENDED';
     return log;
   }
+
+  const dayPosts = getPostsForDate(content, today);
+  if (!dayPosts || !dayPosts.linkedin) {
+    log.status = 'NO_POST_TODAY';
+    return log;
+  }
+
+  let result;
+  try {
+    result = await postToLinkedIn(env, dayPosts.linkedin.copy);
+  } catch (err) {
+    result = { ok: false, error: String(err && err.message || err).slice(0, 200) };
+  }
+  log.linkedin = result;
+  log.status = result.ok ? 'OK' : 'FAILED';
+
+  const weekStart = getMondayOfWeek(today);
+  try {
+    const existingRaw = await r2Get(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${weekStart}/daily.json`);
+    const existing = existingRaw ? JSON.parse(existingRaw) : { linkedin: [] };
+    existing.linkedin = existing.linkedin || [];
+    existing.linkedin.push({ date: today, ...result, publishedAt: nowIso });
+    await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${weekStart}/daily.json`, existing);
+  } catch (e) {
+    log.r2_append_error = String(e).slice(0, 200);
+  }
+
+  return log;
 }
+
 
 // ---------------------------------------------------------------------------
 // Fetch handler
@@ -29200,12 +29053,12 @@ export default {
     }
 
     // Kwong Social Weekly Cron — Sunday 14:00 UTC (7am PT).
-    // Generates one week of social media content via Anthropic and schedules
-    // FB Page (×14) + Instagram cross-posts (×7) via Meta Graph API. FB
-    // Personal posts remain manual. LinkedIn is handled by the daily cron.
+    // Reads next week's pre-loaded posts from R2 and schedules FB Page posts
+    // + Instagram cross-posts via Meta Graph API. FB Personal + Craigslist
+    // posts remain manual. LinkedIn is handled by the daily cron.
     if (event && event.cron === '0 14 * * 0') {
       try {
-        const log = await handleKwongSocialPublishCron(env);
+        const log = await handleSocialWeeklySchedule(env);
         console.log('Kwong social weekly cron:', JSON.stringify(log));
       } catch (e) {
         console.error('Kwong social weekly cron failed:', e);
@@ -29214,11 +29067,10 @@ export default {
     }
 
     // Kwong LinkedIn Daily Cron — Mon–Fri 15:00 UTC (8am PT).
-    // Reads the current week's stored content and publishes today's LinkedIn
-    // post via the LinkedIn UGC API.
+    // Reads today's LinkedIn post from R2 and publishes via LinkedIn UGC API.
     if (event && event.cron === '0 15 * * 1-5') {
       try {
-        const log = await handleKwongLinkedInDailyCron(env);
+        const log = await handleSocialDailyLinkedIn(env);
         console.log('Kwong LinkedIn daily cron:', JSON.stringify(log));
       } catch (e) {
         console.error('Kwong LinkedIn daily cron failed:', e);
