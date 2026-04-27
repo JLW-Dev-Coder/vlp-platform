@@ -27734,6 +27734,196 @@ async function handleRedditMonitorCron(env) {
 }
 
 // ---------------------------------------------------------------------------
+// Client Pool weekly health check (cron 0 9 * * 1)
+// ---------------------------------------------------------------------------
+// Aggregates health stats from D1 (client_pool, client_pool_disputes) and R2
+// (client_pool/ canonical objects), determines status, and writes a
+// support_tickets entry surfaced at virtuallaunch.pro/scale/support.
+//
+// Status logic:
+//   HEALTHY          — cases exist, no stale unclaimed, R2 matches D1, no open disputes
+//   NEEDS_ATTENTION  — stale unclaimed > 0, OR open disputes > 0, OR R2/D1 mismatch
+//   NO_ACTIVITY     — zero cases in the last 7 days (informational, not a problem)
+//
+// Errors are caught at every step so the cron never crashes the Worker. If the
+// client_pool tables do not exist yet (migrations not applied), per-step
+// catches log the error and the report records it.
+async function handleClientPoolHealthCheck(env) {
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const dateOnly = nowIso.slice(0, 10);
+  const sevenDaysAgoIso = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const log = {
+    type: 'client_pool_health_check',
+    timestamp: nowIso,
+    status: 'UNKNOWN',
+    counts: {},
+    errors: [],
+  };
+
+  try {
+    let totalCases = 0;
+    let casesLast7Days = 0;
+    let staleUnclaimed = 0;
+    let openDisputes = 0;
+    let r2Count = 0;
+
+    try {
+      const totalRow = await env.DB.prepare(
+        "SELECT COUNT(*) AS c FROM client_pool"
+      ).first();
+      totalCases = totalRow?.c || 0;
+    } catch (e) {
+      log.errors.push({ step: 'total_cases', error: String(e && e.message || e) });
+    }
+
+    try {
+      const recentRow = await env.DB.prepare(
+        "SELECT COUNT(*) AS c FROM client_pool WHERE created_at >= ?"
+      ).bind(sevenDaysAgoIso).first();
+      casesLast7Days = recentRow?.c || 0;
+    } catch (e) {
+      log.errors.push({ step: 'cases_last_7_days', error: String(e && e.message || e) });
+    }
+
+    try {
+      const staleRow = await env.DB.prepare(
+        `SELECT COUNT(*) AS c FROM client_pool
+         WHERE claimed_at IS NULL
+           AND status IN ('available', 'funded')
+           AND created_at < ?`
+      ).bind(sevenDaysAgoIso).first();
+      staleUnclaimed = staleRow?.c || 0;
+    } catch (e) {
+      log.errors.push({ step: 'stale_unclaimed', error: String(e && e.message || e) });
+    }
+
+    try {
+      const disputeRow = await env.DB.prepare(
+        "SELECT COUNT(*) AS c FROM client_pool_disputes WHERE status = 'open'"
+      ).first();
+      openDisputes = disputeRow?.c || 0;
+    } catch (e) {
+      log.errors.push({ step: 'open_disputes', error: String(e && e.message || e) });
+    }
+
+    // R2 canonical scan: count {case_id}.json keys directly under client_pool/.
+    try {
+      let cursor;
+      do {
+        const res = await env.R2_VIRTUAL_LAUNCH.list({
+          prefix: 'client_pool/',
+          cursor,
+          limit: 1000,
+        });
+        for (const obj of (res.objects || [])) {
+          const tail = obj.key.slice('client_pool/'.length);
+          if (tail && !tail.includes('/') && tail.endsWith('.json')) {
+            r2Count++;
+          }
+        }
+        cursor = res.truncated ? res.cursor : undefined;
+      } while (cursor);
+    } catch (e) {
+      log.errors.push({ step: 'r2_scan', error: String(e && e.message || e) });
+    }
+
+    const r2Mismatch = r2Count !== totalCases;
+
+    log.counts = {
+      total_cases: totalCases,
+      cases_last_7_days: casesLast7Days,
+      stale_unclaimed: staleUnclaimed,
+      open_disputes: openDisputes,
+      d1_count: totalCases,
+      r2_count: r2Count,
+      r2_d1_mismatch: r2Mismatch,
+    };
+
+    let status = 'HEALTHY';
+    if (totalCases === 0 || casesLast7Days === 0) {
+      status = 'NO_ACTIVITY';
+    }
+    if (staleUnclaimed > 0 || openDisputes > 0 || r2Mismatch) {
+      status = 'NEEDS_ATTENTION';
+    }
+    log.status = status;
+
+    const reportLines = [
+      `Client Pool Health Check — ${dateOnly}`,
+      `Status: ${status}`,
+      ``,
+      `Total cases (D1):                       ${totalCases}`,
+      `Cases created in last 7 days:           ${casesLast7Days}`,
+      `Stale unclaimed (>7d, available|funded): ${staleUnclaimed}`,
+      `Open disputes:                          ${openDisputes}`,
+      `R2 canonical objects under client_pool/: ${r2Count}`,
+      `R2 vs D1 mismatch:                      ${r2Mismatch ? 'YES' : 'no'}`,
+    ];
+    if (log.errors.length) {
+      reportLines.push('', 'Errors during health check:');
+      for (const err of log.errors) {
+        reportLines.push(`  - ${err.step}: ${err.error}`);
+      }
+    }
+    const reportBody = reportLines.join('\n');
+
+    const ticketId = `TKT_${crypto.randomUUID()}`;
+    const subject = `Client Pool Health Check — ${dateOnly} — ${status}`;
+    const priority = status === 'NEEDS_ATTENTION' ? 'high' : 'normal';
+    const accountId = 'system';
+
+    const ticketData = {
+      ticket_id: ticketId,
+      account_id: accountId,
+      subject,
+      message: reportBody,
+      priority,
+      category: 'client_pool_health_check',
+      platform: 'system',
+      status: 'open',
+      created_at: nowIso,
+      health_check: log.counts,
+    };
+
+    try {
+      await r2Put(env.R2_VIRTUAL_LAUNCH, `support_tickets/${ticketId}.json`, ticketData);
+    } catch (e) {
+      log.errors.push({ step: 'r2_ticket_write', error: String(e && e.message || e) });
+    }
+    try {
+      await r2Put(env.R2_VIRTUAL_LAUNCH, `receipts/system/client-pool-health-check/${ticketId}.json`, {
+        event: 'CLIENT_POOL_HEALTH_CHECK',
+        ticket_id: ticketId,
+        status,
+        counts: log.counts,
+        errors: log.errors,
+        timestamp: nowIso,
+      });
+    } catch (e) {
+      log.errors.push({ step: 'r2_receipt_write', error: String(e && e.message || e) });
+    }
+    try {
+      await env.DB.prepare(
+        `INSERT INTO support_tickets (ticket_id, account_id, subject, message, priority, status, created_at)
+         VALUES (?, ?, ?, ?, ?, 'open', ?)`
+      ).bind(ticketId, accountId, subject, reportBody, priority, nowIso).run();
+    } catch (e) {
+      log.errors.push({ step: 'd1_ticket_insert', error: String(e && e.message || e) });
+    }
+
+    log.ticket_id = ticketId;
+    log.priority = priority;
+    return log;
+  } catch (e) {
+    console.error('Client Pool health check failed:', e);
+    log.status = 'ERROR';
+    log.errors.push({ step: 'top_level', error: String(e && e.message || e) });
+    return log;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Fetch handler
 // ---------------------------------------------------------------------------
 
@@ -28234,6 +28424,19 @@ export default {
         console.error('Daily batch cron failed:', e);
       }
       return;
+    }
+
+    // Client Pool Weekly Health Check Cron — 09:00 UTC Monday.
+    // Aggregates D1 + R2 stats and writes a support ticket surfaced at
+    // virtuallaunch.pro/scale/support. Does not return so the DVLP job
+    // matching block below still runs on the same Monday 09:00 trigger.
+    if (event && event.cron === '0 9 * * 1') {
+      try {
+        const healthLog = await handleClientPoolHealthCheck(env);
+        console.log('Client Pool health check cron:', JSON.stringify(healthLog));
+      } catch (e) {
+        console.error('Client Pool health check cron failed:', e);
+      }
     }
 
     // DVLP Job Matching Cron
