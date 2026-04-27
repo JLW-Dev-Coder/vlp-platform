@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
-import FormsPanel from './components/FormsPanel'
 import YouTubeView from './components/YouTubeView'
 import styles from './page.module.css'
 
@@ -772,10 +771,6 @@ function PipelineView({
           )}
         </GlassCard>
 
-        <GlassCard>
-          <GlassCardTitle>Forms</GlassCardTitle>
-          <FormsPanel />
-        </GlassCard>
       </div>
     </div>
   )

@@ -22209,6 +22209,143 @@ https://virtuallaunch.pro/payouts
   },
 
   // -------------------------------------------------------------------------
+  // Forms — Per-platform submission summary, detail, and CSV export (admin)
+  // -------------------------------------------------------------------------
+
+  // GET /v1/scale/forms/summary
+  {
+    method: 'GET', pattern: '/v1/scale/forms/summary',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const { fromTs: weekStartTs, fromEpochMs: weekStartMs } = computeFormsWeekStart();
+      const platforms = [];
+      for (const code of FORMS_PLATFORM_ORDER) {
+        const meta = FORMS_PLATFORM_META[code];
+        const sources = FORMS_SOURCES[code] || [];
+        const types = {};
+        let total = 0;
+        let week = 0;
+        for (const src of sources) {
+          const counts = await formsCountSource(env, src, weekStartTs, weekStartMs);
+          for (const [typeLabel, c] of Object.entries(counts.byType)) {
+            types[typeLabel] = (types[typeLabel] || 0) + c.total;
+            total += c.total;
+            week += c.week;
+          }
+        }
+        let status = 'red';
+        if (week > 0) status = 'green';
+        else if (total > 0) status = 'amber';
+        const card = {
+          platform: code,
+          name: meta.name,
+          color: meta.color,
+          totalSubmissions: total,
+          thisWeek: week,
+          types,
+          status,
+        };
+        if (code === 'TCVLP') {
+          card.kwongMetrics = await computeKwongMetrics(env, weekStartTs);
+        }
+        platforms.push(card);
+      }
+      return json({ ok: true, platforms }, 200, request);
+    },
+  },
+
+  // GET /v1/scale/forms/:platform/submissions
+  {
+    method: 'GET', pattern: '/v1/scale/forms/:platform/submissions',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      const code = String(params.platform || '').toUpperCase();
+      const sources = FORMS_SOURCES[code];
+      if (!sources) return json({ ok: false, error: 'UNKNOWN_PLATFORM' }, 404, request);
+
+      const url = new URL(request.url);
+      const typeFilter = url.searchParams.get('type') || '';
+      const fromDate = url.searchParams.get('from') || '';
+      const toDate = url.searchParams.get('to') || '';
+      const statusFilter = url.searchParams.get('status') || '';
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10) || 1);
+      const limit = Math.min(200, Math.max(1, parseInt(url.searchParams.get('limit') || '25', 10) || 25));
+
+      const allRows = await formsLoadAllRows(env, code, sources, { typeFilter, fromDate, toDate, statusFilter });
+      // Distinct types across all source rows (pre-pagination), regardless of typeFilter
+      const allTypes = await formsLoadAllRows(env, code, sources, { typeFilter: '', fromDate, toDate, statusFilter: '' });
+      const types = Array.from(new Set(allTypes.map((r) => r.type))).sort();
+
+      allRows.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+      const total = allRows.length;
+      const pages = Math.max(1, Math.ceil(total / limit));
+      const offset = (page - 1) * limit;
+      const submissions = allRows.slice(offset, offset + limit);
+
+      return json({ ok: true, platform: code, submissions, total, page, limit, pages, types }, 200, request);
+    },
+  },
+
+  // GET /v1/scale/forms/:platform/export — CSV download
+  {
+    method: 'GET', pattern: '/v1/scale/forms/:platform/export',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      const code = String(params.platform || '').toUpperCase();
+      const sources = FORMS_SOURCES[code];
+      if (!sources) return json({ ok: false, error: 'UNKNOWN_PLATFORM' }, 404, request);
+
+      const url = new URL(request.url);
+      const typeFilter = url.searchParams.get('type') || '';
+      const fromDate = url.searchParams.get('from') || '';
+      const toDate = url.searchParams.get('to') || '';
+      const statusFilter = url.searchParams.get('status') || '';
+
+      const rows = await formsLoadAllRows(env, code, sources, { typeFilter, fromDate, toDate, statusFilter });
+      rows.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+
+      const extraKeys = new Set();
+      for (const r of rows) {
+        for (const k of Object.keys(r.data || {})) extraKeys.add(k);
+      }
+      const extra = Array.from(extraKeys).sort();
+      const headers = ['Reference', 'Name', 'Email', 'Type', 'Date', 'Status', ...extra];
+      const csvLines = [headers.map(csvEscape).join(',')];
+      for (const r of rows) {
+        const line = [
+          r.reference, r.name || '', r.email || '', r.type, r.date || '', r.status || '',
+          ...extra.map((k) => formatCsvValue((r.data || {})[k])),
+        ].map(csvEscape).join(',');
+        csvLines.push(line);
+      }
+      const csv = csvLines.join('\n');
+      const today = new Date().toISOString().split('T')[0];
+      const filename = `${code.toLowerCase()}-submissions-${today}.csv`;
+      return new Response(csv, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+          ...getCorsHeaders(request),
+        },
+      });
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Social Posts — Manual post tracker for Scale dashboard
   // -------------------------------------------------------------------------
 
@@ -28377,6 +28514,266 @@ async function handleSocialDailyLinkedIn(env) {
 //   - claimsFiled    → tcvlp_form843_submissions where status='submitted',
 //                      using updated_at (created_at is when the PDF is generated,
 //                      not when the taxpayer confirmed submission)
+// ---------------------------------------------------------------------------
+// Forms — Per-platform submissions config + helpers
+// (powers /v1/scale/forms/* admin endpoints)
+// ---------------------------------------------------------------------------
+
+const FORMS_PLATFORM_ORDER = ['TCVLP', 'TMP', 'TTMP', 'VLP', 'DVLP', 'GVLP', 'TTTMP', 'WLVLP'];
+
+const FORMS_PLATFORM_META = {
+  TCVLP:  { name: 'TaxClaim Pro',            color: '#eab308' },
+  TMP:    { name: 'Tax Monitor Pro',         color: '#06b6d4' },
+  TTMP:   { name: 'Transcript Tax Monitor',  color: '#14b8a6' },
+  VLP:    { name: 'Virtual Launch Pro',      color: '#10b981' },
+  DVLP:   { name: 'Developers VLP',          color: '#8b5cf6' },
+  GVLP:   { name: 'Games VLP',               color: '#22c55e' },
+  TTTMP:  { name: 'Tax Tools Arcade',        color: '#f97316' },
+  WLVLP:  { name: 'Website Lotto VLP',       color: '#ec4899' },
+};
+
+// Each source: a single D1 table (or filtered slice) representing one form type.
+// Time columns are either ISO strings (default) or epoch_ms (chatbot_leads).
+const FORMS_SOURCES = {
+  TCVLP: [
+    { type: 'Gala Intake', table: 'gala_intakes',                dateCol: 'submitted_at', idCol: 'intake_id',     nameCol: 'name',          emailCol: 'email',          statusCol: 'status' },
+    { type: 'Inquiry',     table: 'inquiries',                   dateCol: 'created_at',   idCol: 'inquiry_id',    nameExpr: "TRIM(COALESCE(first_name,'') || ' ' || COALESCE(last_name,''))", emailCol: 'email',          statusCol: 'status' },
+    { type: 'Pro Signup',  table: 'tcvlp_pros',                  dateCol: 'created_at',   idCol: 'pro_id',        nameExpr: "COALESCE(display_name, firm_name)",                              emailCol: null,             statusCol: 'status' },
+    { type: 'Form 843',    table: 'tcvlp_form843_submissions',   dateCol: 'updated_at',   idCol: 'submission_id', nameCol: 'taxpayer_name', emailCol: 'taxpayer_email', statusCol: 'status', extraFilter: "status = 'submitted'" },
+  ],
+  TMP: [
+    { type: 'Chatbot Lead', table: 'chatbot_leads', dateCol: 'created_at', dateColType: 'epoch_ms', idCol: 'id',         nameCol: null,           emailCol: 'email',  statusCol: null, extraFilter: "platform = 'tmp'" },
+  ],
+  TTMP: [
+    { type: 'Chatbot Lead',         table: 'chatbot_leads',        dateCol: 'created_at', dateColType: 'epoch_ms', idCol: 'id',            nameCol: null,            emailCol: 'email', statusCol: null,     extraFilter: "platform = 'ttmp'" },
+    { type: null /* from form_type */, table: 'platform_submissions', dateCol: 'created_at',                       idCol: 'submission_id', nameCol: 'display_name', emailCol: null,    statusCol: 'status', typeFromCol: 'form_type', extraFilter: "platform = 'ttmp'" },
+  ],
+  VLP: [
+    { type: null, table: 'platform_submissions', dateCol: 'created_at', idCol: 'submission_id', nameCol: 'display_name', emailCol: null, statusCol: 'status', typeFromCol: 'form_type', extraFilter: "platform = 'vlp'" },
+    { type: 'Support Ticket', table: 'support_tickets', dateCol: 'created_at', idCol: 'ticket_id', nameCol: 'subject', emailCol: null, statusCol: 'status' },
+  ],
+  DVLP: [
+    { type: 'Developer Onboarding', table: 'dvlp_developers', dateCol: 'created_at', idCol: 'developer_id', nameCol: 'full_name',     emailCol: 'email',         statusCol: 'status' },
+    { type: 'Review',               table: 'dvlp_reviews',    dateCol: 'created_at', idCol: 'review_id',    nameCol: 'reviewer_name', emailCol: 'reviewer_email', statusCol: 'status' },
+    { type: null, table: 'platform_submissions', dateCol: 'created_at', idCol: 'submission_id', nameCol: 'display_name', emailCol: null, statusCol: 'status', typeFromCol: 'form_type', extraFilter: "platform = 'dvlp'" },
+  ],
+  GVLP: [
+    { type: null, table: 'platform_submissions', dateCol: 'created_at', idCol: 'submission_id', nameCol: 'display_name', emailCol: null, statusCol: 'status', typeFromCol: 'form_type', extraFilter: "platform = 'gvlp'" },
+  ],
+  TTTMP: [
+    { type: 'Vesperi Intake', table: 'tttmp_vesperi_intake',    dateCol: 'submitted_at', idCol: 'intake_id',     nameCol: null,            emailCol: 'email', statusCol: 'status' },
+    { type: null, table: 'platform_submissions', dateCol: 'created_at', idCol: 'submission_id', nameCol: 'display_name', emailCol: null, statusCol: 'status', typeFromCol: 'form_type', extraFilter: "platform = 'tttmp'" },
+  ],
+  WLVLP: [
+    { type: 'Lead', table: 'wlvlp_leads', dateCol: 'created_at', idCol: 'id', nameCol: 'name', emailCol: 'email', statusCol: null },
+  ],
+};
+
+function computeFormsWeekStart() {
+  // Monday 00:00 PT for the current week.
+  const now = new Date();
+  const ptStr = now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+  const pt = new Date(ptStr);
+  const dow = pt.getDay(); // 0=Sun..6=Sat
+  const daysSinceMon = (dow + 6) % 7;
+  const monday = new Date(pt);
+  monday.setDate(monday.getDate() - daysSinceMon);
+  monday.setHours(0, 0, 0, 0);
+  const fromTs = `${monday.toISOString().split('T')[0]} 00:00:00`;
+  const fromEpochMs = monday.getTime();
+  return { fromTs, fromEpochMs };
+}
+
+async function computeKwongMetrics(env, weekStartTs) {
+  const safeCount = async (sql, ...binds) => {
+    try {
+      const row = await env.DB.prepare(sql).bind(...binds).first();
+      return row && typeof row.count === 'number' ? row.count : 0;
+    } catch { return 0; }
+  };
+  const galaLeads      = await safeCount('SELECT COUNT(*) AS count FROM gala_intakes');
+  const inquiryLeads   = await safeCount('SELECT COUNT(*) AS count FROM inquiries');
+  const kennedySignups = await safeCount('SELECT COUNT(*) AS count FROM tcvlp_pros');
+  const claimsFiled    = await safeCount("SELECT COUNT(*) AS count FROM tcvlp_form843_submissions WHERE status = 'submitted'");
+  return { galaLeads, inquiryLeads, kennedySignups, claimsFiled };
+}
+
+function formsBuildWhere(source, extraConds, extraBinds) {
+  const parts = [];
+  const binds = [];
+  if (source.extraFilter) parts.push(source.extraFilter);
+  for (const c of extraConds) parts.push(c);
+  for (const b of extraBinds) binds.push(b);
+  const where = parts.length ? ` WHERE ${parts.join(' AND ')}` : '';
+  return { where, binds };
+}
+
+async function formsCountSource(env, source, weekStartTs, weekStartMs) {
+  // Returns { byType: { [typeLabel]: { total, week } } }
+  const byType = {};
+  const dateBindWeek = source.dateColType === 'epoch_ms' ? weekStartMs : weekStartTs;
+  try {
+    if (source.typeFromCol) {
+      // Group by the type column.
+      const totalRes = await env.DB.prepare(
+        `SELECT ${source.typeFromCol} AS t, COUNT(*) AS c FROM ${source.table}${formsBuildWhere(source, [], []).where} GROUP BY ${source.typeFromCol}`
+      ).bind().all();
+      for (const row of (totalRes.results || [])) {
+        const label = formsTypeLabel(row.t);
+        byType[label] = byType[label] || { total: 0, week: 0 };
+        byType[label].total += row.c || 0;
+      }
+      const weekW = formsBuildWhere(source, [`${source.dateCol} >= ?`], [dateBindWeek]);
+      const weekRes = await env.DB.prepare(
+        `SELECT ${source.typeFromCol} AS t, COUNT(*) AS c FROM ${source.table}${weekW.where} GROUP BY ${source.typeFromCol}`
+      ).bind(...weekW.binds).all();
+      for (const row of (weekRes.results || [])) {
+        const label = formsTypeLabel(row.t);
+        byType[label] = byType[label] || { total: 0, week: 0 };
+        byType[label].week += row.c || 0;
+      }
+    } else {
+      const label = source.type || 'Submission';
+      const totalW = formsBuildWhere(source, [], []);
+      const totalRow = await env.DB.prepare(`SELECT COUNT(*) AS c FROM ${source.table}${totalW.where}`).bind(...totalW.binds).first();
+      const weekW = formsBuildWhere(source, [`${source.dateCol} >= ?`], [dateBindWeek]);
+      const weekRow = await env.DB.prepare(`SELECT COUNT(*) AS c FROM ${source.table}${weekW.where}`).bind(...weekW.binds).first();
+      byType[label] = {
+        total: (totalRow && totalRow.c) || 0,
+        week: (weekRow && weekRow.c) || 0,
+      };
+    }
+  } catch (e) {
+    console.error('[forms] count failed:', source.table, e?.message || e);
+  }
+  return { byType };
+}
+
+function formsTypeLabel(raw) {
+  if (!raw) return 'Other';
+  return String(raw).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+async function formsLoadAllRows(env, platform, sources, filters) {
+  const out = [];
+  for (const src of sources) {
+    try {
+      const rows = await formsLoadSourceRows(env, platform, src, filters);
+      for (const r of rows) out.push(r);
+    } catch (e) {
+      console.error('[forms] load failed:', src.table, e?.message || e);
+    }
+  }
+  return out;
+}
+
+async function formsLoadSourceRows(env, platform, source, filters) {
+  const conds = [];
+  const binds = [];
+
+  // Type filter — only include rows of this type. If source type is fixed,
+  // include only when matching; if typeFromCol, narrow by column.
+  if (filters.typeFilter) {
+    if (source.typeFromCol) {
+      // Match on transformed label OR raw value
+      conds.push(`(${source.typeFromCol} = ? OR ${source.typeFromCol} = ?)`);
+      binds.push(filters.typeFilter, filters.typeFilter.toLowerCase().replace(/ /g, '_'));
+    } else {
+      const fixed = source.type || 'Submission';
+      if (fixed !== filters.typeFilter) return [];
+    }
+  }
+  if (filters.statusFilter && source.statusCol) {
+    conds.push(`${source.statusCol} = ?`);
+    binds.push(filters.statusFilter);
+  }
+  if (filters.fromDate) {
+    if (source.dateColType === 'epoch_ms') {
+      conds.push(`${source.dateCol} >= ?`);
+      binds.push(Date.parse(`${filters.fromDate}T00:00:00Z`));
+    } else {
+      conds.push(`${source.dateCol} >= ?`);
+      binds.push(`${filters.fromDate} 00:00:00`);
+    }
+  }
+  if (filters.toDate) {
+    if (source.dateColType === 'epoch_ms') {
+      conds.push(`${source.dateCol} <= ?`);
+      binds.push(Date.parse(`${filters.toDate}T23:59:59Z`));
+    } else {
+      conds.push(`${source.dateCol} <= ?`);
+      binds.push(`${filters.toDate} 23:59:59`);
+    }
+  }
+
+  const w = formsBuildWhere(source, conds, binds);
+  const sql = `SELECT * FROM ${source.table}${w.where} ORDER BY ${source.dateCol} DESC LIMIT 1000`;
+  const res = await env.DB.prepare(sql).bind(...w.binds).all();
+  const rows = res.results || [];
+
+  return rows.map((row, idx) => formsProjectRow(platform, source, row, idx));
+}
+
+function formsProjectRow(platform, source, row, idx) {
+  const id = row[source.idCol] || `${platform}-${idx}`;
+  const reference = String(id);
+  let name = '';
+  if (source.nameCol && row[source.nameCol] != null) {
+    name = String(row[source.nameCol]);
+  } else if (source.nameExpr) {
+    // nameExpr was applied via SQL; without that we already got the SELECT *,
+    // so fallback to first_name+last_name when present
+    if (row.first_name || row.last_name) {
+      name = `${row.first_name || ''} ${row.last_name || ''}`.trim();
+    } else if (row.display_name) {
+      name = row.display_name;
+    } else if (row.firm_name) {
+      name = row.firm_name;
+    }
+  }
+  const email = source.emailCol ? (row[source.emailCol] || '') : '';
+  const type = source.typeFromCol ? formsTypeLabel(row[source.typeFromCol]) : (source.type || 'Submission');
+  let dateRaw = row[source.dateCol];
+  let date;
+  if (source.dateColType === 'epoch_ms' && typeof dateRaw === 'number') {
+    date = new Date(dateRaw).toISOString();
+  } else if (typeof dateRaw === 'string') {
+    // Normalize "YYYY-MM-DD HH:MM:SS" to ISO
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateRaw)) {
+      date = new Date(dateRaw.replace(' ', 'T') + 'Z').toISOString();
+    } else {
+      date = dateRaw;
+    }
+  } else {
+    date = '';
+  }
+  const status = source.statusCol ? (row[source.statusCol] || '') : '';
+  // Strip noisy/internal columns from data payload
+  const data = { ...row };
+  delete data[source.idCol];
+  if (source.nameCol) delete data[source.nameCol];
+  if (source.emailCol) delete data[source.emailCol];
+  delete data[source.dateCol];
+  if (source.statusCol) delete data[source.statusCol];
+  if (source.typeFromCol) delete data[source.typeFromCol];
+  return { id: String(id), reference, name, email, type, date, status, data };
+}
+
+function csvEscape(v) {
+  if (v == null) return '';
+  const s = String(v);
+  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
+}
+
+function formatCsvValue(v) {
+  if (v == null) return '';
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
+}
+
 async function handleKpiWeeklySnapshot(env) {
   const log = { type: 'kwong_kpi_weekly_snapshot', timestamp: new Date().toISOString() };
 
