@@ -59,7 +59,9 @@ crons = [
   "0 12 * * *",   # Every day 12:00 UTC - WLVLP SCALE batch generation
   "0 13 * * *",   # Every day 13:00 UTC - WLVLP asset page enrichment (crawl + conversion_leak_report)
   "0 14 * * *",   # Every day 14:00 UTC - SCALE email sending (TTMP + WLVLP)
-  "0 15 * * *"    # Every day 15:00 UTC - WLVLP /launch welcome drip (3-email sequence)
+  "0 14 * * 0",   # Every Sunday 14:00 UTC (7am PT) - Kwong social: generate week + schedule FB/IG
+  "0 15 * * *",   # Every day 15:00 UTC - WLVLP /launch welcome drip (3-email sequence)
+  "0 15 * * 1-5"  # Every weekday 15:00 UTC (8am PT) - Kwong social: publish today's LinkedIn post
 ]
 
 # ---------------------------------------
@@ -84,6 +86,11 @@ SESSION_TTL_SECONDS = "86400"
 
 SCALE_BATCH_SIZE = "150"
 SCALE_ROUTING_MODE = "ttmp_only"  # ttmp_only = 100% TTMP, split = 65/25/10 TTMP/VLP/WLVLP
+
+# Kwong (TaxClaim Pro) social media campaign
+KWONG_CAMPAIGN_START = "2026-04-28"
+KWONG_CAMPAIGN_END = "2026-07-10"
+META_GRAPH_API_VERSION = "v22.0"
 
 # YouTube analytics (Project 3) — Tax Transcript AI channel
 YOUTUBE_CHANNEL_ID = "UCMWWyBdpnYHX3OGMWMHKX6A"
@@ -307,6 +314,16 @@ STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
 
 # ANTHROPIC_API_KEY
 # CLICKUP_API_TOKEN
+
+# =================================================
+# Kwong Social Media Campaign (Meta + LinkedIn)
+# =================================================
+
+# META_PAGE_ACCESS_TOKEN  — long-lived FB Page token (also drives Instagram via linked IG Business Account)
+# META_PAGE_ID            — Facebook Page ID for Tax Claim Pro
+# META_IG_USER_ID         — Instagram Business Account ID linked to the FB Page (for IG cross-posts)
+# LINKEDIN_ACCESS_TOKEN   — LinkedIn personal profile access token (w_member_social)
+# LINKEDIN_PERSON_URN     — LinkedIn person URN (urn:li:person:XXXXX)
 
 # =================================================
 # Optional / Future Integrations
