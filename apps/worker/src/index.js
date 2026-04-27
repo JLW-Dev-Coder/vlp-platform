@@ -22144,6 +22144,71 @@ https://virtuallaunch.pro/payouts
   },
 
   // -------------------------------------------------------------------------
+  // Kwong Campaign — KPI Snapshots (operator)
+  // -------------------------------------------------------------------------
+
+  // GET /v1/scale/kpi/snapshots — Returns the full snapshots index + targets.
+  {
+    method: 'GET', pattern: '/v1/scale/kpi/snapshots',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const targets = {
+        taxpayerLeads: [200, 400],
+        taxProSignups: [15, 20],
+        claimsFiled: [30, 60],
+      };
+
+      const obj = await env.R2_VIRTUAL_LAUNCH.get('scale/kpi/snapshots-index.json');
+      if (!obj) {
+        return json({ ok: true, snapshots: [], targets }, 200, request);
+      }
+      let data;
+      try {
+        data = JSON.parse(await obj.text());
+      } catch {
+        return json({ ok: true, snapshots: [], targets }, 200, request);
+      }
+      const snapshots = Array.isArray(data?.snapshots) ? data.snapshots : [];
+      return json({ ok: true, snapshots, targets }, 200, request);
+    },
+  },
+
+  // POST /v1/scale/kpi/snapshot-now — Manual trigger for the KPI snapshot.
+  {
+    method: 'POST', pattern: '/v1/scale/kpi/snapshot-now',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const log = await handleKpiWeeklySnapshot(env);
+
+      const targets = {
+        taxpayerLeads: [200, 400],
+        taxProSignups: [15, 20],
+        claimsFiled: [30, 60],
+      };
+
+      const obj = await env.R2_VIRTUAL_LAUNCH.get('scale/kpi/snapshots-index.json');
+      let snapshots = [];
+      if (obj) {
+        try {
+          const data = JSON.parse(await obj.text());
+          if (Array.isArray(data?.snapshots)) snapshots = data.snapshots;
+        } catch { /* ignore */ }
+      }
+      return json({ ok: true, log, snapshots, targets }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Social Posts — Manual post tracker for Scale dashboard
   // -------------------------------------------------------------------------
 
@@ -28300,6 +28365,135 @@ async function handleSocialDailyLinkedIn(env) {
 
 
 // ---------------------------------------------------------------------------
+// Kwong Campaign — Weekly KPI Snapshot
+// ---------------------------------------------------------------------------
+// Counts four campaign metrics for the just-ended week (Sun→Sat in PT) and
+// writes a snapshot to R2 at scale/kpi/snapshots/week-{n}.json plus appends
+// to scale/kpi/snapshots-index.json. All four metrics use D1 because each
+// has an indexed table with a creation timestamp:
+//   - galaLeads      → gala_intakes.submitted_at
+//   - inquiryLeads   → inquiries.created_at
+//   - kennedySignups → tcvlp_pros.created_at
+//   - claimsFiled    → tcvlp_form843_submissions where status='submitted',
+//                      using updated_at (created_at is when the PDF is generated,
+//                      not when the taxpayer confirmed submission)
+async function handleKpiWeeklySnapshot(env) {
+  const log = { type: 'kwong_kpi_weekly_snapshot', timestamp: new Date().toISOString() };
+
+  // Compute the week that just ended in PT. The cron fires Sunday 07:00 UTC
+  // (~midnight PT). We snapshot the previous Sun→Sat range.
+  const now = new Date();
+  const ptString = now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+  const pt = new Date(ptString);
+  const weekEnd = new Date(pt);
+  weekEnd.setDate(weekEnd.getDate() - 1); // Saturday (yesterday in PT)
+  const weekStart = new Date(weekEnd);
+  weekStart.setDate(weekStart.getDate() - 6); // Previous Sunday
+
+  const fromISO = weekStart.toISOString().split('T')[0];
+  const toISO = weekEnd.toISOString().split('T')[0];
+  const fromTs = `${fromISO} 00:00:00`;
+  const toTs = `${toISO} 23:59:59`;
+
+  // Week number relative to KWONG_CAMPAIGN_START.
+  const campaignStart = new Date(env.KWONG_CAMPAIGN_START || '2026-04-28');
+  const weekNumber = Math.ceil((weekEnd - campaignStart) / (7 * 24 * 60 * 60 * 1000));
+
+  log.weekNumber = weekNumber;
+  log.dateRange = { from: fromISO, to: toISO };
+
+  if (weekNumber < 1 || weekNumber > 12) {
+    log.status = 'OUTSIDE_CAMPAIGN_WINDOW';
+    return log;
+  }
+
+  // Helper — count rows in a table by timestamp column. Returns 0 on failure
+  // (table missing/drifted) so a single bad source never breaks the snapshot.
+  async function countD1(sql, ...binds) {
+    try {
+      const row = await env.DB.prepare(sql).bind(...binds).first();
+      return row && typeof row.count === 'number' ? row.count : 0;
+    } catch (e) {
+      console.error('[KPI] count query failed:', sql, e?.message || e);
+      return 0;
+    }
+  }
+
+  const galaLeads = await countD1(
+    'SELECT COUNT(*) AS count FROM gala_intakes WHERE submitted_at >= ? AND submitted_at <= ?',
+    fromTs, toTs
+  );
+  const inquiryLeads = await countD1(
+    'SELECT COUNT(*) AS count FROM inquiries WHERE created_at >= ? AND created_at <= ?',
+    fromTs, toTs
+  );
+  const kennedySignups = await countD1(
+    'SELECT COUNT(*) AS count FROM tcvlp_pros WHERE created_at >= ? AND created_at <= ?',
+    fromTs, toTs
+  );
+  const claimsFiled = await countD1(
+    "SELECT COUNT(*) AS count FROM tcvlp_form843_submissions WHERE status = 'submitted' AND updated_at >= ? AND updated_at <= ?",
+    fromTs, toTs
+  );
+
+  // Load index for cumulative totals.
+  let index = { snapshots: [] };
+  try {
+    const indexObj = await env.R2_VIRTUAL_LAUNCH.get('scale/kpi/snapshots-index.json');
+    if (indexObj) {
+      const parsed = JSON.parse(await indexObj.text());
+      if (parsed && Array.isArray(parsed.snapshots)) index = parsed;
+    }
+  } catch (e) {
+    console.error('[KPI] failed reading snapshots index, starting fresh:', e?.message || e);
+  }
+
+  // Find prior cumulative — use the most recent snapshot with weekNumber < this one.
+  const prior = index.snapshots
+    .filter((s) => typeof s.weekNumber === 'number' && s.weekNumber < weekNumber)
+    .sort((a, b) => b.weekNumber - a.weekNumber)[0] || null;
+
+  const snapshot = {
+    weekNumber,
+    dateRange: { from: fromISO, to: toISO },
+    galaLeads: {
+      thisWeek: galaLeads,
+      cumulative: (prior?.galaLeads?.cumulative || 0) + galaLeads,
+    },
+    inquiryLeads: {
+      thisWeek: inquiryLeads,
+      cumulative: (prior?.inquiryLeads?.cumulative || 0) + inquiryLeads,
+    },
+    kennedySignups: {
+      thisWeek: kennedySignups,
+      cumulative: (prior?.kennedySignups?.cumulative || 0) + kennedySignups,
+    },
+    claimsFiled: {
+      thisWeek: claimsFiled,
+      cumulative: (prior?.claimsFiled?.cumulative || 0) + claimsFiled,
+    },
+    createdAt: new Date().toISOString(),
+  };
+
+  // Write the per-week file. If a snapshot already exists for this week (manual
+  // re-run), overwrite it and replace its index entry rather than duplicating.
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/kpi/snapshots/week-${weekNumber}.json`, snapshot);
+
+  const filtered = index.snapshots.filter((s) => s.weekNumber !== weekNumber);
+  filtered.push(snapshot);
+  filtered.sort((a, b) => a.weekNumber - b.weekNumber);
+  index.snapshots = filtered;
+  await r2Put(env.R2_VIRTUAL_LAUNCH, 'scale/kpi/snapshots-index.json', index);
+
+  log.status = 'OK';
+  log.snapshot = {
+    galaLeads, inquiryLeads, kennedySignups, claimsFiled,
+  };
+  return log;
+}
+
+
+// ---------------------------------------------------------------------------
 // Fetch handler
 // ---------------------------------------------------------------------------
 
@@ -29074,6 +29268,19 @@ export default {
         console.log('Kwong LinkedIn daily cron:', JSON.stringify(log));
       } catch (e) {
         console.error('Kwong LinkedIn daily cron failed:', e);
+      }
+      return;
+    }
+
+    // Kwong KPI Weekly Snapshot Cron — Sunday 07:00 UTC (midnight PT).
+    // Counts the four campaign metrics for the week that just ended and writes
+    // a snapshot to R2 at scale/kpi/snapshots/week-{n}.json.
+    if (event && event.cron === '0 7 * * 0') {
+      try {
+        const log = await handleKpiWeeklySnapshot(env);
+        console.log('Kwong KPI snapshot cron:', JSON.stringify(log));
+      } catch (e) {
+        console.error('Kwong KPI snapshot cron failed:', e);
       }
       return;
     }

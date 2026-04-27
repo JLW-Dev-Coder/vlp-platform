@@ -5,6 +5,7 @@ import { renderMarkdown } from '@/components/scale/MarkdownRenderer'
 import UploadTab from '@/components/scale/UploadTab'
 import CampaignTab from '../components/CampaignTab'
 import DailyWorkflowPlanner from '../components/DailyWorkflowPlanner'
+import KpiTab from '../components/KpiTab'
 import OutreachTab from '../components/OutreachTab'
 import SocialTab from '../components/SocialTab'
 import styles from '../page.module.css'
@@ -63,7 +64,7 @@ function WorkflowContent() {
 // ---------------------------------------------------------------------------
 // Page — 5-tab outreach command center
 // ---------------------------------------------------------------------------
-type Tab = 'planner' | 'upload' | 'posts' | 'outreach' | 'social' | 'workflow'
+type Tab = 'planner' | 'upload' | 'posts' | 'outreach' | 'social' | 'kpi' | 'workflow'
 
 const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
   planner: 'Daily workflow planner — what to do today across email, social, content, and bookings',
@@ -75,6 +76,7 @@ const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
       Scheduled posts synced from ClickUp + Reddit opportunity monitor
     </>
   ),
+  kpi: 'Kwong campaign weekly snapshots — gala/inquiry leads, tax pro signups, claims filed vs. 10-week targets',
   workflow: (
     <>
       Synced from <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-white/10 text-amber-400/90">scale/WORKFLOW.md</code> — push updates via <code className="text-xs bg-white/5 px-1.5 py-0.5 rounded border border-white/10 text-amber-400/90">node scale/push-workflow.js</code>
@@ -95,7 +97,7 @@ export default function WorkflowPage() {
       </div>
 
       <div className={styles.tabBar} role="tablist">
-        {(['planner', 'upload', 'posts', 'outreach', 'social', 'workflow'] as Tab[]).map((t) => (
+        {(['planner', 'upload', 'posts', 'outreach', 'social', 'kpi', 'workflow'] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -104,7 +106,7 @@ export default function WorkflowPage() {
             className={`${styles.tabButton} ${tab === t ? styles.tabButtonActive : ''}`}
             onClick={() => setTab(t)}
           >
-            {t === 'planner' ? 'Planner' : t === 'upload' ? 'Email' : t === 'posts' ? 'Campaign' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Posts' : 'Workflow'}
+            {t === 'planner' ? 'Planner' : t === 'upload' ? 'Email' : t === 'posts' ? 'Campaign' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Posts' : t === 'kpi' ? 'Campaign KPIs' : 'Workflow'}
           </button>
         ))}
       </div>
@@ -114,6 +116,7 @@ export default function WorkflowPage() {
       {tab === 'posts' && <CampaignTab />}
       {tab === 'outreach' && <OutreachTab />}
       {tab === 'social' && <SocialTab />}
+      {tab === 'kpi' && <KpiTab />}
       {tab === 'workflow' && <WorkflowContent />}
     </div>
   )
