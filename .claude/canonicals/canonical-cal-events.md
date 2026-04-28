@@ -82,9 +82,13 @@ PlatformConfig fields.
 | GVLP | intro | tax-monitor-pro/gvlp-intro | gvlp-intro | 15m | calIntroSlug / calIntroNamespace |
 | WLVLP | support | tax-monitor-pro/wlvlp-support | wlvlp-support | 15m | calBookingSlug / calBookingNamespace |
 | WLVLP | intro | tax-monitor-pro/wlvlp-intro | wlvlp-intro | 15m | calIntroSlug / calIntroNamespace |
+| TAVLP | support | tax-monitor-pro/tavlp-support | tavlp-support | 15m | calBookingSlug / calBookingNamespace |
+| TAVLP | intro | tax-monitor-pro/tax-avatar-virtual-launch-pro | tax-avatar-virtual-launch-pro | 15m | calIntroSlug / calIntroNamespace |
 
-18 total event types. Every app has support + intro. TTMP has discovery,
-DVLP has onboarding.
+20 total event types. Every app has support + intro. TTMP has discovery,
+DVLP has onboarding. TAVLP's intro slug is the legacy
+`tax-avatar-virtual-launch-pro` event predating the §1 naming convention
+and is intentionally retained.
 
 ---
 

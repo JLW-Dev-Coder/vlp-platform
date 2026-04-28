@@ -1,0 +1,64 @@
+@import '@vlp/member-ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* TAVLP brand overrides for member-ui shared tokens */
+    --member-accent: rgba(236, 72, 153, 0.1);
+    --member-accent-strong: rgba(236, 72, 153, 0.2);
+    --member-hero-bg: #500724;
+    --member-hero-bg-end: #1a0510;
+
+    /* Brand glow — used by shared --border-focus + shadow-focus */
+    --brand-glow: rgba(236, 72, 153, 0.40);
+
+    /* Text color on pink brand.primary */
+    --brand-text-on-primary: #ffffff;
+
+    /* TAVLP brand tokens */
+    --color-bg:          #0f1117;
+    --color-surface:     #161824;
+    --color-surface-2:   #1e2130;
+    --color-border:      #2a2d3e;
+    --color-brand:       #ec4899;
+    --color-brand-light: #f472b6;
+    --color-brand-dark:  #be185d;
+    --color-brand-muted: rgba(236, 72, 153, 0.15);
+    --color-text-1:      #f1f1f4;
+    --color-text-2:      #9ca3af;
+    --color-text-3:      #6b7280;
+    --font-display:      var(--font-sora), system-ui, sans-serif;
+    --font-body:         var(--font-sora), system-ui, sans-serif;
+    --max-width:         72rem;
+    --transition:        0.15s ease;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
+  background: #0f1117;
+  color: #f1f1f4;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; color: var(--color-text-1); }
+p { margin: 0; color: var(--color-text-2); }
+a { color: inherit; text-decoration: none; }
+
+@media print {
+  body { background: #fff; color: #000; }
+}

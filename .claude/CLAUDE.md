@@ -36,6 +36,7 @@ Every platform that previously lived in its own repo is migrated here.
 | Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | static export | `#22c55e` (green) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | static export | `#eab308` (yellow) |
 | Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | static export | `#00D4FF` (neon blue) |
+| Tax Avatar Pro | TAVLP | taxavatar.virtuallaunch.pro | `apps/tavlp` | static export | `#ec4899` (hot pink) |
 | VLP Worker | — | api.virtuallaunch.pro | `apps/worker` | Cloudflare Worker | — |
 
 **Authoritative source:** each app's `tailwind.config.ts` at `theme.extend.colors.brand.500`. If this table and the Tailwind config diverge, the Tailwind config wins. Update this table whenever a platform's brand color changes.
@@ -54,6 +55,7 @@ Every platform that previously lived in its own repo is migrated here.
 | GVLP | `games-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | TCVLP | `taxclaim-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | WLVLP | `websitelotto-virtuallaunch-pro` | `npm run build` | `out` | static export |
+| TAVLP | `tavlp-site` | `npm run build` | `out` | static export |
 
 **TTMP deployment note:** TTMP uses Cloudflare Workers (not Pages) via `@opennextjs/cloudflare` and GitHub Actions CI/CD. All other platforms remain on Pages. TTMP deploys exclusively from the vlp-platform monorepo (`apps/ttmp/`). The standalone `transcript.taxmonitor.pro` repo is deprecated and must not be used for builds or deploys. Its GitHub Actions workflow has been removed.
 
@@ -172,4 +174,5 @@ If a prompt says "do not push" — commit locally only, report the commit hash.
 | GVLP | `C:\Users\britn\OneDrive\games.virtuallaunch.pro` | `apps/gvlp` |
 | TCVLP | `C:\Users\britn\taxclaim.virtuallaunch.pro` | `apps/tcvlp` |
 | WLVLP | `C:\Users\britn\OneDrive\websitelotto.virtuallaunch.pro` | `apps/wlvlp` |
+| TAVLP | `C:\Users\britn\OneDrive\tavlp-site` | `apps/tavlp` |
 | Worker | `C:\Users\britn\OneDrive\virtuallaunch.pro\workers` | `apps/worker` |
