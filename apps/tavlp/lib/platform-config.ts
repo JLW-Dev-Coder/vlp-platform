@@ -2,10 +2,10 @@ import type { PlatformConfig } from '@vlp/member-ui'
 
 export const tavlpConfig: PlatformConfig = {
   brandName: 'Tax Avatar Pro',
-  brandAbbrev: 'TAVLP',
+  brandAbbrev: 'TAP',
   brandColor: '#ec4899',
   brandSubtitle: 'AI YouTube Channel for Tax Pros',
-  logoText: 'TAVLP',
+  logoText: 'TAP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
   calBookingNamespace: 'tavlp-support',
   calBookingSlug: 'tax-monitor-pro/tavlp-support',

@@ -109,7 +109,7 @@ export default function PricingPage() {
             Most Popular
           </div>
           <div className="text-sm uppercase tracking-wide text-brand-primary mb-2">Combined</div>
-          <div className="text-xl font-semibold text-text-primary mb-1">TCP + TAVLP</div>
+          <div className="text-xl font-semibold text-text-primary mb-1">TCP + TAP</div>
           <div className="flex items-baseline mb-6">
             <span className="text-3xl font-bold text-text-primary">$</span>
             <span className="text-5xl font-bold text-text-primary">39</span>
