@@ -3,12 +3,12 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'About | Tax Avatar Pro',
   description:
-    'Why Tax Avatar Pro exists: 400,000 CPAs left the industry in 5 years. Tax pros need YouTube but can’t justify the time. We delegate the channel to an AI avatar.',
+    'Why Tax Avatar Pro exists: 400,000 CPAs left the industry in 5 years and the shortage extends to EAs and tax attorneys. Tax pros need YouTube but can’t justify the time. We delegate the channel to an AI avatar.',
 }
 
 const problems = [
-  { title: '400,000 CPAs left in 5 years', body: 'The talent shortage is permanent. Tax pros are drowning in $40/hr work because they can’t find staff to take it.' },
-  { title: '50% of remaining CPAs retire within 7 years', body: 'The pipeline isn’t replacing them. Practices that build authority now will absorb the demand later.' },
+  { title: '400,000 CPAs left in 5 years', body: 'The talent shortage is permanent and extends beyond CPAs — enrolled agents and tax attorneys face the same pipeline problem. Tax pros are drowning in $40/hr work because they can’t find staff to take it.' },
+  { title: '50% of remaining CPAs retire within 7 years', body: 'The pipeline isn’t replacing them. EAs and tax attorneys are aging out at similar rates. Practices that build authority now will absorb the demand later.' },
   { title: 'YouTube takes 3–5 hours per video', body: 'Tax pros know they need a channel — but they can’t justify the camera time when billable hours pay better.' },
   { title: 'Competitors are publishing while you serve clients', body: 'Authority compounds. Every month without content is a month of ground given up.' },
 ]
@@ -28,7 +28,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-5xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-subtle bg-surface-card px-4 py-2">
             <span className="h-2 w-2 rounded-full bg-brand-primary" aria-hidden="true" />
-            <span className="text-sm text-text-muted">Built for the post-CPA-shortage tax practice.</span>
+            <span className="text-sm text-text-muted">Built for EAs, CPAs, and tax attorneys facing the talent shortage.</span>
           </div>
 
           <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl text-text-primary">
@@ -39,7 +39,7 @@ export default function AboutPage() {
           </h1>
 
           <p className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-text-muted md:text-2xl">
-            The CPA shortage is real. Tax pros are drowning in $40/hr work because they can&apos;t find staff. TAVLP exists because your marketing shouldn&apos;t require your time — it should run itself.
+            The talent shortage is real — and it hits EAs, CPAs, and tax attorneys alike. Tax pros are drowning in $40/hr work because they can&apos;t find staff. Tax Avatar Pro exists because your marketing shouldn&apos;t require your time — it should run itself.
           </p>
         </div>
       </section>
@@ -114,7 +114,7 @@ export default function AboutPage() {
               <strong className="text-text-primary">TaxClaim Pro</strong> automates Form 843 penalty abatement. <strong className="text-text-primary">Tax Transcript AI</strong> parses IRS transcripts in seconds. <strong className="text-text-primary">Tax Tools Arcade</strong> ships practitioner utilities.
             </p>
             <p className="text-text-muted">
-              TAVLP is the 9th platform — built to solve the one problem tax pros keep putting off: marketing.
+              Tax Avatar Pro is the 9th platform — built to solve the one problem tax pros keep putting off: marketing.
             </p>
           </div>
         </div>

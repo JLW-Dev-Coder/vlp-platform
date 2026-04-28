@@ -153,6 +153,25 @@ This file complements `canonical-feature-matrix.md` (which maps features to rout
 
 ---
 
+## TAVLP — Tax Avatar Pro
+
+**Audience:** Tax professionals (EAs, CPAs, and tax attorneys) who need a YouTube channel but can't justify the camera time.
+
+| Feature | What It Does For You |
+|---------|---------------------|
+| Custom AI Avatar | Your AI spokesperson — generated from your photo or chosen from 6 proven presenters. She records, you don't. |
+| IRS Code Explainer Scripts | Proven content covering the exact IRS codes taxpayers search at midnight. Accurate, researched, ready to publish. |
+| Branded Channel Setup | Your firm name, logo, and colors on a fully configured YouTube channel. SEO, descriptions, channel art — all done for you. |
+| Weekly Publishing | Consistent content on autopilot. Shorts and long-form published every week. Thumbnails, descriptions, tags included. |
+| Lead Generation Pipeline | Every video drives viewers to your branded TaxClaim Pro intake page. Taxpayers self-serve. Form 843 generates. You get notified. |
+| Review & Approve Workflow | Nothing goes live without your approval. See every video before publication. Request changes or approve in one click. |
+| Avatar Selection (6 options) | Choose from Annie (57 looks), Tariq (14), Genesis (12), Knox (25), Denyse (33), or Griffin (20). Each with unique delivery style. |
+| YouTube Stats Dashboard | Live channel metrics updated daily — subscribers, views, videos, top performer. No YouTube Studio login needed. |
+| Channel Ownership Transfer | The channel is yours. After the 7-day YouTube transfer period, you're the primary owner with full control. |
+| Kwong v. US Content | Time-sensitive penalty abatement content driving urgency through the July 10, 2026 deadline. Launch fuel for your channel. |
+
+---
+
 ## Maintenance
 
 Update this file whenever:

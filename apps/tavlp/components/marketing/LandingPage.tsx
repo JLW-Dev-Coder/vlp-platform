@@ -519,7 +519,7 @@ const BODY_HTML = `
           Every day without a channel is a day your competitors' videos rank higher for the IRS codes your clients are searching. A video published today still drives views in 6 months. But the Kwong deadline doesn't move. Your clients need to find you before July — not after.
         </p>
         <p class="body-text" style="margin-top:1rem;max-width:40rem;margin-left:auto;margin-right:auto;font-size:.875rem">
-          400,000 CPAs left the industry in the last 5 years. 50% of remaining CPAs retire within 7 years. The firms that build client acquisition systems now — not next year, not next season — are the ones that survive the shortage.
+          400,000 CPAs left the industry in the last 5 years and 50% of those remaining retire within 7 years. The shortage extends to EAs and tax attorneys too — the entire profession is thinning. The firms that build client acquisition systems now — not next year, not next season — are the ones that survive the shortage.
         </p>
         <div style="margin-top:2.5rem">
           <a href="#start" class="cta">Get Your Avatar Channel — $29/mo →</a>

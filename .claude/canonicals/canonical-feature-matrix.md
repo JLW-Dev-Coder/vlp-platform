@@ -171,6 +171,26 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 
 ---
 
+## TAVLP — Tax Avatar Pro
+
+| Feature | Worker Route | R2 Key | D1 Table | Frontend Path | Status |
+|---------|-------------|--------|----------|---------------|--------|
+| Channel Interest Intake | POST /v1/tcvlp/gala/intake (penalty_type: tavlp_channel_interest) | gala-intakes/{id}.json | gala_intakes | / (intake form) | live |
+| YouTube Channel Stats | GET /tavlp/channel-stats.json (R2 serve) | tavlp/channel-stats.json | — | / (channel cards) | live |
+| Stats Cron Refresh | Cron 0 5 * * * → handleTavlpChannelStats | tavlp/channel-stats.json | — | N/A (background) | live |
+| Manual Stats Refresh | POST /v1/tavlp/refresh-stats | tavlp/channel-stats.json | — | N/A (admin) | live |
+| R2 Media Serving | GET /tavlp/* (R2 passthrough) | tavlp/videos/*, tavlp/avatars/* | — | /, /avatars | live |
+| Avatar Selection | Client-side in intake form | — | — | / (avatar toggle) | live |
+| Kennedy Sales Videos | Served from R2 | tavlp/videos/S001-*, S002-*, V003-* | — | / (3 embeds) | live |
+| Avatar Intro Videos | Served from R2 | tavlp/videos/A001-*, V002-*, V003-*, A004-*, V005-*, A006-* | — | /, /avatars | live |
+| Reviews | GET /v1/submissions/public?platform=tavlp&form_type=review | platform_submissions | platform_submissions | /reviews | live |
+| Review Submission | POST /v1/submissions | platform_submissions | platform_submissions | /reviews/submit | live |
+| Cal.com Intro Booking | Client-side embed | — | — | /contact | live |
+| Sign In (Google SSO) | GET /v1/auth/google/start | — | — | /sign-in | live |
+| Sign In (Magic Link) | GET /v1/auth/magic-link?platform=tavlp | — | — | /sign-in | live |
+
+---
+
 ## Status Summary
 
 | Platform | Total Features | Live | Partial | Planned |
@@ -183,6 +203,7 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 | WLVLP | 10 | 9 | 0 | 1 |
 | GVLP | 7 | 5 | 1 | 1 |
 | DVLP | 9 | 7 | 0 | 2 |
+| TAVLP | 13 | 13 | 0 | 0 |
 
 **Note:** Shared features (Account, Affiliate, Calendar, Profile, Support, Tokens, Usage) are counted once per platform. Route paths, R2 keys, and D1 tables listed here are based on project knowledge as of 2026-04-14. Verify against the actual Worker source (`apps/worker/src/index.js`) before treating as authoritative — some planned routes may have been built since this doc was written, and some listed routes may have different exact paths.
 
