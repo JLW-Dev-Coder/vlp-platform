@@ -62,7 +62,8 @@ crons = [
   "0 14 * * SUN", # Every Sunday 14:00 UTC (7am PT) - Kwong social: generate week + schedule FB/IG
   "0 15 * * *",   # Every day 15:00 UTC - WLVLP /launch welcome drip (3-email sequence)
   "0 15 * * 1-5", # Every weekday 15:00 UTC (8am PT) - Kwong social: publish today's LinkedIn post
-  "0 7 * * SUN"   # Every Sunday 07:00 UTC (midnight PT) - Kwong campaign weekly KPI snapshot
+  "0 7 * * SUN", # Every Sunday 07:00 UTC (midnight PT) - Kwong campaign weekly KPI snapshot
+  "0 5 * * *"     # Every day 05:00 UTC - TAVLP: refresh YouTube channel stats
 ]
 
 # ---------------------------------------

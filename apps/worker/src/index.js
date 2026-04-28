@@ -23092,6 +23092,25 @@ ${postSections}`;
     },
   },
 
+  // POST /v1/tavlp/refresh-stats — admin-only manual trigger for the TAVLP
+  // YouTube channel stats fetcher (the same job runs daily at 05:00 UTC).
+  {
+    method: 'POST', pattern: '/v1/tavlp/refresh-stats',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      try {
+        const log = await handleTavlpChannelStats(env);
+        return json({ ok: true, log, triggered_by: session.email }, 200, request);
+      } catch (e) {
+        return json({ ok: false, error: e.message }, 502, request);
+      }
+    },
+  },
+
   // GET /v1/scale/campaigns/social/manual-posts
   // Returns today's FB Personal copy (and any other manual-only posts) for
   // the operator to copy/paste. Auto-posted FB Page + LinkedIn copy is also
@@ -28889,6 +28908,103 @@ async function handleKpiWeeklySnapshot(env) {
   return log;
 }
 
+// ---------------------------------------------------------------------------
+// TAVLP YouTube channel stats (taxavatar.virtuallaunch.pro proof channels)
+// ---------------------------------------------------------------------------
+
+const TAVLP_CHANNELS = [
+  { name: 'Tax Transcript AI',  handle: '@TaxTranscriptAI', url: 'https://youtube.com/@TaxTranscriptAI', color: '#14b8a6' },
+  { name: 'Tax Tools Arcade',   handle: '@taxtoolsarcade',  url: 'https://youtube.com/@taxtoolsarcade',  color: '#f97316' },
+  { name: 'Tax Claim Pro',      handle: '@taxclaimpro',     url: 'https://youtube.com/@taxclaimpro',     color: '#eab308' },
+];
+
+async function tavlpYtFetchJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) {
+    const body = await r.text().catch(() => '');
+    throw new Error(`YouTube API ${r.status}: ${body.slice(0, 200)}`);
+  }
+  return r.json();
+}
+
+async function tavlpFetchChannelStat(env, ch) {
+  const apiKey = env.YOUTUBE_API_KEY;
+  if (!apiKey) throw new Error('YOUTUBE_API_KEY secret not set');
+
+  const handle = ch.handle.startsWith('@') ? ch.handle : `@${ch.handle}`;
+  const chRes = await tavlpYtFetchJson(
+    `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&forHandle=${encodeURIComponent(handle)}&key=${apiKey}`
+  );
+  const item = (chRes.items || [])[0];
+  if (!item) {
+    return {
+      name: ch.name, handle: ch.handle, url: ch.url, color: ch.color,
+      subs: 0, views: 0, videos: 0, top_video: null,
+      error: 'channel_not_found',
+    };
+  }
+  const stats = item.statistics || {};
+  const channelId = item.id;
+  const subs = parseInt(stats.subscriberCount || '0', 10);
+  const views = parseInt(stats.viewCount || '0', 10);
+  const videos = parseInt(stats.videoCount || '0', 10);
+
+  // Top video by view count.
+  let topVideoText = null;
+  try {
+    const search = await tavlpYtFetchJson(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=viewCount&maxResults=1&type=video&key=${apiKey}`
+    );
+    const top = (search.items || [])[0];
+    if (top && top.id && top.id.videoId) {
+      const videoId = top.id.videoId;
+      const title = top.snippet && top.snippet.title ? top.snippet.title : 'Top video';
+      const vidRes = await tavlpYtFetchJson(
+        `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${apiKey}`
+      );
+      const vidItem = (vidRes.items || [])[0];
+      const vidViews = vidItem && vidItem.statistics ? parseInt(vidItem.statistics.viewCount || '0', 10) : 0;
+      topVideoText = `${title} — ${vidViews.toLocaleString('en-US')} views`;
+    }
+  } catch (e) {
+    console.error(`TAVLP top-video fetch failed for ${ch.handle}:`, e.message);
+  }
+
+  return {
+    name: ch.name,
+    handle: ch.handle,
+    url: ch.url,
+    color: ch.color,
+    subs,
+    views,
+    videos,
+    top_video: topVideoText,
+  };
+}
+
+async function handleTavlpChannelStats(env) {
+  const log = { type: 'tavlp_channel_stats', timestamp: new Date().toISOString(), channels: [] };
+  const out = [];
+  for (const ch of TAVLP_CHANNELS) {
+    try {
+      const stat = await tavlpFetchChannelStat(env, ch);
+      out.push(stat);
+      log.channels.push({ handle: ch.handle, ok: true, subs: stat.subs, views: stat.views, videos: stat.videos });
+    } catch (e) {
+      console.error(`TAVLP stats fetch failed for ${ch.handle}:`, e.message);
+      out.push({ name: ch.name, handle: ch.handle, url: ch.url, color: ch.color, subs: 0, views: 0, videos: 0, top_video: null, error: e.message });
+      log.channels.push({ handle: ch.handle, ok: false, error: e.message });
+    }
+  }
+  const payload = { updated_at: new Date().toISOString(), channels: out };
+  await env.R2_VIRTUAL_LAUNCH.put('tavlp/channel-stats.json', JSON.stringify(payload), {
+    httpMetadata: { contentType: 'application/json' },
+  });
+  log.status = 'OK';
+  log.updated_at = payload.updated_at;
+  return log;
+}
+
 
 // ---------------------------------------------------------------------------
 // Fetch handler
@@ -29740,6 +29856,20 @@ export default {
         console.log('Kwong KPI snapshot cron:', JSON.stringify(log));
       } catch (e) {
         console.error('Kwong KPI snapshot cron failed:', e);
+      }
+      return;
+    }
+
+    // TAVLP YouTube Channel Stats Cron — 05:00 UTC daily.
+    // Fetches subs/views/videos + top video for the three proof-of-concept
+    // YouTube channels and writes the merged JSON to
+    // R2: tavlp/channel-stats.json (served publicly via /tavlp/*).
+    if (event && event.cron === '0 5 * * *') {
+      try {
+        const log = await handleTavlpChannelStats(env);
+        console.log('TAVLP channel stats cron:', JSON.stringify(log));
+      } catch (e) {
+        console.error('TAVLP channel stats cron failed:', e);
       }
       return;
     }
