@@ -30,7 +30,7 @@ Before deploying any platform:
 
 ### 2.1 Static Export (`output: 'export'`)
 
-**Platforms:** TMP, TTTMP, GVLP, TCVLP, WLVLP
+**Platforms:** TMP, TTTMP, GVLP, TCVLP, WLVLP, TAVLP
 
 **Output directory:** `out/`
 
@@ -57,6 +57,7 @@ npx wrangler pages deploy out --project-name={pages-project-name}
 | GVLP | `games-virtuallaunch-pro` |
 | TCVLP | `taxclaim-virtuallaunch-pro` |
 | WLVLP | `websitelotto-virtuallaunch-pro` |
+| TAVLP | `tavlp-site` |
 
 ### 2.2 `@cloudflare/next-on-pages`
 
@@ -169,7 +170,7 @@ After every deploy:
 
 | Platform | Cache Type | How to Purge |
 |----------|-----------|-------------|
-| TMP, TTTMP, GVLP, TCVLP, WLVLP | Cloudflare CDN (Pages) | Auto-purged on new deploy |
+| TMP, TTTMP, GVLP, TCVLP, WLVLP, TAVLP | Cloudflare CDN (Pages) | Auto-purged on new deploy |
 | VLP, DVLP | Cloudflare CDN (Pages) | Auto-purged on new deploy |
 | TTMP | KV ISR Cache + CDN | KV flush (see section 2.3) + CDN auto-purge on Worker deploy |
 | Worker | None (no static assets) | N/A — Worker code is live immediately on deploy |
@@ -229,4 +230,5 @@ D1 migrations are forward-only. If a migration breaks something:
 | Games VLP | GVLP | static export | `out` | Pages auto-deploy | `games-virtuallaunch-pro` |
 | Tax Claim VLP | TCVLP | static export | `out` | Pages auto-deploy | `taxclaim-virtuallaunch-pro` |
 | Website Lotto VLP | WLVLP | static export | `out` | Pages auto-deploy | `websitelotto-virtuallaunch-pro` |
+| Tax Avatar Pro | TAVLP | static export | `out` | Pages auto-deploy | `tavlp-site` |
 | VLP Worker | Worker | Cloudflare Worker | bundled | `wrangler deploy` | `virtuallaunch-pro-api` |

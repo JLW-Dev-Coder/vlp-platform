@@ -26,6 +26,7 @@ Last updated: 2026-04-13
 | Games VLP | GVLP | games.virtuallaunch.pro | `apps/gvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#ef4444` (red) |
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#eab308` (yellow) |
 | Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#00D4FF` (neon blue) |
+| Tax Avatar Pro | TAVLP | taxavatar.virtuallaunch.pro | `apps/tavlp` | Next.js 15 (App Router) | Tailwind + Sora font | Static export | CF Pages | `npm run build` | `out` | `#ec4899` (hot pink) |
 | VLP Worker | Worker | api.virtuallaunch.pro | `apps/worker` | Vanilla JS | N/A | Cloudflare Worker | CF Workers | `npx wrangler deploy` | bundled | N/A |
 
 ---
@@ -43,6 +44,7 @@ vlp-platform/
 │   ├── gvlp/          # Games VLP
 │   ├── tcvlp/         # Tax Claim VLP
 │   ├── wlvlp/         # Website Lotto VLP
+│   ├── tavlp/         # Tax Avatar Pro
 │   └── worker/        # VLP Worker (single backend)
 ├── packages/
 │   └── member-ui/     # @vlp/member-ui shared package
@@ -130,6 +132,7 @@ These platforms render entirely client-side. They fetch data from the Worker API
 | GVLP | Pages | `games-virtuallaunch-pro` |
 | TCVLP | Pages | `taxclaim-virtuallaunch-pro` |
 | WLVLP | Pages | `websitelotto-virtuallaunch-pro` |
+| TAVLP | Pages | `tavlp-site` |
 | Worker | Worker | `virtuallaunch-pro-api` |
 
 ---
@@ -138,7 +141,7 @@ These platforms render entirely client-side. They fetch data from the Worker API
 
 | Zone | Platforms |
 |------|----------|
-| `virtuallaunch.pro` | VLP, DVLP, GVLP, TCVLP, WLVLP, Worker |
+| `virtuallaunch.pro` | VLP, DVLP, GVLP, TCVLP, WLVLP, TAVLP, Worker |
 | `taxmonitor.pro` | TMP, TTMP, TTTMP |
 
 All API traffic routes through `api.virtuallaunch.pro` regardless of which frontend makes the request. CORS is configured to allow all 9 platform origins.

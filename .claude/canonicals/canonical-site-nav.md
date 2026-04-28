@@ -77,6 +77,7 @@ Up to 4 platform-specific items. Examples:
 | DVLP | Portfolio Examples, Hiring Guide, Skill Matcher, Rate Calculator |
 | GVLP | Game Previews, Leaderboards, Achievement Guide, Tournament Rules |
 | VLP | Platform Overview, Integration Guide, API Docs, Partner Program |
+| TAVLP | Avatar Roster, Sample Channel, Kwong Content Pack, Cal.com Intro |
 
 **Column 4 — CTA**
 
@@ -162,7 +163,7 @@ authenticated work**: all authenticated sidebar destinations live under
 | TTMP | `/app/*` | `app/app/support/page.tsx` |
 | DVLP | `/operator/*` | `app/operator/page.tsx` |
 
-All other apps (TMP, TTTMP, GVLP, TCVLP, WLVLP) use and will continue
+All other apps (TMP, TTTMP, GVLP, TCVLP, WLVLP, TAVLP) use and will continue
 to use `/dashboard/*` for new authenticated pages.
 
 **Authenticated-only rule:**
@@ -342,7 +343,7 @@ Footer structure is identical across all 8 platforms. Only content differs via c
 
 ---
 
-## 5. Layout Standards (Mandatory — All 8 Platforms)
+## 5. Layout Standards (Mandatory — All 9 Platforms)
 
 All marketing site pages and app pages must use the same container and spacing system so headers, footers, and content align perfectly across every platform.
 

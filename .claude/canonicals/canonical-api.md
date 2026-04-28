@@ -395,6 +395,19 @@ Total routes: ~196
 
 ---
 
+## 8a. TAVLP Endpoints (`/v1/tavlp/*`, `/tavlp/*`)
+
+| Method | Path | Purpose | Auth | Frontend |
+|--------|------|---------|------|----------|
+| GET | `/tavlp/*` | R2 passthrough — serves videos (`tavlp/videos/*`), avatars (`tavlp/avatars/*`), and `tavlp/channel-stats.json` | No | TAVLP |
+| POST | `/v1/tavlp/refresh-stats` | Manual trigger for the YouTube channel-stats refresh (`handleTavlpChannelStats`) | Admin | TAVLP |
+| Cron | `0 5 * * *` → `handleTavlpChannelStats` | Daily 05:00 UTC refresh of `tavlp/channel-stats.json` (subscribers, views, top performer per channel) | Internal | Cron |
+
+**Intake:** TAVLP channel-interest leads use the shared `POST /v1/tcvlp/gala/intake` endpoint with `penalty_type: tavlp_channel_interest`. See §7 (TCVLP).
+**Reviews:** TAVLP reviews use the shared `GET /v1/submissions/public?platform=tavlp&form_type=review` and `POST /v1/submissions` endpoints.
+
+---
+
 ## 9. Scale Endpoints (`/v1/scale/*`)
 
 | Method | Path | Purpose | Auth | Frontend |
