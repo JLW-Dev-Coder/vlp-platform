@@ -59,10 +59,10 @@ crons = [
   "0 12 * * *",   # Every day 12:00 UTC - WLVLP SCALE batch generation
   "0 13 * * *",   # Every day 13:00 UTC - WLVLP asset page enrichment (crawl + conversion_leak_report)
   "0 14 * * *",   # Every day 14:00 UTC - SCALE email sending (TTMP + WLVLP)
-  "0 14 * * 0",   # Every Sunday 14:00 UTC (7am PT) - Kwong social: generate week + schedule FB/IG
+  "0 14 * * SUN", # Every Sunday 14:00 UTC (7am PT) - Kwong social: generate week + schedule FB/IG
   "0 15 * * *",   # Every day 15:00 UTC - WLVLP /launch welcome drip (3-email sequence)
   "0 15 * * 1-5", # Every weekday 15:00 UTC (8am PT) - Kwong social: publish today's LinkedIn post
-  "0 7 * * 0"     # Every Sunday 07:00 UTC (midnight PT) - Kwong campaign weekly KPI snapshot
+  "0 7 * * SUN"   # Every Sunday 07:00 UTC (midnight PT) - Kwong campaign weekly KPI snapshot
 ]
 
 # ---------------------------------------
