@@ -28905,6 +28905,68 @@ export default {
       return new Response(null, { status: 204, headers: getCorsHeaders(request) });
     }
 
+    // /tavlp/* — public R2 asset serving for taxavatar.virtuallaunch.pro
+    // Serves videos and images from R2 with Range support for video seeking.
+    if (pathname.startsWith('/tavlp/') && (method === 'GET' || method === 'HEAD')) {
+      const key = pathname.slice(1); // strip leading /
+      const rangeHeader = request.headers.get('range');
+      const ext = (key.split('.').pop() || '').toLowerCase();
+      const contentType =
+        ext === 'mp4' ? 'video/mp4' :
+        ext === 'webm' ? 'video/webm' :
+        ext === 'mov' ? 'video/quicktime' :
+        ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+        ext === 'png' ? 'image/png' :
+        ext === 'webp' ? 'image/webp' :
+        ext === 'gif' ? 'image/gif' :
+        'application/octet-stream';
+
+      let r2opts = {};
+      if (rangeHeader) {
+        const m = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader);
+        if (m) {
+          const start = m[1] !== '' ? parseInt(m[1], 10) : undefined;
+          const end = m[2] !== '' ? parseInt(m[2], 10) : undefined;
+          if (start !== undefined && end !== undefined) {
+            r2opts.range = { offset: start, length: end - start + 1 };
+          } else if (start !== undefined) {
+            r2opts.range = { offset: start };
+          } else if (end !== undefined) {
+            r2opts.range = { suffix: end };
+          }
+        }
+      }
+
+      const obj = await env.R2_VIRTUAL_LAUNCH.get(key, r2opts);
+      if (!obj) {
+        return new Response('Not Found', {
+          status: 404,
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        });
+      }
+
+      const headers = {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*',
+        'Accept-Ranges': 'bytes',
+      };
+      if (obj.etag) headers['ETag'] = obj.etag;
+
+      const totalSize = obj.size != null ? obj.size : (obj.range ? undefined : undefined);
+      if (rangeHeader && obj.range && totalSize != null) {
+        const offset = obj.range.offset || 0;
+        const length = obj.range.length != null ? obj.range.length : (totalSize - offset);
+        const endByte = offset + length - 1;
+        headers['Content-Range'] = `bytes ${offset}-${endByte}/${totalSize}`;
+        headers['Content-Length'] = String(length);
+        return new Response(method === 'HEAD' ? null : obj.body, { status: 206, headers });
+      }
+
+      if (totalSize != null) headers['Content-Length'] = String(totalSize);
+      return new Response(method === 'HEAD' ? null : obj.body, { status: 200, headers });
+    }
+
     // WLVLP subdomain site serving
     // Check if request is for {slug}.websitelotto.virtuallaunch.pro
     const host = request.headers.get('host') || '';
