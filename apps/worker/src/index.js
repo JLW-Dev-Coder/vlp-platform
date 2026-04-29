@@ -23198,7 +23198,45 @@ ${postSections}`;
       }
       const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
       const registry = await loadSocialPagesRegistry(env);
-      const out = { ok: true, pages: [], threads: null };
+      const out = { ok: true, pages: [], threads: null, linkedin: null };
+
+      // LinkedIn diagnostics: token validity (/me), latest stored post lookup,
+      // and organization ACL (so we can tell whether the token has
+      // w_organization_social scope on org 116144038).
+      const liToken = env.LINKEDIN_ACCESS_TOKEN;
+      if (liToken) {
+        const li = { has_token: true, person_urn: env.LINKEDIN_PERSON_URN || null, org_id: env.LINKEDIN_ORG_ID || null };
+        try {
+          const meRes = await fetch('https://api.linkedin.com/v2/me', {
+            headers: { 'Authorization': `Bearer ${liToken}` },
+          });
+          li.me_status = meRes.status;
+          li.me = await meRes.json().catch(() => ({}));
+        } catch (e) { li.me = { error: String(e.message || e) }; }
+        try {
+          const aclRes = await fetch(
+            'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(organizationalTarget~(id,localizedName)))',
+            { headers: { 'Authorization': `Bearer ${liToken}` } }
+          );
+          li.org_acl_status = aclRes.status;
+          li.org_acl = await aclRes.json().catch(() => ({}));
+        } catch (e) { li.org_acl = { error: String(e.message || e) }; }
+        try {
+          const wkStart = getMondayOfWeek(getTodayPT());
+          const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${wkStart}/daily.json`);
+          const parsed = raw ? JSON.parse(raw) : null;
+          const last = parsed?.linkedin?.[parsed.linkedin.length - 1];
+          if (last?.postUrn) {
+            const pRes = await fetch(`https://api.linkedin.com/v2/ugcPosts/${encodeURIComponent(last.postUrn)}`, {
+              headers: { 'Authorization': `Bearer ${liToken}` },
+            });
+            li.last_post = { urn: last.postUrn, status: pRes.status, body: await pRes.json().catch(() => ({})) };
+          }
+        } catch (e) { li.last_post = { error: String(e.message || e) }; }
+        out.linkedin = li;
+      } else {
+        out.linkedin = { has_token: false };
+      }
       if (registry?.pages) {
         for (const page of registry.pages) {
           const tok = env[page.token_secret];
@@ -28740,6 +28778,38 @@ async function postToLinkedIn(env, text) {
   return { ok: true, postUrn: data.id || null };
 }
 
+async function postToLinkedInOrg(env, text, orgId) {
+  const token = env.LINKEDIN_ACCESS_TOKEN;
+  orgId = orgId || env.LINKEDIN_ORG_ID;
+  if (!token || !orgId) {
+    return { ok: false, error: 'LINKEDIN_ORG_NOT_CONFIGURED' };
+  }
+  const res = await fetch('https://api.linkedin.com/v2/ugcPosts', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'X-Restli-Protocol-Version': '2.0.0',
+    },
+    body: JSON.stringify({
+      author: `urn:li:organization:${orgId}`,
+      lifecycleState: 'PUBLISHED',
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          shareCommentary: { text },
+          shareMediaCategory: 'NONE',
+        },
+      },
+      visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' },
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status >= 400) {
+    return { ok: false, error: data?.message || JSON.stringify(data), status: res.status };
+  }
+  return { ok: true, postUrn: data.id || null };
+}
+
 async function loadSocialPagesRegistry(env) {
   try {
     const obj = await env.R2_VIRTUAL_LAUNCH.get('scale/social/pages.json');
@@ -28994,6 +29064,21 @@ async function handleSocialDailyLinkedIn(env) {
   log.linkedin = result;
   log.status = result.ok ? 'OK' : 'FAILED';
 
+  // Also post to LinkedIn Company Page (Virtual Launch Pro). Non-blocking:
+  // failures here don't downgrade the personal-post status. Requires the
+  // LinkedIn token to have w_organization_social scope + ADMINISTRATOR role
+  // on org 116144038. If the token lacks org scope, this returns an error
+  // body but the personal post stays unaffected.
+  if (env.LINKEDIN_ORG_ID) {
+    let orgResult;
+    try {
+      orgResult = await postToLinkedInOrg(env, dayPosts.linkedin.copy, env.LINKEDIN_ORG_ID);
+    } catch (err) {
+      orgResult = { ok: false, error: String(err && err.message || err).slice(0, 200) };
+    }
+    log.linkedin_org = orgResult;
+  }
+
   // ClickUp tracking — non-blocking
   try {
     const cuTaskId = await createClickUpSocialTask(env, {
@@ -29026,6 +29111,10 @@ async function handleSocialDailyLinkedIn(env) {
     const existing = existingRaw ? JSON.parse(existingRaw) : { linkedin: [] };
     existing.linkedin = existing.linkedin || [];
     existing.linkedin.push({ date: today, ...result, publishedAt: nowIso });
+    if (log.linkedin_org) {
+      existing.linkedin_org = existing.linkedin_org || [];
+      existing.linkedin_org.push({ date: today, ...log.linkedin_org, publishedAt: nowIso });
+    }
     await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${weekStart}/daily.json`, existing);
   } catch (e) {
     log.r2_append_error = String(e).slice(0, 200);
