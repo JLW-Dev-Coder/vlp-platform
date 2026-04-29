@@ -22404,14 +22404,10 @@ https://virtuallaunch.pro/payouts
   {
     method: 'POST', pattern: '/v1/scale/social/sync-to-clickup',
     handler: async (_method, _pattern, _params, request, env) => {
-      const tokenHeader = request.headers.get('X-Admin-Token') || '';
-      const tokenOk = env.TRIGGER_ADMIN_TOKEN && tokenHeader === env.TRIGGER_ADMIN_TOKEN;
-      if (!tokenOk) {
-        const { session, error } = await requireSession(request, env);
-        if (error) return error;
-        if (!isAdminEmail(session.email)) {
-          return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
-        }
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
       if (!env.CLICKUP_API_TOKEN) {
         return json({ ok: false, error: 'CLICKUP_TOKEN_NOT_SET' }, 400, request);
@@ -22426,13 +22422,9 @@ https://virtuallaunch.pro/payouts
       for (const page of registry.pages) {
         if (!page.active) continue;
         const pageOut = { page: page.id, created: 0, skipped: 0, tasks: [] };
-        const content = await loadSocialContentByKey(env, page.content_r2_key);
-        if (!content) {
-          pageOut.error = 'no_content';
-          out.pages.push(pageOut);
-          continue;
-        }
-        // Index existing CU mappings to avoid dupes
+
+        // Index existing CU mappings to avoid dupes (shared across all content
+        // keys for this page so post-Kwong content does not collide with pre).
         const indexKey = `scale/social/clickup-index/${page.id}.json`;
         let index = {};
         try {
@@ -22440,35 +22432,50 @@ https://virtuallaunch.pro/payouts
           if (existing) index = JSON.parse(existing) || {};
         } catch { index = {}; }
 
-        for (const week of (content.weeks || [])) {
-          for (const day of (week.days || [])) {
-            if (!day.date || day.date < today) continue;
-            const fbList = day.fbPage || [];
-            for (let i = 0; i < fbList.length; i++) {
-              const fbPost = fbList[i];
-              const slot = `${day.date}-fb-${i}-${fbPost.time || ''}`;
-              if (index[slot]) { pageOut.skipped++; out.skipped++; continue; }
-              const cuTaskId = await createClickUpSocialTask(env, {
-                platform: 'facebook',
-                pageName: page.name,
-                tag: page.clickup_tag,
-                campaign: `${page.clickup_tag || page.id} ${week.weekLabel || 'Week ' + (week.weekNumber || '?')}`,
-                dayNumber: day.dayNumber || null,
-                title: fbPost.title || day.title || null,
-                date: day.date,
-                time: fbPost.time,
-                copy: fbPost.copy,
-                link: page.platform_url,
-                status: 'pending',
-              });
-              if (cuTaskId) {
-                index[slot] = cuTaskId;
-                pageOut.created++;
-                out.created++;
-                pageOut.tasks.push({ slot, cuTaskId });
-              } else {
-                pageOut.errors = (pageOut.errors || 0) + 1;
-                out.errors++;
+        const contentKeys = getAllContentKeys(page);
+        if (contentKeys.length === 0) {
+          pageOut.error = 'no_content_keys';
+          out.pages.push(pageOut);
+          continue;
+        }
+
+        for (const contentKey of contentKeys) {
+          const content = await loadSocialContentByKey(env, contentKey);
+          if (!content) {
+            pageOut.errors = (pageOut.errors || 0) + 1;
+            out.errors++;
+            continue;
+          }
+          for (const week of (content.weeks || [])) {
+            for (const day of (week.days || [])) {
+              if (!day.date || day.date < today) continue;
+              const fbList = day.fbPage || [];
+              for (let i = 0; i < fbList.length; i++) {
+                const fbPost = fbList[i];
+                const slot = `${day.date}-fb-${i}-${fbPost.time || ''}`;
+                if (index[slot]) { pageOut.skipped++; out.skipped++; continue; }
+                const cuTaskId = await createClickUpSocialTask(env, {
+                  platform: 'facebook',
+                  pageName: page.name,
+                  tag: page.clickup_tag,
+                  campaign: `${page.clickup_tag || page.id} ${week.weekLabel || 'Week ' + (week.weekNumber || '?')}`,
+                  dayNumber: day.dayNumber || null,
+                  title: fbPost.title || day.title || null,
+                  date: day.date,
+                  time: fbPost.time,
+                  copy: fbPost.copy,
+                  link: page.platform_url,
+                  status: 'pending',
+                });
+                if (cuTaskId) {
+                  index[slot] = cuTaskId;
+                  pageOut.created++;
+                  out.created++;
+                  pageOut.tasks.push({ slot, cuTaskId });
+                } else {
+                  pageOut.errors = (pageOut.errors || 0) + 1;
+                  out.errors++;
+                }
               }
             }
           }
@@ -23138,16 +23145,10 @@ ${postSections}`;
   {
     method: 'POST', pattern: '/v1/scale/campaigns/social/trigger',
     handler: async (_method, _pattern, _params, request, env) => {
-      const tokenHeader = request.headers.get('X-Admin-Token') || '';
-      const tokenOk = env.TRIGGER_ADMIN_TOKEN && tokenHeader === env.TRIGGER_ADMIN_TOKEN;
-      let session = { email: 'token-trigger@virtuallaunch.pro' };
-      if (!tokenOk) {
-        const r = await requireSession(request, env);
-        if (r.error) return r.error;
-        if (!isAdminEmail(r.session.email)) {
-          return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
-        }
-        session = r.session;
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
       const body = await request.json().catch(() => ({}));
@@ -28761,6 +28762,26 @@ async function loadSocialContentByKey(env, key) {
   }
 }
 
+// Pick the active content key for a page based on date. After
+// KWONG_CAMPAIGN_END, the post-Kwong content takes over (if defined).
+function pickActiveContentKey(page, env, dateStr) {
+  if (page.content_r2_key_post_kwong && env.KWONG_CAMPAIGN_END && dateStr > env.KWONG_CAMPAIGN_END) {
+    return page.content_r2_key_post_kwong;
+  }
+  return page.content_r2_key;
+}
+
+// All content keys for a page (deduped). Used by sync-to-clickup so CU tasks
+// are created for both pre- and post-Kwong content even before the cutover.
+function getAllContentKeys(page) {
+  const keys = [];
+  if (page.content_r2_key) keys.push(page.content_r2_key);
+  if (page.content_r2_key_post_kwong && page.content_r2_key_post_kwong !== page.content_r2_key) {
+    keys.push(page.content_r2_key_post_kwong);
+  }
+  return keys;
+}
+
 async function scheduleWeekForPage(env, page, mondayStr) {
   const out = { page: page.id, fb: [], ig: [], errors: [] };
   const token = env[page.token_secret];
@@ -28768,11 +28789,13 @@ async function scheduleWeekForPage(env, page, mondayStr) {
     out.errors.push({ step: 'token', error: `secret ${page.token_secret} not set` });
     return out;
   }
-  const content = await loadSocialContentByKey(env, page.content_r2_key);
+  const activeKey = pickActiveContentKey(page, env, mondayStr);
+  const content = await loadSocialContentByKey(env, activeKey);
   if (!content) {
-    out.errors.push({ step: 'content', error: `no content at ${page.content_r2_key}` });
+    out.errors.push({ step: 'content', error: `no content at ${activeKey}` });
     return out;
   }
+  out.content_key = activeKey;
   if (content.campaign?.end && mondayStr > content.campaign.end) {
     out.status = 'CAMPAIGN_ENDED';
     return out;
