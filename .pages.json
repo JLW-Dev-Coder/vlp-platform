@@ -1,0 +1,40 @@
+{
+  "pages": [
+    {
+      "id": "tcvlp",
+      "name": "Tax Claim Pro",
+      "facebook_page_id": "1168626299655881",
+      "facebook_url": "https://www.facebook.com/irstaxclaimpro",
+      "instagram_user_id": null,
+      "token_secret": "META_TCVLP_PAGE_ACCESS_TOKEN",
+      "content_r2_key": "scale/social/kwong-campaign-content.json",
+      "platform_url": "https://taxclaim.virtuallaunch.pro",
+      "clickup_tag": "TCVLP",
+      "active": true,
+      "auto_comments": [
+        "Have questions about filing your Kwong claim? Book a free 15-min call: https://cal.com/tax-monitor-pro/tax-avatar-virtual-launch-pro",
+        "Tax pros: automate Form 843 for your clients at https://taxclaim.virtuallaunch.pro — $10/mo, cancel anytime.",
+        "Not sure if you qualify? Talk to Kennedy — our AI assistant walks you through it: https://taxclaim.virtuallaunch.pro/kennedy",
+        "EAs, CPAs, and tax attorneys: the Kwong deadline is July 10, 2026. Don't let your clients miss it."
+      ]
+    },
+    {
+      "id": "tavlp",
+      "name": "Tax Avatar Pro",
+      "facebook_page_id": "1099264186599368",
+      "facebook_url": "https://www.facebook.com/taxavatarpro",
+      "instagram_user_id": null,
+      "token_secret": "META_TAVLP_PAGE_ACCESS_TOKEN",
+      "content_r2_key": "scale/social/tavlp-campaign-content.json",
+      "platform_url": "https://taxavatar.virtuallaunch.pro",
+      "clickup_tag": "TAVLP",
+      "active": true,
+      "auto_comments": [
+        "Want to see the avatars in action? Meet Annie, Tariq, Genesis, Knox, Denyse, and Griffin: https://taxavatar.virtuallaunch.pro/avatars",
+        "Book a free 15-min intro call to see how Tax Avatar Pro fits your practice: https://cal.com/tax-monitor-pro/tax-avatar-virtual-launch-pro",
+        "Questions? Drop them below — or talk to Kennedy live: https://taxclaim.virtuallaunch.pro/kennedy",
+        "923 organic views in 30 days. Zero ad spend. See the proof: https://taxavatar.virtuallaunch.pro"
+      ]
+    }
+  ]
+}

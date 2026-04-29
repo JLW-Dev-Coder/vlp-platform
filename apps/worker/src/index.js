@@ -22404,10 +22404,14 @@ https://virtuallaunch.pro/payouts
   {
     method: 'POST', pattern: '/v1/scale/social/sync-to-clickup',
     handler: async (_method, _pattern, _params, request, env) => {
-      const { session, error } = await requireSession(request, env);
-      if (error) return error;
-      if (!isAdminEmail(session.email)) {
-        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      const tokenHeader = request.headers.get('X-Admin-Token') || '';
+      const tokenOk = env.TRIGGER_ADMIN_TOKEN && tokenHeader === env.TRIGGER_ADMIN_TOKEN;
+      if (!tokenOk) {
+        const { session, error } = await requireSession(request, env);
+        if (error) return error;
+        if (!isAdminEmail(session.email)) {
+          return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+        }
       }
       if (!env.CLICKUP_API_TOKEN) {
         return json({ ok: false, error: 'CLICKUP_TOKEN_NOT_SET' }, 400, request);
@@ -23134,10 +23138,16 @@ ${postSections}`;
   {
     method: 'POST', pattern: '/v1/scale/campaigns/social/trigger',
     handler: async (_method, _pattern, _params, request, env) => {
-      const { session, error } = await requireSession(request, env);
-      if (error) return error;
-      if (!isAdminEmail(session.email)) {
-        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      const tokenHeader = request.headers.get('X-Admin-Token') || '';
+      const tokenOk = env.TRIGGER_ADMIN_TOKEN && tokenHeader === env.TRIGGER_ADMIN_TOKEN;
+      let session = { email: 'token-trigger@virtuallaunch.pro' };
+      if (!tokenOk) {
+        const r = await requireSession(request, env);
+        if (r.error) return r.error;
+        if (!isAdminEmail(r.session.email)) {
+          return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+        }
+        session = r.session;
       }
 
       const body = await request.json().catch(() => ({}));
@@ -23171,6 +23181,63 @@ ${postSections}`;
         stored,
         triggered_by: session.email,
       }, log.status === 'ERROR' ? 502 : 200, request);
+    },
+  },
+
+  // GET /v1/scale/campaigns/social/debug — admin-only investigation endpoint
+  // Returns per-page recent FB feed, IG link status, and Meta app permissions.
+  // Used to verify posting activity and onboarding (IG link, Threads).
+  {
+    method: 'GET', pattern: '/v1/scale/campaigns/social/debug',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
+      const registry = await loadSocialPagesRegistry(env);
+      const out = { ok: true, pages: [], threads: null };
+      if (registry?.pages) {
+        for (const page of registry.pages) {
+          const tok = env[page.token_secret];
+          const entry = { id: page.id, has_token: !!tok, feed: null, ig: null, perms: null };
+          if (!tok) { out.pages.push(entry); continue; }
+          try {
+            const feedRes = await fetch(
+              `https://graph.facebook.com/${apiVersion}/${page.facebook_page_id}/feed`
+              + `?fields=id,message,created_time,comments.limit(5){from,message}&limit=5`
+              + `&access_token=${encodeURIComponent(tok)}`
+            );
+            entry.feed = await feedRes.json().catch(() => ({}));
+          } catch (e) { entry.feed = { error: String(e.message || e) }; }
+          try {
+            const igRes = await fetch(
+              `https://graph.facebook.com/${apiVersion}/${page.facebook_page_id}`
+              + `?fields=instagram_business_account&access_token=${encodeURIComponent(tok)}`
+            );
+            entry.ig = await igRes.json().catch(() => ({}));
+          } catch (e) { entry.ig = { error: String(e.message || e) }; }
+          try {
+            const permRes = await fetch(
+              `https://graph.facebook.com/${apiVersion}/me/permissions`
+              + `?access_token=${encodeURIComponent(tok)}`
+            );
+            entry.perms = await permRes.json().catch(() => ({}));
+          } catch (e) { entry.perms = { error: String(e.message || e) }; }
+          out.pages.push(entry);
+        }
+      }
+      try {
+        const tok = env.META_TAVLP_PAGE_ACCESS_TOKEN || env.META_TCVLP_PAGE_ACCESS_TOKEN;
+        if (tok) {
+          const tRes = await fetch(`https://graph.threads.net/v1.0/me?fields=id,username&access_token=${encodeURIComponent(tok)}`);
+          out.threads = await tRes.json().catch(() => ({}));
+        } else {
+          out.threads = { error: 'no_token_available' };
+        }
+      } catch (e) { out.threads = { error: String(e.message || e) }; }
+      return json(out, 200, request);
     },
   },
 
@@ -28486,6 +28553,91 @@ async function updateClickUpTaskStatus(env, taskId, status, postUrl) {
   }
 }
 
+// Hashtag suffixes appended at post time per page.
+// LinkedIn intentionally excluded — different best practice (3-5 inline hashtags).
+const SOCIAL_HASHTAGS = {
+  tcvlp: '\n\n#TaxPro #IRS #PenaltyAbatement #Kwong #Form843 #EnrolledAgent #CPA #TaxAttorney #IRSPenalty #TaxRefund',
+  tavlp: '\n\n#TaxPro #AIYouTube #TaxAvatar #EnrolledAgent #CPA #TaxAttorney #YouTubeMarketing #FacelessYouTube #TaxMarketing #AIAvatar',
+};
+
+async function commentOnFacebookPost(env, postId, commentText, token) {
+  if (!postId || !commentText || !token) return null;
+  const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
+  try {
+    const res = await fetch(`https://graph.facebook.com/${apiVersion}/${postId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ message: commentText, access_token: token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (data.error || !data.id) {
+      console.error('FB comment error:', data.error?.message || `HTTP ${res.status}`);
+      return null;
+    }
+    return data.id;
+  } catch (e) {
+    console.error('FB comment exception:', String(e && e.message || e));
+    return null;
+  }
+}
+
+// Sweep recent posts on a page published today and add a self-comment to any
+// that don't yet have one from the page itself. Used daily to attach comments
+// to FB posts that were scheduled (and therefore couldn't be commented on at
+// scheduling time).
+async function sweepPageAutoComments(env, page, todayPT) {
+  const out = { page: page.id, commented: [], skipped: 0, errors: [] };
+  const token = env[page.token_secret];
+  if (!token || !page.facebook_page_id) {
+    out.errors.push('no_token_or_page_id');
+    return out;
+  }
+  if (!Array.isArray(page.auto_comments) || page.auto_comments.length === 0) {
+    out.skipped = -1;
+    return out;
+  }
+  const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
+  try {
+    const url = `https://graph.facebook.com/${apiVersion}/${page.facebook_page_id}/feed`
+      + `?fields=id,message,created_time,comments.limit(25){from,message}&limit=10`
+      + `&access_token=${encodeURIComponent(token)}`;
+    const res = await fetch(url);
+    const data = await res.json().catch(() => ({}));
+    if (data.error) {
+      out.errors.push(data.error.message);
+      return out;
+    }
+    const posts = Array.isArray(data.data) ? data.data : [];
+    for (const post of posts) {
+      // Only consider posts created today (PT-aligned date string match against created_time UTC)
+      const created = (post.created_time || '').slice(0, 10);
+      // created_time is ISO UTC; compare to today's UTC date as a coarse window
+      const todayUTC = new Date().toISOString().slice(0, 10);
+      if (created !== todayUTC && created !== todayPT) continue;
+
+      const existingComments = post.comments?.data || [];
+      const hasOwnComment = existingComments.some(
+        c => c.from && String(c.from.id) === String(page.facebook_page_id)
+      );
+      if (hasOwnComment) {
+        out.skipped += 1;
+        continue;
+      }
+      const idx = Math.floor(Math.random() * page.auto_comments.length);
+      const text = page.auto_comments[idx];
+      const cid = await commentOnFacebookPost(env, post.id, text, token);
+      if (cid) {
+        out.commented.push({ postId: post.id, commentId: cid });
+      } else {
+        out.errors.push({ postId: post.id, error: 'comment_failed' });
+      }
+    }
+  } catch (e) {
+    out.errors.push(String(e && e.message || e).slice(0, 200));
+  }
+  return out;
+}
+
 async function scheduleFacebookPost(env, message, scheduledDateTimeISO, pageId, token) {
   pageId = pageId || env.META_PAGE_ID;
   token = token || env.META_PAGE_ACCESS_TOKEN;
@@ -28634,8 +28786,9 @@ async function scheduleWeekForPage(env, page, mondayStr) {
   for (const day of weekPosts) {
     for (const fbPost of (day.fbPage || [])) {
       const scheduledTime = `${day.date}T${fbPost.time}:00-07:00`;
+      const fbMessage = fbPost.copy + (SOCIAL_HASHTAGS[page.id] || '');
       try {
-        const result = await scheduleFacebookPost(env, fbPost.copy, scheduledTime, page.facebook_page_id, token);
+        const result = await scheduleFacebookPost(env, fbMessage, scheduledTime, page.facebook_page_id, token);
         const cuTaskId = await createClickUpSocialTask(env, {
           platform: 'facebook',
           pageName: page.name,
@@ -28659,8 +28812,9 @@ async function scheduleWeekForPage(env, page, mondayStr) {
     }
 
     if (page.instagram_user_id && day.fbPage && day.fbPage[0]) {
+      const igCaption = day.fbPage[0].copy + (SOCIAL_HASHTAGS[page.id] || '');
       try {
-        const result = await postToInstagram(env, day.fbPage[0].copy, undefined, page.instagram_user_id, token);
+        const result = await postToInstagram(env, igCaption, undefined, page.instagram_user_id, token);
         out.ig.push({ date: day.date, ...result });
       } catch (err) {
         out.errors.push({ platform: 'ig', date: day.date, error: String(err && err.message || err).slice(0, 200) });
@@ -28838,6 +28992,26 @@ async function handleSocialDailyLinkedIn(env) {
     await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${weekStart}/daily.json`, existing);
   } catch (e) {
     log.r2_append_error = String(e).slice(0, 200);
+  }
+
+  // Sweep auto-comments onto any FB posts published today across all active pages.
+  try {
+    const registry = await loadSocialPagesRegistry(env);
+    if (registry && Array.isArray(registry.pages)) {
+      const sweeps = [];
+      for (const page of registry.pages) {
+        if (!page.active) continue;
+        sweeps.push(await sweepPageAutoComments(env, page, today));
+      }
+      log.comment_sweeps = sweeps.map(s => ({
+        page: s.page,
+        commented: s.commented.length,
+        skipped: s.skipped,
+        errors: s.errors.length,
+      }));
+    }
+  } catch (e) {
+    log.comment_sweep_error = String(e && e.message || e).slice(0, 200);
   }
 
   return log;
