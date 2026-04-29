@@ -28951,14 +28951,28 @@ async function handleSocialWeeklySchedule(env) {
 async function handleSocialDailyLinkedIn(env) {
   const nowIso = new Date().toISOString();
   const log = { type: 'kwong_social_daily_linkedin', timestamp: nowIso };
-  const content = await loadSocialContent(env);
+  const today = getTodayPT();
+  log.today = today;
+
+  // Resolve the active content file using the same pickActiveContentKey
+  // logic as the Sunday FB scheduler, so LinkedIn does not go silent after
+  // KWONG_CAMPAIGN_END. Source page: env.LINKEDIN_SOURCE_PAGE_ID (default
+  // 'tcvlp') in the social pages registry. Fallback: SOCIAL_CONTENT_R2_KEY.
+  const sourcePageId = env.LINKEDIN_SOURCE_PAGE_ID || 'tcvlp';
+  let activeKey = null;
+  const registry = await loadSocialPagesRegistry(env);
+  if (registry) {
+    const sourcePage = (registry.pages || []).find(p => p.id === sourcePageId);
+    if (sourcePage) activeKey = pickActiveContentKey(sourcePage, env, today);
+  }
+  if (!activeKey) activeKey = env.SOCIAL_CONTENT_R2_KEY || 'scale/social/kwong-campaign-content.json';
+  log.content_key = activeKey;
+
+  const content = await loadSocialContentByKey(env, activeKey);
   if (!content) {
     log.status = 'NO_CONTENT';
     return log;
   }
-
-  const today = getTodayPT();
-  log.today = today;
 
   if (content.campaign?.end && today > content.campaign.end) {
     log.status = 'CAMPAIGN_ENDED';
