@@ -28312,14 +28312,16 @@ function getPostsForWeek(content, mondayDate) {
   return posts;
 }
 
-async function scheduleFacebookPost(env, message, scheduledDateTimeISO) {
-  if (!env.META_PAGE_ACCESS_TOKEN || !env.META_PAGE_ID) {
+async function scheduleFacebookPost(env, message, scheduledDateTimeISO, pageId, token) {
+  pageId = pageId || env.META_PAGE_ID;
+  token = token || env.META_PAGE_ACCESS_TOKEN;
+  if (!token || !pageId) {
     return { ok: false, error: 'META_TOKENS_NOT_SET' };
   }
   const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
   const unixTime = Math.floor(new Date(scheduledDateTimeISO).getTime() / 1000);
   const res = await fetch(
-    `https://graph.facebook.com/${apiVersion}/${env.META_PAGE_ID}/feed`,
+    `https://graph.facebook.com/${apiVersion}/${pageId}/feed`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -28327,7 +28329,7 @@ async function scheduleFacebookPost(env, message, scheduledDateTimeISO) {
         message,
         published: 'false',
         scheduled_publish_time: String(unixTime),
-        access_token: env.META_PAGE_ACCESS_TOKEN,
+        access_token: token,
       }),
     }
   );
@@ -28338,21 +28340,23 @@ async function scheduleFacebookPost(env, message, scheduledDateTimeISO) {
   return { ok: true, postId: data.id };
 }
 
-async function postToInstagram(env, caption, imageUrl) {
-  if (!env.META_PAGE_ACCESS_TOKEN || !env.META_IG_USER_ID) {
+async function postToInstagram(env, caption, imageUrl, igUserId, token) {
+  igUserId = igUserId || env.META_IG_USER_ID;
+  token = token || env.META_PAGE_ACCESS_TOKEN;
+  if (!token || !igUserId) {
     return { ok: false, error: 'META_IG_NOT_CONFIGURED' };
   }
   const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
 
   const containerRes = await fetch(
-    `https://graph.facebook.com/${apiVersion}/${env.META_IG_USER_ID}/media`,
+    `https://graph.facebook.com/${apiVersion}/${igUserId}/media`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         caption,
         image_url: imageUrl || 'https://taxclaim.virtuallaunch.pro/og-image.png',
-        access_token: env.META_PAGE_ACCESS_TOKEN,
+        access_token: token,
       }),
     }
   );
@@ -28362,13 +28366,13 @@ async function postToInstagram(env, caption, imageUrl) {
   }
 
   const publishRes = await fetch(
-    `https://graph.facebook.com/${apiVersion}/${env.META_IG_USER_ID}/media_publish`,
+    `https://graph.facebook.com/${apiVersion}/${igUserId}/media_publish`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         creation_id: container.id,
-        access_token: env.META_PAGE_ACCESS_TOKEN,
+        access_token: token,
       }),
     }
   );
@@ -28409,13 +28413,78 @@ async function postToLinkedIn(env, text) {
   return { ok: true, postUrn: data.id || null };
 }
 
+async function loadSocialPagesRegistry(env) {
+  try {
+    const obj = await env.R2_VIRTUAL_LAUNCH.get('scale/social/pages.json');
+    if (!obj) return null;
+    const data = JSON.parse(await obj.text());
+    if (!data || !Array.isArray(data.pages)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+async function loadSocialContentByKey(env, key) {
+  try {
+    const obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+    if (!obj) return null;
+    return JSON.parse(await obj.text());
+  } catch {
+    return null;
+  }
+}
+
+async function scheduleWeekForPage(env, page, mondayStr) {
+  const out = { page: page.id, fb: [], ig: [], errors: [] };
+  const token = env[page.token_secret];
+  if (!token) {
+    out.errors.push({ step: 'token', error: `secret ${page.token_secret} not set` });
+    return out;
+  }
+  const content = await loadSocialContentByKey(env, page.content_r2_key);
+  if (!content) {
+    out.errors.push({ step: 'content', error: `no content at ${page.content_r2_key}` });
+    return out;
+  }
+  if (content.campaign?.end && mondayStr > content.campaign.end) {
+    out.status = 'CAMPAIGN_ENDED';
+    return out;
+  }
+  const weekPosts = getPostsForWeek(content, mondayStr);
+  if (weekPosts.length === 0) {
+    out.status = 'NO_POSTS_FOR_WEEK';
+    return out;
+  }
+
+  for (const day of weekPosts) {
+    for (const fbPost of (day.fbPage || [])) {
+      const scheduledTime = `${day.date}T${fbPost.time}:00-07:00`;
+      try {
+        const result = await scheduleFacebookPost(env, fbPost.copy, scheduledTime, page.facebook_page_id, token);
+        out.fb.push({ date: day.date, time: fbPost.time, ...result });
+      } catch (err) {
+        out.errors.push({ platform: 'fb', date: day.date, error: String(err && err.message || err).slice(0, 200) });
+      }
+    }
+
+    if (page.instagram_user_id && day.fbPage && day.fbPage[0]) {
+      try {
+        const result = await postToInstagram(env, day.fbPage[0].copy, undefined, page.instagram_user_id, token);
+        out.ig.push({ date: day.date, ...result });
+      } catch (err) {
+        out.errors.push({ platform: 'ig', date: day.date, error: String(err && err.message || err).slice(0, 200) });
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+  out.fb_ok = out.fb.filter(r => r.ok).length;
+  out.ig_ok = out.ig.filter(r => r.ok).length;
+  return out;
+}
+
 async function handleSocialWeeklySchedule(env) {
   const log = { type: 'kwong_social_weekly_schedule', timestamp: new Date().toISOString() };
-  const content = await loadSocialContent(env);
-  if (!content) {
-    log.status = 'NO_CONTENT';
-    return log;
-  }
 
   const today = getTodayPT();
   // Sunday cron — schedule the upcoming Monday's week.
@@ -28423,6 +28492,44 @@ async function handleSocialWeeklySchedule(env) {
   nextMonday.setUTCDate(nextMonday.getUTCDate() + 1);
   const mondayStr = nextMonday.toISOString().split('T')[0];
   log.weekStart = mondayStr;
+
+  const registry = await loadSocialPagesRegistry(env);
+
+  if (registry) {
+    const perPage = [];
+    for (const page of registry.pages) {
+      if (!page.active) continue;
+      try {
+        perPage.push(await scheduleWeekForPage(env, page, mondayStr));
+      } catch (err) {
+        perPage.push({ page: page.id, errors: [{ step: 'page_run', error: String(err && err.message || err).slice(0, 200) }] });
+      }
+    }
+    await r2Put(env.R2_VIRTUAL_LAUNCH, `scale/social/results/${mondayStr}/scheduled.json`, {
+      pages: perPage,
+      scheduledAt: new Date().toISOString(),
+      weekStart: mondayStr,
+    }).catch(() => {});
+    log.pages = perPage.map(p => ({
+      page: p.page,
+      fb_count: (p.fb || []).length,
+      fb_ok: p.fb_ok || 0,
+      ig_count: (p.ig || []).length,
+      ig_ok: p.ig_ok || 0,
+      errors: (p.errors || []).length,
+      status: p.status,
+    }));
+    const totalErrors = perPage.reduce((n, p) => n + (p.errors || []).length, 0);
+    log.status = totalErrors ? 'PARTIAL' : 'OK';
+    return log;
+  }
+
+  // Fallback: legacy single-page behavior
+  const content = await loadSocialContent(env);
+  if (!content) {
+    log.status = 'NO_CONTENT';
+    return log;
+  }
 
   if (content.campaign?.end && mondayStr > content.campaign.end) {
     log.status = 'CAMPAIGN_ENDED';

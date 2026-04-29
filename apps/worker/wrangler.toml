@@ -95,6 +95,11 @@ KWONG_CAMPAIGN_END = "2026-07-10"
 META_GRAPH_API_VERSION = "v22.0"
 SOCIAL_CONTENT_R2_KEY = "scale/social/kwong-campaign-content.json"
 
+# Meta (Facebook) Page IDs — public, not secret
+META_TCVLP_PAGE_ID = "1168626299655881"
+META_TAVLP_PAGE_ID = "1099264186599368"
+META_PAGE_ID = "1168626299655881"  # Legacy default — TCVLP
+
 # YouTube analytics (Project 3) — Tax Transcript AI channel
 YOUTUBE_CHANNEL_ID = "UCMWWyBdpnYHX3OGMWMHKX6A"
 YOUTUBE_OAUTH_CLIENT_ID = "567315945471-0b516ihtbrd7c7dk2oer9vnqcoqr0a1o.apps.googleusercontent.com"
