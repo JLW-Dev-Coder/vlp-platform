@@ -22400,6 +22400,87 @@ https://virtuallaunch.pro/payouts
     },
   },
 
+  // POST /v1/scale/social/sync-to-clickup — Backfill CU tasks for pending campaign posts (admin)
+  {
+    method: 'POST', pattern: '/v1/scale/social/sync-to-clickup',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      if (!env.CLICKUP_API_TOKEN) {
+        return json({ ok: false, error: 'CLICKUP_TOKEN_NOT_SET' }, 400, request);
+      }
+
+      const registry = await loadSocialPagesRegistry(env);
+      if (!registry) return json({ ok: false, error: 'NO_REGISTRY' }, 404, request);
+
+      const today = getTodayPT();
+      const out = { pages: [], created: 0, skipped: 0, errors: 0 };
+
+      for (const page of registry.pages) {
+        if (!page.active) continue;
+        const pageOut = { page: page.id, created: 0, skipped: 0, tasks: [] };
+        const content = await loadSocialContentByKey(env, page.content_r2_key);
+        if (!content) {
+          pageOut.error = 'no_content';
+          out.pages.push(pageOut);
+          continue;
+        }
+        // Index existing CU mappings to avoid dupes
+        const indexKey = `scale/social/clickup-index/${page.id}.json`;
+        let index = {};
+        try {
+          const existing = await r2Get(env.R2_VIRTUAL_LAUNCH, indexKey);
+          if (existing) index = JSON.parse(existing) || {};
+        } catch { index = {}; }
+
+        for (const week of (content.weeks || [])) {
+          for (const day of (week.days || [])) {
+            if (!day.date || day.date < today) continue;
+            const fbList = day.fbPage || [];
+            for (let i = 0; i < fbList.length; i++) {
+              const fbPost = fbList[i];
+              const slot = `${day.date}-fb-${i}-${fbPost.time || ''}`;
+              if (index[slot]) { pageOut.skipped++; out.skipped++; continue; }
+              const cuTaskId = await createClickUpSocialTask(env, {
+                platform: 'facebook',
+                pageName: page.name,
+                tag: page.clickup_tag,
+                campaign: `${page.clickup_tag || page.id} ${week.weekLabel || 'Week ' + (week.weekNumber || '?')}`,
+                dayNumber: day.dayNumber || null,
+                title: fbPost.title || day.title || null,
+                date: day.date,
+                time: fbPost.time,
+                copy: fbPost.copy,
+                link: page.platform_url,
+                status: 'pending',
+              });
+              if (cuTaskId) {
+                index[slot] = cuTaskId;
+                pageOut.created++;
+                out.created++;
+                pageOut.tasks.push({ slot, cuTaskId });
+              } else {
+                pageOut.errors = (pageOut.errors || 0) + 1;
+                out.errors++;
+              }
+            }
+          }
+        }
+        try {
+          await r2Put(env.R2_VIRTUAL_LAUNCH, indexKey, index);
+        } catch (e) {
+          pageOut.r2_error = String(e).slice(0, 200);
+        }
+        out.pages.push(pageOut);
+      }
+
+      return json({ ok: true, ...out }, 200, request);
+    },
+  },
+
   // GET /v1/scale/social/posts — List social posts (admin)
   {
     method: 'GET', pattern: '/v1/scale/social/posts',
@@ -28312,6 +28393,99 @@ function getPostsForWeek(content, mondayDate) {
   return posts;
 }
 
+// ClickUp task helpers — every social post becomes a CU task in SOCIAL_CLICKUP_LIST_ID.
+// Failures are non-blocking: the post still goes out even if ClickUp is unreachable.
+async function createClickUpSocialTask(env, post) {
+  try {
+    const token = env.CLICKUP_API_TOKEN;
+    const listId = env.SOCIAL_CLICKUP_LIST_ID || '901700028238';
+    if (!token) return null;
+
+    const dayOfWeek = post.dayOfWeek || (post.date
+      ? new Date(post.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' })
+      : '');
+    const dateLabel = post.date
+      ? new Date(post.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', timeZone: 'UTC' })
+      : '';
+    const title = post.title || `${post.platform || 'social'} post`;
+    const taskName = `${post.campaign || 'Social'} | Day ${post.dayNumber || '?'} (${dayOfWeek}, ${dateLabel}) — ${title}`;
+
+    const description = [
+      '## Social Post',
+      '',
+      `**Platform:** ${post.platform || 'unknown'}`,
+      `**Page:** ${post.pageName || 'n/a'}`,
+      `**Scheduled:** ${post.date || 'n/a'} at ${post.time || '09:00'}`,
+      `**Status:** ${post.status || 'scheduled'}`,
+      '',
+      '---',
+      '',
+      '### Copy',
+      '',
+      String(post.copy || ''),
+      '',
+      '---',
+      '',
+      `**CTA:** ${post.link || 'none'}`,
+      `**Campaign:** ${post.campaign || 'n/a'}`,
+    ].join('\n');
+
+    let dueDate = null;
+    if (post.date) {
+      const t = (post.time || '09:00') + ':00-07:00';
+      const ms = new Date(`${post.date}T${t}`).getTime();
+      if (Number.isFinite(ms)) dueDate = ms;
+    }
+
+    const tags = [];
+    if (post.tag) tags.push(String(post.tag));
+    if (post.platform) tags.push(String(post.platform));
+
+    const res = await fetch(`https://api.clickup.com/api/v2/list/${listId}/task`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: taskName,
+        markdown_description: description,
+        ...(dueDate ? { due_date: dueDate } : {}),
+        priority: 3,
+        tags,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json().catch(() => null);
+    return data && data.id ? data.id : null;
+  } catch {
+    return null;
+  }
+}
+
+async function updateClickUpTaskStatus(env, taskId, status, postUrl) {
+  try {
+    const token = env.CLICKUP_API_TOKEN;
+    if (!token || !taskId) return;
+    if (status) {
+      await fetch(`https://api.clickup.com/api/v2/task/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      }).catch(() => {});
+    }
+    if (postUrl) {
+      await fetch(`https://api.clickup.com/api/v2/task/${taskId}/comment`, {
+        method: 'POST',
+        headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment_text: `Posted successfully: ${postUrl}` }),
+      }).catch(() => {});
+    }
+  } catch {
+    /* swallow */
+  }
+}
+
 async function scheduleFacebookPost(env, message, scheduledDateTimeISO, pageId, token) {
   pageId = pageId || env.META_PAGE_ID;
   token = token || env.META_PAGE_ACCESS_TOKEN;
@@ -28462,7 +28636,23 @@ async function scheduleWeekForPage(env, page, mondayStr) {
       const scheduledTime = `${day.date}T${fbPost.time}:00-07:00`;
       try {
         const result = await scheduleFacebookPost(env, fbPost.copy, scheduledTime, page.facebook_page_id, token);
-        out.fb.push({ date: day.date, time: fbPost.time, ...result });
+        const cuTaskId = await createClickUpSocialTask(env, {
+          platform: 'facebook',
+          pageName: page.name,
+          tag: page.clickup_tag,
+          campaign: `${page.clickup_tag || page.id} ${day.weekLabel || 'Week'}`,
+          dayNumber: day.dayNumber || null,
+          title: fbPost.title || day.title || null,
+          date: day.date,
+          time: fbPost.time,
+          copy: fbPost.copy,
+          link: page.platform_url,
+          status: result.ok ? 'scheduled' : 'failed',
+        });
+        if (cuTaskId && result.ok && result.postId) {
+          await updateClickUpTaskStatus(env, cuTaskId, null, `https://facebook.com/${result.postId}`);
+        }
+        out.fb.push({ date: day.date, time: fbPost.time, cuTaskId, ...result });
       } catch (err) {
         out.errors.push({ platform: 'fb', date: day.date, error: String(err && err.message || err).slice(0, 200) });
       }
@@ -28612,6 +28802,32 @@ async function handleSocialDailyLinkedIn(env) {
   }
   log.linkedin = result;
   log.status = result.ok ? 'OK' : 'FAILED';
+
+  // ClickUp tracking — non-blocking
+  try {
+    const cuTaskId = await createClickUpSocialTask(env, {
+      platform: 'linkedin',
+      pageName: 'Jamie Williams (LinkedIn)',
+      tag: 'LinkedIn',
+      campaign: 'Kwong Daily LinkedIn',
+      dayNumber: dayPosts.dayNumber || null,
+      title: dayPosts.linkedin.title || null,
+      date: today,
+      time: '15:00',
+      copy: dayPosts.linkedin.copy,
+      link: 'https://taxclaim.virtuallaunch.pro',
+      status: result.ok ? 'posted' : 'failed',
+    });
+    if (cuTaskId && result.ok) {
+      const url = result.postUrn
+        ? `https://www.linkedin.com/feed/update/${encodeURIComponent(result.postUrn)}`
+        : null;
+      await updateClickUpTaskStatus(env, cuTaskId, 'complete', url);
+    }
+    log.clickup_task = cuTaskId || null;
+  } catch (e) {
+    log.clickup_error = String(e).slice(0, 200);
+  }
 
   const weekStart = getMondayOfWeek(today);
   try {

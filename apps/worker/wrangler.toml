@@ -100,6 +100,9 @@ META_TCVLP_PAGE_ID = "1168626299655881"
 META_TAVLP_PAGE_ID = "1099264186599368"
 META_PAGE_ID = "1168626299655881"  # Legacy default — TCVLP
 
+# ClickUp social pipeline list
+SOCIAL_CLICKUP_LIST_ID = "901700028238"
+
 # YouTube analytics (Project 3) — Tax Transcript AI channel
 YOUTUBE_CHANNEL_ID = "UCMWWyBdpnYHX3OGMWMHKX6A"
 YOUTUBE_OAUTH_CLIENT_ID = "567315945471-0b516ihtbrd7c7dk2oer9vnqcoqr0a1o.apps.googleusercontent.com"
