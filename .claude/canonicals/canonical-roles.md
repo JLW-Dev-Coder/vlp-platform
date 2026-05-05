@@ -12,6 +12,10 @@ Template for defining roles in the VLP ecosystem.
 
 ---
 
+## Brevity rule (global, all roles)
+
+Keep responses brief and concise. No preamble, no recap of what the user said, no commentary on tradeoffs unless explicitly requested. Lead with the answer, action, or question. Cut everything else.
+
 ## Required Roles
 
 ### 1. Role: Principal Engineer (Chat Claude)
