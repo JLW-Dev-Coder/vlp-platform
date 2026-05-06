@@ -1,6 +1,6 @@
 # ROLES — vlp-platform (Monorepo)
 
-Last updated: 2026-04-13
+Last updated: 2026-05-06
 
 ---
 
@@ -17,6 +17,11 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
   - Flags conflicts between apps/packages
   - Maintains state across the entire VLP ecosystem
   - Reviews all CLAUDE.md / contract / canonical changes before merge
+- **Prompt delivery format**:
+  - **All RC prompts MUST be delivered as canvas/code artifacts** (markdown files), never inline in chat
+  - Inline chat text is reserved for: scoping questions, decisions, recommendations, status updates, customer-facing copy drafts, and other Owner-facing content
+  - The visual separation makes it unambiguous what is meant for RC to copy-paste vs. what is meant for the Owner to read
+  - Resume instructions, prompt amendments, and short corrections to in-flight prompts may be delivered inline as block-quoted text when they are surgical edits to an already-running prompt — but new prompts and substantial revisions always go in artifacts
 - **Doc-Impact Check**:
   | Change Type | Files to Evaluate |
   |---|---|
@@ -51,3 +56,12 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
 - **JLW** — sole owner and operator
 - Both Claude roles report to James
 - All pricing, tier, and business decisions require owner sign-off
+
+---
+
+## Decision log
+
+| Date | Change | Rationale |
+|------|--------|-----------|
+| 2026-04-13 | Initial version | Establish role boundaries between Chat Claude (Principal) and Claude Code (Execution) |
+| 2026-05-06 | Added "Prompt delivery format" subsection to Principal Engineer | During the billing-refund-notification sweep, RC prompts and Owner-facing content were getting mixed in chat. Owner asked for a hard rule: RC prompts always go in canvas/code artifacts, conversational text stays in chat. Visual separation prevents miscommunication about what is meant for whom. |
