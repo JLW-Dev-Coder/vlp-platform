@@ -88,7 +88,7 @@ export const vlpConfig: PlatformConfig = {
       toolsExtras: [
         { label: 'How It Works', href: '/how-it-works' },
         { label: 'Directory Profile', href: '/features/public-profile' },
-        { label: 'Partner Program', href: '/affiliate' },
+        { label: 'Affiliates', href: '/affiliate' },
       ],
       ctaText: 'Your next client is already looking for you. Get listed and start receiving leads.',
       ctaMagnetLabel: 'Get Your First Leads',
