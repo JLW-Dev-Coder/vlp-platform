@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   Link2,
   Copy,
@@ -234,6 +235,23 @@ export default function AffiliateClient() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="rounded-xl border border-[--member-border] bg-[--member-card] p-6">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Resources</h3>
+            <p className="mt-1 text-sm text-white/50">
+              Outreach scripts, talking points, proposal templates, and FAQ responses to help you close referrals.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/affiliate/resources"
+            className="inline-flex flex-shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
+          >
+            View Resources →
+          </Link>
+        </div>
       </div>
     </div>
   )
