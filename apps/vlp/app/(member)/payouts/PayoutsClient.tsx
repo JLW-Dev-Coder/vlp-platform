@@ -168,7 +168,7 @@ export default function PayoutsClient() {
               </p>
             </div>
             <a
-              href="/affiliate"
+              href="/dashboard/affiliate"
               className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-primary to-brand-hover px-5 py-2.5 text-sm font-medium text-white shadow transition hover:opacity-90"
             >
               Connect Bank Account

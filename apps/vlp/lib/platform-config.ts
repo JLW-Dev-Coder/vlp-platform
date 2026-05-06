@@ -33,7 +33,7 @@ export const vlpConfig: PlatformConfig = {
     {
       title: 'EARNINGS',
       items: [
-        { label: 'Affiliate', href: '/affiliate', icon: 'Link2' },
+        { label: 'Affiliate', href: '/dashboard/affiliate', icon: 'Link2' },
         { label: 'Client Pool', href: '/client-pool', icon: 'Users' },
         { label: 'Payouts', href: '/payouts', icon: 'Wallet' },
       ],
