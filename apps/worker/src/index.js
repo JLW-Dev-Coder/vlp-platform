@@ -5219,11 +5219,29 @@ const ROUTES = [
             // Handle TCVLP subscriptions
             if (platform === 'tcvlp' && account_id) {
               try {
-                const tcvlpPlan = plan_key || 'tcvlp_starter';
-                await d1Run(env.DB,
+                // Don't coerce missing plan_key to 'tcvlp_starter' — let it pass as null
+                // so the subscription handler renders honest unknown-state rather than lying.
+                const tcvlpPlan = plan_key ?? null;
+                const result = await d1Run(env.DB,
                   'UPDATE tcvlp_pros SET stripe_customer_id = ?, stripe_subscription_id = ?, plan = ?, status = ?, updated_at = ? WHERE account_id = ?',
                   [obj.customer, obj.subscription, tcvlpPlan, 'active', now, account_id]
                 );
+
+                // Race guard: if the webhook arrived before the onboarding form INSERT,
+                // the UPDATE matches zero rows. Log a structured warning so Owner can
+                // backfill manually with one D1 UPDATE. The schema default was removed
+                // in the prior migration so the post-onboarding row will have plan=NULL
+                // (honest) rather than silently coerced to 'tcvlp_starter'.
+                // Audit reference: apps/worker/audits/2026-05-07-tcvlp-data-creation-flow.md
+                if (result?.meta?.changes === 0) {
+                  console.warn(
+                    `[checkout-orphan] tcvlp_pros UPDATE matched zero rows. ` +
+                    `account_id=${account_id} stripe_customer=${obj.customer} ` +
+                    `stripe_subscription=${obj.subscription} plan=${tcvlpPlan} ` +
+                    `session_id=${obj.id}. Onboarding form likely not yet submitted; ` +
+                    `manual backfill required when row appears.`
+                  );
+                }
               } catch (e) {
                 console.error('TCVLP Stripe webhook error:', e);
               }
