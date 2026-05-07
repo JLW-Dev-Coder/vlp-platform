@@ -5265,6 +5265,17 @@ const ROUTES = [
                   if (existing?.account_id) {
                     tmpAccountId = existing.account_id;
                   } else {
+                    // Bug 2 guard: require explicit opt-in to create an anonymous account.
+                    // Without this, replayed/manual webhook events created phantom accounts
+                    // (no sessions, no entitlements). See audit c14a887.
+                    if (obj.metadata?.allow_anonymous_account_creation !== 'true') {
+                      console.warn(
+                        `[webhook-guard] Skipping anonymous account creation for ${emailLower} ` +
+                        `(stripe customer ${obj.customer}, platform tmp, session ${obj.id}). ` +
+                        `Add metadata.allow_anonymous_account_creation='true' to opt in.`
+                      );
+                      break;
+                    }
                     tmpAccountId = `ACCT_${crypto.randomUUID()}`;
                     await d1Run(env.DB,
                       `INSERT INTO accounts (account_id, email, first_name, last_name, platform, role, status, created_at)
@@ -5550,6 +5561,17 @@ https://taxmonitor.pro/legal/refund
                   if (existing?.account_id) {
                     wlvlpAccountId = existing.account_id;
                   } else {
+                    // Bug 2 guard: require explicit opt-in to create an anonymous account.
+                    // Without this, replayed/manual webhook events created phantom accounts
+                    // (no sessions, no entitlements). See audit c14a887.
+                    if (obj.metadata?.allow_anonymous_account_creation !== 'true') {
+                      console.warn(
+                        `[webhook-guard] Skipping anonymous account creation for ${emailLower} ` +
+                        `(stripe customer ${obj.customer}, platform wlvlp, session ${obj.id}). ` +
+                        `Add metadata.allow_anonymous_account_creation='true' to opt in.`
+                      );
+                      break;
+                    }
                     wlvlpAccountId = `ACCT_${crypto.randomUUID()}`;
                     await d1Run(env.DB,
                       `INSERT INTO accounts (account_id, email, first_name, last_name, platform, role, status, created_at)
