@@ -56,6 +56,13 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
 - **JLW** — sole owner and operator
 - Both Claude roles report to James
 - All pricing, tier, and business decisions require owner sign-off
+- **Shell environment**: Owner runs commands exclusively in PowerShell inside VS Code's integrated terminal on Windows. Do NOT default to bash syntax. Use PowerShell-native commands and quoting. Examples:
+  - File search: `Select-String -Path <file> -Pattern <regex>`, not `grep`
+  - Env vars: `$env:NAME = "value"`, not `export NAME=value`
+  - Tee output: `Tee-Object -FilePath <path>`, not `tee`
+  - Line continuation: backtick `` ` `` or end-of-line, not `\`
+  - Path separators: forward slashes work in most tools, but native PowerShell uses backslashes
+  - When unsure, write the command in PowerShell-native form first
 
 ---
 
