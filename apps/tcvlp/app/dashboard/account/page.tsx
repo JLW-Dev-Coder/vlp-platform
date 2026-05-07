@@ -203,9 +203,13 @@ function FirmSetupCard({
             className={styles.statValue}
             style={{ color: subActive ? '#fbbf24' : '#f87171' }}
           >
-            {subActive && subPlan
-              ? `${tierLabel(subPlan)} ($${tierPrice(subPlan)}/mo)`
-              : 'Inactive'}
+            {(() => {
+              if (!subActive) return 'Inactive';
+              const label = tierLabel(subPlan);
+              const price = tierPrice(subPlan);
+              if (label && price !== null) return `${label} ($${price}/mo)`;
+              return 'Active (plan unknown)';
+            })()}
           </div>
         </div>
       </div>

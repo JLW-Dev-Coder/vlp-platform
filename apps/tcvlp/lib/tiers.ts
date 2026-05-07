@@ -52,23 +52,28 @@ const TIER_FEATURES: Record<TcvlpTier, TcvlpFeature[]> = {
 };
 
 export function hasFeature(tier: TcvlpTier | string | null | undefined, feature: TcvlpFeature): boolean {
+  // Default: treat unknown plans as starter for permission purposes.
+  // This is intentional — prefer least-privileged on unknown state.
+  // Display logic uses null returns from tierLabel/tierPrice instead.
   const t = (tier || 'tcvlp_starter') as TcvlpTier;
   return (TIER_FEATURES[t] ?? TIER_FEATURES.tcvlp_starter).includes(feature);
 }
 
-export function tierLabel(tier: TcvlpTier | string | null | undefined): string {
+export function tierLabel(tier: TcvlpTier | string | null | undefined): string | null {
   switch (tier) {
+    case 'tcvlp_starter': return 'Starter';
     case 'tcvlp_professional': return 'Professional';
     case 'tcvlp_firm': return 'Firm';
-    default: return 'Starter';
+    default: return null;
   }
 }
 
-export function tierPrice(tier: TcvlpTier | string | null | undefined): number {
+export function tierPrice(tier: TcvlpTier | string | null | undefined): number | null {
   switch (tier) {
+    case 'tcvlp_starter': return 10;
     case 'tcvlp_professional': return 29;
     case 'tcvlp_firm': return 79;
-    default: return 10;
+    default: return null;
   }
 }
 
