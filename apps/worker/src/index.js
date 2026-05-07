@@ -23575,6 +23575,65 @@ ${postSections}`;
     },
   },
 
+  // -------------------------------------------------------------------------
+  // YouTube OAuth token broker
+  // -------------------------------------------------------------------------
+  // POST /v1/youtube/access-token
+  // Exchanges the long-lived YOUTUBE_REFRESH_TOKEN secret for a short-lived
+  // access token from Google's OAuth endpoint. Used by the local Python
+  // upload script at tools/youtube-upload/upload.py so the refresh token
+  // never leaves the Worker.
+  // Required secrets (set via `wrangler secret put`):
+  //   YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN
+  // Auth: requires an admin session (mirrors other admin endpoints).
+  {
+    method: 'POST', pattern: '/v1/youtube/access-token',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const { YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN } = env;
+      if (!YOUTUBE_CLIENT_ID || !YOUTUBE_CLIENT_SECRET || !YOUTUBE_REFRESH_TOKEN) {
+        return json({
+          ok: false,
+          error: 'missing_secrets',
+          detail: 'YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, and YOUTUBE_REFRESH_TOKEN must all be set as Worker secrets.',
+        }, 500, request);
+      }
+
+      const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: YOUTUBE_CLIENT_ID,
+          client_secret: YOUTUBE_CLIENT_SECRET,
+          refresh_token: YOUTUBE_REFRESH_TOKEN,
+          grant_type: 'refresh_token',
+        }),
+      });
+
+      if (!tokenResp.ok) {
+        const errBody = await tokenResp.text();
+        return json({
+          ok: false,
+          error: 'oauth_exchange_failed',
+          status: tokenResp.status,
+          detail: errBody,
+        }, 502, request);
+      }
+
+      const tokenData = await tokenResp.json();
+      return json({
+        access_token: tokenData.access_token,
+        expires_in: tokenData.expires_in,
+        token_type: tokenData.token_type,
+      }, 200, request);
+    },
+  },
+
 ];
 // ---------------------------------------------------------------------------
 // Router

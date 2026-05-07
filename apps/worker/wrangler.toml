@@ -24,6 +24,14 @@ enabled = true
 invocation_logs = true
 
 # ---------------------------------------
+# Secrets (set via `wrangler secret put`, never committed)
+# ---------------------------------------
+# YouTube OAuth (token broker route /v1/youtube/access-token):
+# - YOUTUBE_CLIENT_ID
+# - YOUTUBE_CLIENT_SECRET
+# - YOUTUBE_REFRESH_TOKEN
+
+# ---------------------------------------
 # Bindings
 # ---------------------------------------
 
