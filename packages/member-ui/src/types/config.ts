@@ -76,7 +76,13 @@ export interface PlatformConfig {
   };
   apiBaseUrl: string;          // e.g., "https://api.taxmonitor.pro"
   calcomReferralLink?: string;
-  // Cal.com event-type bindings (see canonical-cal-events.md)
+  // Booking provider: 'cal' (default when undefined) or 'suitedash'.
+  // SD-led marketing apps (e.g., TPP) embed SuiteDash forms instead of Cal.com.
+  bookingProvider?: 'cal' | 'suitedash';
+  // Cal.com event-type bindings (see canonical-cal-events.md). Remain required
+  // for consumer ergonomics in LeadChatbot/HelpCenter; SD-led apps
+  // (bookingProvider === 'suitedash') pass empty strings — those consumers do
+  // not render for SD-led apps.
   calBookingNamespace: string;
   calBookingSlug: string;
   calIntroNamespace: string;
@@ -85,6 +91,10 @@ export interface PlatformConfig {
   calDiscoverySlug?: string;
   calOnboardingNamespace?: string;
   calOnboardingSlug?: string;
+  // SuiteDash form embeds (used when bookingProvider === 'suitedash').
+  suitedashDiscoveryFormId?: string;
+  suitedashDemoFormId?: string;
+  suitedashFormBaseUrl?: string;
   businessInfo?: BusinessInfo;
   cookiePrefsStorageKey?: string;      // e.g., "vlp_cookie_prefs_v1" — defaults to `${brandAbbrev.toLowerCase()}_cookie_prefs_v1`
   marketing?: MarketingConfig;
