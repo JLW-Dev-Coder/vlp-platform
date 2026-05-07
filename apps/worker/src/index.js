@@ -19177,7 +19177,7 @@ https://virtuallaunch.pro/payouts
           return json({
             ok: true,
             active: pro.status === 'active',
-            plan: pro.plan || 'tcvlp_starter',
+            plan: pro.plan ?? null,
           }, 200, request);
         } catch (e) {
           console.error('TCVLP subscription status (slug) error:', e);
@@ -19205,8 +19205,8 @@ https://virtuallaunch.pro/payouts
           return json({
             ok: true,
             active: pro.status === 'active',
-            plan: pro.plan || 'tcvlp_starter',
-            product_id: planProductMap[pro.plan] || planProductMap.tcvlp_starter,
+            plan: pro.plan ?? null,
+            product_id: pro.plan ? (planProductMap[pro.plan] ?? null) : null,
             pro_id: pro.pro_id,
             stripe_customer_id: pro.stripe_customer_id ?? null,
           }, 200, request);
