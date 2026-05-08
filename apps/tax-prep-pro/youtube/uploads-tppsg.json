@@ -13,6 +13,8 @@
     "voice": "HeyGen Voices (1) tab — single voice across all 40 videos"
   },
   "default_privacy_status": "private",
+  "post_qa_target_visibility": "public",
+  "help_destination_url": "https://taxpreppro.virtuallaunch.pro/zuri",
   "module_titles": {
     "1": "Welcome — Meet Zuri & The Order Metaphor",
     "2": "Order: Phase 1 — Identify Taxpayer Type",
@@ -20,18 +22,18 @@
     "4": "Order: Phase 3 — Agreement",
     "5": "Order: Phase 4 — Payment",
     "6": "Order: Phase 5 — Prep + Review",
-    "7": "Order: Phase 7 — File",
-    "8": "Order: Phase 8 — Deliver + Close",
-    "9": "Order: Phase 6 — E-Sign",
+    "7": "Order: Phase 6 — E-Sign",
+    "8": "Order: Phase 7 — File",
+    "9": "Order: Phase 8 — Deliver + Close",
     "10": "Course Closer — Book Your Support Call"
   },
   "videos": [
     {
       "module": 1,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M01.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "Meet Zuri",
+      "youtube_title": "TPPSG | M01.L1: Meet Zuri",
+      "youtube_description": "Zuri introduces herself and the Tax Prep Pro Setup Guide.\n\nThis is Lesson 1 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 01",
@@ -43,16 +45,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/Gi8yDsmRUL4",
+      "youtube_video_id": "Gi8yDsmRUL4"
     },
     {
       "module": 1,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M01.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Order Metaphor",
+      "youtube_title": "TPPSG | M01.L2: The Order Metaphor",
+      "youtube_description": "How the order-fulfillment metaphor structures the entire course.\n\nThis is Lesson 2 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 01",
@@ -64,16 +66,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/0FXlQeu-Ewk",
+      "youtube_video_id": "0FXlQeu-Ewk"
     },
     {
       "module": 1,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M01.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The 8 Phases",
+      "youtube_title": "TPPSG | M01.L3: The 8 Phases",
+      "youtube_description": "An overview of the 8 phases your SuiteDash setup walks through.\n\nThis is Lesson 3 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 01",
@@ -85,16 +87,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/1c0eSuIvXFw",
+      "youtube_video_id": "1c0eSuIvXFw"
     },
     {
       "module": 1,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M01.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "Let's Get Started",
+      "youtube_title": "TPPSG | M01.L4: Let's Get Started",
+      "youtube_description": "What to expect from the rest of the course and how to navigate it.\n\nThis is Lesson 4 of Module 01: Welcome — Meet Zuri & The Order Metaphor, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 01",
@@ -106,16 +108,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/9wuXPO1gkRo",
+      "youtube_video_id": "9wuXPO1gkRo"
     },
     {
       "module": 2,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M02.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 1 Does",
+      "youtube_title": "TPPSG | M02.L1: What Phase 1 Does",
+      "youtube_description": "How Phase 1 — Identify Taxpayer Type — opens the order.\n\nThis is Lesson 1 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 02",
@@ -127,16 +129,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/P1AKUiavVZg",
+      "youtube_video_id": "P1AKUiavVZg"
     },
     {
       "module": 2,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M02.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Booking Form & Landing Page",
+      "youtube_title": "TPPSG | M02.L2: The Booking Form & Landing Page",
+      "youtube_description": "The Booking Form and its landing page in your setup.\n\nThis is Lesson 2 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 02",
@@ -148,16 +150,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/tYVRIbR7nDo",
+      "youtube_video_id": "tYVRIbR7nDo"
     },
     {
       "module": 2,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M02.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M02.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 1 is complete.\n\nThis is Lesson 3 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 02",
@@ -169,16 +171,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/ubJsFV6daFI",
+      "youtube_video_id": "ubJsFV6daFI"
     },
     {
       "module": 2,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M02.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 1",
+      "youtube_title": "TPPSG | M02.L4: How to Customize Phase 1",
+      "youtube_description": "Where and how to customize Phase 1 for your firm.\n\nThis is Lesson 4 of Module 02: Order: Phase 1 — Identify Taxpayer Type, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 02",
@@ -190,16 +192,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/hrvhpjNsXyc",
+      "youtube_video_id": "hrvhpjNsXyc"
     },
     {
       "module": 3,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M03.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 2 Does",
+      "youtube_title": "TPPSG | M03.L1: What Phase 2 Does",
+      "youtube_description": "How Phase 2 — Intake Form — collects the taxpayer's information.\n\nThis is Lesson 1 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 03",
@@ -211,16 +213,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/-TJDotTh0Fg",
+      "youtube_video_id": "-TJDotTh0Fg"
     },
     {
       "module": 3,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M03.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Two Forms — Upload & Intake",
+      "youtube_title": "TPPSG | M03.L2: The Two Forms — Upload & Intake",
+      "youtube_description": "The two forms that move data into the order: Upload and Intake.\n\nThis is Lesson 2 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 03",
@@ -232,16 +234,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/Mqiyx9xiw4s",
+      "youtube_video_id": "Mqiyx9xiw4s"
     },
     {
       "module": 3,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M03.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M03.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 2 is complete.\n\nThis is Lesson 3 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 03",
@@ -253,16 +255,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/iQu56a8B674",
+      "youtube_video_id": "iQu56a8B674"
     },
     {
       "module": 3,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M03.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 2",
+      "youtube_title": "TPPSG | M03.L4: How to Customize Phase 2",
+      "youtube_description": "Where and how to customize Phase 2 for your firm.\n\nThis is Lesson 4 of Module 03: Order: Phase 2 — Intake Form, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 03",
@@ -274,16 +276,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/lvsaA-cW_GI",
+      "youtube_video_id": "lvsaA-cW_GI"
     },
     {
       "module": 4,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M04.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 3 Does",
+      "youtube_title": "TPPSG | M04.L1: What Phase 3 Does",
+      "youtube_description": "How Phase 3 — Agreement — locks the engagement.\n\nThis is Lesson 1 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 04",
@@ -295,16 +297,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/a2t6AVovQEU",
+      "youtube_video_id": "a2t6AVovQEU"
     },
     {
       "module": 4,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M04.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Service Agreement Form & Document",
+      "youtube_title": "TPPSG | M04.L2: The Service Agreement Form & Document",
+      "youtube_description": "The Service Agreement form and the generated document.\n\nThis is Lesson 2 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 04",
@@ -316,16 +318,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/amfpbSVhhZU",
+      "youtube_video_id": "amfpbSVhhZU"
     },
     {
       "module": 4,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M04.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M04.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 3 is complete.\n\nThis is Lesson 3 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 04",
@@ -337,16 +339,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/8CYiFsAI2eY",
+      "youtube_video_id": "8CYiFsAI2eY"
     },
     {
       "module": 4,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M04.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 3",
+      "youtube_title": "TPPSG | M04.L4: How to Customize Phase 3",
+      "youtube_description": "Where and how to customize Phase 3 for your firm.\n\nThis is Lesson 4 of Module 04: Order: Phase 3 — Agreement, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 04",
@@ -358,16 +360,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/THiX12KkNJU",
+      "youtube_video_id": "THiX12KkNJU"
     },
     {
       "module": 5,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M05.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 4 Does",
+      "youtube_title": "TPPSG | M05.L1: What Phase 4 Does",
+      "youtube_description": "How Phase 4 — Payment — moves the order toward prep.\n\nThis is Lesson 1 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 05",
@@ -379,16 +381,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/t2Y9dGT0E4w",
+      "youtube_video_id": "t2Y9dGT0E4w"
     },
     {
       "module": 5,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M05.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Payment Form & Invoice Items",
+      "youtube_title": "TPPSG | M05.L2: The Payment Form & Invoice Items",
+      "youtube_description": "The Payment form and the invoice items it pulls from.\n\nThis is Lesson 2 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 05",
@@ -400,16 +402,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/WYJUqFE3qNo",
+      "youtube_video_id": "WYJUqFE3qNo"
     },
     {
       "module": 5,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M05.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M05.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 4 is complete.\n\nThis is Lesson 3 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 05",
@@ -421,16 +423,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/SAfrbUXtWzU",
+      "youtube_video_id": "SAfrbUXtWzU"
     },
     {
       "module": 5,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M05.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 4",
+      "youtube_title": "TPPSG | M05.L4: How to Customize Phase 4",
+      "youtube_description": "Where and how to customize Phase 4 for your firm.\n\nThis is Lesson 4 of Module 05: Order: Phase 4 — Payment, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 05",
@@ -442,16 +444,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/-I894DDRCjo",
+      "youtube_video_id": "-I894DDRCjo"
     },
     {
       "module": 6,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M06.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 5 Does",
+      "youtube_title": "TPPSG | M06.L1: What Phase 5 Does",
+      "youtube_description": "How Phase 5 — Prep + Review — runs the actual return work.\n\nThis is Lesson 1 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 06",
@@ -463,16 +465,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/l6iSAISi3JQ",
+      "youtube_video_id": "l6iSAISi3JQ"
     },
     {
       "module": 6,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M06.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Team Tasks & Missing Documents Form",
+      "youtube_title": "TPPSG | M06.L2: The Team Tasks & Missing Documents Form",
+      "youtube_description": "The team tasks and the Missing Documents form.\n\nThis is Lesson 2 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 06",
@@ -484,16 +486,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/K_t5vbbs1cw",
+      "youtube_video_id": "K_t5vbbs1cw"
     },
     {
       "module": 6,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M06.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M06.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 5 is complete.\n\nThis is Lesson 3 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 06",
@@ -505,16 +507,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/WkDSYLq8_ks",
+      "youtube_video_id": "WkDSYLq8_ks"
     },
     {
       "module": 6,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M06.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 5",
+      "youtube_title": "TPPSG | M06.L4: How to Customize Phase 5",
+      "youtube_description": "Where and how to customize Phase 5 for your firm.\n\nThis is Lesson 4 of Module 06: Order: Phase 5 — Prep + Review, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 06",
@@ -526,16 +528,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/2nzTjvZz1pI",
+      "youtube_video_id": "2nzTjvZz1pI"
     },
     {
       "module": 7,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M07.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 07: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 6 Does (and Why It's Different)",
+      "youtube_title": "TPPSG | M07.L1: What Phase 6 Does (and Why It's Different)",
+      "youtube_description": "How Phase 6 — E-Sign — works across multiple earlier phases.\n\nThis is Lesson 1 of Module 07: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 07",
@@ -547,16 +549,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/AgEqekiT1Vw",
+      "youtube_video_id": "AgEqekiT1Vw"
     },
     {
       "module": 7,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M07.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 07: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The 8879 Generator & E-Sign Form",
+      "youtube_title": "TPPSG | M07.L2: The 8879 Generator & E-Sign Form",
+      "youtube_description": "The 8879 generator and the E-Sign form configuration.\n\nThis is Lesson 2 of Module 07: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 07",
@@ -568,16 +570,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/wifWOjcuzvk",
+      "youtube_video_id": "wifWOjcuzvk"
     },
     {
       "module": 7,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M07.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 07: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M07.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 6 fires.\n\nThis is Lesson 3 of Module 07: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 07",
@@ -589,16 +591,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/ADR3ujg_GpI",
+      "youtube_video_id": "ADR3ujg_GpI"
     },
     {
       "module": 7,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M07.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 07: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 6",
+      "youtube_title": "TPPSG | M07.L4: How to Customize Phase 6",
+      "youtube_description": "Where and how to customize Phase 6 for your firm.\n\nThis is Lesson 4 of Module 07: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 07",
@@ -610,16 +612,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/VdtXnKRYR9U",
+      "youtube_video_id": "VdtXnKRYR9U"
     },
     {
       "module": 8,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M08.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 08: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 7 Does",
+      "youtube_title": "TPPSG | M08.L1: What Phase 7 Does",
+      "youtube_description": "How Phase 7 — File — records the return as filed.\n\nThis is Lesson 1 of Module 08: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 08",
@@ -631,16 +633,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/jN_0rSu2gSc",
+      "youtube_video_id": "jN_0rSu2gSc"
     },
     {
       "module": 8,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M08.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 08: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Return Filed Form",
+      "youtube_title": "TPPSG | M08.L2: The Return Filed Form",
+      "youtube_description": "The Return Filed form and what it captures.\n\nThis is Lesson 2 of Module 08: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 08",
@@ -652,16 +654,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/xTb_voaHB9o",
+      "youtube_video_id": "xTb_voaHB9o"
     },
     {
       "module": 8,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M08.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 08: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M08.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 7 is complete.\n\nThis is Lesson 3 of Module 08: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 08",
@@ -673,16 +675,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/y_vNbvhJ7Qc",
+      "youtube_video_id": "y_vNbvhJ7Qc"
     },
     {
       "module": 8,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M08.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 08: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 7",
+      "youtube_title": "TPPSG | M08.L4: How to Customize Phase 7",
+      "youtube_description": "Where and how to customize Phase 7 for your firm.\n\nThis is Lesson 4 of Module 08: Order: Phase 7 — File, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 08",
@@ -694,16 +696,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/_OkjN75W-tA",
+      "youtube_video_id": "_OkjN75W-tA"
     },
     {
       "module": 9,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M09.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 09: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Phase 8 Does",
+      "youtube_title": "TPPSG | M09.L1: What Phase 8 Does",
+      "youtube_description": "How Phase 8 — Deliver + Close — wraps the order.\n\nThis is Lesson 1 of Module 09: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 09",
@@ -715,16 +717,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/khOp_IrgjYI",
+      "youtube_video_id": "khOp_IrgjYI"
     },
     {
       "module": 9,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M09.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 09: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "The Filing Summary & Exit Survey",
+      "youtube_title": "TPPSG | M09.L2: The Filing Summary & Exit Survey",
+      "youtube_description": "The Filing Summary document and the Client Exit Survey.\n\nThis is Lesson 2 of Module 09: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 09",
@@ -736,16 +738,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/xv4ldC-2gqI",
+      "youtube_video_id": "xv4ldC-2gqI"
     },
     {
       "module": 9,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M09.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 09: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What Happens Automatically",
+      "youtube_title": "TPPSG | M09.L3: What Happens Automatically",
+      "youtube_description": "What your setup does automatically once Phase 8 is complete.\n\nThis is Lesson 3 of Module 09: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 09",
@@ -757,16 +759,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/_RKYzCGqgj4",
+      "youtube_video_id": "_RKYzCGqgj4"
     },
     {
       "module": 9,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M09.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 09: Order: Phase 6 — E-Sign, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "How to Customize Phase 8",
+      "youtube_title": "TPPSG | M09.L4: How to Customize Phase 8",
+      "youtube_description": "Where and how to customize Phase 8 for your firm.\n\nThis is Lesson 4 of Module 09: Order: Phase 8 — Deliver + Close, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 09",
@@ -778,16 +780,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/zuSHMuZvI0A",
+      "youtube_video_id": "zuSHMuZvI0A"
     },
     {
       "module": 10,
       "lesson": 1,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M10.L1: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 1 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "You Made It — Recap of the 8 Phases",
+      "youtube_title": "TPPSG | M10.L1: You Made It — Recap of the 8 Phases",
+      "youtube_description": "A quick recap of the 8 phases you've now seen end-to-end.\n\nThis is Lesson 1 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nNeed help? Find Zuri at https://taxpreppro.virtuallaunch.pro/zuri\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 10",
@@ -799,16 +801,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/bcxQvoey_mk",
+      "youtube_video_id": "bcxQvoey_mk"
     },
     {
       "module": 10,
       "lesson": 2,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M10.L2: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 2 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "Where to Go When You Need Help",
+      "youtube_title": "TPPSG | M10.L2: Where to Go When You Need Help",
+      "youtube_description": "Where to find help when you need it inside the member portal.\n\nThis is Lesson 2 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nNeed help? Find Zuri at https://taxpreppro.virtuallaunch.pro/zuri\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 10",
@@ -820,16 +822,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/C6JsVQubBH8",
+      "youtube_video_id": "C6JsVQubBH8"
     },
     {
       "module": 10,
       "lesson": 3,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M10.L3: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 3 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "Book Your Support Call",
+      "youtube_title": "TPPSG | M10.L3: Book Your Support Call",
+      "youtube_description": "How and when to find help with Zuri at /zuri.\n\nThis is Lesson 3 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nNeed help? Find Zuri at https://taxpreppro.virtuallaunch.pro/zuri\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 10",
@@ -841,16 +843,16 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/6Ikajnqvc6s",
+      "youtube_video_id": "6Ikajnqvc6s"
     },
     {
       "module": 10,
       "lesson": 4,
-      "lesson_title": "[LESSON_TITLE_PLACEHOLDER]",
-      "youtube_title": "TPPSG | M10.L4: [LESSON_TITLE_PLACEHOLDER]",
-      "youtube_description": "[ONE-LINE LESSON SUMMARY PLACEHOLDER]\n\nThis is Lesson 4 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
+      "lesson_title": "What's Next",
+      "youtube_title": "TPPSG | M10.L4: What's Next",
+      "youtube_description": "What comes after this course — including future Tax Prep Pro updates.\n\nThis is Lesson 4 of Module 10: Course Closer — Book Your Support Call, in the Tax Prep Pro Setup Guide.\n\nNarrated by Zuri, an AI training avatar (HeyGen). Instruction sourced from Tax Prep Pro configuration documentation.\n\nWhere this lesson lives: this video is part of the Tax Prep Pro Setup Guide inside the Tax Prep Pro member portal. To complete the lesson and check off the steps, log into your portal at https://taxpreppro.virtuallaunch.pro.\n\nNeed help? Find Zuri at https://taxpreppro.virtuallaunch.pro/zuri\n\nDisclaimer: This content is for educational purposes and does not constitute legal or tax advice.\n\n#TaxPrepPro #SuiteDash #TaxPros #TaxPreparation #ProviderTraining",
       "tags": [
         "TPPSG",
         "Module 10",
@@ -862,9 +864,9 @@
         "order",
         "phase"
       ],
-      "privacy_status": "private",
-      "youtube_url": "",
-      "youtube_video_id": ""
+      "privacy_status": "public",
+      "youtube_url": "https://youtu.be/Nc7tv8NAwZY",
+      "youtube_video_id": "Nc7tv8NAwZY"
     }
   ]
 }

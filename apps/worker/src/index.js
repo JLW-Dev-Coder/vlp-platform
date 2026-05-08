@@ -9882,6 +9882,7 @@ https://taxmonitor.pro/legal/refund
       url.searchParams.set('scope', [
         'https://www.googleapis.com/auth/yt-analytics.readonly',
         'https://www.googleapis.com/auth/youtube.readonly',
+        'https://www.googleapis.com/auth/youtube.upload',
       ].join(' '))
       url.searchParams.set('access_type', 'offline')
       url.searchParams.set('prompt', 'consent')
@@ -9992,9 +9993,18 @@ https://taxmonitor.pro/legal/refund
       if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'forbidden' }, 403, request)
       }
+      // Delete the OAuth token AND the cached analytics payload. The analytics
+      // cache (15 min TTL) holds connected:true and would otherwise mask the
+      // disconnect in the UI until expiry.
       try {
         await env.ENRICHMENT_KV.delete('youtube:oauth:tokens')
       } catch { /* best effort */ }
+      const channelId = env.YOUTUBE_CHANNEL_ID
+      if (channelId) {
+        try {
+          await env.ENRICHMENT_KV.delete(`youtube:oauth:analytics:v1:${channelId}`)
+        } catch { /* best effort */ }
+      }
       return json({ ok: true }, 200, request)
     },
   },
@@ -23579,12 +23589,14 @@ ${postSections}`;
   // YouTube OAuth token broker
   // -------------------------------------------------------------------------
   // POST /v1/youtube/access-token
-  // Exchanges the long-lived YOUTUBE_REFRESH_TOKEN secret for a short-lived
-  // access token from Google's OAuth endpoint. Used by the local Python
-  // upload script at tools/youtube-upload/upload.py so the refresh token
-  // never leaves the Worker.
-  // Required secrets (set via `wrangler secret put`):
-  //   YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN
+  // Returns a short-lived access token for the local YouTube upload tooling
+  // at tools/youtube-upload/. Reuses the SCALE YouTube OAuth integration:
+  // tokens are stored in ENRICHMENT_KV under key "youtube:oauth:tokens",
+  // seeded by GET /v1/scale/youtube-oauth/callback. getFreshYouTubeOAuthToken()
+  // refreshes the access token internally if it's near expiry and writes the
+  // updated record back to KV.
+  // Required for refresh: YOUTUBE_OAUTH_CLIENT_ID, YOUTUBE_OAUTH_CLIENT_SECRET
+  // Required KV record: ENRICHMENT_KV["youtube:oauth:tokens"]
   // Auth: requires an admin session (mirrors other admin endpoints).
   {
     method: 'POST', pattern: '/v1/youtube/access-token',
@@ -23595,41 +23607,45 @@ ${postSections}`;
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
-      const { YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN } = env;
-      if (!YOUTUBE_CLIENT_ID || !YOUTUBE_CLIENT_SECRET || !YOUTUBE_REFRESH_TOKEN) {
+      const tokenResult = await getFreshYouTubeOAuthToken(env);
+
+      if (!tokenResult.connected) {
         return json({
           ok: false,
-          error: 'missing_secrets',
-          detail: 'YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, and YOUTUBE_REFRESH_TOKEN must all be set as Worker secrets.',
-        }, 500, request);
+          error: 'youtube_oauth_not_connected',
+          detail: 'The SCALE YouTube OAuth flow has not been completed. Visit the SCALE admin UI to authorize the YouTube account, then retry.',
+        }, 503, request);
       }
 
-      const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: YOUTUBE_CLIENT_ID,
-          client_secret: YOUTUBE_CLIENT_SECRET,
-          refresh_token: YOUTUBE_REFRESH_TOKEN,
-          grant_type: 'refresh_token',
-        }),
-      });
-
-      if (!tokenResp.ok) {
-        const errBody = await tokenResp.text();
+      if (tokenResult.error) {
         return json({
           ok: false,
-          error: 'oauth_exchange_failed',
-          status: tokenResp.status,
-          detail: errBody,
+          error: 'youtube_oauth_token_error',
+          detail: tokenResult.error,
         }, 502, request);
       }
 
-      const tokenData = await tokenResp.json();
+      const accessToken = tokenResult.record?.access_token;
+      if (!accessToken) {
+        return json({
+          ok: false,
+          error: 'youtube_oauth_no_access_token',
+          detail: 'Token record exists but contains no access_token. Re-run the SCALE YouTube OAuth flow.',
+        }, 500, request);
+      }
+
+      let expiresIn = 3600;
+      if (tokenResult.record?.expires_at) {
+        const expMs = Date.parse(tokenResult.record.expires_at);
+        if (!Number.isNaN(expMs)) {
+          expiresIn = Math.max(0, Math.floor((expMs - Date.now()) / 1000));
+        }
+      }
+
       return json({
-        access_token: tokenData.access_token,
-        expires_in: tokenData.expires_in,
-        token_type: tokenData.token_type,
+        access_token: accessToken,
+        expires_in: expiresIn,
+        token_type: 'Bearer',
       }, 200, request);
     },
   },
