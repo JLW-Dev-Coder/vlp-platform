@@ -16,8 +16,7 @@ export const tppConfig: PlatformConfig = {
   bookingProvider: 'suitedash',
   suitedashDiscoveryFormId: '21EGX5mk16QA6qVGj',
   suitedashDemoFormId: '2rU9ohwhCx3rsijrC',
-  // TODO(RC): Confirm SuiteDash form embed base URL with Jamie before Phase 2.
-  // suitedashFormBaseUrl: 'https://...',
+  suitedashEmbedBaseUrl: 'https://secure.virtuallaunch.pro/frm',
 
   // Cal.com fields are unused for TPP (bookingProvider === 'suitedash').
   // Empty strings keep the shared PlatformConfig contract stable; LeadChatbot

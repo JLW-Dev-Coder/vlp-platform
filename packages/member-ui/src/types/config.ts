@@ -94,7 +94,7 @@ export interface PlatformConfig {
   // SuiteDash form embeds (used when bookingProvider === 'suitedash').
   suitedashDiscoveryFormId?: string;
   suitedashDemoFormId?: string;
-  suitedashFormBaseUrl?: string;
+  suitedashEmbedBaseUrl?: string;
   businessInfo?: BusinessInfo;
   cookiePrefsStorageKey?: string;      // e.g., "vlp_cookie_prefs_v1" — defaults to `${brandAbbrev.toLowerCase()}_cookie_prefs_v1`
   marketing?: MarketingConfig;

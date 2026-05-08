@@ -1,11 +1,20 @@
-export const metadata = { title: 'Submit a Review' }
+import type { Metadata } from 'next'
+import { ReviewSubmitPage } from '@vlp/member-ui'
 
-export default function ReviewSubmitPage() {
-  return (
-    <section className="mx-auto max-w-3xl px-6 py-24">
-      {/* TODO(copy): Phase 2 — wire shared ReviewSubmitPage from @vlp/member-ui */}
-      <h1 className="font-display text-4xl font-semibold">Submit a Review</h1>
-      <p className="mt-6 text-[var(--color-text-2)]">Coming soon.</p>
-    </section>
-  )
+export const metadata: Metadata = {
+  title: 'Share Your Experience | Tax Prep Pro',
+  description:
+    'Submit a review, case study, or testimonial about your Tax Prep Pro buildout and the 8-phase client journey.',
+}
+
+const tppReviewConfig = {
+  platform: 'taxprep',
+  platformName: 'Tax Prep Pro',
+  themeColor: '#E91E63',
+  apiBase: 'https://api.virtuallaunch.pro',
+  formTypes: ['review', 'case_study', 'testimonial'] as const,
+}
+
+export default function SubmitReviewPage() {
+  return <ReviewSubmitPage config={tppReviewConfig} />
 }
