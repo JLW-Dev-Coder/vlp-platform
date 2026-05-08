@@ -394,7 +394,7 @@ export default function LandingPage() {
 
       {/* Booking form section — SuiteDash Discovery Call form */}
       <section className="tpp-section tpp-book" id="tpp-book">
-        <div className="tpp-wrap">
+        <div className="tpp-wrap tpp-medium">
           <div className="tpp-form-card tpp-reveal">
             <div className="tpp-form-glow" aria-hidden="true" />
             <div className="tpp-form-badge" aria-hidden="true">
@@ -655,6 +655,7 @@ const TPP_LANDING_CSS = `
 .tpp-lp img { max-width: 100%; display: block; }
 .tpp-lp .tpp-wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 .tpp-lp .tpp-narrow { max-width: 760px; }
+.tpp-lp .tpp-medium { max-width: 960px; }
 
 .tpp-lp .tpp-header { position: sticky; top: 0; z-index: 100; background: rgba(245, 230, 211, 0.85); backdrop-filter: saturate(140%) blur(12px); -webkit-backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--tpp-border); transition: background var(--tpp-dur-base) ease, box-shadow var(--tpp-dur-base) ease; }
 .tpp-lp .tpp-header.is-scrolled { background: rgba(245, 230, 211, 0.95); box-shadow: var(--tpp-shadow-sm); }
@@ -806,7 +807,9 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-form-sd input::placeholder, .tpp-lp .tpp-form-sd textarea::placeholder { color: var(--tpp-text-muted) !important; opacity: 0.7 !important; }
 .tpp-lp .tpp-form-sd input:focus, .tpp-lp .tpp-form-sd select:focus, .tpp-lp .tpp-form-sd textarea:focus, .tpp-lp .tpp-form-sd .form-control:focus { outline: none !important; border-color: var(--tpp-rose) !important; background: var(--tpp-ivory) !important; box-shadow: 0 0 0 3px var(--tpp-rose-glow) !important; }
 .tpp-lp .tpp-form-sd textarea { min-height: 120px !important; resize: vertical !important; }
-.tpp-lp .tpp-form-sd .form-group, .tpp-lp .tpp-form-sd .field, .tpp-lp .tpp-form-sd .form-field { margin-bottom: 22px !important; }
+.tpp-lp .tpp-form-sd .form-group, .tpp-lp .tpp-form-sd .field, .tpp-lp .tpp-form-sd .form-field { margin-bottom: 14px !important; }
+.tpp-lp .tpp-form-sd input[type="text"], .tpp-lp .tpp-form-sd input[type="email"], .tpp-lp .tpp-form-sd input[type="tel"], .tpp-lp .tpp-form-sd input[type="url"], .tpp-lp .tpp-form-sd input[type="number"], .tpp-lp .tpp-form-sd input[type="password"], .tpp-lp .tpp-form-sd input[type="date"], .tpp-lp .tpp-form-sd input[type="time"], .tpp-lp .tpp-form-sd input[type="search"], .tpp-lp .tpp-form-sd select, .tpp-lp .tpp-form-sd textarea, .tpp-lp .tpp-form-sd .form-control { font-size: 14px !important; padding: 10px 14px !important; }
+.tpp-lp .tpp-form-sd textarea { min-height: 80px !important; }
 .tpp-lp .tpp-form-sd input[type="checkbox"], .tpp-lp .tpp-form-sd input[type="radio"] { width: auto !important; margin-right: 8px !important; accent-color: var(--tpp-rose); }
 .tpp-lp .tpp-form-sd button, .tpp-lp .tpp-form-sd input[type="submit"], .tpp-lp .tpp-form-sd .btn-primary, .tpp-lp .tpp-form-sd .btn { font-family: var(--tpp-font-body) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; background: linear-gradient(135deg, var(--tpp-rose), var(--tpp-crimson)) !important; color: #FFFFFF !important; padding: 16px 32px !important; border: none !important; border-radius: 999px !important; font-weight: 600 !important; font-size: 15px !important; letter-spacing: 0.4px !important; cursor: pointer !important; box-shadow: var(--tpp-shadow-sm) !important; transition: transform var(--tpp-dur-base) var(--tpp-ease-out), box-shadow var(--tpp-dur-base) var(--tpp-ease-out) !important; text-transform: none !important; width: auto !important; height: auto !important; }
 .tpp-lp .tpp-form-sd button:hover, .tpp-lp .tpp-form-sd input[type="submit"]:hover, .tpp-lp .tpp-form-sd .btn-primary:hover, .tpp-lp .tpp-form-sd .btn:hover { transform: translateY(-2px) !important; box-shadow: var(--tpp-shadow-rose) !important; }
