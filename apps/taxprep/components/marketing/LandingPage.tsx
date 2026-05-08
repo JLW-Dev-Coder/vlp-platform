@@ -160,7 +160,7 @@ export default function LandingPage() {
             <a href="#tpp-services">Services</a>
             <a href="#tpp-how">Process</a>
             <a href="#tpp-locations">How We Work</a>
-            <a href="#tpp-testimonials">Reviews</a>
+            <a href="/reviews">Reviews</a>
           </div>
           <a href="#tpp-book" className="tpp-header-cta">
             Book Discovery Call
@@ -394,7 +394,7 @@ export default function LandingPage() {
 
       {/* Booking form section — SuiteDash Discovery Call form */}
       <section className="tpp-section tpp-book" id="tpp-book">
-        <div className="tpp-wrap tpp-narrow">
+        <div className="tpp-wrap">
           <div className="tpp-form-card tpp-reveal">
             <div className="tpp-form-glow" aria-hidden="true" />
             <div className="tpp-form-badge" aria-hidden="true">
@@ -511,38 +511,6 @@ export default function LandingPage() {
                 <div className="tpp-qr-back-tag">Step 1 of 8</div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials — reduced 8 → 4 per Deviation 6 */}
-      <section className="tpp-section tpp-testimonials" id="tpp-testimonials">
-        <div className="tpp-wrap">
-          <div className="tpp-section-head tpp-reveal">
-            <span className="tpp-section-kicker">Satisfied Bureaus</span>
-            <h2 className="tpp-h2">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              Trusted by EAs, CPAs,<br />and <em>service bureaus.</em>
-            </h2>
-            <p>
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              From solo practitioners to multi-preparer firms, TPP ships a branded workspace and a clear journey clients actually finish.
-            </p>
-          </div>
-          <div className="tpp-test-grid">
-            {/* TODO(copy): Awaiting final B2B testimonial copy from Jamie */}
-            {[
-              { initials: 'JA', name: 'Jeremy & Amy' },
-              { initials: 'MM', name: 'Marcus M.' },
-              { initials: 'VW', name: 'Venus & William' },
-              { initials: 'EH', name: 'Elizabeth H.' },
-            ].map((t, i) => (
-              <div key={t.initials} className={`tpp-test-card tpp-reveal tpp-delay-${(i % 4) + 1}`}>
-                <div className="tpp-test-avatar">{t.initials}</div>
-                <div className="tpp-stars-row">★★★★★</div>
-                <div className="tpp-test-name">{t.name}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -909,14 +877,6 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-qr-back-mark { font-family: var(--tpp-font-display); font-size: 28px; font-weight: 600; line-height: 1.1; padding: 0 24px; }
 .tpp-lp .tpp-qr-back-tag { font-size: 11px; font-weight: 700; letter-spacing: 2.4px; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
 
-.tpp-lp .tpp-testimonials { background: var(--tpp-ivory); border-top: 1px solid var(--tpp-border); }
-.tpp-lp .tpp-test-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
-.tpp-lp .tpp-test-card { background: var(--tpp-champagne); border: 1px solid var(--tpp-border); border-radius: var(--tpp-radius-md); padding: 32px 22px; text-align: center; transition: transform var(--tpp-dur-base) var(--tpp-ease-out), box-shadow var(--tpp-dur-base) var(--tpp-ease-out); }
-.tpp-lp .tpp-test-card:hover { transform: translateY(-6px); box-shadow: var(--tpp-shadow-md); }
-.tpp-lp .tpp-test-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--tpp-rose) 0%, var(--tpp-crimson) 100%); color: var(--tpp-text-on-rose); display: inline-flex; align-items: center; justify-content: center; font-family: var(--tpp-font-display); font-size: 20px; font-weight: 600; margin-bottom: 14px; letter-spacing: 0.5px; box-shadow: var(--tpp-shadow-sm); }
-.tpp-lp .tpp-stars-row { color: var(--tpp-gold-leaf); font-size: 14px; letter-spacing: 2px; margin-bottom: 10px; }
-.tpp-lp .tpp-test-name { font-size: 14px; font-weight: 600; color: var(--tpp-text); }
-
 .tpp-lp .tpp-cta-strip { background: var(--tpp-noir); color: var(--tpp-text-on-dark); padding: 96px 24px; text-align: center; position: relative; overflow: hidden; }
 .tpp-lp .tpp-cta-glow { position: absolute; inset: 0; background: radial-gradient(circle at 20% 50%, rgba(233, 30, 99, 0.18) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(139, 21, 56, 0.30) 0%, transparent 50%); pointer-events: none; }
 .tpp-lp .tpp-cta-strip .tpp-wrap { position: relative; }
@@ -975,7 +935,6 @@ const TPP_LANDING_CSS = `
   .tpp-lp .tpp-loc-grid { grid-template-columns: 1fr; }
   .tpp-lp .tpp-qr-strip .tpp-wrap { grid-template-columns: 1fr; gap: 48px; }
   .tpp-lp .tpp-qr-card { margin: 0 auto; }
-  .tpp-lp .tpp-test-grid { grid-template-columns: repeat(2, 1fr); }
   .tpp-lp .tpp-footer .tpp-wrap { grid-template-columns: 1fr 1fr; gap: 36px; }
 }
 @media (max-width: 560px) {
@@ -987,7 +946,6 @@ const TPP_LANDING_CSS = `
   .tpp-lp .tpp-stats .tpp-wrap { grid-template-columns: 1fr; gap: 32px; }
   .tpp-lp .tpp-stat::after { display: none !important; }
   .tpp-lp .tpp-phase-rail { grid-template-columns: repeat(2, 1fr); }
-  .tpp-lp .tpp-test-grid { grid-template-columns: 1fr; }
   .tpp-lp .tpp-footer .tpp-wrap { grid-template-columns: 1fr; }
   .tpp-lp .tpp-form-badge { width: 130px; padding: 9px 12px; top: 18px; right: 12px; }
   .tpp-lp .tpp-form-badge-line-1 { font-size: 12px; }

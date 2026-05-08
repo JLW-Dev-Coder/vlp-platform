@@ -1,6 +1,6 @@
 'use client'
 
-import Script from 'next/script'
+import { useEffect, useRef } from 'react'
 
 interface Props {
   formId: string
@@ -8,14 +8,15 @@ interface Props {
 }
 
 export function SuiteDashFormEmbed({ formId, embedBaseUrl }: Props) {
-  return (
-    <>
-      <div id={`sd-form-${formId}`} className="tpp-form-sd" />
-      <Script
-        src={`${embedBaseUrl}/${formId}.js`}
-        strategy="afterInteractive"
-        id={`sd-form-script-${formId}`}
-      />
-    </>
-  )
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const script = document.createElement('script')
+    script.src = `${embedBaseUrl}/${formId}.js`
+    script.async = true
+    containerRef.current.appendChild(script)
+  }, [formId, embedBaseUrl])
+
+  return <div ref={containerRef} className="tpp-form-sd" />
 }
