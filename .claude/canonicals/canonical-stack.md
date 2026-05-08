@@ -135,7 +135,7 @@ These platforms render entirely client-side. They fetch data from the Worker API
 | TCVLP | Pages | `taxclaim-virtuallaunch-pro` |
 | WLVLP | Pages | `websitelotto-virtuallaunch-pro` |
 | TAVLP | Pages | `tavlp-site` |
-| TPP | Pages | `taxprep` |
+| TPP | Pages | `taxprep-pro` |
 | Worker | Worker | `virtuallaunch-pro-api` |
 
 ---

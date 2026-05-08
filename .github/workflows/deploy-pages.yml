@@ -264,7 +264,7 @@ jobs:
       - name: Build TPP
         run: npx turbo build --filter=taxprep
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy apps/taxprep/out --project-name=taxprep --branch=main
+        run: npx wrangler pages deploy apps/taxprep/out --project-name=taxprep-pro --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
