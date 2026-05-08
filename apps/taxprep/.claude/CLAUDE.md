@@ -67,8 +67,12 @@ npx turbo build --filter=taxprep
 - Phase 1 (scaffold) — complete
 - Phase 2 (content / landing-page port) — complete (commit `f2aad0e`)
 - Phase 3 (canonical updates) — complete (commit `26db918`)
-- Phase 4 (infrastructure / CI-CD) — complete; **manual prereqs pending Jamie:**
-  1. Create Cloudflare Pages project named `taxprep-pro` (one-time, dashboard or `wrangler pages project create taxprep-pro`)
-  2. Attach custom domain `taxprep.virtuallaunch.pro` (Pages → Custom domains)
-  3. R2 prefix `taxprep/` is reserved — no provisioning needed; first upload creates it
-- Phases 5–7 — pending
+- Phase 4 (infrastructure / CI-CD) — complete (commit `41d5a77`); Pages
+  project + custom domain provisioned by Jamie (preview deploy live;
+  custom-domain DNS still propagating, ≤48h)
+- Phase 5 (QA pass — design tokens, build, page checklist) — complete
+  (commits `e8b36cd`, `77f6733`)
+- Phase 6 (preview deploy) — complete; first deploy:
+  `https://cbd50c6c.taxprep.pages.dev` (project `taxprep-pro`,
+  branch `main`, 65 files, 3.40s upload)
+- Phase 7 (sign-off) — pending Principal browser-check of preview URL
