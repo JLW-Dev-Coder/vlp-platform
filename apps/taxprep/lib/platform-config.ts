@@ -8,6 +8,7 @@ export const tppConfig: PlatformConfig = {
   brandName: 'Tax Prep Pro',
   brandAbbrev: 'TPP',
   brandColor: '#E91E63',
+  themeMode: 'light',
   brandSubtitle: 'For Service Bureaus & Tax Pros',
   logoText: 'TPP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',

@@ -6,6 +6,7 @@ export interface ReviewConfig {
   formTypes: readonly ('review' | 'case_study' | 'testimonial')[];
   heroHeadline?: string;
   heroSubheadline?: string;
+  themeMode?: 'dark' | 'light';
 }
 
 export interface ReviewCardData {

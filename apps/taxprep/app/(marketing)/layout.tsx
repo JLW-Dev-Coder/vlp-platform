@@ -7,7 +7,10 @@ export default function MarketingLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-surface-bg">
+    <div
+      className="flex min-h-screen flex-col bg-surface-bg text-text-primary"
+      data-theme={tppConfig.themeMode === 'light' ? 'light' : undefined}
+    >
       <MarketingHeader config={tppConfig} />
       <main className="flex-1">{children}</main>
       <MarketingFooter config={tppConfig} />

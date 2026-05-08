@@ -119,6 +119,8 @@ TPP (`apps/taxprep`) uses an editorial 9-color palette that exceeds the six requ
 
 **Authoritative source remains** `apps/taxprep/tailwind.config.ts`. If it diverges from this table, the Tailwind config wins and this table is updated.
 
+**Theme mode (Phase 6 round 3, 2026-05-08):** TPP is the first app to opt into `themeMode: 'light'` via `PlatformConfig`. Light mode remaps the shared `@vlp/member-ui` semantic tokens (`--surface-bg`, `--surface-card`, `--text-primary`, `--border-subtle`, etc.) to a champagne / ivory / ink palette via a `[data-theme="light"]` override block in `packages/member-ui/src/styles/tokens.css`, and the `(marketing)` layout sets `data-theme="light"` on its outer wrapper so all shared components (header, footer, legal, reviews) inherit the light surfaces. The homepage's `.tpp-lp` scoped CSS is unaffected — it remains its own world. All other 9 apps leave `themeMode` undefined and continue rendering on the existing dark palette. Future SD-led / editorial apps may opt in identically.
+
 ### 4.6 Per-platform colors
 Brand color values are **per-app** and live in each app's `tailwind.config.ts` under `theme.extend.colors.brand`. This file does not embed hex values — embedding creates drift.
 

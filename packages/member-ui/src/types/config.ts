@@ -61,6 +61,10 @@ export interface PlatformConfig {
   brandName: string;           // e.g., "Transcript Tax Monitor"
   brandAbbrev: string;         // e.g., "TTMP"
   brandColor: string;          // e.g., "#14b8a6"
+  // 'dark' (default when undefined) | 'light'. Light mode opts the app into the
+  // SD-led / editorial palette: champagne page background, slate ink, ivory cards.
+  // Currently only TPP uses 'light'; all other platforms remain dark.
+  themeMode?: 'dark' | 'light';
   brandSubtitle: string;       // e.g., "Pro Dashboard"
   logoText: string;            // e.g., "TT" (displayed in sidebar logo)
   navSections: NavSection[];

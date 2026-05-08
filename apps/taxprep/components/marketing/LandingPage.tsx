@@ -793,7 +793,13 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-form-head, .tpp-lp .tpp-form-embed { position: relative; z-index: 1; }
 .tpp-lp .tpp-form-head { text-align: center; margin-bottom: 40px; position: relative; }
 .tpp-lp .tpp-sub { font-size: 16px; color: var(--tpp-text-muted); margin: 0; line-height: 1.6; }
-.tpp-lp .tpp-form-embed { min-height: 200px; position: relative; }
+.tpp-lp .tpp-form-embed { min-height: 1200px; position: relative; }
+/* SD form is rendered as a same-origin iframe (width=100%, height=100%) with no
+   postMessage auto-resize handshake. Force the iframe to fill the wrapper so
+   the full Discovery-Call form (company name + switchery + first/last/email +
+   scheduling card + submit) renders without internal scrolling. See
+   apps/taxprep/scratch/sd-form-inspection.md for the full analysis. */
+.tpp-lp .tpp-form-sd iframe { display: block !important; width: 100% !important; height: 100% !important; min-height: 1200px !important; border: 0 !important; background: transparent !important; }
 
 .tpp-lp .tpp-form-badge { position: absolute; top: -16px; right: -28px; z-index: 5; width: 180px; padding: 12px 16px; background: linear-gradient(135deg, var(--tpp-rose) 0%, var(--tpp-crimson) 100%); display: flex; align-items: baseline; justify-content: center; gap: 8px; text-align: center; color: #FFFFFF !important; font-family: var(--tpp-font-display); line-height: 1; box-shadow: 0 14px 32px rgba(139, 21, 56, 0.32); transform: rotate(14deg); transform-origin: center center; animation: tpp-badge-wobble 5.5s var(--tpp-ease-in-out) infinite; pointer-events: none; clip-path: polygon( 0% 0%, 100% 0%, 93% 50%, 100% 100%, 0% 100%, 7% 50% ); }
 .tpp-lp .tpp-form-badge::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 14px; right: 14px; border-top: 1px dashed rgba(255, 229, 236, 0.55); border-bottom: 1px dashed rgba(255, 229, 236, 0.55); pointer-events: none; }
