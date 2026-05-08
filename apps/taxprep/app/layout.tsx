@@ -15,6 +15,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://taxprep.virtuallaunch.pro'),
   title: {
     default: 'Tax Prep Pro',
     template: '%s | Tax Prep Pro',
@@ -24,6 +25,20 @@ export const metadata: Metadata = {
   icons: {
     icon: 'https://virtuallaunch.pro/assets/favicon.ico',
     apple: 'https://virtuallaunch.pro/assets/favicon.ico',
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Tax Prep Pro',
+    title: 'Tax Prep Pro — For Service Bureaus & Tax Pros',
+    description:
+      'Productize your service bureau end-to-end. 8-phase client journey, branded SuiteDash workspace, member training included.',
+    url: 'https://taxprep.virtuallaunch.pro',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tax Prep Pro — For Service Bureaus & Tax Pros',
+    description:
+      'Productize your service bureau end-to-end. 8-phase client journey, branded SuiteDash workspace, member training included.',
   },
 };
 
