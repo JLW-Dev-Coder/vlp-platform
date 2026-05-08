@@ -72,3 +72,4 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
 |------|--------|-----------|
 | 2026-04-13 | Initial version | Establish role boundaries between Chat Claude (Principal) and Claude Code (Execution) |
 | 2026-05-06 | Added "Prompt delivery format" subsection to Principal Engineer | During the billing-refund-notification sweep, RC prompts and Owner-facing content were getting mixed in chat. Owner asked for a hard rule: RC prompts always go in canvas/code artifacts, conversational text stays in chat. Visual separation prevents miscommunication about what is meant for whom. |
+| 2026-05-07 | Owner shell environment note added | RC and Principal had been issuing bash-style commands (grep, tee, export) during the Donovan billing-refund sweep. Added explicit PowerShell-native examples (Select-String, Tee-Object, $env:NAME) to the Owner section to remove ambiguity. Owner runs PowerShell exclusively in VS Code on Windows. |
