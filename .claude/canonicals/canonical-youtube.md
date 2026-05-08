@@ -338,3 +338,86 @@ Before declaring a video "uploaded and live":
 | 2026-05-07 | Title pattern extension for course/training channels (§8.1) | TPP's training course needs module/lesson encoding for alphabetical sort in YouTube Studio. The standard `YT###` pattern doesn't carry that information. The extended `M{NN}.L{N}` pattern is documented as a per-channel option, applied via the channel's Upload Task sub-page. |
 
 Append-only. Do not rewrite prior entries.
+
+---
+
+## Lessons Learned (Tax Prep Pro rollout, 2026-05-07)
+
+These are traps from the TPP YouTube channel rollout. Read before starting the next Zuri training course or any new VLP YouTube channel.
+
+### 1. Module numbering = phase numbering. No exceptions.
+
+There is **one** correct mapping for any phase-based course: `Module N + 1 = Phase N` for phases 1–8, with Module 1 = Welcome and Module 10 = Course Closer. Do not invent a "teaching order" that puts a phase out of numeric sequence (e.g., E-Sign in module slot 9 because it's "cross-cutting"). The LMS, the CU lesson tree, the YouTube manifest, the YouTube video titles, and the YouTube playlists must all use the same module-to-phase mapping.
+
+The TPP rollout shipped with E-Sign (Phase 6) in YouTube module slot 9 because the canonical author rationalized "E-Sign is taught last because cross-cutting." The LMS and CU lesson tree used standard phase order. The disagreement was caught only after 40 videos were uploaded, requiring a re-title pass on 12 videos and 3 playlist renames.
+
+**Rule:** Before authoring a manifest, audit any other surface (LMS, CU lesson tree, project instruction) where module numbers already exist. Match them. Don't override based on pedagogical preference — pedagogical sequencing is a *playback order* concern (which a master playlist or LMS course-flow setting can express), not a *module numbering* concern.
+
+### 2. Check for existing OAuth integrations before authoring a new token broker.
+
+Phase 2 of the TPP rollout authored a new Worker route (`POST /v1/youtube/access-token`) that read three new secrets (`YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `YOUTUBE_REFRESH_TOKEN`) and brokered tokens via Google's OAuth refresh-token grant. The Worker already had a working YouTube OAuth integration for SCALE features at `apps/worker/src/index.js:793` (`getFreshYouTubeOAuthToken(env)` reading from `ENRICHMENT_KV` key `youtube:oauth:tokens`).
+
+The parallel route returned `missing_secrets` at runtime through three deploy cycles and a credential rotation. Root cause was never diagnosed. Phase 2.4 pivoted to call the existing helper instead. The orphaned secrets were deleted.
+
+**Rule:** Before authoring a Worker route that reads secrets matching `*_CLIENT_ID`, `*_CLIENT_SECRET`, `*_REFRESH_TOKEN`, or any OAuth-shaped names, run:
+
+```powershell
+Select-String -Path apps\worker\src\index.js -Pattern "{provider}_OAUTH|{provider}_CLIENT|getFresh{Provider}OAuthToken"
+```
+
+If anything matches, the integration likely exists already. Reuse it.
+
+### 3. Never include secret values in any artifact, prompt, report, or chat message.
+
+Two credential leaks occurred during the TPP rollout. First when Owner pasted client_id/client_secret/refresh_token in chat to ask RC for help. Second when RC echoed the same values back as paste-bait inside instructions. Both required full credential rotation (Google OAuth client revocation + new client + new refresh token + re-seeding 3 Worker secrets). Cumulative cost: ~30 minutes plus the cognitive load of two rotation cycles.
+
+**Rule (hard):** No secret values appear in any RC prompt, RC report, chat message, or artifact — ever. Not as examples, not as paste targets, not as "here's what to put in." Secrets are referenced by name only. When a value needs to land somewhere, the instruction is "run `wrangler secret put X` and paste the value at the prompt" — never include the value itself. If RC ever has a secret in context (because a tool returned it), RC's job is to flag "rotate this immediately" — not to echo it.
+
+### 4. YouTube quota is real. Default is ~6 uploads/day.
+
+Default Google Cloud quota for YouTube Data API v3 is 10,000 units/day. Each `videos.insert` call costs 1,600 units. That's ~6 uploads/day on a fresh project. For a 40-video course, that's a 7-day rolling cadence unless a quota increase is requested.
+
+The TPP rollout got lucky on its second upload run — quota increase was not requested, but the run completed all 40 in one session anyway (Google may have had a higher silent default, or the project had pre-existing quota allocation).
+
+**Rule:** Before the first upload run for a course of 10+ videos, either (a) request a quota increase from Google Cloud Console (APIs & Services → Quotas → search "youtube" → request increase to ~70,000/day citing legitimate business use; usually granted in 1–2 business days), OR (b) explicitly accept the rolling cadence in the canonical. Don't go in blind.
+
+### 5. OAuth scope additions require user re-consent.
+
+Phase 2.5 added `https://www.googleapis.com/auth/youtube.upload` to the SCALE OAuth integration's scope list. The Worker redeployed in seconds. The KV-stored token did NOT auto-refresh with the new scope — Owner had to manually visit the SCALE OAuth init endpoint, click through Google's consent screen showing the now-three scopes, and Allow.
+
+The Disconnect button on `https://virtuallaunch.pro/scale?tab=youtube` did not properly clear state during this debugging, requiring RC to add a cache-invalidation fix in a subsequent deploy.
+
+**Rule:** When adding an OAuth scope to an existing integration:
+- Deploy the scope addition first
+- Tell Owner to visit the auth-init URL directly (e.g., `https://api.virtuallaunch.pro/v1/scale/youtube-oauth/auth-init`) — this forces re-consent regardless of Disconnect button state
+- Verify the Google consent screen shows ALL the new scopes before Owner clicks Allow
+- Confirm Owner is signing in as the correct Google account (the one that owns the target Brand Account / channel)
+- After Owner re-consents, KV record is overwritten with the new-scope token; existing reads under prior scopes continue working (additive)
+
+### 6. Updating canonical/role/contract files: read before replace.
+
+A separate session (ROLES.md edit on 2026-05-06) demonstrated this trap: Principal authored "replace entire file with: ..." instructions for `.claude/ROLES.md` without first asking RC to dump the current content. RC executed literally and silently dropped the existing "Brevity rule (global, all roles)" section. Caught only when RC noticed a line-count mismatch and flagged.
+
+Same risk in YouTube canonical edits. The canonical is long; full rewrites lose sections.
+
+**Rule:** When updating an existing canonical, role, or contract file:
+- (a) Have RC paste the current file content first, OR
+- (b) Use targeted `str_replace`-style edits that add without nuking, OR
+- (c) Author a "preserve all existing content + append THIS new section" instruction with the new section called out explicitly
+
+Never author "replace entire file with: ..." for any file with significant existing content.
+
+### 7. CU page numbering audits before bulk LMS work.
+
+The TPP LMS lesson tree had three modules (M07, M08, M09) where the parent page had the correct title but the lesson sub-pages inside used the wrong module prefix (e.g., `LMS 1_Module 6_Lesson 6.1` titled inside `LMS 1_Module 7 — Phase 6 — E-Sign`). The internal numbering of script content also drifted (`Module:` field said "Module 9 — Phase 6" when the parent was Module 7). Cleanup required rewriting 15 CU pages.
+
+The lesson sub-page titling was inherited from a template duplication step that didn't update child references. RC's connector calls don't auto-rename children.
+
+**Rule:** Before propagating URLs or doing any bulk LMS write operation, run a sanity scan over the lesson tree:
+
+```javascript
+const pages = await clickup_list_document_pages({ document_id, max_page_depth: -1 });
+// For each module, verify: parent title module number === all child titles' module prefix
+```
+
+Fix mismatches before the bulk operation runs. Otherwise the bulk operation propagates against incorrect labels.
