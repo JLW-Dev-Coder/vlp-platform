@@ -1,9 +1,9 @@
 # Canonical: App Blueprint
 
 **Status:** Authoritative
-**Last updated:** 2026-04-15
+**Last updated:** 2026-05-08
 **Owner:** JLW (Principal Engineer review required for changes)
-**Scope:** All 8 apps in the vlp-platform monorepo
+**Scope:** All 10 apps in the vlp-platform monorepo
 
 ---
 
@@ -98,6 +98,26 @@ Apps SHOULD also define this optional 7th token:
 | `brand.gradient-to` | Second color for two-tone brand gradients (logo squares, hero backgrounds, CTA accents). Falls back to `brand.light` when unset. |
 
 Apps may define additional tokens. They may NOT rename or omit the six required.
+
+#### 4.5.1 Tax Prep Pro (TPP) extended palette
+
+TPP (`apps/taxprep`) uses an editorial 9-color palette that exceeds the six required brand tokens. Documented here once because the palette is referenced in three places — the TPP `tailwind.config.ts`, the homepage's scoped landing CSS, and the TPP-specific member-area overrides — and the source-of-truth rule in §4.6 still applies (the Tailwind config wins if the two ever drift).
+
+| Tailwind token | CSS var | Hex | Role |
+|----------------|---------|-----|------|
+| `tpp.rose` | `--tpp-rose` | `#E91E63` | Brand primary; same value as `brand.primary` |
+| `tpp.rose-deep` | `--tpp-rose-deep` | `#C2185B` | Hover/pressed for primary |
+| `tpp.crimson` | `--tpp-crimson` | `#8B1538` | Editorial accent, secondary buttons, gradient endpoint |
+| `tpp.crimson-deep` | `--tpp-crimson-deep` | `#5C0D24` | Darkest brand surface, footer background |
+| `tpp.champagne` | `--tpp-champagne` | `#F5E6D3` | Default page surface (light) |
+| `tpp.blush` | `--tpp-blush` | `#FFE5EC` | Tinted accents, hero blend |
+| `tpp.noir` | `--tpp-noir` | `#1A0B14` | Dark hero / stats / CTA strip backgrounds |
+| `tpp.gold-leaf` | `--tpp-gold-leaf` | `#D4A574` | Editorial accent, dividers, photo frame |
+| `tpp.gold-bright` | `--tpp-gold-bright` | `#E8C088` | Highlight accent, gradient endpoint |
+
+**Why this canonical and not just the Tailwind config:** TPP is the first SD-led marketing app and the first app with a published landing page that ships a self-contained `<style>` block. Future SD-led apps will mirror this pattern; codifying the palette here prevents the next app from inventing its own naming scheme. §4.6's "this file does not embed hex values" rule is intentionally narrowed for editorial palettes that cross multiple files within a single app.
+
+**Authoritative source remains** `apps/taxprep/tailwind.config.ts`. If it diverges from this table, the Tailwind config wins and this table is updated.
 
 ### 4.6 Per-platform colors
 Brand color values are **per-app** and live in each app's `tailwind.config.ts` under `theme.extend.colors.brand`. This file does not embed hex values — embedding creates drift.
@@ -288,5 +308,6 @@ Changes to `tailwind.config.ts` in any app require:
 | 2026-04-15 | §4.7 changed from dark-only to dark-today-light-planned | Owner wants user toggle in profile; scoped as follow-up project |
 | 2026-04-15 | §4.18 reduced-motion scoped to new work + grandfather | Consistency with §4.9 retrofit strategy |
 | 2026-04-16 | Added optional `brand.gradient-to` 7th brand token | Two-tone brand gradients in shared MarketingHeader/Footer logos looked flat when `brand.light` was an alpha-tinted variant of `brand.primary` (e.g. TCVLP yellow → 15%-alpha yellow). Proper second color produces richer brand identity per platform. |
+| 2026-05-08 | Added §4.5.1 TPP extended palette (rose / crimson / champagne / gold) | TPP is the first SD-led marketing app and ships an editorial 9-color palette referenced across `tailwind.config.ts`, scoped landing CSS, and member-area overrides. Codifying once prevents the next SD-led app from inventing its own naming. Source-of-truth rule in §4.6 still applies. |
 
 Append-only. Do not rewrite prior entries.

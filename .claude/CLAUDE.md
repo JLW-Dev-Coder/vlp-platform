@@ -1,6 +1,6 @@
 # CLAUDE.md — vlp-platform (Monorepo)
 
-Last updated: 2026-04-15
+Last updated: 2026-05-08
 
 ---
 
@@ -8,14 +8,14 @@ Last updated: 2026-04-15
 
 **Repo:** vlp-platform
 **Structure:** Turborepo monorepo
-**Purpose:** All 8 VLP ecosystem platform frontends + Worker + shared packages
+**Purpose:** All 10 VLP ecosystem platform frontends + Worker + shared packages
 
 ---
 
 ## 2. What This Repo Is
 
 The unified monorepo for every platform in the VLP ecosystem. Contains:
-- **8 platform frontends** (Next.js apps, static exports)
+- **10 platform frontends** (Next.js apps, static exports + Workers)
 - **1 Cloudflare Worker** (the single backend for all platforms)
 - **Shared packages** (`@vlp/member-ui` — shared UI components, types, styles)
 - **Canonical documents** (`.claude/canonicals/` — single source of truth)
@@ -37,6 +37,7 @@ Every platform that previously lived in its own repo is migrated here.
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | static export | `#eab308` (yellow) |
 | Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | static export | `#00D4FF` (neon blue) |
 | Tax Avatar Pro | TAVLP | taxavatar.virtuallaunch.pro | `apps/tavlp` | static export | `#ec4899` (hot pink) |
+| Tax Prep Pro | TPP | taxprep.virtuallaunch.pro | `apps/taxprep` | static export | `#E91E63` (rose) |
 | VLP Worker | — | api.virtuallaunch.pro | `apps/worker` | Cloudflare Worker | — |
 
 **Authoritative source:** each app's `tailwind.config.ts` at `theme.extend.colors.brand.500`. If this table and the Tailwind config diverge, the Tailwind config wins. Update this table whenever a platform's brand color changes.
@@ -56,6 +57,9 @@ Every platform that previously lived in its own repo is migrated here.
 | TCVLP | `taxclaim-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | WLVLP | `websitelotto-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | TAVLP | `tavlp-site` | `npm run build` | `out` | static export |
+| TPP | `tax-prep-pro-site` | `npm run build` | `out` | static export |
+
+**TPP note:** Tax Prep Pro is SD-led — the Next.js site is lead-gen only; members live in SuiteDash. Discovery / Demo bookings use SuiteDash form embeds (no Cal.com), and there are no TPP Worker routes (no `/v1/taxprep/*` endpoints).
 
 **TTMP deployment note:** TTMP uses Cloudflare Workers (not Pages) via `@opennextjs/cloudflare` and GitHub Actions CI/CD. All other platforms remain on Pages. TTMP deploys exclusively from the vlp-platform monorepo (`apps/ttmp/`). The standalone `transcript.taxmonitor.pro` repo is deprecated and must not be used for builds or deploys. Its GitHub Actions workflow has been removed.
 
@@ -73,7 +77,7 @@ The shared component library for all platform member areas. Contains:
 
 Apps depend on this package via workspace dependency: `"@vlp/member-ui": "*"`
 
-**Tailwind version:** All 8 apps use Tailwind CSS v3 (3.4.17) with the `content` array in `tailwind.config.ts` for content scanning. When adding new shared packages or component directories, add the path to each app's `tailwind.config.ts` content array.
+**Tailwind version:** All 10 apps use Tailwind CSS v3 (3.4.17) with the `content` array in `tailwind.config.ts` for content scanning. When adding new shared packages or component directories, add the path to each app's `tailwind.config.ts` content array.
 
 **CSS variable syntax:** Use `bg-[var(--member-card)]` (explicit `var()`) in arbitrary Tailwind classes. This is the safest form and avoids ambiguity.
 
@@ -101,8 +105,8 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 | `canonical-contract-registry.json` | Registry entry schema (required fields) | Adding entries to platform registries |
 | `canonical-dashboard-pages.md` | Standard authenticated page specs (Dashboard, Tokens, Affiliate, Profile, Account, Support) — required sections, endpoints, layout, audit checklist | Building, auditing, or modifying any authenticated dashboard page on any app |
 | `canonical-deploy.md` | Per-adapter deploy procedures + rollback | Deploying any platform or troubleshooting deploys |
-| `canonical-feature-benefits.md` | Human-readable benefit descriptions per feature across all 8 platforms ("what does this do for me") | Writing user-facing feature copy or positioning benefits |
-| `canonical-feature-matrix.md` | Feature → Worker route / storage / frontend page / build status mapping across all 8 platforms | Tracking what's live/partial/planned per platform |
+| `canonical-feature-benefits.md` | Human-readable benefit descriptions per feature across all 10 platforms ("what does this do for me") | Writing user-facing feature copy or positioning benefits |
+| `canonical-feature-matrix.md` | Feature → Worker route / storage / frontend page / build status mapping across all 10 platforms | Tracking what's live/partial/planned per platform |
 | `canonical-index.html` | Landing page structure (8 required sections) | Creating or editing landing pages |
 | `canonical-legal.md` | Legal page copy (privacy, refund, terms) + shared LegalPageLayout usage + businessInfo config requirement | Adding, editing, or migrating `/legal/*` pages on any app |
 | `canonical-market.md` | Market positioning template (12 sections) | Writing marketing copy or positioning docs |
@@ -111,7 +115,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 | `canonical-rc-prompt.md` | Principal → RC prompt template (10 required sections) | Authoring any prompt for Execution Engineer |
 | `canonical-roles.md` | Role definitions (Principal, Execution, Owner) | Understanding role boundaries and escalation |
 | `canonical-scale.md` | SCALE batch operations pipeline template | Working on SCALE outreach, enrichment, or email pipeline |
-| `canonical-site-nav.md` | Standard navigation structure (marketing + member) for all 8 platform frontends | Adding, removing, or reordering nav items on any platform |
+| `canonical-site-nav.md` | Standard navigation structure (marketing + member) for all 10 platform frontends | Adding, removing, or reordering nav items on any platform |
 | `canonical-skill.md` | SKILL.md template (11 sections) | Defining reusable execution skills |
 | `canonical-stack.md` | Platform stack matrix + architecture decisions | Understanding platform tech choices, adapters, or domains |
 | `canonical-style.md` | Design tokens, typography, layout patterns | Styling components, pages, or creating new UI |
@@ -176,4 +180,5 @@ If a prompt says "do not push" — commit locally only, report the commit hash.
 | TCVLP | `C:\Users\britn\taxclaim.virtuallaunch.pro` | `apps/tcvlp` |
 | WLVLP | `C:\Users\britn\OneDrive\websitelotto.virtuallaunch.pro` | `apps/wlvlp` |
 | TAVLP | `C:\Users\britn\OneDrive\tavlp-site` | `apps/tavlp` |
+| TPP | (no legacy repo — built in-monorepo) | `apps/taxprep` |
 | Worker | `C:\Users\britn\OneDrive\virtuallaunch.pro\workers` | `apps/worker` |

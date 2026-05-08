@@ -1,8 +1,8 @@
 <!--
 Status: Authoritative
-Last updated: 2026-04-15
+Last updated: 2026-05-08
 Owner: JLW (Principal Engineer review required for changes)
-Scope: All 8 apps in the vlp-platform monorepo
+Scope: All 10 apps in the vlp-platform monorepo
 Parent: canonical-app-blueprint.md
 -->
 
@@ -171,6 +171,27 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 
 ---
 
+## TPP — Tax Prep Pro
+
+**Audience:** Service bureaus and credentialed tax practitioners (EAs, CPAs, attorneys).
+**Tiers:** Managed ($5,000 setup + $79/mo per active member) · TPP + TMP Bundle ($8,500) · Ongoing Support ($497/mo or $150/hr)
+
+**SD-led — no Worker routes by design (Deviation 4).** All client-side functionality (intake, agreement, payment, prep, e-sign 8879, file, deliver) lives in the SuiteDash workspace provisioned per bureau. The Next.js site is lead-gen only.
+
+| Feature | Worker Route | R2 Key | D1 Table | Frontend Path | Status |
+|---------|-------------|--------|----------|---------------|--------|
+| Branded SuiteDash workspace | N/A — provisioned in SD | N/A | N/A | (in SuiteDash) | live (manual provisioning) |
+| 8-phase client journey | N/A — runs in SD workspace | N/A | N/A | (in SuiteDash) | live |
+| Adaptive intake (W-2 / 1099 / LLC / amendment) | N/A — SD form branching | N/A | N/A | (in SuiteDash) | live |
+| Form 8879 e-signature | N/A — SD e-sign | N/A | N/A | (in SuiteDash) | live |
+| Member training | N/A — videos + walkthrough | N/A | N/A | (in SuiteDash + onboarding) | live |
+| Tax Monitor Pro bundle | N/A — pairing with TMP | N/A | N/A | /pricing#bundle | live (sales offer) |
+| Discovery Call booking | N/A — SD form `21EGX5mk16QA6qVGj` | N/A | N/A | / (homepage), /contact | live |
+| Demo booking | N/A — SD form `2rU9ohwhCx3rsijrC` | N/A | N/A | (reserved) | planned |
+| Sign-in (outbound to SD) | N/A — outbound link | N/A | N/A | /sign-in | live |
+
+---
+
 ## TAVLP — Tax Avatar Pro
 
 | Feature | Worker Route | R2 Key | D1 Table | Frontend Path | Status |
@@ -204,6 +225,7 @@ Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can
 | GVLP | 7 | 5 | 1 | 1 |
 | DVLP | 9 | 7 | 0 | 2 |
 | TAVLP | 13 | 13 | 0 | 0 |
+| TPP | 9 | 8 | 0 | 1 |
 
 **Note:** Shared features (Account, Affiliate, Calendar, Profile, Support, Tokens, Usage) are counted once per platform. Route paths, R2 keys, and D1 tables listed here are based on project knowledge as of 2026-04-14. Verify against the actual Worker source (`apps/worker/src/index.js`) before treating as authoritative — some planned routes may have been built since this doc was written, and some listed routes may have different exact paths.
 
@@ -306,6 +328,7 @@ Paths shown as `/dashboard/*` canonical. Grandfathered exceptions per `canonical
 - TCVLP `/dashboard/reports` marked 🟡 because `/dashboard/submissions` fills a reports-like role without matching the canonical path.
 - VLP grandfathered (member) paths are counted as conformant when a same-named destination exists (e.g. `(member)/account` satisfies `/dashboard/account`).
 - 2026-04-19 follow-up commit: expanded Workspace section from compressed "Applies to" list to full app × page matrix; added `/tools/code-lookup` Resources mega menu row to Marketing table. First commit (eb18bdc) shipped with Workspace rendered as a narrow "Applies to" summary and no Resources coverage.
+- TPP (Tax Prep Pro) is intentionally absent from the App Pages — Settings / Workspace / Earnings tables because it has no `/dashboard/*` member area (SD-led; members live in SuiteDash per Deviation 4). For TPP marketing-page conformance see the standalone TPP section above. TPP marketing pages shipped in Phase 2: `/`, `/about`, `/features`, `/pricing`, `/how-it-works`, `/contact`, `/reviews`, `/reviews/submit`, `/sign-in` (outbound to SD), `/legal/{privacy,terms,refund}` — all ✅. `/support`, `/affiliate`, `/tools/code-lookup` are ⚪ for TPP.
 - Directory feature: per Owner, the professional directory is a TMP concept, not VLP. Canonical-site-nav.md §2 lists `/dashboard/profile/directory` as applying to DVLP/VLP which appears incorrect. TMP's directory feature is shipped at `/directory` (public listing) and edited via `/dashboard/profile` — not at the canonical path `/dashboard/profile/directory`. Matrix reflects reality (TMP ❌ at canonical path, others ⚪); canonical-site-nav.md needs Owner ruling on path/scope correction before that file is edited.
 
 ### How to use this matrix

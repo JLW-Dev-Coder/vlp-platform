@@ -65,5 +65,6 @@ npx turbo build --filter=taxprep
 ## Phase status
 
 - Phase 1 (scaffold) — complete
-- Phase 2 (content / landing-page port) — blocked on SD HTML/CSS source + `suitedashFormBaseUrl`
-- Phases 3–7 — pending
+- Phase 2 (content / landing-page port) — complete (commit `f2aad0e`)
+- Phase 3 (canonical updates) — complete
+- Phases 4–7 — pending (Phase 4 = infrastructure)

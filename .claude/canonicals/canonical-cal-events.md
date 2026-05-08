@@ -1,18 +1,22 @@
 <!--
 Status: Authoritative
-Last updated: 2026-04-17
+Last updated: 2026-05-08
 Owner: JLW (Principal Engineer review required for changes)
-Scope: All 8 apps in the vlp-platform monorepo
+Scope: All 10 apps in the vlp-platform monorepo
 Parent: canonical-app-blueprint.md
 -->
 
 # canonical-cal-events.md
 
 Authoritative registry for Cal.com event types used across the VLP
-ecosystem. All 8 apps consume Cal.com via element-click popup embeds
+ecosystem. 9 of 10 apps consume Cal.com via element-click popup embeds
 configured through `PlatformConfig`. This canonical is the single
 source of truth — do not hardcode Cal slugs or namespaces in
 component code.
+
+**Exception:** Tax Prep Pro (TPP / `apps/taxprep`) is SD-led and does NOT
+use Cal.com. TPP bookings flow through SuiteDash form embeds — see §7
+(SuiteDash form bookings) below.
 
 ---
 
@@ -163,3 +167,98 @@ recon):
 These will migrate to PlatformConfig consumption as each app's Phase 3
 pass touches them. New code MUST consume from PlatformConfig — adding
 new hardcoded Cal slugs anywhere is drift.
+
+---
+
+## 7. SuiteDash form bookings (SD-led apps)
+
+SD-led marketing apps (currently TPP only) bypass Cal.com entirely and
+embed SuiteDash form scripts that POST directly to SuiteDash. Bookings
+land in the SuiteDash workspace assigned to the form, not on a Cal.com
+calendar. There is no Worker route involved (Deviation 4 — TPP has no
+backend endpoints).
+
+### 7.1 PlatformConfig fields
+
+When `bookingProvider === 'suitedash'`, the app populates these fields on
+`PlatformConfig` (defined in `packages/member-ui/src/types/config.ts`):
+
+| Field | Type | Required | Purpose |
+|-------|------|----------|---------|
+| `bookingProvider` | `'cal' \| 'suitedash'` | optional (default `'cal'` when undefined) | Selects the booking pipeline |
+| `suitedashDiscoveryFormId` | string | yes for SD-led | SD form ID for the Discovery Call (e.g. `21EGX5mk16QA6qVGj`) |
+| `suitedashDemoFormId` | string | optional | SD form ID for the Demo (e.g. `2rU9ohwhCx3rsijrC`) |
+| `suitedashEmbedBaseUrl` | string | yes for SD-led | Origin + path for SD form scripts (`https://secure.virtuallaunch.pro/frm`) |
+
+The full embed URL is constructed as `${suitedashEmbedBaseUrl}/${formId}.js`.
+
+The Cal.com fields (`calBookingNamespace`, `calBookingSlug`, etc.) remain
+required on `PlatformConfig` for consumer ergonomics in `LeadChatbot` and
+`HelpCenter`. SD-led apps pass empty strings — those consumers do not
+render for SD-led apps.
+
+### 7.2 SD form registry
+
+| App | Purpose | SD Form ID | PlatformConfig field | Embed URL |
+|-----|---------|------------|----------------------|-----------|
+| TPP | Discovery Call | `21EGX5mk16QA6qVGj` | `suitedashDiscoveryFormId` | `https://secure.virtuallaunch.pro/frm/21EGX5mk16QA6qVGj.js` |
+| TPP | Demo | `2rU9ohwhCx3rsijrC` | `suitedashDemoFormId` | `https://secure.virtuallaunch.pro/frm/2rU9ohwhCx3rsijrC.js` |
+
+When adding a new SD form, set the value in the app's `lib/platform-config.ts`
+and add a row here before consuming the embed in any component.
+
+### 7.3 Embed pattern (Pattern A — `next/script`)
+
+SD form embeds are JS injection scripts (NOT iframes). Reference implementation
+ships in `apps/taxprep/components/marketing/SuiteDashFormEmbed.tsx` and uses
+`next/script` with `strategy="afterInteractive"` plus a placeholder div:
+
+```tsx
+'use client'
+import Script from 'next/script'
+
+export function SuiteDashFormEmbed({ formId, embedBaseUrl }: Props) {
+  return (
+    <>
+      <div id={`sd-form-${formId}`} className="tpp-form-sd" />
+      <Script
+        src={`${embedBaseUrl}/${formId}.js`}
+        strategy="afterInteractive"
+        id={`sd-form-script-${formId}`}
+      />
+    </>
+  )
+}
+```
+
+The SD script appends form DOM into the document at its insertion point.
+The `.tpp-form-sd` (or per-app equivalent) wrapper class scopes the
+brand-aware styling overrides (input padding, button gradient, label
+case) onto the SD-injected fields — see `apps/taxprep/scratch/sd-landing.css`
+for the full override block.
+
+**Fallback (Pattern B — `useEffect` injection):** if Pattern A's script
+hoisting moves the `<script>` element away from its placeholder so the
+form fails to render, fall back to a `useEffect` that does
+`document.createElement('script')` + `containerRef.current.appendChild(...)`
+inside a ref'd div. Document the fallback in the consuming app's
+`.claude/CLAUDE.md` if used.
+
+### 7.4 SD-led apps don't use Cal
+
+SD-led apps must NOT:
+- Mount `HelpCenter` or `LeadChatbot` (both depend on Cal fields)
+- Render any Cal embed pattern from §4 above
+- Hardcode Cal slugs in their components
+
+If a future SD-led app needs a Help Center, fork the requirement to a new
+SD-form-backed support flow rather than wiring the Cal-based one.
+
+### 7.5 Adding a new SD-led app
+
+1. Set `bookingProvider: 'suitedash'` in the app's `lib/platform-config.ts`.
+2. Add the SD Discovery (and optional Demo) form IDs.
+3. Set `suitedashEmbedBaseUrl` to the SD origin (`https://secure.virtuallaunch.pro/frm`).
+4. Pass empty strings for the four required Cal.* fields.
+5. Use the shared `SuiteDashFormEmbed` Pattern A in homepage and `/contact`.
+6. Add a row to §7.2 above for each form consumed.

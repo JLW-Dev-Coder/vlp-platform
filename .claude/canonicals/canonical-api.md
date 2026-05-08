@@ -1,8 +1,8 @@
 <!--
 Status: Authoritative
-Last updated: 2026-04-26
+Last updated: 2026-05-08
 Owner: JLW (Principal Engineer review required for changes)
-Scope: All 8 apps in the vlp-platform monorepo
+Scope: All 10 apps in the vlp-platform monorepo
 Parent: canonical-app-blueprint.md
 -->
 
@@ -10,8 +10,10 @@ Parent: canonical-app-blueprint.md
 
 Master API endpoint registry for the VLP Worker (`apps/worker/src/index.js`).
 
-Last updated: 2026-04-26
+Last updated: 2026-05-08
 Total routes: ~196
+
+**TPP exception:** Tax Prep Pro (`apps/taxprep`) is SD-led and intentionally has **no Worker routes** (Deviation 4). All client-side functionality runs inside the SuiteDash workspace; the Next.js site is lead-gen only and POSTs Discovery / Demo bookings to SuiteDash via embedded form scripts (see `canonical-cal-events.md` §7). Do not add `/v1/taxprep/*` endpoints — adding one would be an architectural divergence requiring Principal review.
 
 ---
 
