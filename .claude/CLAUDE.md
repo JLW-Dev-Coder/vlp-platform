@@ -57,7 +57,7 @@ Every platform that previously lived in its own repo is migrated here.
 | TCVLP | `taxclaim-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | WLVLP | `websitelotto-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | TAVLP | `tavlp-site` | `npm run build` | `out` | static export |
-| TPP | `tax-prep-pro-site` | `npm run build` | `out` | static export |
+| TPP | `taxprep` | `npm run build` | `out` | static export |
 
 **TPP note:** Tax Prep Pro is SD-led — the Next.js site is lead-gen only; members live in SuiteDash. Discovery / Demo bookings use SuiteDash form embeds (no Cal.com), and there are no TPP Worker routes (no `/v1/taxprep/*` endpoints).
 

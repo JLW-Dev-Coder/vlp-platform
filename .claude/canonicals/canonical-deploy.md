@@ -58,7 +58,7 @@ npx wrangler pages deploy out --project-name={pages-project-name}
 | TCVLP | `taxclaim-virtuallaunch-pro` |
 | WLVLP | `websitelotto-virtuallaunch-pro` |
 | TAVLP | `tavlp-site` |
-| TPP | `tax-prep-pro-site` |
+| TPP | `taxprep` |
 
 ### 2.2 `@cloudflare/next-on-pages`
 
@@ -232,7 +232,7 @@ D1 migrations are forward-only. If a migration breaks something:
 | Tax Claim VLP | TCVLP | static export | `out` | Pages auto-deploy | `taxclaim-virtuallaunch-pro` |
 | Website Lotto VLP | WLVLP | static export | `out` | Pages auto-deploy | `websitelotto-virtuallaunch-pro` |
 | Tax Avatar Pro | TAVLP | static export | `out` | Pages auto-deploy | `tavlp-site` |
-| Tax Prep Pro | TPP | static export | `out` | Pages auto-deploy | `tax-prep-pro-site` |
+| Tax Prep Pro | TPP | static export | `out` | GitHub Actions (`deploy-pages.yml` → `deploy-taxprep`) | `taxprep` |
 | VLP Worker | Worker | Cloudflare Worker | bundled | `wrangler deploy` | `virtuallaunch-pro-api` |
 
 **TPP post-deploy note:** TPP is SD-led — there is no Worker route to verify in §4 step 5. Substitute "load `/contact`, confirm SuiteDash Discovery form (`21EGX5mk16QA6qVGj.js`) renders with `200` from `secure.virtuallaunch.pro` in the network tab" as the equivalent end-to-end check.
