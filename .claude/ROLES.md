@@ -49,6 +49,22 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
   - Reports build results and verification
   - Runs `turbo run build` after structural changes
   - Never modifies contracts, canonicals, or root CLAUDE.md without Principal review
+- **Autonomy: commit, push, deploy without Owner approval.** Execution Engineer ships work end-to-end. After completing any task that produces commit-worthy changes:
+  - Stage changes (`git add`)
+  - Write a conventional-commit message (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, etc.) reflecting the change accurately
+  - Commit and push to `origin {default-branch}`
+  - Run any deploy step the repo defines (varies by repo — `npm run deploy`, `wrangler deploy`, CU push via `sync:cu`, etc.)
+  - Report commit hash, push result, and deploy result to Owner
+  Owner does NOT review staged diffs before commit. RC's verification is the gate.
+
+  **Exceptions where RC must stop before committing:**
+  - File contains `REPLACE_*` literals or other placeholder markers
+  - A canonical or contract body has unfilled `{TODO}` markers
+  - User-visible content (marketing copy, customer emails, public-facing CSS) where Owner has not yet confirmed copy/visual choices
+  - Build, typecheck, or test failure on the staged changes
+  - Any change to `canonical-*.md` files (Principal Engineer review per existing rule)
+
+  When an exception triggers, RC stops at the staging step and reports for Owner direction.
 - **What this role is NOT**: Not a decision-maker. Not authorized to modify standard docs (CLAUDE.md, contracts, canonicals) without explicit instruction.
 
 ## 3. Owner
@@ -73,3 +89,4 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
 | 2026-04-13 | Initial version | Establish role boundaries between Chat Claude (Principal) and Claude Code (Execution) |
 | 2026-05-06 | Added "Prompt delivery format" subsection to Principal Engineer | During the billing-refund-notification sweep, RC prompts and Owner-facing content were getting mixed in chat. Owner asked for a hard rule: RC prompts always go in canvas/code artifacts, conversational text stays in chat. Visual separation prevents miscommunication about what is meant for whom. |
 | 2026-05-07 | Owner shell environment note added | RC and Principal had been issuing bash-style commands (grep, tee, export) during the Donovan billing-refund sweep. Added explicit PowerShell-native examples (Select-String, Tee-Object, $env:NAME) to the Owner section to remove ambiguity. Owner runs PowerShell exclusively in VS Code on Windows. |
+| 2026-05-08 | Added autonomy rule to Execution Engineer responsibilities | Owner direction: RC ships work end-to-end (commit, push, deploy) without per-task approval. Speeds delivery; exceptions list captures the safety cases (placeholders, TODOs, customer-facing copy, broken builds, canonical changes). |

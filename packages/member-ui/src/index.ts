@@ -60,6 +60,7 @@ export type {
   NavItem,
   MarketingConfig,
   MegaMenuItem,
+  PrimaryNavItem,
   FooterLink,
   BusinessInfo,
   BusinessAddress,

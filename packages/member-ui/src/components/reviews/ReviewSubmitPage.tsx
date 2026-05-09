@@ -60,8 +60,9 @@ const USE_CASE_OPTIONS = [
 /*  Sub-components                                                     */
 /* ------------------------------------------------------------------ */
 
-function InteractiveStars({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function InteractiveStars({ value, onChange, isLight }: { value: number; onChange: (v: number) => void; isLight?: boolean }) {
   const [hover, setHover] = useState(0)
+  const offStroke = isLight ? 'rgba(26,11,20,0.2)' : 'rgba(255,255,255,0.2)'
   return (
     <div className="flex gap-1.5" role="radiogroup" aria-label="Star rating">
       {[1, 2, 3, 4, 5].map((i) => (
@@ -79,7 +80,7 @@ function InteractiveStars({ value, onChange }: { value: number; onChange: (v: nu
           <Star
             size={28}
             fill={(hover || value) >= i ? '#fbbf24' : 'transparent'}
-            stroke={(hover || value) >= i ? '#fbbf24' : 'rgba(255,255,255,0.2)'}
+            stroke={(hover || value) >= i ? '#fbbf24' : offStroke}
           />
         </button>
       ))}
@@ -160,6 +161,8 @@ const CHECKBOX_LABEL =
 /* ------------------------------------------------------------------ */
 
 export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
+  const isLight = config.themeMode === 'light'
+  const heroFadeRgb = isLight ? '245, 230, 211' : '3, 7, 18'
   const [view, setView] = useState<View>('landing')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -299,7 +302,10 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
   /* ================================================================ */
 
   return (
-    <div className="min-h-screen bg-surface-bg text-text-primary relative">
+    <div
+      className="min-h-screen bg-surface-bg text-text-primary relative"
+      data-theme={isLight ? 'light' : undefined}
+    >
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 
@@ -335,7 +341,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
             </div>
             <div
               className="absolute bottom-0 left-0 right-0 h-24"
-              style={{ background: 'linear-gradient(transparent, rgb(3, 7, 18))' }}
+              style={{ background: `linear-gradient(transparent, rgb(${heroFadeRgb}))` }}
             />
           </section>
 
@@ -527,7 +533,7 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
               {view === 'review' && (
                 <>
                   <FormField label="Rating" required>
-                    <InteractiveStars value={rating} onChange={setRating} />
+                    <InteractiveStars value={rating} onChange={setRating} isLight={isLight} />
                   </FormField>
 
                   <FormField

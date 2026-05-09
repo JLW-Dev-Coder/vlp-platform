@@ -48,8 +48,20 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
     ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews
     : 0
 
+  const isLight = config.themeMode === 'light'
+  const heroFadeRgb = isLight ? '245, 230, 211' : '3, 7, 18'
+  const mutedTextCls = isLight ? 'text-text-muted' : 'text-gray-400'
+  const subtleTextCls = isLight ? 'text-text-muted' : 'text-gray-500'
+  const bodyTextCls = isLight ? 'text-text-primary' : 'text-gray-300'
+  const dividerCls = isLight ? 'bg-[var(--border-subtle)]' : 'bg-white/10'
+  const statsBg = isLight ? 'rgba(255, 250, 244, 0.7)' : 'rgba(17, 24, 39, 0.5)'
+  const starOff = isLight ? 'rgba(26,11,20,0.2)' : 'rgba(255,255,255,0.2)'
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div
+      className={`min-h-screen ${isLight ? 'bg-surface-bg text-text-primary' : 'bg-gray-950 text-white'}`}
+      data-theme={isLight ? 'light' : undefined}
+    >
       {/* Hero */}
       <section
         className="relative py-20 px-4 text-center overflow-hidden"
@@ -66,14 +78,14 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
             What Tax Professionals Say About{' '}
             <span style={{ color: config.themeColor }}>{config.platformName}</span>
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className={`${mutedTextCls} text-lg`}>
             Real feedback from professionals who use the platform every day.
           </p>
         </div>
         {/* Gradient fade at bottom */}
         <div
           className="absolute bottom-0 left-0 right-0 h-24"
-          style={{ background: 'linear-gradient(transparent, rgb(3, 7, 18))' }}
+          style={{ background: `linear-gradient(transparent, rgb(${heroFadeRgb}))` }}
         />
       </section>
 
@@ -83,7 +95,7 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
           <div
             className="flex flex-wrap items-center justify-center gap-8 rounded-xl p-6"
             style={{
-              background: 'rgba(17, 24, 39, 0.5)',
+              background: statsBg,
               border: `1px solid ${hexToRgba(config.themeColor, 0.15)}`,
             }}
           >
@@ -91,11 +103,11 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
               <p className="text-3xl font-bold" style={{ color: config.themeColor }}>
                 {totalReviews}
               </p>
-              <p className="text-gray-400 text-sm">
+              <p className={`${mutedTextCls} text-sm`}>
                 {totalReviews === 1 ? 'Review' : 'Reviews'}
               </p>
             </div>
-            <div className="w-px h-10 bg-white/10 hidden sm:block" />
+            <div className={`w-px h-10 ${dividerCls} hidden sm:block`} />
             <div className="text-center">
               <div className="flex items-center gap-2 justify-center">
                 <p className="text-3xl font-bold" style={{ color: config.themeColor }}>
@@ -107,12 +119,12 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
                       key={i}
                       size={18}
                       fill={i <= Math.round(averageRating) ? '#fbbf24' : 'transparent'}
-                      stroke={i <= Math.round(averageRating) ? '#fbbf24' : 'rgba(255,255,255,0.2)'}
+                      stroke={i <= Math.round(averageRating) ? '#fbbf24' : starOff}
                     />
                   ))}
                 </div>
               </div>
-              <p className="text-gray-400 text-sm">Average Rating</p>
+              <p className={`${mutedTextCls} text-sm`}>Average Rating</p>
             </div>
           </div>
         </section>
@@ -134,16 +146,16 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
         {!loading && error && (
           <div className="text-center py-20">
             <AlertCircle className="mx-auto mb-4 text-red-400" size={48} />
-            <p className="text-gray-300 text-lg">Unable to load reviews. Please try again later.</p>
+            <p className={`${bodyTextCls} text-lg`}>Unable to load reviews. Please try again later.</p>
           </div>
         )}
 
         {/* Empty state */}
         {!loading && !error && totalReviews === 0 && (
           <div className="text-center py-20">
-            <Star className="mx-auto mb-4 text-gray-600" size={48} />
-            <p className="text-gray-300 text-lg mb-2">No reviews yet.</p>
-            <p className="text-gray-500 mb-6">Be the first to share your experience.</p>
+            <Star className={`mx-auto mb-4 ${isLight ? 'text-text-disabled' : 'text-gray-600'}`} size={48} />
+            <p className={`${bodyTextCls} text-lg mb-2`}>No reviews yet.</p>
+            <p className={`${subtleTextCls} mb-6`}>Be the first to share your experience.</p>
             <a
               href={submitPath}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
@@ -179,7 +191,7 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
           <h2 className="text-2xl md:text-3xl font-bold mb-3">
             Used {config.platformName}?
           </h2>
-          <p className="text-gray-400 mb-6">Share your experience and help fellow professionals.</p>
+          <p className={`${mutedTextCls} mb-6`}>Share your experience and help fellow professionals.</p>
           <a
             href={submitPath}
             className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"

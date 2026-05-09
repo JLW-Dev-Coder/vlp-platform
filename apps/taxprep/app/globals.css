@@ -1,0 +1,74 @@
+@import '@vlp/member-ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* TPP brand overrides for member-ui shared tokens */
+    --member-accent: rgba(233, 30, 99, 0.10);
+    --member-accent-strong: rgba(233, 30, 99, 0.20);
+    --member-hero-bg: #1A0B14;
+    --member-hero-bg-end: #5C0D24;
+
+    /* Brand glow */
+    --brand-glow: rgba(233, 30, 99, 0.40);
+    --brand-text-on-primary: #FFFFFF;
+
+    /* TPP palette — mirrors canonical-app-blueprint §4.5 (Deviation 8) */
+    --tpp-rose:           #E91E63;
+    --tpp-rose-deep:      #C2185B;
+    --tpp-crimson:        #8B1538;
+    --tpp-crimson-deep:   #5C0D24;
+    --tpp-champagne:      #F5E6D3;
+    --tpp-blush:          #FFE5EC;
+    --tpp-noir:           #1A0B14;
+    --tpp-gold-leaf:      #D4A574;
+    --tpp-gold-bright:    #E8C088;
+
+    /* Marketing tokens (mirror TCVLP shape, mapped to TPP palette) */
+    --color-bg:          #1A0B14;
+    --color-surface:     #2A1422;
+    --color-surface-2:   #3A1E30;
+    --color-border:      #4A2A3E;
+    --color-brand:       #E91E63;
+    --color-brand-light: #EC407A;
+    --color-brand-dark:  #C2185B;
+    --color-brand-muted: rgba(233, 30, 99, 0.15);
+    --color-text-1:      #F5E6D3;
+    --color-text-2:      #C9B89C;
+    --color-text-3:      #8A7460;
+    --color-text-4:      #5A4A3C;
+    --font-display:      var(--font-sora), system-ui, sans-serif;
+    --font-body:         var(--font-sora), system-ui, sans-serif;
+    --max-width:         72rem;
+    --transition:        0.15s ease;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
+  background: var(--color-bg);
+  color: var(--color-text-1);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; color: var(--color-text-1); }
+p { margin: 0; color: var(--color-text-2); }
+a { color: inherit; text-decoration: none; }
+
+@media print {
+  body { background: #fff; color: #000; }
+}

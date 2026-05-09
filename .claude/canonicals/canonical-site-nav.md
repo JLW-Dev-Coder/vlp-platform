@@ -1,9 +1,9 @@
 # canonical-site-nav.md — VLP Ecosystem Site Navigation
 
 **Status:** Authoritative
-**Last updated:** 2026-04-26
+**Last updated:** 2026-05-08
 **Owner:** JLW (Principal Engineer review required for changes)
-**Scope:** All 8 apps in the vlp-platform monorepo
+**Scope:** All 10 apps in the vlp-platform monorepo
 **Parent:** `canonical-app-blueprint.md` (see §1 hierarchy)
 
 This canonical defines navigation patterns. All decisions in the parent blueprint apply here. When this file and the blueprint disagree, the blueprint wins and this file gets corrected.
@@ -12,7 +12,7 @@ This canonical defines navigation patterns. All decisions in the parent blueprin
 
 ## Purpose
 
-Defines the standard navigation structure for all 8 VLP platform frontends. Every platform uses the same layout skeleton. Platform-specific items are marked with their platform code. Items without a code appear on every platform.
+Defines the standard navigation structure for all 10 VLP platform frontends. Every platform uses the same layout skeleton. Platform-specific items are marked with their platform code. Items without a code appear on every platform.
 
 Implementation: shared components in `packages/member-ui` driven by `PlatformConfig`. Each app passes its config (platform name, theme color, nav items, sidebar items). The components render accordingly.
 
@@ -78,6 +78,7 @@ Up to 4 platform-specific items. Examples:
 | GVLP | Game Previews, Leaderboards, Achievement Guide, Tournament Rules |
 | VLP | Platform Overview, Integration Guide, API Docs, Partner Program |
 | TAVLP | Avatar Roster, Sample Channel, Kwong Content Pack, Cal.com Intro |
+| TPP | Tax Monitor Pro, TPP + TMP Bundle (lives at `/pricing#bundle`), Discovery Call (SuiteDash form), Member Portal (outbound to SuiteDash) |
 
 **Column 4 — CTA**
 
@@ -339,7 +340,17 @@ At `≥ md`:
   - Closes on: item click, Escape, click outside
 
 ### 4.7 Footer consistency
-Footer structure is identical across all 8 platforms. Only content differs via config. Column 3 ("Resources") contains `footerResources` from `PlatformConfig` — typically 3 cross-platform links plus the affiliate link. Per-app config is the source of truth for which platforms each app links to.
+Footer structure is identical across all 10 platforms. Only content differs via config. Column 3 ("Resources") contains `footerResources` from `PlatformConfig` — typically 3 cross-platform links plus the affiliate link. Per-app config is the source of truth for which platforms each app links to.
+
+### 4.8 SD-led app exception (TPP)
+Tax Prep Pro (`apps/taxprep`) is the first SD-led marketing app and deviates from the §1 / §2 pattern in the following bounded ways:
+
+- **Homepage** (`/`) lives at `app/page.tsx` (outside the `(marketing)` route group) so the bespoke SD-built `<header>` and `<footer>` ported into `LandingPage.tsx` don't stack on top of the shared `MarketingHeader` / `MarketingFooter`. All other marketing routes (`/about`, `/features`, `/how-it-works`, `/pricing`, `/contact`, `/reviews`, `/legal/*`) keep the shared chrome via `app/(marketing)/layout.tsx`.
+- **`/sign-in` is outbound** — the page renders a "Sign in to SuiteDash" CTA that links to the SD member portal. There is no in-app auth on TPP.
+- **No `/dashboard/*` member area.** TPP has no §2 sidebar items; members live in SuiteDash. The Topbar/Sidebar specs in §2 do not apply.
+- **Bookings use SuiteDash form embeds**, not Cal.com — see `canonical-cal-events.md` §7 (SuiteDash form bookings).
+
+Future SD-led apps should mirror this pattern. Apps that ship a member dashboard (the rest of the ecosystem) continue to follow §1 + §2 unchanged.
 
 ---
 
@@ -456,5 +467,6 @@ When a rule in this file conflicts with the blueprint, the blueprint wins. When 
 | 2026-04-15 | Replaced `z-50` with `z-sticky` token | Blueprint §4.19 forbids raw z-index values |
 | 2026-04-15 | Expanded §4 from 6 bullets to 7 sub-sections covering mobile, a11y, topbar behavior, sidebar collapse | Existing content was too thin to implement against |
 | 2026-04-17 | Reconciled WORKSPACE/EARNINGS items to Owner spec ("Game Access JS", Messaging descriptor added, Bidding/Winning ALL) | Owner restated authoritative structure during Phase 4 Track B prep |
+| 2026-05-08 | Added §4.8 SD-led app exception (TPP) and TPP Tools & Extras row | TPP is the first SD-led marketing app — homepage uses bespoke SD chrome at `app/page.tsx`, no `/dashboard/*` member area, `/sign-in` outbound to SuiteDash, bookings via SD form embeds |
 
 Append-only. Do not rewrite prior entries.

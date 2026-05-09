@@ -41,6 +41,34 @@
   --text-disabled: rgba(255, 255, 255, 0.40);
 }
 
+/*
+ * Light theme overrides — opt-in via [data-theme="light"] on a wrapper element.
+ * All semantic surface/text/border tokens are remapped to a champagne/ink/ivory
+ * palette suitable for SD-led / editorial apps (currently TPP only).
+ * Apps that don't set data-theme="light" inherit the dark defaults above.
+ */
+[data-theme="light"] {
+  --member-bg: #F5E6D3;
+  --member-card: #FFFAF4;
+  --member-card-hover: #FFFFFF;
+  --member-border: rgba(139, 21, 56, 0.14);
+
+  --surface-bg: #F5E6D3;
+  --surface-card: #FFFAF4;
+  --surface-elevated: #FFFFFF;
+  --surface-input: #FFFAF4;
+  --surface-popover: #FFFFFF;
+  --surface-overlay: rgba(26, 11, 20, 0.45);
+
+  --border-subtle: rgba(139, 21, 56, 0.14);
+  --border-default: rgba(139, 21, 56, 0.22);
+  --border-hover: rgba(139, 21, 56, 0.40);
+
+  --text-primary: #1A0B14;
+  --text-muted: #6B5260;
+  --text-disabled: rgba(26, 11, 20, 0.40);
+}
+
 /* Scrollbar utilities */
 .sidebar-scroll {
   overflow-y: auto;

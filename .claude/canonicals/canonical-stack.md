@@ -1,8 +1,8 @@
 <!--
 Status: Authoritative
-Last updated: 2026-04-15
+Last updated: 2026-05-08
 Owner: JLW (Principal Engineer review required for changes)
-Scope: All 8 apps in the vlp-platform monorepo
+Scope: All 10 apps in the vlp-platform monorepo
 Parent: canonical-app-blueprint.md
 -->
 
@@ -27,6 +27,7 @@ Last updated: 2026-04-13
 | Tax Claim VLP | TCVLP | taxclaim.virtuallaunch.pro | `apps/tcvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#eab308` (yellow) |
 | Website Lotto VLP | WLVLP | websitelotto.virtuallaunch.pro | `apps/wlvlp` | Next.js 15 (App Router) | Tailwind + CSS Modules | Static export | CF Pages | `npm run build` | `out` | `#00D4FF` (neon blue) |
 | Tax Avatar Pro | TAVLP | taxavatar.virtuallaunch.pro | `apps/tavlp` | Next.js 15 (App Router) | Tailwind + Sora font | Static export | CF Pages | `npm run build` | `out` | `#ec4899` (hot pink) |
+| Tax Prep Pro | TPP | taxprep.virtuallaunch.pro | `apps/taxprep` | Next.js 15 (App Router) | Tailwind + Sora font + scoped landing CSS | Static export | CF Pages | `npm run build` | `out` | `#E91E63` (rose) |
 | VLP Worker | Worker | api.virtuallaunch.pro | `apps/worker` | Vanilla JS | N/A | Cloudflare Worker | CF Workers | `npx wrangler deploy` | bundled | N/A |
 
 ---
@@ -45,6 +46,7 @@ vlp-platform/
 │   ├── tcvlp/         # Tax Claim VLP
 │   ├── wlvlp/         # Website Lotto VLP
 │   ├── tavlp/         # Tax Avatar Pro
+│   ├── taxprep/       # Tax Prep Pro (SD-led, lead-gen only)
 │   └── worker/        # VLP Worker (single backend)
 ├── packages/
 │   └── member-ui/     # @vlp/member-ui shared package
@@ -68,7 +70,7 @@ vlp-platform/
 | CSS variables | Structural member area tokens (`--member-card`, `--member-border`, etc.) |
 | Tailwind preset | Shared Tailwind config mapping CSS vars to utility classes |
 
-**Dependency:** All 8 frontend apps declare `"@vlp/member-ui": "*"` in their `package.json`.
+**Dependency:** All 10 frontend apps declare `"@vlp/member-ui": "*"` in their `package.json`. Note: TPP consumes only the marketing-chrome and `LegalPageLayout` exports; SD-led apps don't render the AppShell / member sidebar (members live in SuiteDash).
 
 **Build order:** `packages/member-ui` builds first (`^build` in turbo.json), then all apps build in parallel.
 
@@ -133,6 +135,7 @@ These platforms render entirely client-side. They fetch data from the Worker API
 | TCVLP | Pages | `taxclaim-virtuallaunch-pro` |
 | WLVLP | Pages | `websitelotto-virtuallaunch-pro` |
 | TAVLP | Pages | `tavlp-site` |
+| TPP | Pages | `taxprep-pro` |
 | Worker | Worker | `virtuallaunch-pro-api` |
 
 ---
@@ -141,7 +144,7 @@ These platforms render entirely client-side. They fetch data from the Worker API
 
 | Zone | Platforms |
 |------|----------|
-| `virtuallaunch.pro` | VLP, DVLP, GVLP, TCVLP, WLVLP, TAVLP, Worker |
+| `virtuallaunch.pro` | VLP, DVLP, GVLP, TCVLP, WLVLP, TAVLP, TPP, Worker |
 | `taxmonitor.pro` | TMP, TTMP, TTTMP |
 
-All API traffic routes through `api.virtuallaunch.pro` regardless of which frontend makes the request. CORS is configured to allow all 9 platform origins.
+All API traffic routes through `api.virtuallaunch.pro` regardless of which frontend makes the request. CORS is configured to allow all platform origins. **TPP exception:** TPP is SD-led and does not call the Worker — bookings POST to SuiteDash directly via the embedded form scripts. TPP's CORS allowlist entry is reserved for future cross-platform reads only.
