@@ -345,7 +345,7 @@ Footer structure is identical across all 10 platforms. Only content differs via 
 ### 4.8 SD-led app exception (TPP)
 Tax Prep Pro (`apps/taxprep`) is the first SD-led marketing app and deviates from the §1 / §2 pattern in the following bounded ways:
 
-- **Homepage** (`/`) lives at `app/page.tsx` (outside the `(marketing)` route group) so the bespoke SD-built `<header>` and `<footer>` ported into `LandingPage.tsx` don't stack on top of the shared `MarketingHeader` / `MarketingFooter`. All other marketing routes (`/about`, `/features`, `/how-it-works`, `/pricing`, `/contact`, `/reviews`, `/legal/*`) keep the shared chrome via `app/(marketing)/layout.tsx`.
+- **Homepage** (`/`) lives at `app/(marketing)/page.tsx` and uses the shared `MarketingHeader` / `MarketingFooter` chrome like every other marketing route. `LandingPage.tsx` is content-only — the bespoke SD chrome it originally shipped with was removed when the homepage was restructured to canonical-index.html's 8-section layout. (Earlier carveout that put homepage at `app/page.tsx` outside the route group is retired as of 2026-05-09.)
 - **`/sign-in` is outbound** — the page renders a "Sign in to SuiteDash" CTA that links to the SD member portal. There is no in-app auth on TPP.
 - **No `/dashboard/*` member area.** TPP has no §2 sidebar items; members live in SuiteDash. The Topbar/Sidebar specs in §2 do not apply.
 - **Bookings use SuiteDash form embeds**, not Cal.com — see `canonical-cal-events.md` §7 (SuiteDash form bookings).
@@ -468,5 +468,6 @@ When a rule in this file conflicts with the blueprint, the blueprint wins. When 
 | 2026-04-15 | Expanded §4 from 6 bullets to 7 sub-sections covering mobile, a11y, topbar behavior, sidebar collapse | Existing content was too thin to implement against |
 | 2026-04-17 | Reconciled WORKSPACE/EARNINGS items to Owner spec ("Game Access JS", Messaging descriptor added, Bidding/Winning ALL) | Owner restated authoritative structure during Phase 4 Track B prep |
 | 2026-05-08 | Added §4.8 SD-led app exception (TPP) and TPP Tools & Extras row | TPP is the first SD-led marketing app — homepage uses bespoke SD chrome at `app/page.tsx`, no `/dashboard/*` member area, `/sign-in` outbound to SuiteDash, bookings via SD form embeds |
+| 2026-05-09 | Retired homepage carveout from §4.8 — homepage now uses shared chrome | Bespoke SD `<header>` / `<footer>` removed from `LandingPage.tsx` during canonical 8-section restructure. Homepage moved into `(marketing)` route group. SD-led app exception narrows to: no `/dashboard/*` member area, `/sign-in` outbound, SD form bookings — chrome carveout no longer needed. |
 
 Append-only. Do not rewrite prior entries.

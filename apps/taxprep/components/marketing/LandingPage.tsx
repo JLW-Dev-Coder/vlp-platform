@@ -1,37 +1,22 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { tppConfig } from '@/lib/platform-config'
-import { SuiteDashFormEmbed } from './SuiteDashFormEmbed'
 
-// Phase 2: line-by-line port of the SD-built TPP landing page.
-// Source under apps/taxprep/scratch/sd-landing.{html,css}.
-// Deviations applied: 5 (port HTML/CSS), 6 (B2C → B2B copy rewrite),
-// 9 (Sora replaces Cormorant Garamond + Inter), and the Deviation 1
-// supplemental (Pattern A SuiteDashFormEmbed via next/script).
-//
-// Per Deviation 5 and the supplemental, animations and structural classes are
-// preserved verbatim. Copy is rewritten for service-bureau / tax-pro audience
-// with {/* TODO(copy): */} markers; the original SD copy was B2C tax-prep.
+// Restructured 2026-05-09 to canonical-index.html's 8-section layout:
+// Hero, Value Prop, How It Works, Social Proof, Pricing Preview, FAQ,
+// Final CTA, Footer. Bespoke SD chrome and the inline SuiteDash booking
+// embed were removed — the homepage now uses the shared MarketingHeader /
+// MarketingFooter via app/(marketing)/layout.tsx, and the Final CTA links
+// to /contact for booking. Original B2C SD content was rewritten for the
+// service-bureau / tax-pro audience during the Phase 2 port.
 
 export default function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null)
 
-  // Behavior 1: stagger reveal on load (.tpp-loaded toggle on root).
-  // Behavior 2: scroll reveal for .tpp-reveal via IntersectionObserver.
-  // Behavior 3: phase rail draw-on (.is-drawn) via IntersectionObserver.
-  // Behavior 5: count-up stats (1400ms ease-out from 0 → data-count, append data-suffix).
-  // Behavior 6: QR card flip on click (.is-flipped toggle).
-  //
-  // Parallax orbs (.tpp-hero-orb data-parallax) skipped per RC prompt §4.4 —
-  // the static blurred orbs read fine without scroll-coupled motion and the
-  // per-frame scroll listener was outside the ~20-line budget.
-
-  // 1. Stagger reveal on load — releases .tpp-loaded after window.load.
+  // Stagger reveal on load.
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
-    // Mark JS active so CSS can keep elements hidden only when JS will reveal them.
     root.classList.add('tpp-js')
     const onLoad = () => root.classList.add('tpp-loaded')
     if (document.readyState === 'complete') {
@@ -42,7 +27,7 @@ export default function LandingPage() {
     return () => window.removeEventListener('load', onLoad)
   }, [])
 
-  // 2. Scroll reveal for .tpp-reveal elements (threshold 0.15).
+  // Scroll reveal for .tpp-reveal elements.
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
@@ -62,7 +47,7 @@ export default function LandingPage() {
     return () => io.disconnect()
   }, [])
 
-  // 3. Phase-rail draw-on (.is-drawn) via IntersectionObserver.
+  // Phase-rail draw-on.
   useEffect(() => {
     const rail = rootRef.current?.querySelector<HTMLElement>('#tpp-phase-rail')
     if (!rail) return
@@ -81,9 +66,7 @@ export default function LandingPage() {
     return () => io.disconnect()
   }, [])
 
-  // 5. Count-up stats. Animates each .tpp-stat-num from 0 → data-count over
-  // ~1400ms with ease-out, appending data-suffix. Triggered when the parent
-  // .tpp-stat reveals.
+  // Count-up stats.
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
@@ -118,22 +101,11 @@ export default function LandingPage() {
     return () => io.disconnect()
   }, [])
 
-  // 6. QR card flip on click.
-  useEffect(() => {
-    const card = rootRef.current?.querySelector<HTMLElement>('.tpp-qr-card')
-    if (!card) return
-    const onClick = () => card.classList.toggle('is-flipped')
-    card.addEventListener('click', onClick)
-    return () => card.removeEventListener('click', onClick)
-  }, [])
-
   return (
     <div className="tpp-lp" ref={rootRef}>
       <style>{TPP_LANDING_CSS}</style>
 
-      {/* Header lives in app/page.tsx as the canonical MarketingHeader. */}
-
-      {/* Hero */}
+      {/* 1. Hero */}
       <section className="tpp-hero" id="tpp-top">
         <div className="tpp-hero-breath" aria-hidden="true" />
         <div className="tpp-hero-orb tpp-one" data-parallax="0.18" />
@@ -155,7 +127,7 @@ export default function LandingPage() {
               A clear, structured 8-phase client journey from intake to filing — handled inside a branded SuiteDash workspace your team and your clients actually want to use.
             </p>
             <div className="tpp-hero-ctas tpp-stagger">
-              <a href="#tpp-book" className="tpp-btn-primary">
+              <a href="/contact" className="tpp-btn-primary">
                 Book a Discovery Call
                 <span className="tpp-arrow">→</span>
               </a>
@@ -192,109 +164,57 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats bar */}
-      <section className="tpp-stats">
-        <div className="tpp-wrap">
-          <div className="tpp-stat tpp-reveal">
-            <div className="tpp-stat-num" data-count="50" data-suffix="">50</div>
-            <div className="tpp-stat-label">States Served</div>
-          </div>
-          <div className="tpp-stat tpp-reveal tpp-delay-1">
-            <div className="tpp-stat-num" data-count="100" data-suffix="%">100%</div>
-            <div className="tpp-stat-label">E-File Accuracy</div>
-          </div>
-          <div className="tpp-stat tpp-reveal tpp-delay-2">
-            <div className="tpp-stat-num" data-count="8" data-suffix="">8</div>
-            <div className="tpp-stat-label">Phase Process</div>
-          </div>
-          <div className="tpp-stat tpp-reveal tpp-delay-3">
-            <div className="tpp-stat-num" data-count="30" data-suffix="d">30d</div>
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-            <div className="tpp-stat-label">Avg. Bureau Setup</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services tier cards */}
-      <section className="tpp-section tpp-types" id="tpp-services">
+      {/* 2. Value Proposition — built for your bureau */}
+      <section className="tpp-section tpp-locations" id="tpp-value">
         <div className="tpp-wrap">
           <div className="tpp-section-head tpp-reveal">
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-            <span className="tpp-section-kicker">Built For Your Bureau</span>
+            <span className="tpp-section-kicker">Why Tax Pros Pick TPP</span>
             <h2 className="tpp-h2">
-              Find the engagement<br />that fits your <em>practice.</em>
+              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
+              Built for your bureau —<br /><em>however you operate.</em>
             </h2>
             <p>
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              Pick the option that best describes your bureau. Each one ships a branded SuiteDash workspace, the 8-phase client journey, and member training.
+              Whether you run a storefront practice or a fully remote firm, the TPP buildout adapts to your workflow without forcing your team into a new tool stack.
             </p>
           </div>
-          <div className="tpp-type-grid">
-            <a href="#tpp-book" className="tpp-type-card tpp-reveal tpp-delay-1">
-              <div className="tpp-card-shimmer" aria-hidden="true" />
+          <div className="tpp-loc-grid">
+            <div className="tpp-loc-card tpp-reveal tpp-delay-1">
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              <span className="tpp-badge">Managed Setup</span>
+              <span className="tpp-pin"><span className="tpp-dot"></span> Storefront Bureaus</span>
               <h3 className="tpp-h3">
-                Tax Prep Pro<br />
-                <span className="tpp-card-h-accent">Managed</span>
+                Streamline your<br />in-office intake.
               </h3>
-              <div className="tpp-price">
-                <span className="tpp-price-currency">$</span>
-                <span className="tpp-price-amount">5,000</span>
-                <small> setup + $79/mo per active member</small>
-              </div>
-              <p>
-                Productized buildout for solo practitioners and 2–5 person bureaus. Branded portal, journey, member training included.
+              <p className="tpp-addr">
+                Replace clipboards and paper checklists with a digital intake your front desk loads on a tablet. Documents drop straight into the client&rsquo;s SD record.
               </p>
-              <span className="tpp-arrow-link">
-                Book Discovery <span className="tpp-arrow">→</span>
-              </span>
-            </a>
-            <a href="#tpp-book" className="tpp-type-card tpp-reveal tpp-delay-2">
-              <div className="tpp-card-shimmer" aria-hidden="true" />
+              <p className="tpp-phone">Document scanner &amp; barcode workflows supported.</p>
+              <a href="/contact" className="tpp-book-here">
+                Book a Discovery Call <span className="tpp-arrow">→</span>
+              </a>
+            </div>
+            <div className="tpp-loc-card tpp-reveal tpp-delay-2">
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              <span className="tpp-badge">TPP + TMP Bundle</span>
+              <span className="tpp-pin"><span className="tpp-dot"></span> Remote &amp; Hybrid Firms</span>
               <h3 className="tpp-h3">
-                TPP +<br />
-                <span className="tpp-card-h-accent">Tax Monitor Pro</span>
+                Run a paperless<br />practice end-to-end.
               </h3>
-              <div className="tpp-price">
-                <span className="tpp-price-currency">$</span>
-                <span className="tpp-price-amount">8,500</span>
-                <small> bundle</small>
-              </div>
-              <p>
-                Pair the TPP buildout with Tax Monitor Pro for transcript monitoring and client retention workflows.
+              <p className="tpp-addr">
+                Clients upload securely, sign electronically, and meet by video when needed. Your team works the same workspace from anywhere — no new tools to learn.
               </p>
-              <span className="tpp-arrow-link">
-                Book Discovery <span className="tpp-arrow">→</span>
-              </span>
-            </a>
-            <a href="#tpp-book" className="tpp-type-card tpp-reveal tpp-delay-3">
-              <div className="tpp-card-shimmer" aria-hidden="true" />
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              <span className="tpp-badge">Ongoing Support</span>
-              <h3 className="tpp-h3">
-                Ongoing<br />
-                <span className="tpp-card-h-accent">Support</span>
-              </h3>
-              <div className="tpp-price">
-                <span className="tpp-price-currency">$</span>
-                <span className="tpp-price-amount">497</span>
-                <small> /mo or $150/hr</small>
-              </div>
-              <p>
-                Continuous improvement, workflow tuning, and SD admin support after the initial buildout ships.
-              </p>
-              <span className="tpp-arrow-link">
-                Book Discovery <span className="tpp-arrow">→</span>
-              </span>
-            </a>
+              <p className="tpp-phone">Secure portal &amp; e-signature included.</p>
+              <a href="/contact" className="tpp-book-here">
+                Book a Discovery Call <span className="tpp-arrow">→</span>
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 8-phase rail */}
+      {/* 3. How It Works — 8-phase rail */}
+      {/* Per RC §8 decision criteria: TPP's 8-phase journey is a defining
+          product feature; render it in section 3's "How It Works" slot
+          rather than collapsing to 3 generic steps. */}
       <section className="tpp-section tpp-how" id="tpp-how">
         <div className="tpp-wrap">
           <div className="tpp-section-head tpp-reveal">
@@ -354,130 +274,137 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Booking form section — SuiteDash Discovery Call form */}
-      <section className="tpp-section tpp-book" id="tpp-book">
-        <div className="tpp-wrap tpp-medium">
-          <div className="tpp-form-card tpp-reveal">
-            <div className="tpp-form-glow" aria-hidden="true" />
-            <div className="tpp-form-badge" aria-hidden="true">
-              <span className="tpp-form-badge-line-1">Now</span>
-              <span className="tpp-form-badge-line-2">Booking</span>
-            </div>
-            <div className="tpp-form-head">
-              <span className="tpp-section-kicker">For Service Bureaus &amp; Tax Pros</span>
-              <h3 className="tpp-h3-large">
-                <span className="tpp-h3-line-1">Want a workspace like this</span>
-                <em className="tpp-h3-line-2">that does the whole job?</em>
-              </h3>
-              <p className="tpp-sub">
-                {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-                From intake to final return delivery — all from one branded SuiteDash workspace. Book a Discovery Call and we&rsquo;ll show you how.
-              </p>
-            </div>
-            <div className="tpp-form-embed tpp-form-sd">
-              <SuiteDashFormEmbed
-                formId={tppConfig.suitedashDiscoveryFormId!}
-                embedBaseUrl={tppConfig.suitedashEmbedBaseUrl!}
-              />
-            </div>
+      {/* 4. Social Proof — count-up stats */}
+      <section className="tpp-stats">
+        <div className="tpp-wrap">
+          <div className="tpp-stat tpp-reveal">
+            <div className="tpp-stat-num" data-count="50" data-suffix="">50</div>
+            <div className="tpp-stat-label">States Served</div>
+          </div>
+          <div className="tpp-stat tpp-reveal tpp-delay-1">
+            <div className="tpp-stat-num" data-count="100" data-suffix="%">100%</div>
+            <div className="tpp-stat-label">E-File Accuracy</div>
+          </div>
+          <div className="tpp-stat tpp-reveal tpp-delay-2">
+            <div className="tpp-stat-num" data-count="8" data-suffix="">8</div>
+            <div className="tpp-stat-label">Phase Process</div>
+          </div>
+          <div className="tpp-stat tpp-reveal tpp-delay-3">
+            <div className="tpp-stat-num" data-count="30" data-suffix="d">30d</div>
+            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
+            <div className="tpp-stat-label">Avg. Bureau Setup</div>
           </div>
         </div>
       </section>
 
-      {/* "How We Work" location-style cards (B2B repurposed) */}
-      <section className="tpp-section tpp-locations" id="tpp-locations">
+      {/* 5. Pricing Preview — services tier cards */}
+      <section className="tpp-section tpp-types" id="tpp-services">
         <div className="tpp-wrap">
           <div className="tpp-section-head tpp-reveal">
-            <span className="tpp-section-kicker">How We Work</span>
+            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
+            <span className="tpp-section-kicker">Built For Your Bureau</span>
             <h2 className="tpp-h2">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              Built for your bureau —<br /><em>however you operate.</em>
+              Find the engagement<br />that fits your <em>practice.</em>
             </h2>
             <p>
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              Whether you run a storefront practice or a fully remote firm, the TPP buildout adapts to your workflow without forcing your team into a new tool stack.
+              Pick the option that best describes your bureau. Each one ships a branded SuiteDash workspace, the 8-phase client journey, and member training.
             </p>
           </div>
-          <div className="tpp-loc-grid">
-            <div className="tpp-loc-card tpp-reveal tpp-delay-1">
+          <div className="tpp-type-grid">
+            <a href="/contact" className="tpp-type-card tpp-reveal tpp-delay-1">
+              <div className="tpp-card-shimmer" aria-hidden="true" />
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              <span className="tpp-pin"><span className="tpp-dot"></span> Storefront Bureaus</span>
+              <span className="tpp-badge">Managed Setup</span>
               <h3 className="tpp-h3">
-                Streamline your<br />in-office intake.
+                Tax Prep Pro<br />
+                <span className="tpp-card-h-accent">Managed</span>
               </h3>
-              <p className="tpp-addr">
-                Replace clipboards and paper checklists with a digital intake your front desk loads on a tablet. Documents drop straight into the client&rsquo;s SD record.
+              <div className="tpp-price">
+                <span className="tpp-price-currency">$</span>
+                <span className="tpp-price-amount">5,000</span>
+                <small> setup + $79/mo per active member</small>
+              </div>
+              <p>
+                Productized buildout for solo practitioners and 2–5 person bureaus. Branded portal, journey, member training included.
               </p>
-              <p className="tpp-phone">Document scanner &amp; barcode workflows supported.</p>
-              <a href="#tpp-book" className="tpp-book-here">
-                Book a Discovery Call <span className="tpp-arrow">→</span>
-              </a>
-            </div>
-            <div className="tpp-loc-card tpp-reveal tpp-delay-2">
+              <span className="tpp-arrow-link">
+                Book Discovery <span className="tpp-arrow">→</span>
+              </span>
+            </a>
+            <a href="/contact" className="tpp-type-card tpp-reveal tpp-delay-2">
+              <div className="tpp-card-shimmer" aria-hidden="true" />
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              <span className="tpp-pin"><span className="tpp-dot"></span> Remote &amp; Hybrid Firms</span>
+              <span className="tpp-badge">TPP + TMP Bundle</span>
               <h3 className="tpp-h3">
-                Run a paperless<br />practice end-to-end.
+                TPP +<br />
+                <span className="tpp-card-h-accent">Tax Monitor Pro</span>
               </h3>
-              <p className="tpp-addr">
-                Clients upload securely, sign electronically, and meet by video when needed. Your team works the same workspace from anywhere — no new tools to learn.
+              <div className="tpp-price">
+                <span className="tpp-price-currency">$</span>
+                <span className="tpp-price-amount">8,500</span>
+                <small> bundle</small>
+              </div>
+              <p>
+                Pair the TPP buildout with Tax Monitor Pro for transcript monitoring and client retention workflows.
               </p>
-              <p className="tpp-phone">Secure portal &amp; e-signature included.</p>
-              <a href="#tpp-book" className="tpp-book-here">
-                Book a Discovery Call <span className="tpp-arrow">→</span>
-              </a>
-            </div>
+              <span className="tpp-arrow-link">
+                Book Discovery <span className="tpp-arrow">→</span>
+              </span>
+            </a>
+            <a href="/contact" className="tpp-type-card tpp-reveal tpp-delay-3">
+              <div className="tpp-card-shimmer" aria-hidden="true" />
+              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
+              <span className="tpp-badge">Ongoing Support</span>
+              <h3 className="tpp-h3">
+                Ongoing<br />
+                <span className="tpp-card-h-accent">Support</span>
+              </h3>
+              <div className="tpp-price">
+                <span className="tpp-price-currency">$</span>
+                <span className="tpp-price-amount">497</span>
+                <small> /mo or $150/hr</small>
+              </div>
+              <p>
+                Continuous improvement, workflow tuning, and SD admin support after the initial buildout ships.
+              </p>
+              <span className="tpp-arrow-link">
+                Book Discovery <span className="tpp-arrow">→</span>
+              </span>
+            </a>
+          </div>
+          <div className="tpp-pricing-link tpp-reveal">
+            <a href="/pricing" className="tpp-arrow-link">
+              See full pricing <span className="tpp-arrow">→</span>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* QR strip with flip card */}
-      <section className="tpp-qr-strip">
-        <div className="tpp-qr-bg-glow" aria-hidden="true" />
-        <div className="tpp-wrap">
-          <div className="tpp-qr-copy tpp-reveal">
-            {/* TODO(copy): QR strip kept on tone — refine wording with Jamie */}
-            <span className="tpp-kicker-on-dark">On a Laptop?</span>
-            <h2 className="tpp-h2-on-dark">
-              Take this with you —<br />
-              <em className="tpp-accent-rose">scan to continue on your phone.</em>
+      {/* 6. FAQ */}
+      {/* TODO(copy): FAQ — Jamie to provide 4-6 common questions per
+          canonical-index.html §6. Minimal placeholder until copy lands. */}
+      <section className="tpp-section tpp-faq" id="tpp-faq">
+        <div className="tpp-wrap tpp-medium">
+          <div className="tpp-section-head tpp-reveal">
+            <span className="tpp-section-kicker">Common Questions</span>
+            <h2 className="tpp-h2">
+              Questions before<br />you <em>book?</em>
             </h2>
             <p>
-              Send a copy to your phone, finish booking on the go, or share with a partner. Point your phone&rsquo;s camera at the QR code.
+              We&rsquo;ll cover everything on the Discovery Call — pricing fit, timeline, what your team would actually run. Reach out and we&rsquo;ll answer ahead of time.
             </p>
-            <div className="tpp-qr-steps">
-              <div className="tpp-qr-step">
-                <span className="tpp-step-num">1</span> Open your phone&rsquo;s camera
-              </div>
-              <div className="tpp-qr-step">
-                <span className="tpp-step-num">2</span> Point it at the code
-              </div>
-              <div className="tpp-qr-step">
-                <span className="tpp-step-num">3</span> Tap the link that appears
-              </div>
-            </div>
           </div>
-          <div className="tpp-qr-card tpp-reveal tpp-delay-1">
-            <div className="tpp-qr-card-inner">
-              <div className="tpp-qr-card-front">
-                {/* TODO(SD-FIDELITY): replace with TPP-hosted QR; SD CDN path
-                    will not resolve from the static export. */}
-                <img
-                  src="https://virtuallaunch.pro/assets/tpp-qr-placeholder.svg"
-                  alt="Scan to view this page on your phone"
-                />
-                <div className="tpp-qr-label">Scan to Book</div>
-              </div>
-              <div className="tpp-qr-card-back">
-                <div className="tpp-qr-back-mark">Tax Prep Pro</div>
-                <div className="tpp-qr-back-tag">Step 1 of 8</div>
-              </div>
-            </div>
+          <div className="tpp-faq-cta tpp-reveal">
+            <a href="/contact" className="tpp-arrow-link">
+              Ask a question <span className="tpp-arrow">→</span>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* CTA strip */}
+      {/* 7. Final CTA — links to /contact for booking (canonical homepage
+          has no booking section; booking lives on /contact). */}
       <section className="tpp-cta-strip">
         <div className="tpp-cta-glow" aria-hidden="true" />
         <div className="tpp-wrap">
@@ -490,74 +417,21 @@ export default function LandingPage() {
             {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
             Book a Discovery Call and we&rsquo;ll walk through the 8-phase journey, the SD workspace, and what your team would actually run.
           </p>
-          <a href="#tpp-book" className="tpp-btn-primary tpp-cta-btn tpp-reveal tpp-delay-2">
+          <a href="/contact" className="tpp-btn-primary tpp-cta-btn tpp-reveal tpp-delay-2">
             Book a Discovery Call
             <span className="tpp-arrow">→</span>
           </a>
         </div>
       </section>
 
-      {/* Footer */}
-      <div className="tpp-footer">
-        <div className="tpp-wrap">
-          <div>
-            <div className="tpp-foot-brand">
-              Tax Prep Pro
-              {/* TODO(copy): Awaiting final B2B copy from Jamie */}
-              <span className="tpp-foot-brand-tag">For Service Bureaus &amp; Tax Pros</span>
-            </div>
-            <p>
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              Productized SuiteDash buildouts for credentialed tax practitioners. 8-phase client journey, branded portal, member training included.
-            </p>
-          </div>
-          <div>
-            <div className="tpp-h4">About</div>
-            <a href="#tpp-services">Our Services</a>
-            <a href="#tpp-how">How It Works</a>
-            <a href="#tpp-book">Book Discovery</a>
-            <a href="https://virtuallaunch.pro" target="_blank" rel="noopener">
-              Virtual Launch Pro
-            </a>
-          </div>
-          <div>
-            <div className="tpp-h4">Contact Us</div>
-            <p className="tpp-contact-line">
-              {/* TODO(copy): Jamie to confirm TPP-specific contact email */}
-              <strong>Email</strong>{tppConfig.businessInfo?.supportEmail}
-            </p>
-            <p className="tpp-contact-line">
-              <strong>Phone</strong>{tppConfig.businessInfo?.phone}
-            </p>
-            <p className="tpp-contact-line">
-              <strong>Hours</strong>Mon–Fri 9:00 AM – 6:00 PM PT
-            </p>
-            <p className="tpp-contact-line">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie */}
-              <strong>Service Area</strong>All 50 states — remote &amp; hybrid bureaus
-            </p>
-          </div>
-          <div>
-            <div className="tpp-h4">Get Connected</div>
-            <div className="tpp-socials">
-              {/* TODO(copy): Jamie to confirm TPP-specific social handles */}
-              <a href="https://facebook.com/virtuallaunch" target="_blank" rel="noopener" aria-label="Facebook">f</a>
-              <a href="https://twitter.com/virtuallaunch" target="_blank" rel="noopener" aria-label="Twitter / X">𝕏</a>
-              <a href="https://instagram.com/virtuallaunch" target="_blank" rel="noopener" aria-label="Instagram">IG</a>
-            </div>
-          </div>
-        </div>
-        <div className="tpp-copy-bar">
-          © {new Date().getFullYear()} Tax Prep Pro. All Rights Reserved. &nbsp;·&nbsp; Powered by Virtual Launch Pro.
-        </div>
-      </div>
+      {/* 8. Footer — provided by shared MarketingFooter via app/(marketing)/layout.tsx. */}
     </div>
   )
 }
 
-// Ported SD CSS, namespaced under `.tpp-lp`.
-// Per Deviation 9, Cormorant Garamond + Inter @import is removed and the
-// font-display / font-body vars resolve to Sora (loaded in app/layout.tsx).
+// Ported SD CSS, namespaced under `.tpp-lp`. Trimmed 2026-05-09: dropped
+// .tpp-book / .tpp-form-* / .tpp-qr-* / .tpp-footer rules along with the
+// JSX that used them.
 const TPP_LANDING_CSS = `
 .tpp-lp {
   --tpp-rose:           #E91E63;
@@ -696,11 +570,6 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-section-head p { font-size: 17px; color: var(--tpp-text-muted); margin: 0; line-height: 1.6; }
 .tpp-lp .tpp-h3 { font-family: var(--tpp-font-display); font-size: 28px; font-weight: 600; color: var(--tpp-noir); margin: 0 0 14px; line-height: 1.2; }
 .tpp-lp .tpp-card-h-accent { color: var(--tpp-rose); font-style: italic; font-weight: 500; }
-.tpp-lp .tpp-h3-large { font-family: var(--tpp-font-display); font-size: clamp(36px, 4.2vw, 54px); font-weight: 600; color: var(--tpp-noir); margin: 0 0 18px; line-height: 1.08; letter-spacing: -0.5px; padding: 4px 0 8px 0; }
-.tpp-lp .tpp-h3-line-1, .tpp-lp .tpp-h3-line-2 { display: block; }
-.tpp-lp .tpp-h3-line-2 { font-style: italic; background: linear-gradient(120deg, var(--tpp-rose) 0%, var(--tpp-crimson) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; padding: 4px 16px 8px 0; margin-top: 4px; }
-.tpp-lp .tpp-h3-large em { background: linear-gradient(120deg, var(--tpp-rose) 0%, var(--tpp-crimson) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-style: italic; display: inline-block; padding-right: 12px; }
-.tpp-lp .tpp-h4 { font-family: var(--tpp-font-body); font-size: 12px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--tpp-rose); margin: 0 0 18px; }
 
 .tpp-lp .tpp-types { background: var(--tpp-ivory); border-top: 1px solid var(--tpp-border); border-bottom: 1px solid var(--tpp-border); }
 .tpp-lp .tpp-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
@@ -717,6 +586,7 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-type-card p { color: var(--tpp-text-muted); font-size: 15px; margin: 0 0 28px; min-height: 70px; line-height: 1.6; }
 .tpp-lp .tpp-arrow-link { display: inline-flex; align-items: center; gap: 8px; color: var(--tpp-crimson); font-weight: 600; font-size: 14px; letter-spacing: 0.3px; transition: color var(--tpp-dur-base) ease, gap var(--tpp-dur-base) var(--tpp-ease-out); }
 .tpp-lp .tpp-type-card:hover .tpp-arrow-link { color: var(--tpp-rose); gap: 12px; }
+.tpp-lp .tpp-pricing-link { text-align: center; margin-top: 48px; }
 
 .tpp-lp .tpp-how { background: var(--tpp-champagne); position: relative; }
 .tpp-lp .tpp-how::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 10% 30%, rgba(233, 30, 99, 0.06), transparent 50%), radial-gradient(circle at 90% 70%, rgba(212, 165, 116, 0.10), transparent 50%); pointer-events: none; }
@@ -732,32 +602,6 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-phase:hover .tpp-num { background: linear-gradient(135deg, var(--tpp-rose), var(--tpp-crimson)); color: var(--tpp-text-on-rose); border-color: transparent; transform: scale(1.12) translateY(-4px); box-shadow: var(--tpp-shadow-rose); }
 .tpp-lp .tpp-label { font-size: 13px; font-weight: 600; color: var(--tpp-text); line-height: 1.35; letter-spacing: 0.2px; }
 
-.tpp-lp .tpp-book { background: linear-gradient(180deg, var(--tpp-champagne) 0%, var(--tpp-champagne-deep) 100%); border-top: 1px solid var(--tpp-border); border-bottom: 1px solid var(--tpp-border); position: relative; overflow: hidden; }
-.tpp-lp .tpp-section.tpp-book { padding-top: 80px !important; padding-bottom: 0 !important; }
-.tpp-lp .tpp-form-card { position: relative; background: var(--tpp-ivory); border: 1px solid var(--tpp-border); border-radius: var(--tpp-radius-lg); padding: 64px 56px 32px 56px; box-shadow: var(--tpp-shadow-md); }
-.tpp-lp .tpp-form-glow { position: absolute; width: 320px; height: 320px; border-radius: 50%; background: radial-gradient(circle, var(--tpp-rose-glow) 0%, transparent 70%); top: 40px; right: 40px; pointer-events: none; filter: blur(60px); opacity: 0.85; z-index: 0; }
-.tpp-lp .tpp-form-head, .tpp-lp .tpp-form-embed { position: relative; z-index: 1; }
-.tpp-lp .tpp-form-head { text-align: center; margin-bottom: 40px; position: relative; }
-.tpp-lp .tpp-sub { font-size: 16px; color: var(--tpp-text-muted); margin: 0; line-height: 1.6; }
-.tpp-lp .tpp-form-embed { min-height: 1200px; position: relative; }
-.tpp-lp .tpp-form-sd iframe {
-  display: block !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 1200px !important;
-  border: 0 !important;
-  background: transparent !important;
-}
-
-.tpp-lp .tpp-form-badge { position: absolute; top: -16px; right: -28px; z-index: 5; width: 180px; padding: 12px 16px; background: linear-gradient(135deg, var(--tpp-rose) 0%, var(--tpp-crimson) 100%); display: flex; align-items: baseline; justify-content: center; gap: 8px; text-align: center; color: #FFFFFF !important; font-family: var(--tpp-font-display); line-height: 1; box-shadow: 0 14px 32px rgba(139, 21, 56, 0.32); transform: rotate(14deg); transform-origin: center center; animation: tpp-badge-wobble 5.5s var(--tpp-ease-in-out) infinite; pointer-events: none; clip-path: polygon( 0% 0%, 100% 0%, 93% 50%, 100% 100%, 0% 100%, 7% 50% ); }
-.tpp-lp .tpp-form-badge::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 14px; right: 14px; border-top: 1px dashed rgba(255, 229, 236, 0.55); border-bottom: 1px dashed rgba(255, 229, 236, 0.55); pointer-events: none; }
-.tpp-lp .tpp-form-badge-line-1 { font-size: 16px; font-weight: 500; font-style: italic; color: #FFFFFF !important; letter-spacing: 0.5px; text-transform: lowercase; opacity: 0.92; }
-.tpp-lp .tpp-form-badge-line-2 { font-size: 24px; font-weight: 600; font-style: italic; color: #FFFFFF !important; letter-spacing: 0.6px; }
-@keyframes tpp-badge-wobble { 0%, 100% { transform: rotate(14deg) translateY(0); } 25% { transform: rotate(11deg) translateY(-3px); } 50% { transform: rotate(16deg) translateY(0); } 75% { transform: rotate(12deg) translateY(-2px); } }
-
-/* SD form embed is iframe — see SuiteDash form-theme settings in SD admin
-   for in-iframe styling. Only the iframe wrapper is controllable from here. */
-
 .tpp-lp .tpp-locations { background: var(--tpp-champagne); }
 .tpp-lp .tpp-loc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; }
 .tpp-lp .tpp-loc-card { background: var(--tpp-ivory); border: 1px solid var(--tpp-border); border-radius: var(--tpp-radius-lg); padding: 40px 36px; transition: transform var(--tpp-dur-base) var(--tpp-ease-out), box-shadow var(--tpp-dur-base) var(--tpp-ease-out); position: relative; overflow: hidden; }
@@ -772,47 +616,12 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-book-here { display: inline-flex; align-items: center; gap: 8px; color: var(--tpp-crimson); font-weight: 600; font-size: 14px; transition: color var(--tpp-dur-base) ease, gap var(--tpp-dur-base) var(--tpp-ease-out); }
 .tpp-lp .tpp-book-here:hover { color: var(--tpp-rose); gap: 12px; }
 
-.tpp-lp .tpp-qr-strip { background: linear-gradient(135deg, var(--tpp-noir) 0%, var(--tpp-crimson-deep) 100%); color: var(--tpp-text-on-dark); padding: 96px 0; position: relative; overflow: hidden; }
-.tpp-lp .tpp-qr-bg-glow { position: absolute; width: 720px; height: 720px; border-radius: 50%; background: radial-gradient(circle, rgba(233, 30, 99, 0.20) 0%, transparent 70%); top: -240px; left: -240px; pointer-events: none; filter: blur(60px); animation: tpp-bg-drift 22s var(--tpp-ease-in-out) infinite; }
-@keyframes tpp-bg-drift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(120px, 80px) scale(1.15); } }
-.tpp-lp .tpp-qr-strip .tpp-wrap { position: relative; display: grid; grid-template-columns: 1.4fr 1fr; gap: 80px; align-items: center; }
-.tpp-lp .tpp-qr-strip .tpp-h2-on-dark { color: #F5E6D3 !important; }
-.tpp-lp .tpp-qr-strip .tpp-kicker-on-dark { color: #E8C088 !important; }
-.tpp-lp .tpp-qr-strip .tpp-qr-copy p { color: rgba(245, 230, 211, 0.92) !important; }
-.tpp-lp .tpp-qr-strip .tpp-qr-step { color: rgba(245, 230, 211, 0.92) !important; }
-.tpp-lp .tpp-qr-strip .tpp-step-num { color: #FFFFFF !important; }
+.tpp-lp .tpp-faq { background: var(--tpp-ivory); border-top: 1px solid var(--tpp-border); border-bottom: 1px solid var(--tpp-border); }
+.tpp-lp .tpp-faq-cta { text-align: center; }
+
+.tpp-lp .tpp-h2-on-dark { font-family: var(--tpp-font-display); font-size: clamp(32px, 3.8vw, 46px); font-weight: 600; color: var(--tpp-text-on-dark); line-height: 1.15; margin: 0 0 22px; letter-spacing: -0.3px; }
 .tpp-lp .tpp-cta-strip .tpp-h2-on-dark { color: #F5E6D3 !important; }
 .tpp-lp .tpp-cta-strip p { color: rgba(245, 230, 211, 0.85) !important; }
-
-.tpp-lp .tpp-footer { color: rgba(245, 230, 211, 0.78) !important; }
-.tpp-lp .tpp-footer .tpp-foot-brand { color: #F5E6D3 !important; }
-.tpp-lp .tpp-footer .tpp-foot-brand-tag { color: var(--tpp-rose) !important; }
-.tpp-lp .tpp-footer p { color: rgba(245, 230, 211, 0.78) !important; }
-.tpp-lp .tpp-footer .tpp-h4 { color: #E8C088 !important; }
-.tpp-lp .tpp-footer a, .tpp-lp .tpp-footer a:link, .tpp-lp .tpp-footer a:visited { color: rgba(245, 230, 211, 0.78) !important; }
-.tpp-lp .tpp-footer a:hover, .tpp-lp .tpp-footer a:focus { color: var(--tpp-rose) !important; }
-.tpp-lp .tpp-footer .tpp-contact-line { color: rgba(245, 230, 211, 0.78) !important; }
-.tpp-lp .tpp-footer .tpp-contact-line strong { color: #E8C088 !important; }
-.tpp-lp .tpp-footer .tpp-socials a, .tpp-lp .tpp-footer .tpp-socials a:link, .tpp-lp .tpp-footer .tpp-socials a:visited { color: #E8C088 !important; }
-.tpp-lp .tpp-footer .tpp-socials a:hover { color: #FFFFFF !important; }
-.tpp-lp .tpp-footer .tpp-copy-bar { color: rgba(245, 230, 211, 0.55) !important; }
-
-.tpp-lp .tpp-kicker-on-dark { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 2.4px; text-transform: uppercase; color: var(--tpp-gold-bright); margin-bottom: 18px; }
-.tpp-lp .tpp-h2-on-dark { font-family: var(--tpp-font-display); font-size: clamp(32px, 3.8vw, 46px); font-weight: 600; color: var(--tpp-text-on-dark); line-height: 1.15; margin: 0 0 22px; letter-spacing: -0.3px; }
-.tpp-lp .tpp-qr-copy p { font-size: 16px; color: rgba(245, 230, 211, 0.80); margin: 0 0 32px; line-height: 1.6; }
-.tpp-lp .tpp-qr-steps { display: flex; flex-direction: column; gap: 14px; }
-.tpp-lp .tpp-qr-step { display: flex; align-items: center; gap: 16px; font-size: 15px; color: rgba(245, 230, 211, 0.92); }
-.tpp-lp .tpp-step-num { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--tpp-rose), var(--tpp-crimson)); color: var(--tpp-text-on-rose); font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; }
-
-.tpp-lp .tpp-qr-card { perspective: 1200px; width: 320px; max-width: 100%; margin-left: auto; cursor: pointer; }
-.tpp-lp .tpp-qr-card-inner { position: relative; width: 100%; height: 320px; aspect-ratio: 1; transform-style: preserve-3d; transition: transform 900ms var(--tpp-ease-out); }
-.tpp-lp .tpp-qr-card.is-flipped .tpp-qr-card-inner { transform: rotateY(180deg); }
-.tpp-lp .tpp-qr-card-front, .tpp-lp .tpp-qr-card-back { position: absolute; inset: 0; background: var(--tpp-ivory); border-radius: var(--tpp-radius-lg); padding: 28px; text-align: center; box-shadow: var(--tpp-shadow-lg); -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.tpp-lp .tpp-qr-card-front img { width: 100%; max-width: 220px; height: auto; min-height: 180px; object-fit: contain; margin-bottom: 14px; display: block; }
-.tpp-lp .tpp-qr-label { font-family: var(--tpp-font-display); font-size: 18px; font-weight: 600; color: var(--tpp-crimson); }
-.tpp-lp .tpp-qr-card-back { transform: rotateY(180deg); background: linear-gradient(135deg, var(--tpp-rose) 0%, var(--tpp-crimson) 100%); color: var(--tpp-text-on-rose); gap: 10px; }
-.tpp-lp .tpp-qr-back-mark { font-family: var(--tpp-font-display); font-size: 28px; font-weight: 600; line-height: 1.1; padding: 0 24px; }
-.tpp-lp .tpp-qr-back-tag { font-size: 11px; font-weight: 700; letter-spacing: 2.4px; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
 
 .tpp-lp .tpp-cta-strip { background: var(--tpp-noir); color: var(--tpp-text-on-dark); padding: 96px 24px; text-align: center; position: relative; overflow: hidden; }
 .tpp-lp .tpp-cta-glow { position: absolute; inset: 0; background: radial-gradient(circle at 20% 50%, rgba(233, 30, 99, 0.18) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(139, 21, 56, 0.30) 0%, transparent 50%); pointer-events: none; }
@@ -821,21 +630,6 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-cta-strip p { font-size: 17px; color: rgba(245, 230, 211, 0.78); max-width: 620px; margin: 0 auto 36px; line-height: 1.6; }
 .tpp-lp .tpp-cta-btn { background: linear-gradient(135deg, var(--tpp-rose), var(--tpp-gold-bright)); }
 .tpp-lp .tpp-cta-btn:hover { background: linear-gradient(135deg, var(--tpp-rose-deep), var(--tpp-rose)); }
-
-.tpp-lp .tpp-footer { background: var(--tpp-crimson-deep); color: rgba(245, 230, 211, 0.78); padding: 72px 0 0; font-size: 14px; }
-.tpp-lp .tpp-footer .tpp-wrap { display: grid; grid-template-columns: 1.6fr 1fr 1.2fr 1fr; gap: 48px; padding-bottom: 56px; }
-.tpp-lp .tpp-foot-brand { font-family: var(--tpp-font-display); font-size: 26px; font-weight: 600; color: var(--tpp-text-on-dark); margin-bottom: 16px; line-height: 1.1; }
-.tpp-lp .tpp-foot-brand-tag { font-family: var(--tpp-font-body); display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.8px; color: var(--tpp-rose); margin-top: 6px; }
-.tpp-lp .tpp-footer p { margin: 0 0 16px; line-height: 1.6; }
-.tpp-lp .tpp-footer .tpp-h4 { color: var(--tpp-gold-bright); margin-bottom: 20px; }
-.tpp-lp .tpp-footer a { display: block; color: rgba(245, 230, 211, 0.78); margin-bottom: 12px; transition: color var(--tpp-dur-fast) ease, transform var(--tpp-dur-fast) ease; position: relative; }
-.tpp-lp .tpp-footer a:hover { color: var(--tpp-rose); transform: translateX(4px); }
-.tpp-lp .tpp-contact-line { margin: 0 0 18px; line-height: 1.55; }
-.tpp-lp .tpp-contact-line strong { display: block; font-size: 10px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--tpp-gold-bright); margin-bottom: 4px; }
-.tpp-lp .tpp-socials { display: flex; gap: 12px; }
-.tpp-lp .tpp-socials a { width: 42px; height: 42px; border-radius: 50%; background: rgba(212, 165, 116, 0.14); color: var(--tpp-gold-bright); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; margin: 0; border: 1px solid rgba(212, 165, 116, 0.20); transition: background var(--tpp-dur-base) ease, color var(--tpp-dur-base) ease, border-color var(--tpp-dur-base) ease, transform var(--tpp-dur-base) var(--tpp-ease-out); }
-.tpp-lp .tpp-socials a:hover { background: var(--tpp-rose); color: var(--tpp-text-on-rose); border-color: var(--tpp-rose); transform: translateY(-3px); }
-.tpp-lp .tpp-copy-bar { border-top: 1px solid rgba(212, 165, 116, 0.16); padding: 24px 24px; text-align: center; font-size: 12px; color: rgba(245, 230, 211, 0.55); letter-spacing: 0.4px; }
 
 .tpp-lp.tpp-js .tpp-reveal { opacity: 0; transform: translateY(28px); transition: opacity var(--tpp-dur-reveal) var(--tpp-ease-out), transform var(--tpp-dur-reveal) var(--tpp-ease-out); will-change: opacity, transform; }
 .tpp-lp.tpp-js .tpp-reveal.tpp-in { opacity: 1; transform: translateY(0); }
@@ -867,11 +661,7 @@ const TPP_LANDING_CSS = `
   .tpp-lp .tpp-type-grid { grid-template-columns: 1fr; }
   .tpp-lp .tpp-phase-rail { grid-template-columns: repeat(4, 1fr); row-gap: 32px; }
   .tpp-lp .tpp-phase-line { display: none; }
-  .tpp-lp .tpp-form-card { padding: 44px 28px; }
   .tpp-lp .tpp-loc-grid { grid-template-columns: 1fr; }
-  .tpp-lp .tpp-qr-strip .tpp-wrap { grid-template-columns: 1fr; gap: 48px; }
-  .tpp-lp .tpp-qr-card { margin: 0 auto; }
-  .tpp-lp .tpp-footer .tpp-wrap { grid-template-columns: 1fr 1fr; gap: 36px; }
 }
 @media (max-width: 560px) {
   .tpp-lp .tpp-h1 { font-size: 40px; }
@@ -881,18 +671,14 @@ const TPP_LANDING_CSS = `
   .tpp-lp .tpp-stats .tpp-wrap { grid-template-columns: 1fr; gap: 32px; }
   .tpp-lp .tpp-stat::after { display: none !important; }
   .tpp-lp .tpp-phase-rail { grid-template-columns: repeat(2, 1fr); }
-  .tpp-lp .tpp-footer .tpp-wrap { grid-template-columns: 1fr; }
-  .tpp-lp .tpp-form-badge { width: 130px; padding: 9px 12px; top: 18px; right: 12px; }
-  .tpp-lp .tpp-form-badge-line-1 { font-size: 12px; }
-  .tpp-lp .tpp-form-badge-line-2 { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tpp-lp .tpp-hero-breath, .tpp-lp .tpp-photo-glow, .tpp-lp .tpp-qr-bg-glow, .tpp-lp .tpp-dot, .tpp-lp .tpp-scroll-line { animation: none !important; }
+  .tpp-lp .tpp-hero-breath, .tpp-lp .tpp-photo-glow, .tpp-lp .tpp-dot, .tpp-lp .tpp-scroll-line { animation: none !important; }
   .tpp-lp.tpp-js .tpp-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   .tpp-lp.tpp-js .tpp-stagger { opacity: 1 !important; transform: none !important; transition: none !important; }
   .tpp-lp .tpp-phase-line line { stroke-dashoffset: 0 !important; transition: none !important; }
   .tpp-lp .tpp-btn-primary::before, .tpp-lp .tpp-card-shimmer { display: none; }
-  .tpp-lp .tpp-btn-primary, .tpp-lp .tpp-form-badge { animation: none !important; }
+  .tpp-lp .tpp-btn-primary { animation: none !important; }
 }
 `
