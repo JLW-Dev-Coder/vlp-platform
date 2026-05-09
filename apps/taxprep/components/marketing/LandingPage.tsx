@@ -174,11 +174,9 @@ export default function LandingPage() {
             <span className="tpp-photo-tag">Your Workspace</span>
             <div className="tpp-photo-frame">
               <div className="tpp-photo-glow" aria-hidden="true" />
-              {/* TODO(SD-FIDELITY): replace with TPP-hosted hero asset; SD path
-                  references the SD CDN and will not resolve from the static export. */}
               <img
-                src="https://virtuallaunch.pro/assets/tpp-hero-placeholder.png"
-                alt="Tax Prep Pro workspace preview"
+                src="/hero/tpp-hero-portrait.png"
+                alt="Tax Prep Pro — your service bureau workspace, end-to-end"
               />
             </div>
             <div className="tpp-photo-badge">
