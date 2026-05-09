@@ -252,33 +252,99 @@ Per `canonical-style.md` §11 self-check:
 
 ---
 
-## Phase 6: Production Deploy (Day 3)
+## Phase 6: Preview Sign-off (Day 3)
 
-### 6.1 Deploy
+Phase 6 is iterative preview-deploy review. Each round: push fixes to `feat/{app}-app-{N}`, the `Deploy Pages Apps` workflow auto-builds a preview, Principal reviews the preview URL, RC pushes round N+1. No production deploy happens in Phase 6 — the preview project is `{app}-pages-project` and previews stay on `*.pages.dev`.
 
-```bash
-cd apps/{abbrev}
-npx turbo build --filter={app}
-npx wrangler pages deploy out --project-name={pages-project-name}
-```
-
-### 6.2 Post-deploy verification
-
-Run the full page checklist from §5.2 against the production URL.
-
-### 6.3 Backup
-
-Keep any previous static site as a one-command rollback until the new app is confirmed stable.
+Phase 6 ends when Principal signs off on the final preview round. Then proceed to Phase 7.
 
 ---
 
-## Phase 7: Documentation & Handoff (Day 3)
+## Phase 7: Production Launch (Day 3+)
 
-### 7.1 README
+### 7.1 Pre-launch checklist
+
+Before opening the launch PR, RC verifies all of the following:
+
+- All Phase 6 preview rounds signed off by Principal
+- Final preview deploy URL captured in Phase 6 report
+- All canonical updates committed (canonical-app-blueprint, canonical-new-app, any palette/font registrations, deviation codifications)
+- `apps/{app}/` builds clean: `npx turbo build --filter={app}`
+- Cross-app regression: a reference app (e.g., `tcvlp`) builds clean — confirms no shared-package change broke other apps: `npx turbo build --filter=tcvlp`
+- Untracked files in working tree are intentional — flag any `client_secret*.json`, `.env*`, or other sensitive files for `.gitignore` cleanup BEFORE the launch PR
+
+### 7.2 Open the launch PR
+
+**PR-only. No local merge to `main` ever.** Mechanism options, in order of preference:
+
+1. `gh pr create` if `gh` CLI is installed and authenticated
+2. If `gh` is missing, install via `winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements`, then `gh auth login`
+3. If interactive auth fails in the harness, fall back to GitHub REST API via `curl` using a token from `$GITHUB_TOKEN`, `$GH_TOKEN`, `~/.config/gh/hosts.yml`, or Git Credential Manager (`printf 'protocol=https\nhost=github.com\n\n' | git credential-manager get`)
+4. If no token is available, STOP and request Principal authorize a different mechanism
+
+**Standard PR title:**
+
+```
+feat({app}): launch app #{N} — {App Display Name} ({one-line positioning})
+```
+
+**Standard PR body sections** (use TPP's [PR #3](https://github.com/JLW-Dev-Coder/vlp-platform/pull/3) as the reference template):
+
+- **Summary** — one paragraph: what app, what audience, what the launch establishes
+- **Architecture** — domain, Cloudflare Pages project, booking provider, member system, theme mode
+- **Deviations from canonical-new-app.md** — numbered list of any deviations registered during scaffolding, each linked to its canonical codification
+- **Phase 6 fix rounds summary** — one-line summary per round
+- **Open follow-ups (post-launch)** — items deferred out of the launch (hero asset swaps, copy review, gitignore cleanup, etc.)
+- **Post-merge expectations** — link to the smoke-check route list and the GH Actions deploy workflow that auto-fires
+
+### 7.3 Merge
+
+**Principal merges the PR via the GitHub UI.** RC does NOT merge — even if RC has write access. Merge is a Principal-authorized action.
+
+After merge, GitHub Actions auto-triggers the Cloudflare Pages production deploy on the new commit on `main` via `Deploy Pages Apps`. RC monitors the workflow run via REST API:
+
+```bash
+curl -sS -H "Authorization: Bearer $GITHUB_TOKEN" \
+  https://api.github.com/repos/JLW-Dev-Coder/vlp-platform/actions/runs/{run-id} | \
+  node -e "const d=JSON.parse(require('fs').readFileSync(0));console.log(d.status,d.conclusion)"
+```
+
+Wait for `status=completed` + `conclusion=success`. If `conclusion=failure`, STOP and report the run logs URL.
+
+### 7.4 Smoke check
+
+After deploy success, RC runs:
+
+```bash
+echo "Status  Route"; echo "------  -----"
+for route in {ROUTES}; do
+  status=$(curl -sI -o /dev/null -w "%{http_code}" "https://{domain}${route}")
+  echo "${status}     ${route}"
+done
+```
+
+Where `{ROUTES}` is the app's full top-level route list captured during Phase 5 (typically `/ /about /features /pricing /how-it-works /reviews /contact /sign-in /legal/privacy /legal/terms /legal/refund`).
+
+Any non-200 → STOP and report. **No improvisation.** Principal directs rollback or hotfix.
+
+DNS propagation note: retry once after 60s if connection errors occur on first run.
+
+### 7.5 Post-launch
+
+- Branch `feat/{app}-app-{N}` is **NOT deleted**. Stays for at least 30 days as a discoverable launch boundary.
+- `.gitignore` cleanup for any flagged sensitive files (separate post-launch PR)
+- Any `TODO(copy)`, `TODO(SD-FIDELITY)`, or `TODO(spacing)` markers logged as follow-up tickets
+- Hero / brand asset finalization tracked separately
+
+---
+
+## Phase 8: Documentation & Handoff (Day 3+)
+
+### 8.1 README
 
 Create `apps/{abbrev}/README.md` per `canonical-readme.md` with all 14 sections filled in.
 
-### 7.2 Marketing kit (in README)
+### 8.2 Marketing kit (in README)
 
 Add a "Marketing Kit" section to the README:
 
@@ -298,7 +364,7 @@ Add a "Marketing Kit" section to the README:
 | Logo mark | TAP (pink play button on slate-950) |
 ```
 
-### 7.3 Update global README
+### 8.3 Update global README
 
 Add the new app to the monorepo root `README.md` platform registry table.
 
@@ -354,12 +420,19 @@ PHASE 5: QA
 [ ] Forms submit correctly
 [ ] Videos/media load from R2
 
-PHASE 6: DEPLOY
-[ ] Production deploy
-[ ] Post-deploy verification
-[ ] Backup preserved
+PHASE 6: PREVIEW SIGN-OFF
+[ ] Final preview round signed off by Principal
+[ ] Preview deploy URL captured in report
 
-PHASE 7: DOCUMENTATION
+PHASE 7: PRODUCTION LAUNCH
+[ ] Pre-launch checklist (build clean, cross-app regression, sensitive files audited)
+[ ] Launch PR opened (PR mechanism only — no local merge to main)
+[ ] PR merged by Principal in GitHub UI
+[ ] Deploy Pages Apps workflow run = success
+[ ] Smoke check — all routes return 200
+[ ] Branch retained (do not delete)
+
+PHASE 8: DOCUMENTATION
 [ ] README.md created per canonical-readme.md
 [ ] Marketing kit section added to README
 [ ] Global README updated

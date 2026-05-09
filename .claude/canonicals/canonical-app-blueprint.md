@@ -284,6 +284,10 @@ This blueprint stays high-level. Depth lives in sub-canonicals:
 
 Sub-canonicals MAY codify anything not contradicted by this blueprint. They MAY NOT override decisions in §3.
 
+### 5.1 Launch process
+
+Architectural decisions are codified here; the operational workflow that ships an app to production lives in `canonical-new-app.md`. For any new app, follow `canonical-new-app.md` Phase 7 (Production Launch) — PR-only merges via the GitHub UI, GH Actions auto-deploys on push to `main`, and a smoke-check gate before sign-off.
+
 ---
 
 ## 6. Change control
