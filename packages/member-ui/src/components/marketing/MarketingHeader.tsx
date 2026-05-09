@@ -76,41 +76,45 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
     : 'sticky top-0 z-sticky bg-surface-bg/80 backdrop-blur border-b border-subtle'
   const headerStyle = isLight
     ? {
-        background: 'rgba(245, 230, 211, 0.85)',
+        background: 'color-mix(in oklab, var(--surface-bg) 85%, transparent)',
         backdropFilter: 'saturate(140%) blur(12px)',
         WebkitBackdropFilter: 'saturate(140%) blur(12px)',
-        borderBottom: '1px solid rgba(139, 21, 56, 0.14)',
+        borderBottom: '1px solid var(--border-subtle)',
       }
     : undefined
   const iconBtnClass = isLight
-    ? 'inline-flex items-center justify-center h-10 w-10 rounded-md text-[#1A0B14] hover:bg-[rgba(139,21,56,0.06)] focus-visible:outline-none focus-visible:shadow-focus transition-colors duration-fast'
+    ? 'inline-flex items-center justify-center h-10 w-10 rounded-md text-[var(--text-primary)] hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:shadow-focus transition-colors duration-fast'
     : 'inline-flex items-center justify-center h-10 w-10 rounded-md text-text-primary hover:bg-surface-elevated focus-visible:outline-none focus-visible:shadow-focus transition-colors duration-fast'
   const navLinkClass = isLight
-    ? 'text-sm text-[#1A0B14] hover:text-[#E91E63] transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm'
+    ? 'text-sm text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm'
     : 'text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm'
   const resourcesBtnClass = isLight
-    ? 'inline-flex items-center gap-1 text-sm text-[#1A0B14] hover:text-[#E91E63] transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm'
+    ? 'inline-flex items-center gap-1 text-sm text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm'
     : 'inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus rounded-sm'
   const dividerClass = isLight
-    ? 'border-l border-[rgba(139,21,56,0.14)] h-6 mx-4'
+    ? 'border-l border-[var(--border-subtle)] h-6 mx-4'
     : 'border-l border-subtle h-6 mx-4'
   const mobileDrawerClass = isLight
     ? 'md:hidden fixed top-0 left-0 bottom-0 w-[85vw] max-w-sm border-r overflow-y-auto motion-safe:transition-transform motion-safe:duration-base translate-x-0 z-modal'
     : 'md:hidden fixed top-0 left-0 bottom-0 w-[85vw] max-w-sm bg-surface-popover border-r border-subtle z-modal overflow-y-auto motion-safe:transition-transform motion-safe:duration-base translate-x-0'
   const mobileDrawerStyle = isLight
-    ? { background: '#F5E6D3', borderRightColor: 'rgba(139, 21, 56, 0.14)' }
+    ? { background: 'var(--surface-bg)', borderRightColor: 'var(--border-subtle)' }
     : undefined
   const mobileDrawerHeaderClass = isLight
-    ? 'flex items-center justify-between h-16 px-6 border-b border-[rgba(139,21,56,0.14)]'
+    ? 'flex items-center justify-between h-16 px-6 border-b border-[var(--border-subtle)]'
     : 'flex items-center justify-between h-16 px-6 border-b border-subtle'
   const mobileNavLinkClass = isLight
-    ? 'px-3 py-3 text-base text-[#1A0B14] hover:bg-[rgba(139,21,56,0.06)] rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus'
+    ? 'px-3 py-3 text-base text-[var(--text-primary)] hover:bg-[var(--accent-soft)] rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus'
     : 'px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus'
   const mobileResourcesBtnClass = isLight
-    ? 'w-full flex items-center justify-between px-3 py-3 text-base text-[#1A0B14] hover:bg-[rgba(139,21,56,0.06)] rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus'
+    ? 'w-full flex items-center justify-between px-3 py-3 text-base text-[var(--text-primary)] hover:bg-[var(--accent-soft)] rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus'
     : 'w-full flex items-center justify-between px-3 py-3 text-base text-text-primary hover:bg-surface-elevated rounded-md transition-colors duration-fast focus-visible:outline-none focus-visible:shadow-focus'
-  const brandNameStyle = isLight ? { color: '#8B1538' } : undefined
-  const taglineStyle = isLight ? { color: '#E91E63' } : undefined
+  // Brand name uses a deeper mix of theme color in light mode for editorial weight;
+  // tagline uses theme color directly. Both fall back via color-mix so any brandColor works.
+  const brandNameStyle = isLight
+    ? { color: 'color-mix(in oklab, var(--theme-color) 60%, black)' }
+    : undefined
+  const taglineStyle = isLight ? { color: 'var(--accent-primary)' } : undefined
   const brandNameClass = isLight
     ? 'text-sm font-semibold'
     : 'text-sm font-semibold text-text-primary'
