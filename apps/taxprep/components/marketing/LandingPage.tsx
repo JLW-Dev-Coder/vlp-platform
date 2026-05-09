@@ -735,7 +735,8 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-label { font-size: 13px; font-weight: 600; color: var(--tpp-text); line-height: 1.35; letter-spacing: 0.2px; }
 
 .tpp-lp .tpp-book { background: linear-gradient(180deg, var(--tpp-champagne) 0%, var(--tpp-champagne-deep) 100%); border-top: 1px solid var(--tpp-border); border-bottom: 1px solid var(--tpp-border); position: relative; overflow: hidden; }
-.tpp-lp .tpp-form-card { position: relative; background: var(--tpp-ivory); border: 1px solid var(--tpp-border); border-radius: var(--tpp-radius-lg); padding: 64px 56px; box-shadow: var(--tpp-shadow-md); }
+.tpp-lp .tpp-section.tpp-book { padding-top: 80px !important; padding-bottom: 0 !important; }
+.tpp-lp .tpp-form-card { position: relative; background: var(--tpp-ivory); border: 1px solid var(--tpp-border); border-radius: var(--tpp-radius-lg); padding: 64px 56px 32px 56px; box-shadow: var(--tpp-shadow-md); }
 .tpp-lp .tpp-form-glow { position: absolute; width: 320px; height: 320px; border-radius: 50%; background: radial-gradient(circle, var(--tpp-rose-glow) 0%, transparent 70%); top: 40px; right: 40px; pointer-events: none; filter: blur(60px); opacity: 0.85; z-index: 0; }
 .tpp-lp .tpp-form-head, .tpp-lp .tpp-form-embed { position: relative; z-index: 1; }
 .tpp-lp .tpp-form-head { text-align: center; margin-bottom: 40px; position: relative; }
