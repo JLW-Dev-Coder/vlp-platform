@@ -272,6 +272,39 @@ Keep any previous static site as a one-command rollback until the new app is con
 
 ---
 
+## Phase 6.5: Deploy Verification Loop
+
+The canonical deploy contract is **direct push to `main`** (per `canonical-deploy.md` and `.claude/CLAUDE.md` §8 working rule #7). PRs are not part of the deploy workflow. Cloudflare Pages auto-deploys from `main` on every push for static-export and `@cloudflare/next-on-pages` apps; TPP and TTMP deploy via GitHub Actions (`deploy-pages.yml` and `deploy-ttmp.yml`) on the same `main` push.
+
+### 6.5.1 The loop (every change, every app)
+
+```
+make change → commit → push origin main → watch GH Actions run → smoke-check production URL
+```
+
+There is no PR step. There is no review queue. There is no `gh pr create`. RC commits and pushes directly to `main` per the standing instructions in `.claude/CLAUDE.md`.
+
+### 6.5.2 Branches: when and why
+
+Branches exist only for **in-progress multi-day work** that isn't safe to land incrementally on `main` (e.g., `feat/taxprep-app-10` was retained for the TPP launch as a discoverable launch boundary). When the work is ready, the branch is fast-forward or squash-merged into `main` locally — not via PR. Feature branches are deleted from origin and locally once their work has landed, except when explicitly preserved as a launch boundary.
+
+### 6.5.3 What to watch after each push
+
+- **Pages apps (static export + next-on-pages):** the corresponding `deploy-pages.yml` job in GitHub Actions, OR the auto-deploy run for the app's Pages project in the Cloudflare dashboard.
+- **TTMP:** the `deploy-ttmp.yml` job (Workers via `@opennextjs/cloudflare`).
+- **Worker:** the `deploy-worker.yml` job (or `wrangler deploy` if pushed via local Wrangler).
+
+If a deploy run fails, RC investigates and ships a follow-up commit to `main` — there is no rollback to a pre-push state because there is no pre-push state to roll back to. Rollback uses `git revert <bad-commit>` and the standard push loop (or, for static apps, `wrangler pages deployment retry/rollback` against the previous successful deployment).
+
+### 6.5.4 What this rules out
+
+- ❌ `gh pr create` for any change to a deployed app — PRs do not deploy
+- ❌ Working on a branch and "saving up" the work for a single PR — direct, smaller commits to `main` are preferred
+- ❌ Adding a `pr-checks.yml` GitHub Actions workflow — there is no PR queue to gate
+- ❌ Treating "merged via PR" as deployed; only "pushed to `main`" means deployed
+
+---
+
 ## Phase 7: Documentation & Handoff (Day 3)
 
 ### 7.1 README
@@ -394,3 +427,11 @@ PHASE 7: DOCUMENTATION
 | `canonical-cal-events.md` | Cal.com events to register |
 | `canonical-stack.md` | Stack matrix to update |
 | `canonical-api.md` | API registry to update |
+
+---
+
+## Decision log
+
+| Date | Change | Rationale |
+|------|--------|-----------|
+| 2026-05-09 | Added Phase 6.5 "Deploy Verification Loop" codifying the direct-push deploy contract | The TPP launch (app #10) initially used PR-based deploys, which contradicts `canonical-deploy.md`. A hardening PR was originally going to teach the wrong process; corrected before landing. New apps deploy via direct push to `main` per `canonical-deploy.md` and `.claude/CLAUDE.md` §8 working rule #7. Cloudflare Pages auto-deploys from `main` on push. |
