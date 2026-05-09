@@ -61,6 +61,11 @@ export function ReviewDisplayPage({ config, submitPath }: ReviewDisplayPageProps
     <div
       className={`min-h-screen ${isLight ? 'bg-surface-bg text-text-primary' : 'bg-gray-950 text-white'}`}
       data-theme={isLight ? 'light' : undefined}
+      style={
+        isLight
+          ? ({ ['--theme-color' as string]: config.themeColor } as React.CSSProperties)
+          : undefined
+      }
     >
       {/* Hero */}
       <section

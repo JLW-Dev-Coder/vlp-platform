@@ -305,6 +305,11 @@ export function ReviewSubmitPage({ config }: { config: ReviewConfig }) {
     <div
       className="min-h-screen bg-surface-bg text-text-primary relative"
       data-theme={isLight ? 'light' : undefined}
+      style={
+        isLight
+          ? ({ ['--theme-color' as string]: config.themeColor } as React.CSSProperties)
+          : undefined
+      }
     >
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} />}

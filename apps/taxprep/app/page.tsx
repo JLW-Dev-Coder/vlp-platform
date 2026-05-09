@@ -12,6 +12,11 @@ export default function HomePage() {
     <div
       className="flex min-h-screen flex-col bg-surface-bg text-text-primary"
       data-theme={tppConfig.themeMode === 'light' ? 'light' : undefined}
+      style={
+        tppConfig.themeMode === 'light'
+          ? ({ ['--theme-color' as string]: tppConfig.brandColor } as React.CSSProperties)
+          : undefined
+      }
     >
       <MarketingHeader config={tppConfig} />
       <main className="flex-1">
