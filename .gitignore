@@ -19,6 +19,14 @@ dist/
 .env
 .env.local
 .env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# credentials — never commit
+**/client_secret*.json
+**/credentials.json
+tools/**/secrets.*
 
 # os
 .DS_Store
