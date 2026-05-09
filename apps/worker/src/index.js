@@ -124,6 +124,7 @@ const ALLOWED_ORIGINS = [
   'https://taxclaim.virtuallaunch.pro',
   'https://websitelotto.virtuallaunch.pro',
   'https://taxavatar.virtuallaunch.pro',
+  'https://taxprep.virtuallaunch.pro',
 ];
 
 function getCorsHeaders(request) {
