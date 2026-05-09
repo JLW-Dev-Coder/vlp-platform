@@ -1,4 +1,4 @@
-import type { PlatformConfig } from '@vlp/member-ui'
+import type { PlatformConfig, ReviewConfig } from '@vlp/member-ui'
 
 // Tax Prep Pro — TPP / app #10
 // SD-led marketing app: members live in SuiteDash, not Next.js. Cal.com fields
@@ -98,4 +98,17 @@ export const tppConfig: PlatformConfig = {
       { label: 'Refund', href: '/legal/refund' },
     ],
   },
+}
+
+// Adapter for the shared ReviewDisplayPage / ReviewSubmitPage components.
+// ReviewConfig is a distinct shape from PlatformConfig: `apiBase` (not `apiBaseUrl`),
+// and `platform` is the lowercase Worker API key (not the brand abbrev). Derived
+// from tppConfig where fields overlap so apiBaseUrl/brand changes propagate.
+export const tppReviewConfig: ReviewConfig = {
+  platform: 'taxprep',
+  platformName: tppConfig.brandName,
+  themeColor: tppConfig.brandColor,
+  apiBase: tppConfig.apiBaseUrl,
+  formTypes: ['review', 'case_study', 'testimonial'],
+  themeMode: tppConfig.themeMode,
 }
