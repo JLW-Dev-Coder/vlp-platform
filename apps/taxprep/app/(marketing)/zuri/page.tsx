@@ -89,8 +89,7 @@ const sections: Section[] = [
   },
 ]
 
-// TODO(RC): confirm Zuri/VLP YouTube channel URL with Owner. Default per prompt.
-const youtubeChannelUrl = 'https://www.youtube.com/@virtuallaunchpro'
+const youtubeChannelUrl = 'https://www.youtube.com/@taxpreppro'
 
 export default function ZuriPage() {
   return (
