@@ -48,6 +48,11 @@
  * Apps that don't set data-theme="light" inherit the dark defaults above.
  */
 [data-theme="light"] {
+  /* --theme-color is set inline by the wrapper element from PlatformConfig.brandColor.
+   * Fallback to TPP rose so anything that mounts under [data-theme="light"] without
+   * the inline style still renders sensibly. */
+  --theme-color: #E91E63;
+
   --member-bg: #F5E6D3;
   --member-card: #FFFAF4;
   --member-card-hover: #FFFFFF;
@@ -67,6 +72,20 @@
   --text-primary: #1A0B14;
   --text-muted: #6B5260;
   --text-disabled: rgba(26, 11, 20, 0.40);
+
+  /* Brand-accent tokens — derived from --theme-color via color-mix.
+   * Shared light-mode components reference these instead of hardcoding hex,
+   * so light-mode-aware UI tracks whatever brandColor the consuming app sets. */
+  --accent-primary: var(--theme-color);
+  --accent-hover: color-mix(in oklab, var(--theme-color) 80%, black);
+  --accent-soft: color-mix(in oklab, var(--theme-color) 8%, transparent);
+  --accent-border: color-mix(in oklab, var(--theme-color) 20%, transparent);
+  --accent-focus-ring: color-mix(in oklab, var(--theme-color) 30%, transparent);
+  --accent-gradient-end: color-mix(in oklab, var(--theme-color) 70%, black);
+
+  --text-accent: var(--theme-color);
+  --text-link: var(--theme-color);
+  --text-link-hover: color-mix(in oklab, var(--theme-color) 80%, black);
 }
 
 /* Scrollbar utilities */
