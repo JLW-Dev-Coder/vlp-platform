@@ -29,3 +29,9 @@ Thumbs.db
 *.swp
 *.swo
 wip-50-placeholders.zip
+
+# Credentials — never commit
+tools/youtube-upload/client_secret.json
+tools/youtube-upload/token.json
+**/client_secret*.json
+**/credentials*.json
