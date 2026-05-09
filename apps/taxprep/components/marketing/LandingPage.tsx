@@ -20,7 +20,6 @@ export default function LandingPage() {
   // Behavior 1: stagger reveal on load (.tpp-loaded toggle on root).
   // Behavior 2: scroll reveal for .tpp-reveal via IntersectionObserver.
   // Behavior 3: phase rail draw-on (.is-drawn) via IntersectionObserver.
-  // Behavior 4: header scroll state (.is-scrolled past ~12px scrollY).
   // Behavior 5: count-up stats (1400ms ease-out from 0 → data-count, append data-suffix).
   // Behavior 6: QR card flip on click (.is-flipped toggle).
   //
@@ -82,22 +81,6 @@ export default function LandingPage() {
     return () => io.disconnect()
   }, [])
 
-  // 4. Header scroll state (.is-scrolled past 12px scrollY).
-  useEffect(() => {
-    const header = rootRef.current?.querySelector<HTMLElement>('.tpp-header')
-    if (!header) return
-    const onScroll = () => {
-      if (window.scrollY > 12) {
-        header.classList.add('is-scrolled')
-      } else {
-        header.classList.remove('is-scrolled')
-      }
-    }
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   // 5. Count-up stats. Animates each .tpp-stat-num from 0 → data-count over
   // ~1400ms with ease-out, appending data-suffix. Triggered when the parent
   // .tpp-stat reveals.
@@ -148,26 +131,7 @@ export default function LandingPage() {
     <div className="tpp-lp" ref={rootRef}>
       <style>{TPP_LANDING_CSS}</style>
 
-      {/* Header */}
-      <div className="tpp-header">
-        <div className="tpp-wrap">
-          <a href="#tpp-top" className="tpp-brand-mark">
-            <span className="tpp-brand-name">Tax Prep Pro</span>
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-            <span className="tpp-brand-tag">For Service Bureaus &amp; Tax Pros</span>
-          </a>
-          <div className="tpp-nav" role="navigation" aria-label="Page sections">
-            <a href="#tpp-services">Services</a>
-            <a href="#tpp-how">Process</a>
-            <a href="#tpp-locations">How We Work</a>
-            <a href="/reviews">Reviews</a>
-          </div>
-          <a href="#tpp-book" className="tpp-header-cta">
-            Book Discovery Call
-            <span className="tpp-arrow">→</span>
-          </a>
-        </div>
-      </div>
+      {/* Header lives in app/page.tsx as the canonical MarketingHeader. */}
 
       {/* Hero */}
       <section className="tpp-hero" id="tpp-top">
@@ -657,23 +621,6 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-narrow { max-width: 760px; }
 .tpp-lp .tpp-medium { max-width: 960px; }
 
-.tpp-lp .tpp-header { position: sticky; top: 0; z-index: 100; background: rgba(245, 230, 211, 0.85); backdrop-filter: saturate(140%) blur(12px); -webkit-backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--tpp-border); transition: background var(--tpp-dur-base) ease, box-shadow var(--tpp-dur-base) ease; }
-.tpp-lp .tpp-header.is-scrolled { background: rgba(245, 230, 211, 0.95); box-shadow: var(--tpp-shadow-sm); }
-.tpp-lp .tpp-header .tpp-wrap { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; gap: 32px; }
-.tpp-lp .tpp-nav { display: flex; align-items: center; gap: 28px; flex: 1; justify-content: center; }
-.tpp-lp .tpp-nav a { font-family: var(--tpp-font-body); font-size: 13px; font-weight: 600; letter-spacing: 0.4px; color: var(--tpp-noir) !important; position: relative; padding: 6px 0; transition: color var(--tpp-dur-base) ease; }
-.tpp-lp .tpp-nav a::after { content: ""; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: linear-gradient(90deg, var(--tpp-rose), var(--tpp-crimson)); transition: width var(--tpp-dur-base) var(--tpp-ease-out), left var(--tpp-dur-base) var(--tpp-ease-out); border-radius: 2px; }
-.tpp-lp .tpp-nav a:hover { color: var(--tpp-rose) !important; }
-.tpp-lp .tpp-nav a:hover::after { width: 100%; left: 0; }
-.tpp-lp .tpp-brand-mark { display: inline-flex; flex-direction: column; gap: 2px; }
-.tpp-lp .tpp-brand-name { font-family: var(--tpp-font-display); font-size: 26px; font-weight: 600; color: var(--tpp-crimson); letter-spacing: 0.3px; line-height: 1; }
-.tpp-lp .tpp-brand-tag { font-family: var(--tpp-font-body); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.8px; color: var(--tpp-rose); }
-.tpp-lp .tpp-header-cta { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--tpp-rose), var(--tpp-crimson)); color: var(--tpp-text-on-rose); padding: 12px 22px; border-radius: 999px; font-weight: 600; font-size: 13px; letter-spacing: 0.4px; position: relative; overflow: hidden; transition: transform var(--tpp-dur-base) var(--tpp-ease-out), box-shadow var(--tpp-dur-base) var(--tpp-ease-out); box-shadow: var(--tpp-shadow-sm); animation: tpp-wiggle 5s var(--tpp-ease-in-out) infinite; animation-delay: -2.5s; transform-origin: center center; }
-.tpp-lp .tpp-header-cta::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, var(--tpp-rose-deep), var(--tpp-crimson-deep)); opacity: 0; transition: opacity var(--tpp-dur-base) ease; z-index: 0; }
-.tpp-lp .tpp-header-cta > * { position: relative; z-index: 1; }
-.tpp-lp .tpp-header-cta:hover { transform: translateY(-2px); box-shadow: var(--tpp-shadow-rose); animation-play-state: paused; }
-.tpp-lp .tpp-header-cta:hover::before { opacity: 1; }
-
 .tpp-lp .tpp-hero { position: relative; overflow: hidden; padding: 96px 0 96px; background: linear-gradient(135deg, var(--tpp-champagne) 0%, var(--tpp-blush) 60%, var(--tpp-champagne-deep) 100%); }
 .tpp-lp .tpp-hero::before { content: ""; position: absolute; inset: 24px; border: 2px solid rgba(139, 21, 56, 0.25); border-radius: 20px; pointer-events: none; z-index: 1; }
 .tpp-lp .tpp-hero::after { content: ""; position: absolute; inset: 40px; border: 1px solid rgba(212, 165, 116, 0.35); border-radius: 14px; pointer-events: none; z-index: 1; }
@@ -700,7 +647,7 @@ const TPP_LANDING_CSS = `
 
 .tpp-lp .tpp-hero-ctas { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 32px; }
 
-.tpp-lp .tpp-btn-primary, .tpp-lp .tpp-btn-primary:link, .tpp-lp .tpp-btn-primary:visited, .tpp-lp .tpp-btn-primary:hover, .tpp-lp .tpp-btn-primary:focus, .tpp-lp .tpp-btn-primary:active, .tpp-lp .tpp-btn-primary span, .tpp-lp .tpp-btn-primary > *, .tpp-lp .tpp-header-cta, .tpp-lp .tpp-header-cta:link, .tpp-lp .tpp-header-cta:visited, .tpp-lp .tpp-header-cta:hover, .tpp-lp .tpp-header-cta:focus, .tpp-lp .tpp-header-cta:active, .tpp-lp .tpp-header-cta span, .tpp-lp .tpp-header-cta > * { color: #FFFFFF !important; }
+.tpp-lp .tpp-btn-primary, .tpp-lp .tpp-btn-primary:link, .tpp-lp .tpp-btn-primary:visited, .tpp-lp .tpp-btn-primary:hover, .tpp-lp .tpp-btn-primary:focus, .tpp-lp .tpp-btn-primary:active, .tpp-lp .tpp-btn-primary span, .tpp-lp .tpp-btn-primary > * { color: #FFFFFF !important; }
 
 .tpp-lp .tpp-btn-primary { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--tpp-rose), var(--tpp-crimson)); color: var(--tpp-text-on-rose); padding: 18px 32px; border-radius: 999px; font-weight: 600; font-size: 15px; letter-spacing: 0.4px; position: relative; overflow: hidden; transition: transform var(--tpp-dur-base) var(--tpp-ease-out), box-shadow var(--tpp-dur-base) var(--tpp-ease-out); box-shadow: var(--tpp-shadow-sm); animation: tpp-wiggle 5s var(--tpp-ease-in-out) infinite; transform-origin: center center; }
 @keyframes tpp-wiggle { 0%, 100% { transform: translateY(0) rotate(0deg); } 15% { transform: translateY(-10px) rotate(-6deg); } 35% { transform: translateY(8px) rotate(5deg); } 55% { transform: translateY(-6px) rotate(-4deg); } 75% { transform: translateY(5px) rotate(3deg); } 90% { transform: translateY(-2px) rotate(-1deg); } }
@@ -713,7 +660,7 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-btn-secondary:hover { background: var(--tpp-crimson); color: var(--tpp-text-on-rose); }
 
 .tpp-lp .tpp-arrow { transition: transform var(--tpp-dur-base) var(--tpp-ease-out); display: inline-block; }
-.tpp-lp .tpp-btn-primary:hover .tpp-arrow, .tpp-lp .tpp-btn-secondary:hover .tpp-arrow, .tpp-lp .tpp-header-cta:hover .tpp-arrow, .tpp-lp .tpp-arrow-link:hover .tpp-arrow, .tpp-lp .tpp-book-here:hover .tpp-arrow { transform: translateX(5px); }
+.tpp-lp .tpp-btn-primary:hover .tpp-arrow, .tpp-lp .tpp-btn-secondary:hover .tpp-arrow, .tpp-lp .tpp-arrow-link:hover .tpp-arrow, .tpp-lp .tpp-book-here:hover .tpp-arrow { transform: translateX(5px); }
 
 .tpp-lp .tpp-hero-trust { display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; color: var(--tpp-text-muted); }
 .tpp-lp .tpp-check { color: var(--tpp-rose); font-weight: 700; margin-right: 6px; font-size: 14px; }
@@ -911,7 +858,6 @@ const TPP_LANDING_CSS = `
 .tpp-lp.tpp-js.tpp-loaded .tpp-hero-trust { transition-delay: 800ms; }
 
 @media (max-width: 960px) {
-  .tpp-lp .tpp-nav { display: none; }
   .tpp-lp .tpp-hero { padding: 72px 0 80px; }
   .tpp-lp .tpp-hero .tpp-wrap { grid-template-columns: 1fr; gap: 48px; }
   .tpp-lp .tpp-hero-photo { order: -1; max-width: 380px; margin: 0 auto; }
@@ -929,7 +875,6 @@ const TPP_LANDING_CSS = `
   .tpp-lp .tpp-footer .tpp-wrap { grid-template-columns: 1fr 1fr; gap: 36px; }
 }
 @media (max-width: 560px) {
-  .tpp-lp .tpp-header-cta { padding: 10px 16px; font-size: 12px; }
   .tpp-lp .tpp-h1 { font-size: 40px; }
   .tpp-lp .tpp-h2 { font-size: 32px; }
   .tpp-lp .tpp-hero-ctas { flex-direction: column; align-items: stretch; }
@@ -949,6 +894,6 @@ const TPP_LANDING_CSS = `
   .tpp-lp.tpp-js .tpp-stagger { opacity: 1 !important; transform: none !important; transition: none !important; }
   .tpp-lp .tpp-phase-line line { stroke-dashoffset: 0 !important; transition: none !important; }
   .tpp-lp .tpp-btn-primary::before, .tpp-lp .tpp-card-shimmer { display: none; }
-  .tpp-lp .tpp-btn-primary, .tpp-lp .tpp-header-cta, .tpp-lp .tpp-form-badge { animation: none !important; }
+  .tpp-lp .tpp-btn-primary, .tpp-lp .tpp-form-badge { animation: none !important; }
 }
 `
