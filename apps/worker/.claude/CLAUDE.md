@@ -47,6 +47,8 @@ Last updated: 2026-04-13
 - `https://games.virtuallaunch.pro`
 - `https://taxclaim.virtuallaunch.pro`
 - `https://websitelotto.virtuallaunch.pro`
+- `https://taxavatar.virtuallaunch.pro`
+- `https://taxprep.virtuallaunch.pro`
 
 ---
 
@@ -92,7 +94,7 @@ Last updated: 2026-04-13
 2. **Write pipeline:** Request → Contract validation → R2 receipt → Canonical upsert → D1 index → Response.
 3. **Contracts live in `contracts/`.** All versioned JSON schemas under `apps/worker/contracts/`.
 4. **One Worker for all platforms.** No platform frontend creates its own Worker.
-5. **CORS is explicit.** Only the 9 allowed origins above are permitted.
+5. **CORS is explicit.** Only the 11 allowed origins above are permitted.
 
 ---
 
