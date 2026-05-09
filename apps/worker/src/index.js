@@ -5219,11 +5219,29 @@ const ROUTES = [
             // Handle TCVLP subscriptions
             if (platform === 'tcvlp' && account_id) {
               try {
-                const tcvlpPlan = plan_key || 'tcvlp_starter';
-                await d1Run(env.DB,
+                // Don't coerce missing plan_key to 'tcvlp_starter' — let it pass as null
+                // so the subscription handler renders honest unknown-state rather than lying.
+                const tcvlpPlan = plan_key ?? null;
+                const result = await d1Run(env.DB,
                   'UPDATE tcvlp_pros SET stripe_customer_id = ?, stripe_subscription_id = ?, plan = ?, status = ?, updated_at = ? WHERE account_id = ?',
                   [obj.customer, obj.subscription, tcvlpPlan, 'active', now, account_id]
                 );
+
+                // Race guard: if the webhook arrived before the onboarding form INSERT,
+                // the UPDATE matches zero rows. Log a structured warning so Owner can
+                // backfill manually with one D1 UPDATE. The schema default was removed
+                // in the prior migration so the post-onboarding row will have plan=NULL
+                // (honest) rather than silently coerced to 'tcvlp_starter'.
+                // Audit reference: apps/worker/audits/2026-05-07-tcvlp-data-creation-flow.md
+                if (result?.meta?.changes === 0) {
+                  console.warn(
+                    `[checkout-orphan] tcvlp_pros UPDATE matched zero rows. ` +
+                    `account_id=${account_id} stripe_customer=${obj.customer} ` +
+                    `stripe_subscription=${obj.subscription} plan=${tcvlpPlan} ` +
+                    `session_id=${obj.id}. Onboarding form likely not yet submitted; ` +
+                    `manual backfill required when row appears.`
+                  );
+                }
               } catch (e) {
                 console.error('TCVLP Stripe webhook error:', e);
               }
@@ -5247,6 +5265,17 @@ const ROUTES = [
                   if (existing?.account_id) {
                     tmpAccountId = existing.account_id;
                   } else {
+                    // Bug 2 guard: require explicit opt-in to create an anonymous account.
+                    // Without this, replayed/manual webhook events created phantom accounts
+                    // (no sessions, no entitlements). See audit c14a887.
+                    if (obj.metadata?.allow_anonymous_account_creation !== 'true') {
+                      console.warn(
+                        `[webhook-guard] Skipping anonymous account creation for ${emailLower} ` +
+                        `(stripe customer ${obj.customer}, platform tmp, session ${obj.id}). ` +
+                        `Add metadata.allow_anonymous_account_creation='true' to opt in.`
+                      );
+                      break;
+                    }
                     tmpAccountId = `ACCT_${crypto.randomUUID()}`;
                     await d1Run(env.DB,
                       `INSERT INTO accounts (account_id, email, first_name, last_name, platform, role, status, created_at)
@@ -5532,6 +5561,17 @@ https://taxmonitor.pro/legal/refund
                   if (existing?.account_id) {
                     wlvlpAccountId = existing.account_id;
                   } else {
+                    // Bug 2 guard: require explicit opt-in to create an anonymous account.
+                    // Without this, replayed/manual webhook events created phantom accounts
+                    // (no sessions, no entitlements). See audit c14a887.
+                    if (obj.metadata?.allow_anonymous_account_creation !== 'true') {
+                      console.warn(
+                        `[webhook-guard] Skipping anonymous account creation for ${emailLower} ` +
+                        `(stripe customer ${obj.customer}, platform wlvlp, session ${obj.id}). ` +
+                        `Add metadata.allow_anonymous_account_creation='true' to opt in.`
+                      );
+                      break;
+                    }
                     wlvlpAccountId = `ACCT_${crypto.randomUUID()}`;
                     await d1Run(env.DB,
                       `INSERT INTO accounts (account_id, email, first_name, last_name, platform, role, status, created_at)
@@ -9842,6 +9882,7 @@ https://taxmonitor.pro/legal/refund
       url.searchParams.set('scope', [
         'https://www.googleapis.com/auth/yt-analytics.readonly',
         'https://www.googleapis.com/auth/youtube.readonly',
+        'https://www.googleapis.com/auth/youtube.upload',
       ].join(' '))
       url.searchParams.set('access_type', 'offline')
       url.searchParams.set('prompt', 'consent')
@@ -9952,9 +9993,18 @@ https://taxmonitor.pro/legal/refund
       if (!isAdminEmail(session.email)) {
         return json({ ok: false, error: 'forbidden' }, 403, request)
       }
+      // Delete the OAuth token AND the cached analytics payload. The analytics
+      // cache (15 min TTL) holds connected:true and would otherwise mask the
+      // disconnect in the UI until expiry.
       try {
         await env.ENRICHMENT_KV.delete('youtube:oauth:tokens')
       } catch { /* best effort */ }
+      const channelId = env.YOUTUBE_CHANNEL_ID
+      if (channelId) {
+        try {
+          await env.ENRICHMENT_KV.delete(`youtube:oauth:analytics:v1:${channelId}`)
+        } catch { /* best effort */ }
+      }
       return json({ ok: true }, 200, request)
     },
   },
@@ -19177,7 +19227,7 @@ https://virtuallaunch.pro/payouts
           return json({
             ok: true,
             active: pro.status === 'active',
-            plan: pro.plan || 'tcvlp_starter',
+            plan: pro.plan ?? null,
           }, 200, request);
         } catch (e) {
           console.error('TCVLP subscription status (slug) error:', e);
@@ -19205,8 +19255,8 @@ https://virtuallaunch.pro/payouts
           return json({
             ok: true,
             active: pro.status === 'active',
-            plan: pro.plan || 'tcvlp_starter',
-            product_id: planProductMap[pro.plan] || planProductMap.tcvlp_starter,
+            plan: pro.plan ?? null,
+            product_id: pro.plan ? (planProductMap[pro.plan] ?? null) : null,
             pro_id: pro.pro_id,
             stripe_customer_id: pro.stripe_customer_id ?? null,
           }, 200, request);
@@ -23531,6 +23581,71 @@ ${postSections}`;
             variables: ['First'],
           },
         ],
+      }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // YouTube OAuth token broker
+  // -------------------------------------------------------------------------
+  // POST /v1/youtube/access-token
+  // Returns a short-lived access token for the local YouTube upload tooling
+  // at tools/youtube-upload/. Reuses the SCALE YouTube OAuth integration:
+  // tokens are stored in ENRICHMENT_KV under key "youtube:oauth:tokens",
+  // seeded by GET /v1/scale/youtube-oauth/callback. getFreshYouTubeOAuthToken()
+  // refreshes the access token internally if it's near expiry and writes the
+  // updated record back to KV.
+  // Required for refresh: YOUTUBE_OAUTH_CLIENT_ID, YOUTUBE_OAUTH_CLIENT_SECRET
+  // Required KV record: ENRICHMENT_KV["youtube:oauth:tokens"]
+  // Auth: requires an admin session (mirrors other admin endpoints).
+  {
+    method: 'POST', pattern: '/v1/youtube/access-token',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const tokenResult = await getFreshYouTubeOAuthToken(env);
+
+      if (!tokenResult.connected) {
+        return json({
+          ok: false,
+          error: 'youtube_oauth_not_connected',
+          detail: 'The SCALE YouTube OAuth flow has not been completed. Visit the SCALE admin UI to authorize the YouTube account, then retry.',
+        }, 503, request);
+      }
+
+      if (tokenResult.error) {
+        return json({
+          ok: false,
+          error: 'youtube_oauth_token_error',
+          detail: tokenResult.error,
+        }, 502, request);
+      }
+
+      const accessToken = tokenResult.record?.access_token;
+      if (!accessToken) {
+        return json({
+          ok: false,
+          error: 'youtube_oauth_no_access_token',
+          detail: 'Token record exists but contains no access_token. Re-run the SCALE YouTube OAuth flow.',
+        }, 500, request);
+      }
+
+      let expiresIn = 3600;
+      if (tokenResult.record?.expires_at) {
+        const expMs = Date.parse(tokenResult.record.expires_at);
+        if (!Number.isNaN(expMs)) {
+          expiresIn = Math.max(0, Math.floor((expMs - Date.now()) / 1000));
+        }
+      }
+
+      return json({
+        access_token: accessToken,
+        expires_in: expiresIn,
+        token_type: 'Bearer',
       }, 200, request);
     },
   },

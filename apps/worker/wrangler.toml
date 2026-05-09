@@ -24,6 +24,16 @@ enabled = true
 invocation_logs = true
 
 # ---------------------------------------
+# Secrets (set via `wrangler secret put`, never committed)
+# ---------------------------------------
+# YouTube uploads use the existing SCALE YouTube OAuth integration.
+# Required secrets (already configured for SCALE features):
+# - YOUTUBE_OAUTH_CLIENT_ID
+# - YOUTUBE_OAUTH_CLIENT_SECRET
+# Required KV record (seeded by /v1/scale/youtube-oauth/callback):
+# - ENRICHMENT_KV key: youtube:oauth:tokens
+
+# ---------------------------------------
 # Bindings
 # ---------------------------------------
 

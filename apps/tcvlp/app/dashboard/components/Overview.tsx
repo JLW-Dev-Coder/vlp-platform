@@ -20,7 +20,7 @@ export default function Overview() {
     });
   };
 
-  const currentTier = sub?.plan || 'tcvlp_starter';
+  const currentTier = sub?.plan ?? null;
 
   return (
     <div>
@@ -38,7 +38,13 @@ export default function Overview() {
         <div className={styles.statCard}>
           <div className={styles.statLabel}>Plan</div>
           <div className={styles.statValue} style={{ color: sub?.active ? '#fbbf24' : '#f87171' }}>
-            {sub?.active ? `${tierLabel(currentTier)} ($${tierPrice(currentTier)}/mo)` : 'Inactive'}
+            {(() => {
+              if (!sub?.active) return 'Inactive';
+              const label = tierLabel(currentTier);
+              const price = tierPrice(currentTier);
+              if (label && price !== null) return `${label} ($${price}/mo)`;
+              return 'Active (plan unknown)';
+            })()}
           </div>
         </div>
         <div className={styles.statCard}>

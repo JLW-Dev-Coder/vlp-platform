@@ -72,6 +72,13 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
 - **JLW** — sole owner and operator
 - Both Claude roles report to James
 - All pricing, tier, and business decisions require owner sign-off
+- **Shell environment**: Owner runs commands exclusively in PowerShell inside VS Code's integrated terminal on Windows. Do NOT default to bash syntax. Use PowerShell-native commands and quoting. Examples:
+  - File search: `Select-String -Path <file> -Pattern <regex>`, not `grep`
+  - Env vars: `$env:NAME = "value"`, not `export NAME=value`
+  - Tee output: `Tee-Object -FilePath <path>`, not `tee`
+  - Line continuation: backtick `` ` `` or end-of-line, not `\`
+  - Path separators: forward slashes work in most tools, but native PowerShell uses backslashes
+  - When unsure, write the command in PowerShell-native form first
 
 ---
 
@@ -81,4 +88,5 @@ Keep responses brief and concise. No preamble, no recap of what the user said, n
 |------|--------|-----------|
 | 2026-04-13 | Initial version | Establish role boundaries between Chat Claude (Principal) and Claude Code (Execution) |
 | 2026-05-06 | Added "Prompt delivery format" subsection to Principal Engineer | During the billing-refund-notification sweep, RC prompts and Owner-facing content were getting mixed in chat. Owner asked for a hard rule: RC prompts always go in canvas/code artifacts, conversational text stays in chat. Visual separation prevents miscommunication about what is meant for whom. |
+| 2026-05-07 | Owner shell environment note added | RC and Principal had been issuing bash-style commands (grep, tee, export) during the Donovan billing-refund sweep. Added explicit PowerShell-native examples (Select-String, Tee-Object, $env:NAME) to the Owner section to remove ambiguity. Owner runs PowerShell exclusively in VS Code on Windows. |
 | 2026-05-08 | Added autonomy rule to Execution Engineer responsibilities | Owner direction: RC ships work end-to-end (commit, push, deploy) without per-task approval. Speeds delivery; exceptions list captures the safety cases (placeholders, TODOs, customer-facing copy, broken builds, canonical changes). |

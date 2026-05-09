@@ -121,6 +121,7 @@ All canonical documents live in `.claude/canonicals/` at the monorepo root.
 | `canonical-style.md` | Design tokens, typography, layout patterns | Styling components, pages, or creating new UI |
 | `canonical-workflow.md` | Operational playbook template | Writing human-executed workflow documents |
 | `canonical-wrangler.toml` | Worker config template + rules | Modifying `apps/worker/wrangler.toml` |
+| `canonical-youtube.md` | YouTube channel template (17-page CU tree, settings, Launch Kit, upload workflow) | Setting up or operating any VLP YouTube channel |
 
 ---
 
