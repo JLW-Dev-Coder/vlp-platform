@@ -11,6 +11,11 @@ export interface NavSection {
   items: NavItem[];
 }
 
+export interface PrimaryNavItem {
+  label: string;
+  href: string;
+}
+
 export interface MegaMenuItem {
   label: string;
   href: string;
@@ -28,6 +33,11 @@ export interface MarketingConfig {
   summary: string;                    // one-line platform description for footer brand column
   ctaLabel: string;                   // e.g., "Start Here" — no trailing arrow; MarketingHeader renders the ArrowRight icon
   ctaPath: string;                    // e.g., "/contact"
+  // Optional override for the desktop/mobile primary nav. When omitted, the
+  // header renders the default 6-item nav (About, Features, Pricing, How It
+  // Works, Contact, Reviews). Used by SD-led apps (e.g., TPP) that surface
+  // Contact via the Resources mega-menu instead of the top-level nav.
+  primaryNav?: PrimaryNavItem[];
   megaMenu: {
     discover: MegaMenuItem[];         // 2-4 items, descriptions required
     explore: MegaMenuItem[];          // 2-5 items, descriptions optional

@@ -29,18 +29,13 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ArrowRight, ChevronDown, Menu, X } from 'lucide-react'
-import type { MegaMenuItem, PlatformConfig } from '../../types/config'
+import type { MegaMenuItem, PlatformConfig, PrimaryNavItem } from '../../types/config'
 
 export interface MarketingHeaderProps {
   config: PlatformConfig
 }
 
-interface PrimaryNavItem {
-  label: string
-  href: string
-}
-
-const PRIMARY_NAV: PrimaryNavItem[] = [
+const DEFAULT_PRIMARY_NAV: PrimaryNavItem[] = [
   { label: 'About', href: '/about' },
   { label: 'Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
@@ -57,6 +52,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
   }
 
   const marketing = config.marketing
+  const navItems = marketing.primaryNav ?? DEFAULT_PRIMARY_NAV
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [resourcesOpen, setResourcesOpen] = useState(false)
@@ -233,7 +229,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
           className="hidden md:flex items-center gap-6"
           aria-label="Primary"
         >
-          {PRIMARY_NAV.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -402,7 +398,7 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
               className="flex flex-col p-6 gap-1"
               aria-label="Mobile primary"
             >
-              {PRIMARY_NAV.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

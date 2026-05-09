@@ -119,6 +119,8 @@ TPP (`apps/taxprep`) uses an editorial 9-color palette that exceeds the six requ
 
 **Authoritative source remains** `apps/taxprep/tailwind.config.ts`. If it diverges from this table, the Tailwind config wins and this table is updated.
 
+**Primary nav override (Phase 6 round 8, 2026-05-08):** `MarketingConfig.primaryNav?: PrimaryNavItem[]` is an optional override for the desktop/mobile primary nav rendered by `MarketingHeader`. When omitted, the header renders the default 6-item nav (About, Features, Pricing, How It Works, Contact, Reviews) — verified backward-compatible across the other 9 apps. TPP is the first app to set it, omitting Contact at the top level since Contact is surfaced via the Resources mega-menu instead. Pattern mirrors §4.5.1's `themeMode: 'light'` registration: optional field, default unchanged, opt-in per app.
+
 **Theme mode (Phase 6 round 3, 2026-05-08):** TPP is the first app to opt into `themeMode: 'light'` via `PlatformConfig`. Light mode remaps the shared `@vlp/member-ui` semantic tokens (`--surface-bg`, `--surface-card`, `--text-primary`, `--border-subtle`, etc.) to a champagne / ivory / ink palette via a `[data-theme="light"]` override block in `packages/member-ui/src/styles/tokens.css`, and the `(marketing)` layout sets `data-theme="light"` on its outer wrapper so all shared components (header, footer, legal, reviews) inherit the light surfaces. The homepage's `.tpp-lp` scoped CSS is unaffected — it remains its own world. All other 9 apps leave `themeMode` undefined and continue rendering on the existing dark palette. Future SD-led / editorial apps may opt in identically.
 
 ### 4.6 Per-platform colors
