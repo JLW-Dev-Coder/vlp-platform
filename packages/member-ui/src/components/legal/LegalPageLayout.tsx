@@ -39,6 +39,7 @@ export function LegalPageLayout({
 
   const { businessInfo, brandName, logoText } = config
   const { legalEntity, address } = businessInfo
+  const isLight = config.themeMode === 'light'
 
   const formattedAddress = [
     address.line1,
@@ -46,10 +47,14 @@ export function LegalPageLayout({
     `${address.city}, ${address.state} ${address.zip}`,
   ].filter(Boolean).join(' · ')
 
+  const pillClass = isLight
+    ? 'mb-4 inline-flex items-center rounded-full border border-[var(--accent-border)] bg-[var(--accent-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[var(--accent-primary)]'
+    : 'mb-4 inline-flex items-center rounded-full border border-subtle bg-surface-card px-3 py-1 text-xs text-text-muted'
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
       <div className="mb-10">
-        <p className="mb-4 inline-flex items-center rounded-full border border-subtle bg-surface-card px-3 py-1 text-xs text-text-muted">
+        <p className={pillClass}>
           Legal
         </p>
         <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl text-text-primary">
