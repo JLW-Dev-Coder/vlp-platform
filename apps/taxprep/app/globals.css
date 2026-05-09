@@ -45,6 +45,26 @@
     --max-width:         72rem;
     --transition:        0.15s ease;
   }
+
+  /*
+   * Light-mode overrides for TPP marketing tokens.
+   * The base :root values above ship the dark TCVLP-derived palette
+   * (champagne text on noir bg). The (marketing) layout wraps content
+   * in [data-theme="light"], which flips the page bg to champagne — but
+   * the marketing pages reference --color-text-* / --color-surface /
+   * --color-border directly, so those need explicit light-mode values
+   * here or text renders the same color as the background.
+   */
+  [data-theme="light"] {
+    --color-bg:          #F5E6D3;
+    --color-surface:     #FFFAF4;
+    --color-surface-2:   #FFFFFF;
+    --color-border:      rgba(139, 21, 56, 0.22);
+    --color-text-1:      #1A0B14;
+    --color-text-2:      #3D1F2E;
+    --color-text-3:      #5C0D24;
+    --color-text-4:      #6B4458;
+  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
