@@ -56,7 +56,14 @@ export const tppConfig: PlatformConfig = {
   },
 
   marketing: {
-    tagline: 'Productize your service bureau end-to-end',
+    tagline: 'For service bureaus & tax pros',
+    primaryNav: [
+      { label: 'About', href: '/about' },
+      { label: 'Features', href: '/features' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'How It Works', href: '/how-it-works' },
+      { label: 'Reviews', href: '/reviews' },
+    ],
     summary:
       'Tax Prep Pro is a SuiteDash-based productized buildout for service bureaus and credentialed tax practitioners — 8-phase client journey, branded portal, member training included.',
     ctaLabel: 'Book Discovery Call',
