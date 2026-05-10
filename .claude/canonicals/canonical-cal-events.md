@@ -14,9 +14,10 @@ configured through `PlatformConfig`. This canonical is the single
 source of truth — do not hardcode Cal slugs or namespaces in
 component code.
 
-**Exception:** Tax Prep Pro (TPP / `apps/taxprep`) is SD-led and does NOT
-use Cal.com. TPP bookings flow through SuiteDash form embeds — see §7
-(SuiteDash form bookings) below.
+**SD-led exception (historical):** Tax Prep Pro (TPP / `apps/taxprep`) is SD-led
+but DOES use Cal.com for bookings as of 2026-05-09 — see §7.4. The SD-form
+booking pipeline (§7.1–§7.3, §7.5) remains documented for future SD-led apps
+that may prefer it.
 
 ---
 
@@ -88,11 +89,14 @@ PlatformConfig fields.
 | WLVLP | intro | tax-monitor-pro/wlvlp-intro | wlvlp-intro | 15m | calIntroSlug / calIntroNamespace |
 | TAVLP | support | tax-monitor-pro/tavlp-support | tavlp-support | 15m | calBookingSlug / calBookingNamespace |
 | TAVLP | intro | tax-monitor-pro/tax-avatar-virtual-launch-pro | tax-avatar-virtual-launch-pro | 15m | calIntroSlug / calIntroNamespace |
+| TPP | support | tax-monitor-pro/tpvlp-support | tpvlp-support | 15m | calBookingSlug / calBookingNamespace |
+| TPP | intro | tax-monitor-pro/tpvlp-intro | tpvlp-intro | 15m | calIntroSlug / calIntroNamespace |
 
-20 total event types. Every app has support + intro. TTMP has discovery,
+22 total event types. Every app has support + intro. TTMP has discovery,
 DVLP has onboarding. TAVLP's intro slug is the legacy
 `tax-avatar-virtual-launch-pro` event predating the §1 naming convention
-and is intentionally retained.
+and is intentionally retained. TPP's slugs use the `tpvlp-` prefix
+(Owner-supplied; predates strict §1 abbrev alignment of `tpp-`).
 
 ---
 
@@ -244,15 +248,20 @@ form fails to render, fall back to a `useEffect` that does
 inside a ref'd div. Document the fallback in the consuming app's
 `.claude/CLAUDE.md` if used.
 
-### 7.4 SD-led apps don't use Cal
+### 7.4 SD-led apps and Cal coexistence
 
-SD-led apps must NOT:
-- Mount `HelpCenter` or `LeadChatbot` (both depend on Cal fields)
-- Render any Cal embed pattern from §4 above
-- Hardcode Cal slugs in their components
+SD-led apps MAY use Cal.com for booking flows where Cal's UX is preferable
+to a SuiteDash form embed. TPP adopted this hybrid pattern on 2026-05-09:
+Discovery Call and Support bookings happen via Cal.com (per §3 registry),
+while the SD workspace remains the post-conversion home for clients.
 
-If a future SD-led app needs a Help Center, fork the requirement to a new
-SD-form-backed support flow rather than wiring the Cal-based one.
+When an SD-led app uses Cal, it MUST populate the four required Cal fields
+on PlatformConfig (`calBookingNamespace`, `calBookingSlug`,
+`calIntroNamespace`, `calIntroSlug`) and SHOULD set
+`bookingProvider: 'cal'` (or omit the field — `cal` is the default per §7.1).
+
+Other SD-led app exceptions (no `/dashboard/*` member area, `/sign-in`
+outbound to SD, no Worker routes) remain unchanged.
 
 ### 7.5 Adding a new SD-led app
 
@@ -262,3 +271,11 @@ SD-form-backed support flow rather than wiring the Cal-based one.
 4. Pass empty strings for the four required Cal.* fields.
 5. Use the shared `SuiteDashFormEmbed` Pattern A in homepage and `/contact`.
 6. Add a row to §7.2 above for each form consumed.
+
+---
+
+## 8. Decision log
+
+| Date | Change | Rationale |
+|------|--------|-----------|
+| 2026-05-09 | TPP adopts Cal.com for /contact bookings; §7.4 rewritten to allow Cal/SD coexistence for SD-led apps | Owner ruling: SD form embeds rendered poorly on TPP's component pages. Cal.com is the canonical pattern across 9 of 10 apps. TPP becomes the first SD-led app with Cal bookings; Owner created tpvlp-support + tpvlp-intro event types. |

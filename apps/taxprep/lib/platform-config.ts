@@ -1,9 +1,11 @@
 import type { PlatformConfig, ReviewConfig } from '@vlp/member-ui'
 
 // Tax Prep Pro — TPP / app #10
-// SD-led marketing app: members live in SuiteDash, not Next.js. Cal.com fields
-// are intentionally omitted; bookings flow through SuiteDash form embeds.
-// See RC prompt §3 Deviations 1, 3, 8, 9 and canonical-cal-events §SuiteDash form bookings.
+// SD-led marketing app: members live in SuiteDash, not Next.js. Bookings
+// (Discovery + Support) flow through Cal.com event types per
+// canonical-cal-events.md §3 — TPP adopted the hybrid Cal/SD pattern on
+// 2026-05-09 (see §7.4). The SuiteDash workspace remains the post-conversion
+// home for clients; only the booking surface is Cal.com.
 export const tppConfig: PlatformConfig = {
   brandName: 'Tax Prep Pro',
   brandAbbrev: 'TPP',
@@ -13,19 +15,11 @@ export const tppConfig: PlatformConfig = {
   logoText: 'TPP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
 
-  // Deviation 1: SuiteDash form embeds, not Cal.com.
-  bookingProvider: 'suitedash',
-  suitedashDiscoveryFormId: '21EGX5mk16QA6qVGj',
-  suitedashDemoFormId: '2rU9ohwhCx3rsijrC',
-  suitedashEmbedBaseUrl: 'https://secure.virtuallaunch.pro/frm',
-
-  // Cal.com fields are unused for TPP (bookingProvider === 'suitedash').
-  // Empty strings keep the shared PlatformConfig contract stable; LeadChatbot
-  // and HelpCenter (the only consumers that read these) are not rendered on TPP.
-  calBookingNamespace: '',
-  calBookingSlug: '',
-  calIntroNamespace: '',
-  calIntroSlug: '',
+  // Cal.com event types — see canonical-cal-events.md §3 for the full registry.
+  calBookingNamespace: 'tpvlp-support',
+  calBookingSlug: 'tax-monitor-pro/tpvlp-support',
+  calIntroNamespace: 'tpvlp-intro',
+  calIntroSlug: 'tax-monitor-pro/tpvlp-intro',
 
   navSections: [],
 
