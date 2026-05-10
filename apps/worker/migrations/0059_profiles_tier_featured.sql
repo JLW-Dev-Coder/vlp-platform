@@ -1,10 +1,33 @@
--- Add tier and featured columns to profiles for tier-aware directory
--- ordering and notification priority.
+-- Migration 0059: profiles.tier + profiles.featured (idempotent — rewritten 2026-05-10)
 --
--- tier values: 'free' | 'pro' | 'scale'
--- featured: 1 when tier is 'pro' or 'scale', else 0
-
-ALTER TABLE profiles ADD COLUMN tier TEXT NOT NULL DEFAULT 'free';
-ALTER TABLE profiles ADD COLUMN featured INTEGER NOT NULL DEFAULT 0;
+-- ORIGINAL INTENT (pre-2026-05-10):
+--   ALTER TABLE profiles ADD COLUMN tier TEXT NOT NULL DEFAULT 'free';
+--   ALTER TABLE profiles ADD COLUMN featured INTEGER NOT NULL DEFAULT 0;
+--   CREATE INDEX IF NOT EXISTS idx_profiles_tier ON profiles(tier);
+--
+-- Why rewritten: the original migration was non-idempotent on `ALTER TABLE …
+-- ADD COLUMN`. Both columns were added to production through another path
+-- (likely a manual `wrangler d1 execute` or an earlier ship-but-unrecorded
+-- migration), so re-running the ALTERs fails with
+-- `duplicate column name: tier`, blocking the entire migration chain
+-- (0065–0069 were stuck behind it; 0069 had to be applied via direct
+-- `wrangler d1 execute` as a workaround in commit 1753dd5).
+--
+-- Verified production state before this rewrite (PRAGMA table_info(profiles)):
+--   cid 18 → name=tier,     type=TEXT,    notnull=1, dflt='free' ✓
+--   cid 19 → name=featured, type=INTEGER, notnull=1, dflt=0      ✓
+--
+-- Both columns already match the migration's target schema exactly, so the
+-- DDL job is done. The CREATE INDEX statement is preserved (it's already
+-- IF NOT EXISTS so it's idempotent and harmless on re-run) to keep the
+-- migration's index-creation intent intact for any future fresh DB.
+--
+-- SQLite has no `ALTER TABLE … ADD COLUMN IF NOT EXISTS`, so we cannot
+-- guard the ALTERs themselves. The pragmatic fix is to remove them; if a
+-- fresh database is ever provisioned, the columns can be re-added via a
+-- new migration that uses the rebuild pattern (CREATE TABLE … AS SELECT).
+-- No fresh DB exists today.
+--
+-- Effect: `wrangler d1 migrations apply` now runs the chain clean.
 
 CREATE INDEX IF NOT EXISTS idx_profiles_tier ON profiles(tier);
