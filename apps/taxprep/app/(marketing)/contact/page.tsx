@@ -20,7 +20,6 @@ export default function ContactPage() {
           Book a <span className="italic text-[var(--tpp-rose)]">Discovery Call</span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[var(--color-text-2)]">
-          {/* TODO(copy): Awaiting final B2B copy from Jamie */}
           A 30-minute conversation about your bureau, your filing types, and how the TPP buildout would fit. No commitment.
         </p>
       </header>

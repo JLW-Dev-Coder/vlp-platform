@@ -7,8 +7,6 @@ export const metadata: Metadata = {
 }
 
 // Per Deviation 7: capabilities cards + 8-phase journey on /features.
-// TODO(copy): Awaiting final B2B copy from Jamie — placeholder text mirrored
-// from app-blueprint capabilities and the canonical 8-phase rail.
 
 const CAPABILITIES = [
   {

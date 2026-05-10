@@ -44,7 +44,6 @@ export const tppConfig: PlatformConfig = {
       state: 'CA',
       zip: '92020',
     },
-    // TODO(copy): Jamie to provide TPP-specific contact phone/email.
     phone: '619-800-5457',
     supportEmail: 'outreach@virtuallaunch.pro',
   },

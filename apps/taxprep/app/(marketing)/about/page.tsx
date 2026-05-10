@@ -14,7 +14,6 @@ export default function AboutPage() {
       </h1>
 
       <div className="mt-10 space-y-8 text-lg leading-relaxed text-[var(--color-text-2)]">
-        {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder narrative */}
         <p>
           Tax Prep Pro is the productized SuiteDash buildout for service bureaus and credentialed tax practitioners — EAs, CPAs, and attorneys who want a clear 8-phase client journey, a branded portal, and member training without spending six months wiring it themselves.
         </p>

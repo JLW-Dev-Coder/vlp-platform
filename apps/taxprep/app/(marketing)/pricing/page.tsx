@@ -8,7 +8,6 @@ export const metadata: Metadata = {
 }
 
 // Pricing tiers per Owner spec (2026-05-09).
-// TODO(copy): Awaiting final B2B copy from Jamie — placeholder benefit lines.
 
 const TIERS = [
   {
@@ -112,7 +111,6 @@ export default function PricingPage() {
       </div>
 
       <p className="mt-12 max-w-3xl text-sm leading-relaxed text-[var(--color-text-3)]">
-        {/* TODO(copy): Awaiting final pricing footnote / refund-window confirmation from Jamie. */}
         All engagements begin with a Discovery Call. Setup fees due at kickoff; subscription tiers billed monthly via Stripe. Refund terms in our{' '}
         <Link href="/legal/refund" className="underline underline-offset-2 hover:text-[var(--tpp-rose)]">
           Refund Policy

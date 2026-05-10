@@ -115,17 +115,14 @@ export default function LandingPage() {
         <div className="tpp-hero-orb tpp-three" data-parallax="0.24" />
         <div className="tpp-wrap">
           <div className="tpp-hero-copy">
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
             <span className="tpp-hero-kicker tpp-stagger">Now Onboarding Service Bureaus</span>
             <h1 className="tpp-h1">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-stagger">Your service bureau,</span>
               <span className="tpp-stagger">
                 productized <em className="tpp-accent">end-to-end.</em>
               </span>
             </h1>
             <p className="tpp-lede tpp-stagger">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               A clear, structured 8-phase client journey from intake to filing — handled inside a branded SuiteDash workspace your team and your clients actually want to use.
             </p>
             <div className="tpp-hero-ctas tpp-stagger">
@@ -138,7 +135,6 @@ export default function LandingPage() {
               </a>
             </div>
             <div className="tpp-hero-trust tpp-stagger">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span><span className="tpp-check">✶</span> EAs, CPAs &amp; attorneys</span>
               <span><span className="tpp-check">✶</span> Branded SD portal</span>
               <span><span className="tpp-check">✶</span> Member training included</span>
@@ -155,7 +151,6 @@ export default function LandingPage() {
             </div>
             <div className="tpp-photo-badge">
               <span className="tpp-stars">★★★★★</span>
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-label-text">Trusted by service bureaus &amp; tax pros</span>
             </div>
           </div>
@@ -172,17 +167,14 @@ export default function LandingPage() {
           <div className="tpp-section-head tpp-reveal">
             <span className="tpp-section-kicker">Why Tax Pros Pick TPP</span>
             <h2 className="tpp-h2">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               Built for your bureau —<br /><em>however you operate.</em>
             </h2>
             <p>
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               Whether you run a storefront practice or a fully remote firm, the TPP buildout adapts to your workflow without forcing your team into a new tool stack.
             </p>
           </div>
           <div className="tpp-loc-grid">
             <div className="tpp-loc-card tpp-reveal tpp-delay-1">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-pin"><span className="tpp-dot"></span> Storefront Bureaus</span>
               <h3 className="tpp-h3">
                 Streamline your<br />in-office intake.
@@ -196,7 +188,6 @@ export default function LandingPage() {
               </a>
             </div>
             <div className="tpp-loc-card tpp-reveal tpp-delay-2">
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-pin"><span className="tpp-dot"></span> Remote &amp; Hybrid Firms</span>
               <h3 className="tpp-h3">
                 Run a paperless<br />practice end-to-end.
@@ -225,7 +216,6 @@ export default function LandingPage() {
               From booking to delivery —<br />your clients always know <em>where things stand.</em>
             </h2>
             <p>
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               Every taxpayer follows the same clear path inside your branded SuiteDash workspace, with intake adjusted to filing type.
             </p>
           </div>
@@ -293,7 +283,6 @@ export default function LandingPage() {
           </div>
           <div className="tpp-stat tpp-reveal tpp-delay-3">
             <div className="tpp-stat-num" data-count="30" data-suffix="d">30d</div>
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
             <div className="tpp-stat-label">Avg. Bureau Setup</div>
           </div>
         </div>
@@ -303,20 +292,17 @@ export default function LandingPage() {
       <section className="tpp-section tpp-types" id="tpp-services">
         <div className="tpp-wrap">
           <div className="tpp-section-head tpp-reveal">
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
             <span className="tpp-section-kicker">Built For Your Bureau</span>
             <h2 className="tpp-h2">
               Find the engagement<br />that fits your <em>practice.</em>
             </h2>
             <p>
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               Pick the option that best describes your bureau. Each one ships a branded SuiteDash workspace, the 8-phase client journey, and member training.
             </p>
           </div>
           <div className="tpp-type-grid">
             <a href="/sign-in" className="tpp-type-card tpp-reveal tpp-delay-1">
               <div className="tpp-card-shimmer" aria-hidden="true" />
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-badge">Tax Prep Pro</span>
               <h3 className="tpp-h3">
                 Tax Prep<br />
@@ -336,7 +322,6 @@ export default function LandingPage() {
             </a>
             <a href="/sign-in" className="tpp-type-card tpp-reveal tpp-delay-2">
               <div className="tpp-card-shimmer" aria-hidden="true" />
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-badge">TPP + Members</span>
               <h3 className="tpp-h3">
                 TPP +<br />
@@ -356,7 +341,6 @@ export default function LandingPage() {
             </a>
             <a href="/sign-in" className="tpp-type-card tpp-reveal tpp-delay-3">
               <div className="tpp-card-shimmer" aria-hidden="true" />
-              {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-badge">Ongoing Support</span>
               <h3 className="tpp-h3">
                 Ongoing<br />
@@ -404,12 +388,10 @@ export default function LandingPage() {
         <div className="tpp-cta-glow" aria-hidden="true" />
         <div className="tpp-wrap">
           <h2 className="tpp-h2-on-dark tpp-reveal">
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
             Productize your bureau —<br />
             <em className="tpp-accent-rose">in 30 days, end-to-end.</em>
           </h2>
           <p className="tpp-reveal tpp-delay-1">
-            {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
             Book a Discovery Call and we&rsquo;ll walk through the 8-phase journey, the SD workspace, and what your team would actually run.
           </p>
           <a href="/contact" className="tpp-btn-primary tpp-cta-btn tpp-reveal tpp-delay-2">

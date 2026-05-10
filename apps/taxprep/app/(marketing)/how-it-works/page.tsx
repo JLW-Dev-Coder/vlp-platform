@@ -8,7 +8,6 @@ export const metadata: Metadata = {
 }
 
 // Per RC prompt §4.6: derived from homepage 8-phase section, expanded.
-// TODO(copy): Awaiting final B2B copy from Jamie — placeholder narrative.
 
 const ENGAGEMENT_STEPS = [
   {
