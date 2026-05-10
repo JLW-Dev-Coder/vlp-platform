@@ -19442,10 +19442,18 @@ https://virtuallaunch.pro/payouts
         console.error('[taxprep-onboarding] rate-limit KV failure:', e?.message || e);
       }
 
+      const submittedAtDate = new Date();
+      const dayAbbrev = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][submittedAtDate.getUTCDay()];
+      const yyyy = submittedAtDate.getUTCFullYear();
+      const mm = String(submittedAtDate.getUTCMonth() + 1).padStart(2, '0');
+      const dd = String(submittedAtDate.getUTCDate()).padStart(2, '0');
+      const backgroundInfo = `Record created via TPP /sign-in on ${yyyy}-${mm}-${dd}, ${dayAbbrev}.`;
+
       const sdBody = {
         name: firmName,
         role: 'Prospect',
         category: { name: category },
+        background_info: backgroundInfo,
         primaryContact: {
           first_name: firstName,
           last_name: lastName,
@@ -19500,7 +19508,7 @@ https://virtuallaunch.pro/payouts
       const companyUid = sdData?.uid || sdData?.id || sdData?.company?.uid || sdData?.company?.id || null;
       const contactUid = sdData?.primaryContact?.uid || sdData?.primary_contact?.uid || sdData?.primaryContact?.id || sdData?.primary_contact?.id || null;
 
-      const submittedAt = new Date().toISOString();
+      const submittedAt = submittedAtDate.toISOString();
 
       try {
         await r2Put(env.R2_VIRTUAL_LAUNCH, receiptKey, {
