@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 
+import FAQ from './FAQ'
+
 // Restructured 2026-05-09 to canonical-index.html's 8-section layout:
 // Hero, Value Prop, How It Works, Social Proof, Pricing Preview, FAQ,
 // Final CTA, Footer. Bespoke SD chrome and the inline SuiteDash booking
@@ -382,23 +384,16 @@ export default function LandingPage() {
       </section>
 
       {/* 6. FAQ */}
-      {/* TODO(copy): FAQ — Jamie to provide 4-6 common questions per
-          canonical-index.html §6. Minimal placeholder until copy lands. */}
       <section className="tpp-section tpp-faq" id="tpp-faq">
         <div className="tpp-wrap tpp-medium">
           <div className="tpp-section-head tpp-reveal">
             <span className="tpp-section-kicker">Common Questions</span>
             <h2 className="tpp-h2">
-              Questions before<br />you <em>book?</em>
+              Common <em>questions.</em>
             </h2>
-            <p>
-              We&rsquo;ll cover everything on the Discovery Call — pricing fit, timeline, what your team would actually run. Reach out and we&rsquo;ll answer ahead of time.
-            </p>
           </div>
-          <div className="tpp-faq-cta tpp-reveal">
-            <a href="/contact" className="tpp-arrow-link">
-              Ask a question <span className="tpp-arrow">→</span>
-            </a>
+          <div className="tpp-reveal">
+            <FAQ />
           </div>
         </div>
       </section>
