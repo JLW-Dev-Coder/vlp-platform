@@ -1,9 +1,34 @@
--- Migration: add secondary_email column to accounts
--- 2026-05-07
--- Reason: Some users have multiple known email addresses (auth-tied
--- email + preferred contact email). Donovan Branford incident
--- (yosefbranford@gmail.com auth + dbranford@mail.com preferred)
--- exposed the gap. This column captures the secondary address for
--- outbound communications.
+-- Migration 0067: accounts.secondary_email (idempotent — rewritten 2026-05-10)
+--
+-- ORIGINAL INTENT (pre-2026-05-10):
+--   ALTER TABLE accounts ADD COLUMN secondary_email TEXT;
+--
+-- Why: Some users have multiple known email addresses (auth-tied email +
+-- preferred contact email). Donovan Branford incident
+-- (yosefbranford@gmail.com auth + dbranford@mail.com preferred) exposed
+-- the gap. This column captures the secondary address for outbound
+-- communications.
+--
+-- Why rewritten: the original migration was non-idempotent on `ALTER TABLE …
+-- ADD COLUMN`. The column was added to production through another path
+-- (likely a manual `wrangler d1 execute`), so re-running the ALTER fails
+-- with `duplicate column name: secondary_email`, blocking the migration
+-- chain (0068 + 0069 stuck behind it). Same failure pattern as 0059, fixed
+-- the same way in commit 5ff13a1.
+--
+-- Verified production state before this rewrite (PRAGMA table_info(accounts)):
+--   cid 29 → name=secondary_email, type=TEXT, notnull=0, dflt=NULL ✓
+--
+-- The column already matches the migration's target schema exactly, so the
+-- DDL job is done.
+--
+-- SQLite has no `ALTER TABLE … ADD COLUMN IF NOT EXISTS`, so we cannot
+-- guard the ALTER itself. The pragmatic fix is to remove it; if a fresh
+-- database is ever provisioned, the column can be re-added via a new
+-- migration that uses the rebuild pattern (CREATE TABLE … AS SELECT). No
+-- fresh DB exists today.
+--
+-- Effect: `wrangler d1 migrations apply` now runs the chain clean,
+-- unblocking 0068 (tcvlp_pros plan rebuild) and 0069 (taxprep_onboarding).
 
-ALTER TABLE accounts ADD COLUMN secondary_email TEXT;
+SELECT 1;
