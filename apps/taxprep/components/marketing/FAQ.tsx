@@ -23,7 +23,7 @@ const DEFAULT_ITEMS: FaqItem[] = [
   {
     question: 'Can my members access their own portal?',
     answer:
-      'Yes — that’s the Tax Prep Pro + Members tier. Each active member gets their own SuiteDash login, intake forms, document vault, and e-signature flow under your branded workspace. Pricing is $779/mo per active member on top of the $5,000 setup.',
+      'Yes — that’s the Tax Prep Pro + Members tier. Each active member gets their own SuiteDash login, intake forms, document vault, and e-signature flow under your branded workspace. Pricing is $5,779 setup plus $779/mo for each additional member.',
   },
   {
     question: 'What happens after the buildout — am I on my own?',

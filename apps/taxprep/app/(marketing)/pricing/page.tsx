@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Pricing',
   description:
-    'Tax Prep Pro pricing — Tax Prep Pro buildout, Tax Prep Pro + Members bundle, and Ongoing Support tiers for service bureaus and credentialed tax practitioners.',
+    'Tax Prep Pro pricing — Tax Prep Pro buildout, Tax Prep Pro + Members for multi-seat teams, and Ongoing Support tiers for service bureaus and credentialed tax practitioners.',
 }
 
 // Pricing tiers per Owner spec (2026-05-09).
@@ -29,15 +29,16 @@ const TIERS = [
   {
     id: 'bundle',
     name: 'Tax Prep Pro + Members',
-    price: '$5,000 setup',
-    sub: 'plus $779/mo per active member',
+    price: '$5,779 setup',
+    sub: 'plus $779/mo for each additional member',
     badge: 'Most Popular',
     features: [
-      'Everything in Managed',
-      'Tax Monitor Pro buildout for IRS transcript monitoring',
-      'Retention workflows for post-filing services',
-      'Single onboarding, two products, one journey',
-      'Bundle discount vs. buying TPP and TMP separately',
+      'Everything in Tax Prep Pro',
+      'Member portal access for your team (up to your active member count)',
+      'Individual SuiteDash logins for each preparer',
+      'Per-member intake forms and document vaults',
+      'E-signature flow extended to all members',
+      'Scale your team without rebuilding your workspace',
     ],
     cta: 'Create your account',
   },
@@ -67,7 +68,7 @@ export default function PricingPage() {
           Productized — <span className="italic text-[var(--tpp-rose)]">priced like it.</span>
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-[var(--color-text-2)]">
-          A clear setup fee, an optional per-active-member bundle, and an optional support tier. No agency-style scope creep.
+          A clear setup fee, an optional multi-seat tier for teams, and an optional support tier. No agency-style scope creep.
         </p>
       </header>
 

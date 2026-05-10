@@ -329,11 +329,11 @@ export default function LandingPage() {
               </h3>
               <div className="tpp-price">
                 <span className="tpp-price-currency">$</span>
-                <span className="tpp-price-amount">779</span>
-                <small> /mo per active member · plus $5,000 setup</small>
+                <span className="tpp-price-amount">5,779</span>
+                <small> setup · plus $779/mo per additional member</small>
               </div>
               <p>
-                Pair the TPP buildout with Tax Monitor Pro for transcript monitoring and client retention workflows.
+                Scale your bureau without rebuilding your workspace — individual SuiteDash logins, intake forms, and e-signature for every preparer on your team.
               </p>
               <span className="tpp-arrow-link">
                 Create your account <span className="tpp-arrow">→</span>

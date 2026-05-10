@@ -39,7 +39,7 @@ See monorepo root `.claude/CLAUDE.md` for shared context, canonical docs, and ar
 | Tier | Price |
 |------|-------|
 | Tax Prep Pro | $5,000 setup (one-time) |
-| Tax Prep Pro + Members | $5,000 setup + $779/mo per active member |
+| Tax Prep Pro + Members | $5,779 setup + $779/mo per additional member |
 | Ongoing Support | $497/mo |
 
 ---
