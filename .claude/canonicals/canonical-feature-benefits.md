@@ -157,7 +157,7 @@ This file complements `canonical-feature-matrix.md` (which maps features to rout
 
 **Audience:** Service bureaus and credentialed tax practitioners (EAs, CPAs, attorneys) who want a productized client journey without spending six months wiring it themselves.
 
-**Tiers:** Managed ($5,000 setup + $79/mo per active member) · TPP + TMP Bundle ($8,500) · Ongoing Support ($497/mo or $150/hr)
+**Tiers:** Tax Prep Pro ($5,000 setup, one-time) · Tax Prep Pro + Members ($5,000 setup + $779/mo per active member) · Ongoing Support ($497/mo)
 
 **Note:** TPP is SD-led — clients and bureau staff live inside the SuiteDash workspace. The benefits below describe what the bureau owner gets, not what end-taxpayers see.
 
@@ -171,9 +171,9 @@ This file complements `canonical-feature-matrix.md` (which maps features to rout
 | Form 8879 e-signature | E-signature handled inside the SD workspace with timestamped audit trail. No mailing 8879s back and forth, no scan-and-upload steps. | All tiers |
 | Member training | Your staff and any client-facing helpers ramp on the workspace in days, not weeks. Recorded videos plus a live walkthrough during onboarding. | All tiers |
 | ~30-day buildout | From Discovery Call to live workspace in about a month. We provision, brand, and configure; you onboard your first clients before next filing season. | All tiers |
-| Tax Monitor Pro Bundle | Pair the TPP buildout with Tax Monitor Pro for IRS transcript monitoring and post-filing retention workflows. One onboarding, two products, bundle pricing. | Bundle tier |
+| Tax Monitor Pro Bundle | Pair the TPP buildout with Tax Monitor Pro for IRS transcript monitoring and post-filing retention workflows. One onboarding, two products, bundle pricing. | Tax Prep Pro + Members tier |
 | Ongoing Support | SD admin coverage, workflow tuning between filing seasons, and priority response during peak weeks. Add-on to Managed or Bundle. | Ongoing tier |
-| Discovery Call (SD form) | A 30-minute conversation about your bureau, current tools, and where the workflow leaks. We confirm fit before either of us commits. Booking via SuiteDash form embed, not Cal.com. | All tiers |
+| Discovery Call (Cal.com) | A 30-minute conversation about your bureau, current tools, and where the workflow leaks. We confirm fit before either of us commits. Booking via Cal.com (`tpvlp-intro`) — see canonical-cal-events.md §3. | All tiers |
 
 ---
 
