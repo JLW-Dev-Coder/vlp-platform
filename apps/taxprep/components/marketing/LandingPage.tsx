@@ -312,47 +312,47 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="tpp-type-grid">
-            <a href="/contact" className="tpp-type-card tpp-reveal tpp-delay-1">
+            <a href="/sign-in" className="tpp-type-card tpp-reveal tpp-delay-1">
               <div className="tpp-card-shimmer" aria-hidden="true" />
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              <span className="tpp-badge">Managed Setup</span>
+              <span className="tpp-badge">Tax Prep Pro</span>
               <h3 className="tpp-h3">
-                Tax Prep Pro<br />
-                <span className="tpp-card-h-accent">Managed</span>
+                Tax Prep<br />
+                <span className="tpp-card-h-accent">Pro</span>
               </h3>
               <div className="tpp-price">
                 <span className="tpp-price-currency">$</span>
                 <span className="tpp-price-amount">5,000</span>
-                <small> setup + $79/mo per active member</small>
+                <small> one-time setup fee</small>
               </div>
               <p>
                 Productized buildout for solo practitioners and 2–5 person bureaus. Branded portal, journey, member training included.
               </p>
               <span className="tpp-arrow-link">
-                Book Discovery <span className="tpp-arrow">→</span>
+                Create your account <span className="tpp-arrow">→</span>
               </span>
             </a>
-            <a href="/contact" className="tpp-type-card tpp-reveal tpp-delay-2">
+            <a href="/sign-in" className="tpp-type-card tpp-reveal tpp-delay-2">
               <div className="tpp-card-shimmer" aria-hidden="true" />
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
-              <span className="tpp-badge">TPP + TMP Bundle</span>
+              <span className="tpp-badge">TPP + Members</span>
               <h3 className="tpp-h3">
                 TPP +<br />
-                <span className="tpp-card-h-accent">Tax Monitor Pro</span>
+                <span className="tpp-card-h-accent">Members</span>
               </h3>
               <div className="tpp-price">
                 <span className="tpp-price-currency">$</span>
-                <span className="tpp-price-amount">8,500</span>
-                <small> bundle</small>
+                <span className="tpp-price-amount">779</span>
+                <small> /mo per active member · plus $5,000 setup</small>
               </div>
               <p>
                 Pair the TPP buildout with Tax Monitor Pro for transcript monitoring and client retention workflows.
               </p>
               <span className="tpp-arrow-link">
-                Book Discovery <span className="tpp-arrow">→</span>
+                Create your account <span className="tpp-arrow">→</span>
               </span>
             </a>
-            <a href="/contact" className="tpp-type-card tpp-reveal tpp-delay-3">
+            <a href="/sign-in" className="tpp-type-card tpp-reveal tpp-delay-3">
               <div className="tpp-card-shimmer" aria-hidden="true" />
               {/* TODO(copy): Awaiting final B2B copy from Jamie — placeholder rewritten from SD B2C source */}
               <span className="tpp-badge">Ongoing Support</span>
@@ -363,13 +363,13 @@ export default function LandingPage() {
               <div className="tpp-price">
                 <span className="tpp-price-currency">$</span>
                 <span className="tpp-price-amount">497</span>
-                <small> /mo or $150/hr</small>
+                <small> /mo</small>
               </div>
               <p>
                 Continuous improvement, workflow tuning, and SD admin support after the initial buildout ships.
               </p>
               <span className="tpp-arrow-link">
-                Book Discovery <span className="tpp-arrow">→</span>
+                Create your account <span className="tpp-arrow">→</span>
               </span>
             </a>
           </div>

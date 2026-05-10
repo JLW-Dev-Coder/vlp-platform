@@ -2,8 +2,8 @@
   "version": "1.0",
   "type": "federated",
   "description": "VLP Ecosystem Contract Master Registry - Federated Model",
-  "lastUpdated": "2026-04-10",
-  "totalPlatforms": 8,
+  "lastUpdated": "2026-05-10",
+  "totalPlatforms": 9,
   "registries": [
     {
       "platform": "vlp",
@@ -59,6 +59,13 @@
       "name": "Website Lotto VLP",
       "path": "/contracts/registries/wlvlp-registry.json",
       "owner": "WLVLP Team",
+      "status": "active"
+    },
+    {
+      "platform": "taxprep",
+      "name": "Tax Prep Pro",
+      "path": "/contracts/registries/taxprep-registry.json",
+      "owner": "Jamie L Williams",
       "status": "active"
     }
   ],

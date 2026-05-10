@@ -1,0 +1,67 @@
+{
+  "auth": {
+    "required": false,
+    "trustClientIdentityFields": false,
+    "type": "public"
+  },
+  "contract": {
+    "authority": "TPP",
+    "governs": "TPP onboarding form — brokers SuiteDash POST /secure-api/company; creates Prospect company + primary contact, triggers SD welcome email",
+    "path": "contracts/taxprep/taxprep.onboarding.v1.json",
+    "source": "/v1/taxprep/onboarding",
+    "title": "TPP onboarding (SD company create)",
+    "usedOnPages": ["/sign-in"],
+    "validation": "schema",
+    "version": 1
+  },
+  "delivery": {
+    "endpoint": "/v1/taxprep/onboarding",
+    "method": "POST",
+    "receiptKeyPattern": "receipts/taxprep/onboarding/{eventId}.json",
+    "receiptSource": "taxprep-onboarding",
+    "signature": "none"
+  },
+  "effects": {
+    "dedupeKey": "eventId",
+    "eventIdFrom": "payload.eventId",
+    "writeOrder": ["receiptAppend", "canonicalUpsert"],
+    "writes": ["taxprep_onboarding"]
+  },
+  "payload": {
+    "additionalProperties": false,
+    "type": "object",
+    "required": ["firstName", "lastName", "email", "firmName", "category", "eventId"],
+    "properties": {
+      "firstName": { "type": "string", "minLength": 1 },
+      "lastName": { "type": "string", "minLength": 1 },
+      "email": { "type": "string", "format": "email" },
+      "firmName": { "type": "string", "minLength": 2 },
+      "category": {
+        "type": "string",
+        "enum": [
+          "Coaches & Consultants",
+          "Creatives",
+          "E-Commerce",
+          "Healthcare Providers",
+          "Legal & Immigration",
+          "Marketing Agencies",
+          "Real Estate & Real Estate Investors",
+          "Service Bureaus",
+          "Tax & Accounting",
+          "Tech Founders",
+          "VA Agencies"
+        ]
+      },
+      "eventId": { "type": "string", "format": "uuid" }
+    }
+  },
+  "response": {
+    "deduped": { "ok": true, "eventId": "string", "status": "deduped" },
+    "error": { "ok": false, "error": "string", "message": "string (optional)" },
+    "success": { "ok": true, "eventId": "string", "status": "created" }
+  },
+  "schema": {
+    "name": "taxprep.onboarding",
+    "version": 1
+  }
+}

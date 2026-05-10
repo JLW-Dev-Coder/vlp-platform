@@ -19356,6 +19356,184 @@ https://virtuallaunch.pro/payouts
   },
 
   // -------------------------------------------------------------------------
+  // TPP (Tax Prep Pro) — narrow exception to the "no Worker routes" stance
+  // (canonical-api.md §1). Only the SD-API onboarding broker lives here.
+  // Any additional /v1/taxprep/* route requires Principal review.
+  // -------------------------------------------------------------------------
+
+  // POST /v1/taxprep/onboarding — public account-creation flow (SD broker)
+  // Brokers SuiteDash POST /secure-api/company. Creates a Prospect company +
+  // primary contact, triggers SD welcome email. Idempotent via eventId,
+  // rate-limited 10/hr/IP-hash via ENRICHMENT_KV.
+  {
+    method: 'POST', pattern: '/v1/taxprep/onboarding',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const body = await parseBody(request);
+      if (!body) {
+        return json({ ok: false, error: 'validation', message: 'Invalid JSON' }, 400, request);
+      }
+
+      const ALLOWED_CATEGORIES = new Set([
+        'Coaches & Consultants',
+        'Creatives',
+        'E-Commerce',
+        'Healthcare Providers',
+        'Legal & Immigration',
+        'Marketing Agencies',
+        'Real Estate & Real Estate Investors',
+        'Service Bureaus',
+        'Tax & Accounting',
+        'Tech Founders',
+        'VA Agencies',
+      ]);
+
+      const trim = (v) => (typeof v === 'string' ? v.trim() : '');
+      const firstName = trim(body.firstName);
+      const lastName = trim(body.lastName);
+      const email = trim(body.email);
+      const firmName = trim(body.firmName);
+      const category = trim(body.category);
+      const eventId = trim(body.eventId);
+
+      if (!firstName) {
+        return json({ ok: false, error: 'validation', message: 'First name is required' }, 400, request);
+      }
+      if (!lastName) {
+        return json({ ok: false, error: 'validation', message: 'Last name is required' }, 400, request);
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({ ok: false, error: 'validation', message: 'Valid email is required' }, 400, request);
+      }
+      if (!firmName || firmName.length < 2) {
+        return json({ ok: false, error: 'validation', message: "Company name is required (use your full name if you don't have a company)." }, 400, request);
+      }
+      if (!ALLOWED_CATEGORIES.has(category)) {
+        return json({ ok: false, error: 'validation', message: 'Invalid category' }, 400, request);
+      }
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(eventId)) {
+        return json({ ok: false, error: 'validation', message: 'Invalid eventId' }, 400, request);
+      }
+
+      const rawIp = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || '';
+      const ipHashSalt = env.IP_HASH_SALT || 'taxprep-onboarding-default';
+      const ipHashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawIp + ipHashSalt));
+      const ipHash = Array.from(new Uint8Array(ipHashBuf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+
+      const receiptKey = `receipts/taxprep/onboarding/${eventId}.json`;
+      try {
+        const existing = await env.R2_VIRTUAL_LAUNCH.get(receiptKey);
+        if (existing) {
+          return json({ ok: true, eventId, status: 'deduped' }, 200, request);
+        }
+      } catch (e) {
+        console.error('[taxprep-onboarding] R2 idempotency check failed:', e?.message || e);
+      }
+
+      try {
+        const hourBucket = Math.floor(Date.now() / 3600000);
+        const rateKey = `rate:taxprep-onboarding:${ipHash}:${hourBucket}`;
+        const currentRaw = await env.ENRICHMENT_KV.get(rateKey);
+        const current = currentRaw ? parseInt(currentRaw, 10) || 0 : 0;
+        if (current >= 10) {
+          return json({ ok: false, error: 'rate_limited' }, 429, request);
+        }
+        await env.ENRICHMENT_KV.put(rateKey, String(current + 1), { expirationTtl: 3600 });
+      } catch (e) {
+        console.error('[taxprep-onboarding] rate-limit KV failure:', e?.message || e);
+      }
+
+      const sdBody = {
+        name: firmName,
+        role: 'Prospect',
+        category: { name: category },
+        primaryContact: {
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          send_welcome_email: true,
+          create_primary_contact_if_not_exists: true,
+        },
+      };
+
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 10000);
+      let sdRes, sdJson = null, sdText = '';
+      try {
+        sdRes = await fetch('https://app.suitedash.com/secure-api/company', {
+          method: 'POST',
+          headers: {
+            'X-Public-ID': env.SUITEDASH_PUBLIC_ID,
+            'X-Secret-Key': env.SUITEDASH_SECRET_KEY,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(sdBody),
+          signal: ctrl.signal,
+        });
+        sdText = await sdRes.text();
+        try { sdJson = JSON.parse(sdText); } catch { sdJson = null; }
+      } catch (e) {
+        clearTimeout(timeout);
+        console.error('[taxprep-onboarding] SD network/timeout error:', e?.message || e);
+        return json({ ok: false, error: 'server' }, 500, request);
+      }
+      clearTimeout(timeout);
+
+      if (!sdRes.ok) {
+        if (sdRes.status === 422) {
+          const sdMsg = (sdJson && (sdJson.message || sdJson.error)) || 'Validation failed';
+          return json({ ok: false, error: 'validation', message: String(sdMsg).slice(0, 300) }, 400, request);
+        }
+        if (sdRes.status === 429) {
+          console.error(`[taxprep-onboarding] SD quota exceeded: ${sdText.slice(0, 200)}`);
+          return json({ ok: false, error: 'quota' }, 503, request);
+        }
+        if (sdRes.status === 401 || sdRes.status === 403) {
+          console.error(`[taxprep-onboarding] SD auth failure — secrets may be invalid (status ${sdRes.status})`);
+          return json({ ok: false, error: 'server' }, 500, request);
+        }
+        console.error(`[taxprep-onboarding] SD error status=${sdRes.status} body=${sdText.slice(0, 300)}`);
+        return json({ ok: false, error: 'server' }, 500, request);
+      }
+
+      const sdData = (sdJson && (sdJson.data || sdJson)) || {};
+      const companyUid = sdData?.uid || sdData?.id || sdData?.company?.uid || sdData?.company?.id || null;
+      const contactUid = sdData?.primaryContact?.uid || sdData?.primary_contact?.uid || sdData?.primaryContact?.id || sdData?.primary_contact?.id || null;
+
+      const submittedAt = new Date().toISOString();
+
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, receiptKey, {
+          eventId,
+          submittedAt,
+          email,
+          firmName,
+          firstName,
+          lastName,
+          category,
+          ipHash,
+          sd: { companyUid, contactUid },
+        });
+      } catch (e) {
+        console.error('[taxprep-onboarding] R2 receipt write failed:', e?.message || e);
+        return json({ ok: false, error: 'server' }, 500, request);
+      }
+
+      try {
+        await env.DB.prepare(
+          `INSERT OR IGNORE INTO taxprep_onboarding
+             (event_id, submitted_at, email, first_name, last_name, firm_name, category, sd_company_uid, sd_contact_uid, ip_hash)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(eventId, submittedAt, email, firstName, lastName, firmName, category, companyUid, contactUid, ipHash).run();
+      } catch (e) {
+        console.error('[taxprep-onboarding] D1 insert failed:', e?.message || e);
+      }
+
+      return json({ ok: true, eventId, status: 'created' }, 201, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // WLVLP (Website Lotto VLP)
   // -------------------------------------------------------------------------
 

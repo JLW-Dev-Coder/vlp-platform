@@ -25,7 +25,7 @@ const TIERS = [
       'Member training (videos + live walkthrough)',
       '~30-day buildout from Discovery Call to live workspace',
     ],
-    cta: 'Book a Discovery Call',
+    cta: 'Create your account',
   },
   {
     id: 'bundle',
@@ -40,7 +40,7 @@ const TIERS = [
       'Single onboarding, two products, one journey',
       'Bundle discount vs. buying TPP and TMP separately',
     ],
-    cta: 'Book a Discovery Call',
+    cta: 'Create your account',
   },
   {
     id: 'support',
@@ -55,7 +55,7 @@ const TIERS = [
       'Priority response during filing weeks',
       'Optional add-on to Managed or Bundle',
     ],
-    cta: 'Book a Discovery Call',
+    cta: 'Create your account',
   },
 ]
 
@@ -72,9 +72,6 @@ export default function PricingPage() {
         </p>
       </header>
 
-      {/* TODO(onboarding-flow): swap CTA to "Create your account" → /sign-in
-          once the SD API-driven onboarding flow ships (scope #3). See
-          Principal's chat ruling 2026-05-09 sequencing #1 + #2 before #3. */}
       <div className="mt-12 grid gap-6 lg:grid-cols-3">
         {TIERS.map((t) => (
           <div
@@ -104,7 +101,7 @@ export default function PricingPage() {
             </ul>
             <div className="mt-8 pt-2">
               <Link
-                href="/contact"
+                href="/sign-in"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--tpp-rose)] px-5 py-3 font-medium text-white transition hover:bg-[var(--tpp-rose-deep)]"
               >
                 {t.cta} <span aria-hidden>→</span>

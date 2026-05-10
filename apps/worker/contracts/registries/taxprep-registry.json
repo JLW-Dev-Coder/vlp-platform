@@ -1,0 +1,25 @@
+{
+  "platform": "taxprep",
+  "name": "Tax Prep Pro",
+  "owner": "Jamie L Williams",
+  "version": 1,
+  "lastUpdated": "2026-05-10",
+  "contracts": [
+    {
+      "authRequired": false,
+      "category": "form",
+      "dedupeKey": "eventId",
+      "endpoint": "/v1/taxprep/onboarding",
+      "id": "taxprep_onboarding",
+      "method": "POST",
+      "path": "contracts/taxprep/taxprep.onboarding.v1.json",
+      "receiptKeyPattern": "receipts/taxprep/onboarding/{eventId}.json",
+      "receiptSource": "taxprep-onboarding",
+      "signatureRequired": false,
+      "status": "active",
+      "usedOnPages": ["/sign-in"],
+      "version": 1,
+      "writes": ["taxprep_onboarding"]
+    }
+  ]
+}

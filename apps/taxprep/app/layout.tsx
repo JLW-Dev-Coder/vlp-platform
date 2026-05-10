@@ -59,7 +59,7 @@ export default function RootLayout({
           description="SuiteDash-based productized buildout for service bureaus and credentialed tax practitioners. 8-phase client journey, branded portal, member training included."
           url="https://taxprep.virtuallaunch.pro"
           type="ProfessionalService"
-          priceRange="$5,000 setup + $79/mo per active member"
+          priceRange="$5,000 setup · $5,000 setup + $779/mo per active member · $497/mo ongoing support"
         />
         {children}
       </body>

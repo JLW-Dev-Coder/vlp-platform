@@ -19,12 +19,18 @@ See monorepo root `.claude/CLAUDE.md` for shared context, canonical docs, and ar
 
 ## Booking & Auth (TPP-specific)
 
-- **No Cal.com.** Discovery / Demo bookings use SuiteDash form embeds.
-  - Discovery Call form: `21EGX5mk16QA6qVGj`
-  - Demo form: `2rU9ohwhCx3rsijrC`
-- **`/sign-in` is outbound** — links to SuiteDash member portal. No in-app auth components.
-- **`routes.dashboard`** points to the SD member portal URL.
-- **No Worker route** for TPP — SD form embeds POST to SuiteDash directly.
+- **Cal.com for bookings** (adopted 2026-05-09 per `canonical-cal-events.md` §7.4).
+  Discovery and Support bookings use Cal.com event types `tpvlp-intro` and
+  `tpvlp-support`. SuiteDash form embeds were retired.
+- **`/sign-in` is account-creation + outbound sign-in** — left card is a form
+  that POSTs to `/v1/taxprep/onboarding` (the only TPP Worker route, see
+  `canonical-api.md` §1 + §8b); right card links out to the SuiteDash member
+  portal at `https://secure.virtuallaunch.pro/site/login`. No in-app session.
+- **`routes.dashboard`** still points outbound to the SD member portal.
+- **One Worker route**: `POST /v1/taxprep/onboarding` brokers SD
+  `POST /secure-api/company`. All other client-side functionality still runs
+  inside the SuiteDash workspace; do not add additional `/v1/taxprep/*`
+  endpoints without Principal review.
 
 ---
 
@@ -32,9 +38,9 @@ See monorepo root `.claude/CLAUDE.md` for shared context, canonical docs, and ar
 
 | Tier | Price |
 |------|-------|
-| Tax Prep Pro — Managed | $5,000 setup + $79/mo per active member |
-| TPP + Tax Monitor Pro Bundle | $8,500 |
-| Ongoing Support | $497/mo or $150/hr |
+| Tax Prep Pro | $5,000 setup (one-time) |
+| Tax Prep Pro + Members | $5,000 setup + $779/mo per active member |
+| Ongoing Support | $497/mo |
 
 ---
 

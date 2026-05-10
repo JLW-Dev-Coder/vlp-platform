@@ -346,7 +346,7 @@ Footer structure is identical across all 10 platforms. Only content differs via 
 Tax Prep Pro (`apps/taxprep`) is the first SD-led marketing app and deviates from the §1 / §2 pattern in the following bounded ways:
 
 - **Homepage** (`/`) lives at `app/(marketing)/page.tsx` and uses the shared `MarketingHeader` / `MarketingFooter` chrome like every other marketing route. `LandingPage.tsx` is content-only — the bespoke SD chrome it originally shipped with was removed when the homepage was restructured to canonical-index.html's 8-section layout. (Earlier carveout that put homepage at `app/page.tsx` outside the route group is retired as of 2026-05-09.)
-- **`/sign-in` is outbound** — the page renders a "Sign in to SuiteDash" CTA that links to the SD member portal. There is no in-app auth on TPP.
+- **`/sign-in` is account-creation + outbound sign-in** — the page renders a two-card layout: "Create your account" (form that POSTs to `/v1/taxprep/onboarding`, see canonical-api.md §8b) on the left and "Already a member — Sign in to portal" (outbound to `https://secure.virtuallaunch.pro/site/login`) on the right. The form requires a CRM-Company-Category selection so SD records the lead's business type at creation. There is still no in-app auth or session management on TPP — successful account creation triggers a SuiteDash welcome email and the user sets their password in SuiteDash.
 - **No `/dashboard/*` member area.** TPP has no §2 sidebar items; members live in SuiteDash. The Topbar/Sidebar specs in §2 do not apply.
 - **Bookings use SuiteDash form embeds**, not Cal.com — see `canonical-cal-events.md` §7 (SuiteDash form bookings).
 
@@ -469,5 +469,6 @@ When a rule in this file conflicts with the blueprint, the blueprint wins. When 
 | 2026-04-17 | Reconciled WORKSPACE/EARNINGS items to Owner spec ("Game Access JS", Messaging descriptor added, Bidding/Winning ALL) | Owner restated authoritative structure during Phase 4 Track B prep |
 | 2026-05-08 | Added §4.8 SD-led app exception (TPP) and TPP Tools & Extras row | TPP is the first SD-led marketing app — homepage uses bespoke SD chrome at `app/page.tsx`, no `/dashboard/*` member area, `/sign-in` outbound to SuiteDash, bookings via SD form embeds |
 | 2026-05-09 | Retired homepage carveout from §4.8 — homepage now uses shared chrome | Bespoke SD `<header>` / `<footer>` removed from `LandingPage.tsx` during canonical 8-section restructure. Homepage moved into `(marketing)` route group. SD-led app exception narrows to: no `/dashboard/*` member area, `/sign-in` outbound, SD form bookings — chrome carveout no longer needed. |
+| 2026-05-10 | TPP /sign-in becomes account-creation + outbound; first Worker route (POST /v1/taxprep/onboarding); CRM category required | Owner ruling: replace SD-form-embed friction with a native account-creation flow brokered server-side via SD's POST /secure-api/company. Form requires CRM Company Category radio selection (all 10 SD categories). Narrows Deviation 4 to one route; updates Deviation 3. All other SD-led app exceptions remain. |
 
 Append-only. Do not rewrite prior entries.

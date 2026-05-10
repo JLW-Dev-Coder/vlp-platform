@@ -10,10 +10,10 @@ Parent: canonical-app-blueprint.md
 
 Master API endpoint registry for the VLP Worker (`apps/worker/src/index.js`).
 
-Last updated: 2026-05-08
-Total routes: ~196
+Last updated: 2026-05-10
+Total routes: ~197
 
-**TPP exception:** Tax Prep Pro (`apps/taxprep`) is SD-led and intentionally has **no Worker routes** (Deviation 4). All client-side functionality runs inside the SuiteDash workspace; the Next.js site is lead-gen only and POSTs Discovery / Demo bookings to SuiteDash via embedded form scripts (see `canonical-cal-events.md` §7). Do not add `/v1/taxprep/*` endpoints — adding one would be an architectural divergence requiring Principal review.
+**TPP exception:** Tax Prep Pro (`apps/taxprep`) is SD-led and was originally shipped with no Worker routes (Deviation 4). As of 2026-05-10, one narrowly-scoped exception exists: `POST /v1/taxprep/onboarding` brokers SuiteDash `POST /secure-api/company` for the `/sign-in` create-account flow. All other client-side functionality still runs inside the SuiteDash workspace; the Next.js site remains lead-gen-and-onboarding only. Discovery / Demo bookings now use Cal.com (per canonical-cal-events.md §3); only the SD-API-brokered onboarding route lives in the Worker for TPP. Do not add additional `/v1/taxprep/*` endpoints without Principal review — the narrowness of the exception is load-bearing.
 
 ---
 
@@ -410,6 +410,16 @@ Total routes: ~196
 
 ---
 
+## 8b. TPP Endpoints (`/v1/taxprep/*`)
+
+| Method | Path | Purpose | Auth | Frontend |
+|--------|------|---------|------|----------|
+| POST | `/v1/taxprep/onboarding` | Account creation — brokers SD `POST /secure-api/company`, creates Prospect company + primary contact, assigns CRM category, triggers SD welcome email | No | TPP |
+
+Per §1 TPP exception: this is the only Worker route for TPP. Idempotent via `eventId`, rate-limited 10/hr/IP-hash. Receipt at `receipts/taxprep/onboarding/{eventId}.json`, projects to D1 `taxprep_onboarding`. Contract: `contracts/taxprep/taxprep.onboarding.v1.json`.
+
+---
+
 ## 9. Scale Endpoints (`/v1/scale/*`)
 
 | Method | Path | Purpose | Auth | Frontend |
@@ -440,16 +450,16 @@ Total routes: ~196
 | Category | Count |
 |----------|-------|
 | GET routes | ~77 |
-| POST routes | ~96 |
+| POST routes | ~97 |
 | PATCH routes | ~14 |
 | PUT routes | ~2 |
 | DELETE routes | ~1 |
 | OPTIONS (CORS) | 1 (global preflight) |
-| **Total** | **~193** |
+| **Total** | **~194** |
 
 | Auth Level | Count |
 |------------|-------|
-| Public (no auth) | ~40 |
+| Public (no auth) | ~41 |
 | Authenticated (session) | ~120 |
 | Operator/Admin | ~33 |
 
