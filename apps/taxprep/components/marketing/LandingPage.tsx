@@ -471,8 +471,7 @@ const TPP_LANDING_CSS = `
 .tpp-lp .tpp-medium { max-width: 960px; }
 
 .tpp-lp .tpp-hero { position: relative; overflow: hidden; padding: 96px 0 96px; background: linear-gradient(135deg, var(--tpp-champagne) 0%, var(--tpp-blush) 60%, var(--tpp-champagne-deep) 100%); }
-.tpp-lp .tpp-hero::before { content: ""; position: absolute; inset: 24px; border: 2px solid rgba(139, 21, 56, 0.25); border-radius: 20px; pointer-events: none; z-index: 1; }
-.tpp-lp .tpp-hero::after { content: ""; position: absolute; inset: 40px; border: 1px solid rgba(212, 165, 116, 0.35); border-radius: 14px; pointer-events: none; z-index: 1; }
+.tpp-lp .tpp-hero::after { content: ""; position: absolute; inset: 24px; border: 1px solid rgba(212, 165, 116, 0.35); border-radius: 18px; pointer-events: none; z-index: 1; }
 
 .tpp-lp .tpp-hero-breath { position: absolute; inset: -10%; background: radial-gradient(ellipse 60% 50% at 22% 18%, rgba(233, 30, 99, 0.18) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 78% 82%, rgba(139, 21, 56, 0.20) 0%, transparent 60%), radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255, 229, 236, 0.55) 0%, transparent 70%); z-index: 0; animation: tpp-breath 14s var(--tpp-ease-in-out) infinite; }
 @keyframes tpp-breath { 0%, 100% { transform: scale(1) translate(0, 0); opacity: 1; } 50% { transform: scale(1.08) translate(-1.5%, 1%); opacity: 0.85; } }
@@ -640,11 +639,22 @@ const TPP_LANDING_CSS = `
   .tpp-lp .tpp-phase-line { display: none; }
   .tpp-lp .tpp-loc-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 768px) {
+  .tpp-lp .tpp-hero-photo { display: none; }
+  .tpp-lp .tpp-hero .tpp-wrap { grid-template-columns: 1fr; gap: 0; }
+  .tpp-lp .tpp-hero-ctas { flex-direction: column; align-items: stretch; gap: 12px; width: 100%; }
+  .tpp-lp .tpp-btn-primary,
+  .tpp-lp .tpp-btn-secondary {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 16px 24px;
+  }
+  .tpp-lp .tpp-hero::after { inset: 16px; border-radius: 14px; }
+}
 @media (max-width: 560px) {
   .tpp-lp .tpp-h1 { font-size: 40px; }
   .tpp-lp .tpp-h2 { font-size: 32px; }
-  .tpp-lp .tpp-hero-ctas { flex-direction: column; align-items: stretch; }
-  .tpp-lp .tpp-btn-primary, .tpp-lp .tpp-btn-secondary { justify-content: center; }
   .tpp-lp .tpp-stats .tpp-wrap { grid-template-columns: 1fr; gap: 32px; }
   .tpp-lp .tpp-stat::after { display: none !important; }
   .tpp-lp .tpp-phase-rail { grid-template-columns: repeat(2, 1fr); }

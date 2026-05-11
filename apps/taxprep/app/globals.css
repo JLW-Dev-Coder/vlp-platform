@@ -89,6 +89,17 @@ h1, h2, h3, h4, h5, h6 { margin: 0; color: var(--color-text-1); }
 p { margin: 0; color: var(--color-text-2); }
 a { color: inherit; text-decoration: none; }
 
+/*
+ * Defensive guarantee that the shared MarketingHeader's mobile drawer
+ * and overlay render above all TPP landing-page content. The shared
+ * tokens map z-modal=40 / z-overlay=30, which should already win, but
+ * the SD-ported LandingPage stylesheet stacks several decorative
+ * layers — this rule pins the drawer on top regardless of what the
+ * marketing page introduces.
+ */
+header [role="dialog"][aria-modal="true"] { z-index: 9999; }
+header [aria-hidden="true"].fixed.inset-0 { z-index: 9998; }
+
 @media print {
   body { background: #fff; color: #000; }
 }
