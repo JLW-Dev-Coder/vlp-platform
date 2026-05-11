@@ -231,6 +231,7 @@ Every page must be checked in browser:
 - [ ] Header nav links to all pages
 - [ ] Footer links work
 - [ ] Mobile responsive at sm/md/lg/xl breakpoints
+- [ ] Mobile nav drawer overlays full viewport (not clipped by header — see 5.5)
 - [ ] No hydration errors in console
 - [ ] Favicon displays
 - [ ] Page title and meta description set
@@ -249,6 +250,42 @@ Per `canonical-style.md` §11 self-check:
 - [ ] Typography uses correct scale (marketing OR app, not mixed)
 - [ ] Buttons use canonical variants and sizes
 - [ ] Containers use canonical max-widths (1280px marketing, 1200px app, 960px narrow)
+
+### 5.5 Mobile nav drawer containment check
+
+The shared MarketingHeader renders its mobile nav drawer as a
+`position: fixed; inset: 0` element inside the header. If the
+header (or any ancestor) applies any of these CSS properties, the
+drawer's fixed positioning resolves against that ancestor instead of
+the viewport, causing the drawer to render clipped inside the header
+frame:
+
+- `backdrop-filter` (any value other than `none`)
+- `-webkit-backdrop-filter`
+- `filter` (any value other than `none`)
+- `transform` (any value other than `none`)
+- `will-change: transform`
+- `contain: paint` or `contain: layout`
+- `perspective` (any value)
+
+**QA step:** At 375px viewport, tap the hamburger menu and confirm the
+nav drawer covers the full screen edge-to-edge. If it renders clipped
+inside the header bar, one of the properties above is the cause.
+
+**Fix pattern:** Neutralize the offending property on mobile in the
+app's globals.css:
+
+    @media (max-width: 768px) {
+      header {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+    }
+
+This was first encountered on TPP (commit 8fe6363, 2026-05-11). The
+shared MarketingHeader applies inline backdrop-filter for the
+frosted-glass effect — !important is required to override the inline
+style. Visual cost on mobile is negligible.
 
 ---
 
@@ -381,7 +418,7 @@ PHASE 4: INFRASTRUCTURE
 PHASE 5: QA
 [ ] turbo build passes
 [ ] All pages checked in browser
-[ ] Mobile responsive
+[ ] Mobile responsive (including nav drawer full-viewport overlay — 5.5)
 [ ] No hydration errors
 [ ] Design token compliance
 [ ] Forms submit correctly
@@ -435,3 +472,4 @@ PHASE 7: DOCUMENTATION
 | Date | Change | Rationale |
 |------|--------|-----------|
 | 2026-05-09 | Added Phase 6.5 "Deploy Verification Loop" codifying the direct-push deploy contract | The TPP launch (app #10) initially used PR-based deploys, which contradicts `canonical-deploy.md`. A hardening PR was originally going to teach the wrong process; corrected before landing. New apps deploy via direct push to `main` per `canonical-deploy.md` and `.claude/CLAUDE.md` §8 working rule #7. Cloudflare Pages auto-deploys from `main` on push. |
+| 2026-05-11 | Added 5.5 mobile nav drawer containment check | TPP hamburger drawer was clipped inside header frame because backdrop-filter on header created a containing block for position: fixed descendants. Adding QA checkpoint so future apps catch this during scaffold. |

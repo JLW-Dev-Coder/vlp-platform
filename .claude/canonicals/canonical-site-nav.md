@@ -299,6 +299,13 @@ At `< md` breakpoint (768px):
 - Hamburger button appears left of the logo
 - CTA button remains visible in the header; Log In moves into the drawer
 - Drawer slides in from the left, overlays content, covers ~85% of viewport width
+- **Containment warning:** The header element must not apply
+  backdrop-filter, filter, transform, will-change: transform,
+  contain: paint, or perspective — any of these creates a CSS
+  containing block that breaks position: fixed on the drawer. If the
+  header uses backdrop-filter for a frosted-glass effect, neutralize it
+  on mobile via the app's globals.css (see canonical-new-app.md 5.5
+  for the fix pattern and full explanation).
 - Backdrop darkens the uncovered portion; tap-outside closes the drawer
 - Close via: X button top-right of drawer, tap backdrop, Escape key, or swipe-left
 - Transition: `slide-up` keyframe (per blueprint §4.18), `duration-base` (250ms)
@@ -470,5 +477,6 @@ When a rule in this file conflicts with the blueprint, the blueprint wins. When 
 | 2026-05-08 | Added §4.8 SD-led app exception (TPP) and TPP Tools & Extras row | TPP is the first SD-led marketing app — homepage uses bespoke SD chrome at `app/page.tsx`, no `/dashboard/*` member area, `/sign-in` outbound to SuiteDash, bookings via SD form embeds |
 | 2026-05-09 | Retired homepage carveout from §4.8 — homepage now uses shared chrome | Bespoke SD `<header>` / `<footer>` removed from `LandingPage.tsx` during canonical 8-section restructure. Homepage moved into `(marketing)` route group. SD-led app exception narrows to: no `/dashboard/*` member area, `/sign-in` outbound, SD form bookings — chrome carveout no longer needed. |
 | 2026-05-10 | TPP /sign-in becomes account-creation + outbound; first Worker route (POST /v1/taxprep/onboarding); CRM category required | Owner ruling: replace SD-form-embed friction with a native account-creation flow brokered server-side via SD's POST /secure-api/company. Form requires CRM Company Category radio selection (all 10 SD categories). Narrows Deviation 4 to one route; updates Deviation 3. All other SD-led app exceptions remain. |
+| 2026-05-11 | Added containment warning to 4.3 mobile navigation | TPP backdrop-filter on header broke nav drawer position: fixed. Cross-referencing fix pattern in canonical-new-app.md 5.5. |
 
 Append-only. Do not rewrite prior entries.
