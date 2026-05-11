@@ -90,15 +90,37 @@ p { margin: 0; color: var(--color-text-2); }
 a { color: inherit; text-decoration: none; }
 
 /*
- * Defensive guarantee that the shared MarketingHeader's mobile drawer
- * and overlay render above all TPP landing-page content. The shared
- * tokens map z-modal=40 / z-overlay=30, which should already win, but
- * the SD-ported LandingPage stylesheet stacks several decorative
- * layers — this rule pins the drawer on top regardless of what the
- * marketing page introduces.
+ * MarketingHeader sets `backdrop-filter` inline on <header>. Per CSS
+ * containment spec, a non-none backdrop-filter creates a containing
+ * block for `position: fixed` descendants — which clips the mobile
+ * nav drawer (rendered inside <header>) to the 64px header band
+ * instead of letting it cover the viewport. Drop the backdrop blur
+ * on mobile so the drawer's `fixed inset-0` resolves against the
+ * viewport again.
  */
-header [role="dialog"][aria-modal="true"] { z-index: 9999; }
-header [aria-hidden="true"].fixed.inset-0 { z-index: 9998; }
+@media (max-width: 768px) {
+  header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/*
+ * Mobile header CTA — "Book Discovery Call →" overflows the 375px
+ * header next to the logo and hamburger. Shrink it on mobile.
+ */
+@media (max-width: 768px) {
+  header a[href="/contact"] {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
+    gap: 0.25rem;
+    white-space: nowrap;
+  }
+  header a[href="/contact"] svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
 
 @media print {
   body { background: #fff; color: #000; }
