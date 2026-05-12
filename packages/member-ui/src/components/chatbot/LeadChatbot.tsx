@@ -104,6 +104,7 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
   const [activeQuestion, setActiveQuestion] = useState<ChatbotQuestion | null>(null)
   const [bubbles, setBubbles] = useState<BotBubble[]>([])
   const [messageEmail, setMessageEmail] = useState('')
+  const [messagePhone, setMessagePhone] = useState('')
   const [messageBody, setMessageBody] = useState('')
   const [messageSent, setMessageSent] = useState(false)
   const [showScrollHint, setShowScrollHint] = useState(false)
@@ -253,11 +254,28 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
     setTimeout(() => a.remove(), 100)
   }
 
+  function normalizePhone(raw: string): string | undefined {
+    const digits = raw.replace(/\D/g, '')
+    if (digits.length === 10) return `+1${digits}`
+    if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`
+    return undefined
+  }
+
+  function formatPhoneDisplay(raw: string): string {
+    const digits = raw.replace(/\D/g, '').slice(0, 10)
+    if (digits.length === 0) return ''
+    if (digits.length <= 3) return `(${digits}`
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+
   function submitMessage(e: React.FormEvent) {
     e.preventDefault()
     if (!messageBody.trim()) return
+    const normalizedPhone = messagePhone.trim() ? normalizePhone(messagePhone) : undefined
     void postLead({
       email: messageEmail || undefined,
+      phone: normalizedPhone,
       message: messageBody.trim(),
       source: 'chatbot_message',
     })
@@ -506,6 +524,25 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
                   placeholder="Email"
                   className="rounded-md border border-subtle bg-surface-popover px-2 py-1.5 text-xs text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:shadow-focus"
                 />
+                <label className="flex flex-col gap-1">
+                  <span className="text-[11px] text-text-tertiary">Phone (optional)</span>
+                  <input
+                    type="tel"
+                    value={messagePhone}
+                    onChange={(e) => setMessagePhone(e.target.value)}
+                    onBlur={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '')
+                      if (digits.length === 10) setMessagePhone(formatPhoneDisplay(digits))
+                    }}
+                    placeholder="(555) 555-5555"
+                    className="rounded-md border border-subtle bg-surface-popover px-2 py-1.5 text-xs text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:shadow-focus"
+                  />
+                </label>
+                {messagePhone.trim() && (
+                  <p className="text-[11px] leading-relaxed text-text-tertiary">
+                    By providing your phone number, you consent to receive a one-time SMS from Tax Monitor Pro to follow up on your inquiry. Message &amp; data rates may apply. Reply STOP to opt out at any time.
+                  </p>
+                )}
                 <textarea
                   required
                   value={messageBody}
