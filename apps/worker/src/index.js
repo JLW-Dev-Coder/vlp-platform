@@ -30532,10 +30532,9 @@ export default {
       return;
     }
 
-    // Client Pool Weekly Health Check Cron — 09:00 UTC Monday.
+    // Client Pool Weekly Health Check + DVLP Job Matching Cron — 09:00 UTC Monday.
     // Aggregates D1 + R2 stats and writes a support ticket surfaced at
-    // virtuallaunch.pro/scale/support. Does not return so the DVLP job
-    // matching block below still runs on the same Monday 09:00 trigger.
+    // virtuallaunch.pro/scale/support, then runs the DVLP skill-match job.
     if (event && event.cron === '0 9 * * 1') {
       try {
         const healthLog = await handleClientPoolHealthCheck(env);
@@ -30543,10 +30542,9 @@ export default {
       } catch (e) {
         console.error('Client Pool health check cron failed:', e);
       }
-    }
 
-    // DVLP Job Matching Cron
-    try {
+      // DVLP Job Matching Cron
+      try {
       const eventId = `EVT_${crypto.randomUUID()}`;
       const timestamp = new Date().toISOString();
 
@@ -30638,12 +30636,14 @@ export default {
         console.error('Failed to write error receipt:', receiptError);
       }
     }
+    } // end '0 9 * * 1' guard (Client Pool health + DVLP job matching)
 
-    // WLVLP Hosting Renewal Check Cron
-    // Runs daily. Writes a 30-day reminder notification once per site, and
-    // marks sites as expired when hosting_expires_at has passed without a
-    // renewal extending the date (active subscriptions auto-extend via the
-    // invoice.payment_succeeded webhook handler).
+    // WLVLP Hosting Renewal Check Cron — paired with the 10:00 UTC trigger
+    // (alongside FOIA enrichment + auction settlement). Writes a 30-day
+    // reminder notification once per site, and marks sites as expired when
+    // hosting_expires_at has passed without a renewal extending the date
+    // (active subscriptions auto-extend via invoice.payment_succeeded).
+    if (event && event.cron === '0 10 * * *') {
     try {
       const eventId = `EVT_${crypto.randomUUID()}`;
       const timestamp = new Date().toISOString();
@@ -30729,6 +30729,7 @@ export default {
         console.error('Failed to write WLVLP hosting check error receipt:', receiptError);
       }
     }
+    } // end '0 10 * * *' guard (WLVLP hosting renewal check)
 
     // Unified Send Cron — 14:00 UTC.
     // Runs TTMP, VLP, and WLVLP send handlers in sequence. Each reads its
