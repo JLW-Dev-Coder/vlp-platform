@@ -1,6 +1,6 @@
 import Header from '@/components/marketing/Header'
 import Footer from '@/components/marketing/Footer'
-import { CookieConsent } from '@vlp/member-ui'
+import { CookieConsent, LeadChatbot } from '@vlp/member-ui'
 import { tavlpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({
@@ -13,6 +13,7 @@ export default function MarketingLayout({
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <LeadChatbot config={tavlpConfig} />
       <CookieConsent config={tavlpConfig} />
     </div>
   )

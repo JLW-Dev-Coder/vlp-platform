@@ -540,7 +540,7 @@ export function LeadChatbot({ config }: LeadChatbotProps) {
                 </label>
                 {messagePhone.trim() && (
                   <p className="text-[11px] leading-relaxed text-text-tertiary">
-                    By providing your phone number, you consent to receive a one-time SMS from Tax Monitor Pro to follow up on your inquiry. Message &amp; data rates may apply. Reply STOP to opt out at any time.
+                    By providing your phone number, you consent to receive a one-time SMS from {config.brandName} to follow up on your inquiry. Message &amp; data rates may apply. Reply STOP to opt out at any time.
                   </p>
                 )}
                 <textarea

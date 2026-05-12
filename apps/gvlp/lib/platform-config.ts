@@ -109,4 +109,60 @@ export const gvlpConfig: PlatformConfig = {
     ],
     footerTagline: 'Game-based engagement',
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'Games VLP',
+      message: 'Add gamified experiences to your business',
+    },
+    header: {
+      avatarInitials: 'GVL',
+      title: 'Games VLP',
+      subtitle: 'Gamified engagement for your clients',
+    },
+    welcome: "Hi! Interested in adding games to your client experience? Here's what to know.",
+    questions: [
+      {
+        id: 'q1',
+        label: 'What kind of games are available?',
+        response: [
+          "Educational and engagement games designed for professional services — tax education, compliance training, client onboarding activities. Each game is built to educate or engage, not just entertain. Your clients interact with your brand through something they actually enjoy.",
+        ],
+        primaryCta: { label: 'Browse games →', action: { type: 'link', href: '/games' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q2',
+        label: 'Can I embed games on my site?',
+        response: [
+          "Yes — unlock the game library and share direct links or embed games on your own site. One subscription covers all your clients, whether you have 10 or 10,000. Predictable pricing that doesn't scale with usage.",
+        ],
+        primaryCta: { label: 'See how it works →', action: { type: 'link', href: '/how-it-works' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'How does pricing work?',
+        response: [
+          "Games VLP uses a subscription model. One plan covers unlimited client access to the full game library. Check our pricing page for details, or book a quick intro call to see the games in action.",
+        ],
+        primaryCta: { label: 'See pricing →', action: { type: 'link', href: '/pricing' } },
+        secondaryCta: { label: 'Book an intro call', action: { type: 'cal-intro' } },
+      },
+    ],
+    emailFooterLabel: 'Or send us a message',
+    humanPath: {
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+  },
 }

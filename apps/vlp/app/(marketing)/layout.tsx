@@ -1,4 +1,4 @@
-import { BusinessJsonLd, MarketingHeader, MarketingFooter, CookieConsent } from '@vlp/member-ui'
+import { BusinessJsonLd, MarketingHeader, MarketingFooter, CookieConsent, LeadChatbot } from '@vlp/member-ui'
 import { vlpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({
@@ -18,6 +18,7 @@ export default function MarketingLayout({
       <MarketingHeader config={vlpConfig} />
       <main className="flex-1">{children}</main>
       <MarketingFooter config={vlpConfig} />
+      <LeadChatbot config={vlpConfig} />
       <CookieConsent config={vlpConfig} />
     </div>
   )

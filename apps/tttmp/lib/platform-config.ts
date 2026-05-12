@@ -110,4 +110,60 @@ export const tttmpConfig: PlatformConfig = {
     phone: '619-800-5457',
     supportEmail: 'outreach@virtuallaunch.pro',
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'Tax Tools Arcade',
+      message: 'Explore 21 tax education games',
+    },
+    header: {
+      avatarInitials: 'TTA',
+      title: 'Tax Tools Arcade',
+      subtitle: 'Tax education through games',
+    },
+    welcome: 'Hey! Want to learn about the Tax Tools Arcade? Pick a question below.',
+    questions: [
+      {
+        id: 'q1',
+        label: 'What games are available?',
+        response: [
+          "We have 21 games across three tiers — Starter (4 games, 2 tokens each), Intermediate (8 games, 5 tokens), and Advanced (9 games, 8 tokens). Topics range from IRS notices to international tax to client education tools. Check out our games page for the full list.",
+        ],
+        primaryCta: { label: 'Browse games →', action: { type: 'link', href: '/games' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q2',
+        label: 'How do tokens work?',
+        response: [
+          "Each game costs a set number of tokens to play. Buy token packs from your dashboard — the more you buy, the better the per-token price. Tokens never expire. Use them across any game in the Arcade.",
+        ],
+        primaryCta: { label: 'See pricing →', action: { type: 'link', href: '/pricing' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'Are these for tax pros or taxpayers?',
+        response: [
+          "Both! Some games are designed for tax professionals to sharpen skills (Circular 230 Quest, Audit Defense Showdown). Others help taxpayers understand concepts (Tax Mythbusters, Taxpayer Journey Map). The Arcade works for client education too.",
+        ],
+        primaryCta: { label: 'Book an intro call →', action: { type: 'cal-intro' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+    ],
+    emailFooterLabel: 'Or send us a message',
+    humanPath: {
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+  },
 }

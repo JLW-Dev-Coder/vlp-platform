@@ -110,4 +110,60 @@ export const tcvlpConfig: PlatformConfig = {
       { label: 'Terms', href: '/legal/terms' },
     ],
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'TaxClaim Pro',
+      message: 'Check if the Kwong claim applies to your client',
+    },
+    header: {
+      avatarInitials: 'TCP',
+      title: 'TaxClaim Pro',
+      subtitle: 'IRS penalty abatement claims',
+    },
+    welcome: 'Hi! I can help you learn about TaxClaim Pro and the Kwong v. US ruling. What would you like to know?',
+    questions: [
+      {
+        id: 'q1',
+        label: 'What is the Kwong claim?',
+        response: [
+          "Kwong v. United States established that certain IRS penalties assessed between January 2020 and July 2023 may be eligible for abatement. TaxClaim Pro automates Form 843 generation for these claims. The filing deadline is July 2026 — time is limited.",
+        ],
+        primaryCta: { label: 'Learn more →', action: { type: 'link', href: '/what-is-form-843' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q2',
+        label: 'How does Form 843 generation work?',
+        response: [
+          "Enter your client's penalty details and TaxClaim Pro generates a complete Form 843 with the correct legal basis, penalty calculations, and supporting arguments. Download it ready to file. No manual drafting.",
+        ],
+        primaryCta: { label: 'See the demo →', action: { type: 'link', href: '/demo' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'What does it cost?',
+        response: [
+          "Starter is $10/mo for basic Form 843 generation. Professional is $29/mo for unlimited claim pages and bulk export. Firm is $79/mo for white-label branding and multi-practitioner access. Book an intro to see which tier fits.",
+        ],
+        primaryCta: { label: 'Book an intro call →', action: { type: 'cal-intro' } },
+        secondaryCta: { label: 'See pricing', action: { type: 'link', href: '/pricing' } },
+      },
+    ],
+    emailFooterLabel: 'Or send us a message',
+    humanPath: {
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+  },
 }

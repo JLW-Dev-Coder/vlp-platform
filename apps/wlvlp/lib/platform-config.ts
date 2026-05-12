@@ -114,4 +114,60 @@ export const wlvlpConfig: PlatformConfig = {
     ],
     footerTagline: 'Website marketplace',
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'Website Lotto',
+      message: 'Win or buy a professional website',
+    },
+    header: {
+      avatarInitials: 'WL',
+      title: 'Website Lotto',
+      subtitle: 'Website marketplace with a twist',
+    },
+    welcome: "Hi! Interested in getting a professional website? Here's how Website Lotto works.",
+    questions: [
+      {
+        id: 'q1',
+        label: 'How does the website lottery work?',
+        response: [
+          "Browse our template marketplace. See one you like? You can buy it outright, bid on it in auction, or try your luck with a scratch card to win it free. Every template is a fully designed, ready-to-publish website. Pick it up however works for you.",
+        ],
+        primaryCta: { label: 'Try Scratch to Win →', action: { type: 'link', href: '/scratch' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q2',
+        label: 'What do I get with a website?',
+        response: [
+          "A fully designed website with your business name, colors, and content. Connect your own domain. We host and maintain it for you — no server management, no DNS headaches. Professional web presence in minutes, not months.",
+        ],
+        primaryCta: { label: 'Browse templates →', action: { type: 'link', href: '/' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'What does it cost?',
+        response: [
+          "Prices vary by template. Some are free via scratch cards. Others are priced from $49 up, or you can bid below list price in auctions. Hosting is included. Check out our sites page to browse what's available.",
+        ],
+        primaryCta: { label: 'Browse templates →', action: { type: 'link', href: '/' } },
+        secondaryCta: { label: 'Book an intro call', action: { type: 'cal-intro' } },
+      },
+    ],
+    emailFooterLabel: 'Or send us a message',
+    humanPath: {
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+  },
 }

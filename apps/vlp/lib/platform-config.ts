@@ -109,4 +109,60 @@ export const vlpConfig: PlatformConfig = {
       { label: 'Terms', href: '/legal/terms' },
     ],
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'Virtual Launch Pro',
+      message: 'See what Virtual Launch Pro can do for your practice',
+    },
+    header: {
+      avatarInitials: 'VLP',
+      title: 'Virtual Launch Pro',
+      subtitle: 'Your AI-powered practice platform',
+    },
+    welcome: "Hi! I'm here to help you explore Virtual Launch Pro. What would you like to know?",
+    questions: [
+      {
+        id: 'q1',
+        label: 'What platforms are included?',
+        response: [
+          "Virtual Launch Pro is the hub for 10 specialized platforms — from transcript parsing to tax games to website marketplaces. Each platform has its own tools, and your VLP account gives you access to all of them. Want to see what's available?",
+        ],
+        primaryCta: { label: 'See features →', action: { type: 'link', href: '/features' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q2',
+        label: 'How does pricing work?',
+        response: [
+          "Each platform has its own pricing — some use monthly subscriptions, others use token packs for pay-per-use access. You can start with any platform individually. Visit our pricing page for the full breakdown.",
+        ],
+        primaryCta: { label: 'See pricing →', action: { type: 'link', href: '/pricing' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'Is this right for my firm?',
+        response: [
+          "If you're a tax professional, CPA, EA, or attorney looking for tools that save time on transcripts, claims, and client engagement — VLP was built for you. Book a quick intro call and we'll walk you through it.",
+        ],
+        primaryCta: { label: 'Book an intro call →', action: { type: 'cal-intro' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+    ],
+    emailFooterLabel: 'Or send us a message',
+    humanPath: {
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+  },
 }

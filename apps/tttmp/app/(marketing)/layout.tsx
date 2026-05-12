@@ -1,4 +1,4 @@
-import { MarketingHeader, MarketingFooter, CookieConsent } from '@vlp/member-ui'
+import { MarketingHeader, MarketingFooter, CookieConsent, LeadChatbot } from '@vlp/member-ui'
 import { tttmpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({
@@ -11,6 +11,7 @@ export default function MarketingLayout({
       <MarketingHeader config={tttmpConfig} />
       <main className="flex-1 arcade-grid-bg">{children}</main>
       <MarketingFooter config={tttmpConfig} />
+      <LeadChatbot config={tttmpConfig} />
       <CookieConsent config={tttmpConfig} />
     </div>
   )

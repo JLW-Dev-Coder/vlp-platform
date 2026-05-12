@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
-import { BusinessJsonLd, CookieConsent, PostHogPageview } from '@vlp/member-ui';
+import { BusinessJsonLd, CookieConsent, LeadChatbot, PostHogPageview } from '@vlp/member-ui';
 import { gvlpConfig } from '@/lib/platform-config';
 import './globals.css';
 
@@ -57,6 +57,7 @@ export default function RootLayout({
           priceRange="$0 - $39/mo"
         />
         {children}
+        <LeadChatbot config={gvlpConfig} />
         <CookieConsent config={gvlpConfig} />
         <Suspense fallback={null}>
           <PostHogPageview />

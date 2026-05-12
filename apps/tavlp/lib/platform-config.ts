@@ -72,4 +72,60 @@ export const tavlpConfig: PlatformConfig = {
       { label: 'Terms', href: '/legal/terms' },
     ],
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'Tax Avatar Pro',
+      message: 'Get an AI avatar for your tax practice',
+    },
+    header: {
+      avatarInitials: 'TAP',
+      title: 'Tax Avatar Pro',
+      subtitle: 'AI avatars for tax professionals',
+    },
+    welcome: 'Hi! Want to learn how an AI avatar can work for your practice? Pick a question below.',
+    questions: [
+      {
+        id: 'q1',
+        label: 'What is Tax Avatar Pro?',
+        response: [
+          "Tax Avatar Pro gives you an AI-powered avatar that hosts your YouTube channel, appears on your landing pages, and guides your prospects through your services. Your avatar, your brand, your leads — fully automated content creation for your practice.",
+        ],
+        primaryCta: { label: 'Browse avatars →', action: { type: 'link', href: '/avatars' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q2',
+        label: 'How does the avatar work?',
+        response: [
+          "Choose from our avatar library, customize the look and script, and we produce professional videos for your channel. The avatar appears on your landing pages to greet visitors and guide them to your services. All content is branded to your practice.",
+        ],
+        primaryCta: { label: 'Browse avatars →', action: { type: 'link', href: '/avatars' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'What does it cost?',
+        response: [
+          "Tax Avatar Pro starts at $29/mo. That includes your AI avatar, YouTube channel setup, and landing page integration. Book an intro call to see a live demo of an avatar in action.",
+        ],
+        primaryCta: { label: 'Book an intro call →', action: { type: 'cal-intro' } },
+        secondaryCta: { label: 'See pricing', action: { type: 'link', href: '/pricing' } },
+      },
+    ],
+    emailFooterLabel: 'Or send us a message',
+    humanPath: {
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+  },
 }

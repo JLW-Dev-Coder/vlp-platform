@@ -72,4 +72,60 @@ export const dvlpConfig: PlatformConfig = {
     phone: '619-800-5457',
     supportEmail: 'outreach@virtuallaunch.pro',
   },
+  chatbot: {
+    enabled: true,
+    aiEnabled: false,
+    nudge: {
+      label: 'Developers VLP',
+      message: 'Find freelance clients or developers',
+    },
+    header: {
+      avatarInitials: 'DVL',
+      title: 'Developers VLP',
+      subtitle: 'Developer-client matching platform',
+    },
+    welcome: "Hi! Whether you're a developer or a business looking for one, I can help. What do you need?",
+    questions: [
+      {
+        id: 'q1',
+        label: 'How does developer matching work?',
+        response: [
+          "Businesses submit a project request describing what they need built, their budget, and timeline. We match them with developers in our directory based on skills, rate, and availability. Developers get qualified introductions — not cold leads.",
+        ],
+        primaryCta: { label: 'Find a developer →', action: { type: 'link', href: '/find-developers' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q2',
+        label: 'How do I get listed as a developer?',
+        response: [
+          "Create your profile with your skills, experience, portfolio, and rate. Once listed, businesses can find you in the directory by technology, location, or specialization. You control your visibility — toggle off when you're booked, toggle on when you're ready.",
+        ],
+        primaryCta: { label: 'Get listed →', action: { type: 'link', href: '/onboarding' } },
+        secondaryCta: { label: 'Talk to a human', action: { type: 'human-path' } },
+      },
+      {
+        id: 'q3',
+        label: 'What does it cost?',
+        response: [
+          "Check our pricing page for current plans. Developers get a profile listing and access to matched client introductions. Businesses submit project requests and get matched developer recommendations.",
+        ],
+        primaryCta: { label: 'See pricing →', action: { type: 'link', href: '/pricing' } },
+        secondaryCta: { label: 'Book an intro call', action: { type: 'cal-intro' } },
+      },
+    ],
+    emailFooterLabel: 'Or send us a message',
+    humanPath: {
+      intro: 'Real humans, fast replies. Pick your preferred way to connect.',
+      bookCall: {
+        label: 'Book a 10-min intro call',
+        description: 'See available times on our calendar. No-pressure walkthrough, ask anything.',
+        calTarget: 'intro',
+      },
+      sendMessage: {
+        label: 'Send a message',
+        description: 'Tell us about your practice. One-business-day reply, always from a real person.',
+      },
+    },
+  },
 }
