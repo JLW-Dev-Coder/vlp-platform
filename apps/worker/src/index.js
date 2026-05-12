@@ -4099,6 +4099,19 @@ const ROUTES = [
         const referrer = typeof body.referrer === 'string' ? body.referrer.slice(0, 2048) : null;
         const user_agent = typeof body.user_agent === 'string' ? body.user_agent.slice(0, 1024) : null;
 
+        // Normalize phone: strip non-digits, prepend +1 if 10 digits, store as +1XXXXXXXXXX
+        let phone = null;
+        if (typeof body.phone === 'string' && body.phone.trim()) {
+          const digits = body.phone.replace(/\D/g, '');
+          if (digits.length === 10) {
+            phone = `+1${digits}`;
+          } else if (digits.length === 11 && digits.startsWith('1')) {
+            phone = `+${digits}`;
+          } else if (digits.length > 0) {
+            phone = `+${digits}`;
+          }
+        }
+
         const id = crypto.randomUUID().replace(/-/g, '');
         const createdAt = Date.now();
         const d = new Date(createdAt);
@@ -4108,7 +4121,7 @@ const ROUTES = [
         const r2Key = `leads/chatbot/${platform}/${yyyy}/${mm}/${dd}/${id}.json`;
 
         const record = {
-          id, platform, email, question_id, question_label, message,
+          id, platform, email, phone, question_id, question_label, message,
           cal_booked: Boolean(cal_booked), source, referrer, user_agent,
           created_at: createdAt,
         };
@@ -4117,10 +4130,32 @@ const ROUTES = [
         await r2Put(env.R2_VIRTUAL_LAUNCH, r2Key, record);
         await d1Run(env.DB,
           `INSERT INTO chatbot_leads
-           (id, platform, email, question_id, question_label, message, cal_booked, source, referrer, user_agent, created_at, r2_key)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [id, platform, email, question_id, question_label, message, cal_booked, source, referrer, user_agent, createdAt, r2Key]
+           (id, platform, email, phone, question_id, question_label, message, cal_booked, source, referrer, user_agent, created_at, r2_key)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, platform, email, phone, question_id, question_label, message, cal_booked, source, referrer, user_agent, createdAt, r2Key]
         );
+
+        // Notify owner when phone is captured (Twilio toll-free pending — manual follow-up for now)
+        if (phone && env.RESEND_API_KEY) {
+          const tsIso = new Date(createdAt).toISOString();
+          const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+          const html = `<p>New chatbot lead with phone number — follow up manually.</p>
+<ul>
+  <li><strong>Platform:</strong> ${esc(platform)}</li>
+  <li><strong>Email:</strong> ${esc(email || '(not provided)')}</li>
+  <li><strong>Phone:</strong> ${esc(phone)}</li>
+  <li><strong>Question:</strong> ${esc(question_label || question_id || '(none)')}</li>
+  <li><strong>Message:</strong> ${esc(message || '(none)')}</li>
+  <li><strong>Source:</strong> ${esc(source)}</li>
+  <li><strong>Timestamp:</strong> ${tsIso}</li>
+  <li><strong>Lead ID:</strong> ${esc(id)}</li>
+</ul>`;
+          try {
+            await sendEmail('outreach@virtuallaunch.pro', `New Lead with Phone — ${platform}`, html, env);
+          } catch (e) {
+            console.error('[chatbot-lead] notify owner failed:', e?.message || e);
+          }
+        }
 
         // TODO (Prompt 1.5): rate-limit anonymous chatbot lead POSTs (suggest 10/min/IP)
         return json({ ok: true, lead_id: id }, 200, request);

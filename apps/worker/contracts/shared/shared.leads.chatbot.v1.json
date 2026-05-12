@@ -54,6 +54,7 @@
     "properties": {
       "platform": { "type": "string", "minLength": 1, "maxLength": 16 },
       "email": { "type": "string", "format": "email", "maxLength": 320 },
+      "phone": { "type": "string", "maxLength": 32 },
       "question_id": { "type": "string", "maxLength": 64 },
       "question_label": { "type": "string", "maxLength": 256 },
       "message": { "type": "string", "maxLength": 4000 },
