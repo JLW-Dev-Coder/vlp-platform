@@ -7,7 +7,6 @@ import CampaignTab from '../components/CampaignTab'
 import DailyWorkflowPlanner from '../components/DailyWorkflowPlanner'
 import FormsTab from '../components/FormsTab'
 import KpiTab from '../components/KpiTab'
-import OutreachTab from '../components/OutreachTab'
 import SocialTab from '../components/SocialTab'
 import styles from '../page.module.css'
 
@@ -65,13 +64,12 @@ function WorkflowContent() {
 // ---------------------------------------------------------------------------
 // Page — 5-tab outreach command center
 // ---------------------------------------------------------------------------
-type Tab = 'planner' | 'upload' | 'posts' | 'outreach' | 'social' | 'kpi' | 'forms' | 'workflow'
+type Tab = 'planner' | 'upload' | 'posts' | 'social' | 'kpi' | 'forms' | 'workflow'
 
 const TAB_DESCRIPTIONS: Record<Tab, React.ReactNode> = {
   planner: 'Daily workflow planner — what to do today across email, social, content, and bookings',
   upload: 'Clay CSV upload and email pipeline monitor',
   posts: 'YouTube video scripts, community posts, or 10-day LinkedIn/FB campaign — Claude-authored, optional ClickUp tasks',
-  outreach: 'LinkedIn cold connections from the prospect list with canned messages',
   social: (
     <>
       Scheduled posts synced from ClickUp + Reddit opportunity monitor
@@ -99,7 +97,7 @@ export default function WorkflowPage() {
       </div>
 
       <div className={styles.tabBar} role="tablist">
-        {(['planner', 'upload', 'posts', 'outreach', 'social', 'kpi', 'forms', 'workflow'] as Tab[]).map((t) => (
+        {(['planner', 'upload', 'posts', 'social', 'kpi', 'forms', 'workflow'] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -108,7 +106,7 @@ export default function WorkflowPage() {
             className={`${styles.tabButton} ${tab === t ? styles.tabButtonActive : ''}`}
             onClick={() => setTab(t)}
           >
-            {t === 'planner' ? 'Planner' : t === 'upload' ? 'Email' : t === 'posts' ? 'Campaign' : t === 'outreach' ? 'Outreach' : t === 'social' ? 'Posts' : t === 'kpi' ? 'Campaign KPIs' : t === 'forms' ? 'Forms' : 'Workflow'}
+            {t === 'planner' ? 'Planner' : t === 'upload' ? 'Email' : t === 'posts' ? 'Campaign' : t === 'social' ? 'Outreach' : t === 'kpi' ? 'Campaign KPIs' : t === 'forms' ? 'Forms' : 'Workflow'}
           </button>
         ))}
       </div>
@@ -116,7 +114,6 @@ export default function WorkflowPage() {
       {tab === 'planner' && <DailyWorkflowPlanner />}
       {tab === 'upload' && <UploadTab />}
       {tab === 'posts' && <CampaignTab />}
-      {tab === 'outreach' && <OutreachTab />}
       {tab === 'social' && <SocialTab />}
       {tab === 'kpi' && <KpiTab />}
       {tab === 'forms' && <FormsTab />}
