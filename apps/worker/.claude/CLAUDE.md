@@ -65,15 +65,21 @@ Last updated: 2026-04-13
 
 ## 5. Cron Triggers
 
-| Schedule | UTC | Purpose |
-|----------|-----|---------|
-| `0 6 * * *` | 06:00 daily | WLVLP site generation + SCALE find-emails (Reoon Power) |
-| `0 8 * * *` | 08:00 daily | SCALE validate-emails (Reoon quick mode) |
-| `0 9 * * 1` | 09:00 Monday | DVLP job matching |
-| `0 10 * * *` | 10:00 daily | WLVLP auction settlement + FOIA lead enrichment + SCALE generate-batch |
-| `0 12 * * *` | 12:00 daily | WLVLP SCALE batch generation |
-| `0 13 * * *` | 13:00 daily | WLVLP asset page enrichment (crawl + conversion_leak_report) |
-| `0 14 * * *` | 14:00 daily | SCALE email sending (TTMP + WLVLP) |
+| Cron | UTC | Handler(s) | Purpose |
+|------|-----|-----------|---------|
+| `0 4,16 * * *` | 04:00/16:00 | `handleRedditMonitorCron` | Reddit scan + R2 opportunities |
+| `0 5 * * *` | 05:00 | `handleTavlpChannelStats` | TAVLP YouTube channel stats |
+| `0 6 * * *` | 06:00 | `handleWlvlpSiteGeneration`, `handleFindEmailsCron` | WLVLP site gen + SCALE Reoon find |
+| `0 7 * * SUN` | Sun 07:00 | `handleKpiWeeklySnapshot` | KPI weekly snapshot |
+| `0 8 * * *` | 08:00 | `handleValidateEmailsCron` | SCALE Reoon validate |
+| `0 9 * * 1` | Mon 09:00 | `handleClientPoolHealthCheck`, DVLP job-matching | Pool health + DVLP developer matches |
+| `0 10 * * *` | 10:00 | `handleEnrichmentBatch`, `handleWlvlpAuctionSettlementCron`, WLVLP hosting renewal check | FOIA enrich + WLVLP auction settle + hosting expiry |
+| `0 12 * * *` | 12:00 | `handlePendingCsvIngestion`, `handleDailyBatchGeneration` | SCALE CSV ingest + batch routing |
+| `0 13 * * *` | 13:00 | `handleWlvlpAssetEnrichmentCron` | WLVLP asset crawl |
+| `0 14 * * *` | 14:00 | `handleTtmpEmailSend`, `handleVlpEmailSend`, `handleWlvlpEmailSend` | SCALE email sends |
+| `0 14 * * SUN` | Sun 14:00 | `handleSocialWeeklySchedule` | Kwong FB/IG weekly |
+| `0 15 * * *` | 15:00 | `handleWlvlpDripCron`, `handleTcvlpGalaDripCron`, `handleTttmpVesperiDripCron` | All platform drips |
+| `0 15 * * 1-5` | M-F 15:00 | `handleSocialDailyLinkedIn` | Kwong LinkedIn daily |
 
 ---
 
