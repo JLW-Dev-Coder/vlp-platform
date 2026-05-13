@@ -898,6 +898,152 @@ async function getFreshYouTubeOAuthToken(env) {
 // Also updates the render + script records in R2 with publish metadata.
 // Shared by POST /v1/tavlp/youtube/upload and the auto-upload path inside
 // GET /v1/tavlp/render/:render_id/status.
+// Send an email from the TAVLP brand address via Resend.
+async function sendTavlpEmail(env, to, subject, html) {
+  if (!env.RESEND_API_KEY || !to) return false;
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Tax Avatar Pro <noreply@virtuallaunch.pro>',
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      console.error(`[sendTavlpEmail] Resend ${res.status}:`, err.slice(0, 300));
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('[sendTavlpEmail] exception:', e?.message || e);
+    return false;
+  }
+}
+
+// Generate TAVLP scripts for an account using the Anthropic Claude API,
+// storing each script and a batch manifest to R2. Returns { ok, batch_id,
+// script_ids } on success or { ok: false, error, message } on failure.
+// Called both by POST /v1/tavlp/scripts/generate and by the monthly cron.
+async function generateTavlpScriptsInternal(env, { account_id, topic, count, tone, video_length }) {
+  if (!account_id || !topic) return { ok: false, error: 'BAD_REQUEST', message: 'account_id and topic required' };
+  if (!env.ANTHROPIC_API_KEY) return { ok: false, error: 'ANTHROPIC_NOT_CONFIGURED', message: 'ANTHROPIC_API_KEY is not set' };
+  const c = Number.isInteger(count) && count >= 1 && count <= 12 ? count : 4;
+  const t = tone || 'professional and approachable';
+  const vl = video_length || '2 minutes';
+
+  const systemPrompt = `You are a tax education content writer for YouTube videos. You write scripts for AI avatar presenters aimed at tax professionals and their potential clients.
+
+Rules:
+- Each script should be 250-400 words (approximately 2 minutes when spoken).
+- Open with a hook question or surprising fact to grab attention in the first 5 seconds.
+- Use plain language — explain IRS codes and procedures as if talking to someone who is not a tax professional.
+- End each script with a clear call to action: "If you think this applies to you, click the link in the description to get started."
+- Do NOT give specific legal advice. Frame everything as educational: "you may be eligible", "consult a tax professional", etc.
+- Include the IRS code or ruling reference where applicable.
+- Each script should be self-contained — a viewer watching just this one video should get value.
+
+Respond ONLY with valid JSON. No markdown, no preamble, no backticks. The response must be a JSON array of script objects.`;
+
+  const userPrompt = `Generate ${c} YouTube video scripts about "${topic}" for a tax professional's educational channel.
+
+Tone: ${t}. Target video length: ${vl}.
+
+Return a JSON array where each element has:
+- "title": a YouTube-friendly title (under 60 characters)
+- "description": a 1-sentence YouTube description
+- "script": the full script text
+- "tags": an array of 4-6 relevant YouTube tags
+- "hook": the opening line of the script (first 1-2 sentences, used for thumbnail text)`;
+
+  let claudeRes;
+  try {
+    claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
+  } catch (e) {
+    return { ok: false, error: 'script_generation_failed', message: 'Failed to reach Claude API' };
+  }
+  if (!claudeRes.ok) {
+    const errText = await claudeRes.text().catch(() => '');
+    console.error('TAVLP generateScripts Claude API error:', claudeRes.status, errText.slice(0, 300));
+    return { ok: false, error: 'script_generation_failed', message: 'Claude API request failed' };
+  }
+  let claudeJson;
+  try { claudeJson = await claudeRes.json(); } catch { return { ok: false, error: 'script_generation_failed', message: 'parse failed' }; }
+  const text = claudeJson?.content?.[0]?.text;
+  if (typeof text !== 'string') return { ok: false, error: 'script_generation_failed', message: 'parse failed' };
+  let parsed;
+  try { parsed = JSON.parse(text); } catch { return { ok: false, error: 'script_generation_failed', message: 'parse failed' }; }
+  if (!Array.isArray(parsed) || parsed.length === 0) return { ok: false, error: 'script_generation_failed', message: 'empty result' };
+
+  const createdAt = new Date().toISOString();
+  const batchId = crypto.randomUUID();
+  const scriptIds = [];
+  const responseScripts = [];
+
+  for (const item of parsed) {
+    const scriptId = crypto.randomUUID();
+    const record = {
+      script_id: scriptId,
+      account_id,
+      topic,
+      title: typeof item?.title === 'string' ? item.title : '',
+      description: typeof item?.description === 'string' ? item.description : '',
+      script: typeof item?.script === 'string' ? item.script : '',
+      tags: Array.isArray(item?.tags) ? item.tags : [],
+      hook: typeof item?.hook === 'string' ? item.hook : '',
+      status: 'pending_review',
+      created_at: createdAt,
+      approved_at: null,
+      rendered_at: null,
+    };
+    try {
+      await env.R2_VIRTUAL_LAUNCH.put(
+        `tavlp/scripts/${account_id}/${scriptId}.json`,
+        JSON.stringify(record),
+        { httpMetadata: { contentType: 'application/json' } }
+      );
+    } catch (e) {
+      console.error('TAVLP generateScripts R2 put error:', e);
+      return { ok: false, error: 'script_generation_failed', message: 'Failed to store generated script' };
+    }
+    scriptIds.push(scriptId);
+    responseScripts.push({ script_id: scriptId, title: record.title, hook: record.hook, status: 'pending_review' });
+  }
+
+  const manifest = {
+    batch_id: batchId,
+    account_id,
+    topic,
+    count: scriptIds.length,
+    script_ids: scriptIds,
+    status: 'pending_review',
+    created_at: createdAt,
+    reminder_3d_sent_at: null,
+    reminder_7d_sent_at: null,
+  };
+  try {
+    await env.R2_VIRTUAL_LAUNCH.put(
+      `tavlp/scripts/${account_id}/batches/${batchId}.json`,
+      JSON.stringify(manifest),
+      { httpMetadata: { contentType: 'application/json' } }
+    );
+  } catch (e) { console.error('TAVLP generateScripts manifest write error:', e); }
+
+  return { ok: true, batch_id: batchId, script_ids: scriptIds, scripts: responseScripts };
+}
+
 async function uploadTavlpVideoToYouTube(env, render, script, channel, opts) {
   const options = opts || {};
   const visibility = options.visibility || 'private';
@@ -1032,6 +1178,25 @@ async function uploadTavlpVideoToYouTube(env, render, script, channel, opts) {
       httpMetadata: { contentType: 'application/json' },
     });
   } catch (e) { console.error('TAVLP upload: script update error:', e); }
+
+  // Email 5 — Video published notification.
+  try {
+    const subObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/subscriptions/${account_id}.json`);
+    const sub = subObj ? await subObj.json() : null;
+    const customerEmail = sub?.email || null;
+    if (customerEmail) {
+      await sendTavlpEmail(env, customerEmail, `New video published: ${script.title || 'your latest video'}`, `<h2>Your New Video Is Live!</h2>
+<p>Hi,</p>
+<p>A new video has been published to your YouTube channel:</p>
+<p><strong>${escapeHtml(script.title || '')}</strong></p>
+<p><a href="${escapeHtml(youtubeUrl)}">Watch it on YouTube →</a></p>
+<p>Check your <a href="https://taxavatar.virtuallaunch.pro/dashboard/videos">dashboard</a> for all your published videos and channel stats.</p>
+<br>
+<p>— Tax Avatar Pro</p>`);
+    } else {
+      console.warn(`TAVLP upload: no customer email for ${account_id}, skipping video-published email`);
+    }
+  } catch (e) { console.error('TAVLP video-published email error:', e?.message || e); }
 
   return {
     ok: true,
@@ -5694,12 +5859,14 @@ Lenore, Inc., 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br>
             if (platform === 'tavlp' && account_id) {
               try {
                 const tier = obj.metadata?.tier || null;
+                const customerEmail = obj.customer_details?.email || obj.customer_email || null;
                 const key = `tavlp/subscriptions/${account_id}.json`;
                 const existing = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
                 const created_at = existing?.created_at || now;
                 await r2Put(env.R2_VIRTUAL_LAUNCH, key, {
                   account_id,
                   tier,
+                  email: customerEmail,
                   stripe_subscription_id: obj.subscription,
                   stripe_customer_id: obj.customer,
                   status: 'active',
@@ -5707,6 +5874,31 @@ Lenore, Inc., 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br>
                   updated_at: now,
                 });
                 console.log(`TAVLP subscription activated: ${account_id} -> ${tier}`);
+
+                // Email 1 — Welcome to customer.
+                if (customerEmail) {
+                  await sendTavlpEmail(env, customerEmail, 'Welcome to Tax Avatar Pro!', `<h2>Welcome to Tax Avatar Pro!</h2>
+<p>Hi,</p>
+<p>Your subscription is confirmed. Here's what happens next:</p>
+<ol>
+  <li><strong>We set up your channel</strong> — Your branded YouTube channel will be configured within 24 hours with your firm's name, colors, and SEO settings.</li>
+  <li><strong>You'll get an email</strong> — Once your channel is ready, we'll send you a link to log in and complete your setup (pick your avatar, set your topic).</li>
+  <li><strong>Scripts &amp; videos start flowing</strong> — After you approve your first scripts, we render and publish automatically.</li>
+</ol>
+<p>Questions? Reply to this email or visit <a href="https://taxavatar.virtuallaunch.pro/contact">taxavatar.virtuallaunch.pro/contact</a>.</p>
+<br>
+<p>— Tax Avatar Pro</p>`);
+                }
+
+                // Email 2 — New subscriber alert to JLW.
+                await sendTavlpEmail(env, 'outreach@virtuallaunch.pro', `New TAVLP Subscriber — ${tier || 'unknown'}`, `<h2>New TAVLP Subscriber</h2>
+<p><strong>Email:</strong> ${escapeHtml(customerEmail || '(none)')}</p>
+<p><strong>Tier:</strong> ${escapeHtml(tier || 'unknown')}</p>
+<p><strong>Account ID:</strong> ${escapeHtml(account_id)}</p>
+<p><strong>Stripe Subscription:</strong> ${escapeHtml(obj.subscription || '')}</p>
+<br>
+<p><strong>Action needed:</strong> Set up their YouTube channel, then register it in SCALE.</p>
+<p><a href="https://virtuallaunch.pro/scale/tavlp">Open SCALE → TAVLP</a></p>`);
               } catch (e) {
                 console.error('TAVLP Stripe webhook error:', e);
               }
@@ -20633,6 +20825,21 @@ https://virtuallaunch.pro/payouts
       if (!tone || typeof tone !== 'string') tone = 'professional and approachable';
       if (!video_length || typeof video_length !== 'string') video_length = '2 minutes';
 
+      const result = await generateTavlpScriptsInternal(env, { account_id, topic, count, tone, video_length });
+      if (!result.ok) {
+        const status = result.error === 'ANTHROPIC_NOT_CONFIGURED' ? 503 : 502;
+        return json({ ok: false, error: result.error, message: result.message }, status, request);
+      }
+      return json({ ok: true, batch_id: result.batch_id, scripts: result.scripts }, 200, request);
+    },
+  },
+
+  // (legacy inline scripts.generate implementation removed —
+  // see generateTavlpScriptsInternal helper above.)
+  /* removed:
+  {
+    method: 'POST', pattern: '/__deprecated/tavlp/scripts/generate',
+    handler: async (_method, _pattern, _params, request, env) => {
       const apiKey = env.ANTHROPIC_API_KEY;
       if (!apiKey) {
         return json({ ok: false, error: 'ANTHROPIC_NOT_CONFIGURED', message: 'ANTHROPIC_API_KEY is not set' }, 503, request);
@@ -20773,6 +20980,7 @@ Return a JSON array where each element has:
       return json({ ok: true, batch_id: batchId, scripts: responseScripts }, 200, request);
     },
   },
+  */
 
   // GET /v1/tavlp/scripts/:account_id — list scripts for an account
   {
@@ -21813,6 +22021,34 @@ Return a JSON array where each element has:
       } catch (e) {
         console.error('TAVLP channels.put R2 error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to write channel config' }, 500, request);
+      }
+
+      // Email 3 — Channel ready (only when admin registers channel_id for the
+      // first time; previous state had no channel_id).
+      const wasNewChannelRegistration = isAdmin
+        && !!record.channel_id
+        && (!existing || !existing.channel_id);
+      if (wasNewChannelRegistration) {
+        try {
+          const subObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/subscriptions/${account_id}.json`);
+          const sub = subObj ? await subObj.json() : null;
+          const customerEmail = sub?.email || null;
+          if (customerEmail) {
+            await sendTavlpEmail(env, customerEmail, 'Your YouTube channel is ready!', `<h2>Your YouTube Channel Is Ready!</h2>
+<p>Hi,</p>
+<p>Great news — your branded YouTube channel <strong>${escapeHtml(record.channel_name || '')}</strong> has been set up and configured.</p>
+<p><strong>Next steps:</strong></p>
+<ol>
+  <li><a href="https://taxavatar.virtuallaunch.pro/dashboard">Log in to your dashboard</a></li>
+  <li>Pick your AI avatar (or upload your photo if you're on Pro)</li>
+  <li>Set your tax topic niche</li>
+  <li>Generate and approve your first video scripts</li>
+</ol>
+<p>Once you approve your scripts, we'll render your videos and publish them automatically. You'll get an email when each video goes live.</p>
+<br>
+<p>— Tax Avatar Pro</p>`);
+          }
+        } catch (e) { console.error('TAVLP channel-ready email error:', e?.message || e); }
       }
 
       return json({ ok: true, channel: record }, 200, request);
@@ -33646,6 +33882,173 @@ async function handleTavlpTransferReminders(env) {
 }
 
 
+// Daily — emails TAVLP customers when scripts have been pending_review for
+// 3+ days (first reminder) and 7+ days (final reminder). Tracks reminder
+// timestamps on each batch manifest to prevent duplicates. Capped at 20 sends.
+async function handleTavlpScriptReminders(env) {
+  const log = { type: 'tavlp_script_reminders', timestamp: new Date().toISOString(), reminders_sent: 0, checked: 0, errors: 0 };
+  if (!env.RESEND_API_KEY) { log.skipped = 'no_resend_key'; return log; }
+  const MAX_PER_RUN = 20;
+  const now = Date.now();
+  const D3 = 3 * 86400000;
+  const D7 = 7 * 86400000;
+
+  let subList;
+  try { subList = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'tavlp/subscriptions/', limit: 1000 }); }
+  catch (e) { log.error = `subs_list_failed: ${e?.message || e}`; return log; }
+
+  for (const subObj of subList.objects || []) {
+    if (log.reminders_sent >= MAX_PER_RUN) break;
+    try {
+      const sObj = await env.R2_VIRTUAL_LAUNCH.get(subObj.key);
+      if (!sObj) continue;
+      const sub = await sObj.json();
+      if (sub.status !== 'active' || !sub.email || !sub.account_id) continue;
+
+      const batchPrefix = `tavlp/scripts/${sub.account_id}/batches/`;
+      const batches = await env.R2_VIRTUAL_LAUNCH.list({ prefix: batchPrefix, limit: 100 });
+      for (const bObj of batches.objects || []) {
+        if (log.reminders_sent >= MAX_PER_RUN) break;
+        log.checked++;
+        try {
+          const item = await env.R2_VIRTUAL_LAUNCH.get(bObj.key);
+          if (!item) continue;
+          const batch = await item.json();
+          if (batch.status !== 'pending_review') continue;
+          const createdMs = batch.created_at ? Date.parse(batch.created_at) : 0;
+          if (!createdMs) continue;
+          const age = now - createdMs;
+
+          // Count still-pending scripts in this batch.
+          let pendingCount = 0;
+          for (const sid of (batch.script_ids || [])) {
+            const so = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/scripts/${sub.account_id}/${sid}.json`);
+            if (!so) continue;
+            const sc = await so.json();
+            if (sc.status === 'pending_review') pendingCount++;
+          }
+          if (pendingCount === 0) continue;
+
+          if (age >= D7 && batch.reminder_3d_sent_at && !batch.reminder_7d_sent_at) {
+            const html = `<h2>Reminder: Scripts Still Waiting For Approval</h2>
+<p>Hi,</p>
+<p>You have ${pendingCount} video scripts still waiting for your approval. Once you approve them, we'll render and publish your videos automatically.</p>
+<p><a href="https://taxavatar.virtuallaunch.pro/dashboard/scripts">Review your scripts →</a></p>
+<p>This is your last reminder — we won't bug you again. Log in whenever you're ready.</p>
+<br>
+<p>— Tax Avatar Pro</p>`;
+            const ok = await sendTavlpEmail(env, sub.email, `Reminder: ${pendingCount} scripts still waiting for your approval`, html);
+            if (ok) {
+              batch.reminder_7d_sent_at = new Date().toISOString();
+              await env.R2_VIRTUAL_LAUNCH.put(bObj.key, JSON.stringify(batch), { httpMetadata: { contentType: 'application/json' } });
+              log.reminders_sent++;
+            } else log.errors++;
+          } else if (age >= D3 && !batch.reminder_3d_sent_at) {
+            const html = `<h2>Scripts Waiting For Your Review</h2>
+<p>Hi,</p>
+<p>You have ${pendingCount} video scripts ready for your review. Once you approve them, we'll render and publish your videos automatically.</p>
+<p><a href="https://taxavatar.virtuallaunch.pro/dashboard/scripts">Review your scripts →</a></p>
+<p>Your videos can't go live until you give the OK — it only takes a minute.</p>
+<br>
+<p>— Tax Avatar Pro</p>`;
+            const ok = await sendTavlpEmail(env, sub.email, 'You have scripts waiting for review', html);
+            if (ok) {
+              batch.reminder_3d_sent_at = new Date().toISOString();
+              await env.R2_VIRTUAL_LAUNCH.put(bObj.key, JSON.stringify(batch), { httpMetadata: { contentType: 'application/json' } });
+              log.reminders_sent++;
+            } else log.errors++;
+          }
+        } catch (e) { log.errors++; console.error('TAVLP script reminder batch error:', e?.message || e); }
+      }
+    } catch (e) { log.errors++; console.error('TAVLP script reminder sub error:', e?.message || e); }
+  }
+  return log;
+}
+
+// Monthly (1st of each UTC month) — auto-generates a fresh batch of scripts
+// for every active TAVLP subscriber. Tier-driven count: Launch=4, Growth=8,
+// Pro=12. Capped at 10 subscribers per run; remaining subscribers are picked
+// up on subsequent daily cron runs via a cursor at
+// tavlp/cron/monthly-gen-cursor.json (lists pending account_ids for the
+// current month).
+async function handleTavlpMonthlyScriptGeneration(env) {
+  const log = { type: 'tavlp_monthly_script_generation', timestamp: new Date().toISOString(), generated: 0, errors: 0, skipped: 0 };
+  if (!env.ANTHROPIC_API_KEY) { log.skipped_all = 'no_anthropic_key'; return log; }
+  const MAX_PER_RUN = 10;
+  const today = new Date();
+  const monthKey = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}`;
+  const cursorKey = 'tavlp/cron/monthly-gen-cursor.json';
+
+  // On day 1, (re)seed the cursor with every active subscriber.
+  let cursor = null;
+  try {
+    const cObj = await env.R2_VIRTUAL_LAUNCH.get(cursorKey);
+    if (cObj) cursor = await cObj.json();
+  } catch {}
+
+  if (today.getUTCDate() === 1 && (!cursor || cursor.month !== monthKey)) {
+    const pending = [];
+    try {
+      const subList = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'tavlp/subscriptions/', limit: 1000 });
+      for (const o of subList.objects || []) {
+        const sObj = await env.R2_VIRTUAL_LAUNCH.get(o.key);
+        if (!sObj) continue;
+        const s = await sObj.json();
+        if (s.status === 'active' && s.account_id) pending.push(s.account_id);
+      }
+    } catch (e) { log.error = `seed_failed: ${e?.message || e}`; return log; }
+    cursor = { month: monthKey, pending, generated_for: [], seeded_at: new Date().toISOString() };
+    try { await env.R2_VIRTUAL_LAUNCH.put(cursorKey, JSON.stringify(cursor), { httpMetadata: { contentType: 'application/json' } }); } catch {}
+    log.seeded = pending.length;
+  }
+
+  if (!cursor || cursor.month !== monthKey || !cursor.pending || cursor.pending.length === 0) {
+    log.no_pending = true;
+    return log;
+  }
+
+  const tierCount = { launch: 4, growth: 8, pro: 12 };
+  const batchSlice = cursor.pending.slice(0, MAX_PER_RUN);
+
+  for (const account_id of batchSlice) {
+    try {
+      const sObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/subscriptions/${account_id}.json`);
+      if (!sObj) { log.skipped++; cursor.pending = cursor.pending.filter((a) => a !== account_id); continue; }
+      const sub = await sObj.json();
+      if (sub.status !== 'active') { log.skipped++; cursor.pending = cursor.pending.filter((a) => a !== account_id); continue; }
+
+      let topic = 'tax education';
+      let count = tierCount[(sub.tier || '').toLowerCase()] || 4;
+      try {
+        const chObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/channels/${account_id}.json`);
+        if (chObj) {
+          const ch = await chObj.json();
+          if (typeof ch.topic === 'string' && ch.topic) topic = ch.topic;
+        }
+      } catch {}
+
+      const result = await generateTavlpScriptsInternal(env, { account_id, topic, count, tone: 'professional and approachable', video_length: '2 minutes' });
+      if (result.ok) {
+        log.generated++;
+        cursor.generated_for.push(account_id);
+        console.log(`[TAVLP monthly] Generated ${count} scripts for ${account_id}`);
+      } else {
+        log.errors++;
+        console.error(`[TAVLP monthly] Generation failed for ${account_id}: ${result.error}`);
+      }
+      cursor.pending = cursor.pending.filter((a) => a !== account_id);
+    } catch (e) { log.errors++; console.error('TAVLP monthly cron error:', e?.message || e); }
+  }
+
+  try {
+    await env.R2_VIRTUAL_LAUNCH.put(cursorKey, JSON.stringify({ ...cursor, updated_at: new Date().toISOString() }), {
+      httpMetadata: { contentType: 'application/json' },
+    });
+  } catch {}
+  return log;
+}
+
+
 // ---------------------------------------------------------------------------
 // Fetch handler
 // ---------------------------------------------------------------------------
@@ -34571,6 +34974,21 @@ export default {
         console.log('TAVLP transfer reminders cron:', JSON.stringify(log));
       } catch (e) {
         console.error('TAVLP transfer reminders cron failed:', e);
+      }
+      try {
+        const log = await handleTavlpScriptReminders(env);
+        console.log('TAVLP script reminders cron:', JSON.stringify(log));
+      } catch (e) {
+        console.error('TAVLP script reminders cron failed:', e);
+      }
+      // Monthly TAVLP script auto-generation — runs piggybacked on the daily
+      // 05:00 UTC cron. Seeds a cursor on the 1st of the month and drains it
+      // (10 subscribers per run) across subsequent days.
+      try {
+        const log = await handleTavlpMonthlyScriptGeneration(env);
+        console.log('TAVLP monthly script generation cron:', JSON.stringify(log));
+      } catch (e) {
+        console.error('TAVLP monthly script generation cron failed:', e);
       }
       return;
     }
