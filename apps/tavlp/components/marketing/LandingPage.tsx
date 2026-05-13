@@ -179,7 +179,7 @@ const CSS = `
 [data-tavlp-landing] .submit-btn{width:100%;margin-top:1rem;padding:1rem;border-radius:.5rem;font-weight:600;font-size:.9375rem;border:none;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;transition:all .2s;box-shadow:0 0 20px rgba(236,72,153,.12);animation:tavlp-wiggle 3s ease-in-out infinite;animation-delay:1s}
 [data-tavlp-landing] .submit-btn:hover{filter:brightness(1.1);animation:none}
 [data-tavlp-landing] .submit-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;animation:none}
-[data-tavlp-landing] .toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;max-width:22rem;padding:.875rem 1.25rem;border-radius:.875rem;border:1px solid rgba(16,185,129,.2);background:rgba(2,6,23,.9);backdrop-filter:blur(12px);transition:all .5s cubic-bezier(.4,0,.2,1)}
+[data-tavlp-landing] .toast{position:fixed;bottom:1.5rem;left:1.5rem;z-index:50;max-width:22rem;padding:.875rem 1.25rem;border-radius:.875rem;border:1px solid rgba(16,185,129,.2);background:rgba(2,6,23,.9);backdrop-filter:blur(12px);transition:all .5s cubic-bezier(.4,0,.2,1)}
 [data-tavlp-landing] .toast.h{transform:translateY(1rem);opacity:0;pointer-events:none}
 [data-tavlp-landing] .toast.v{transform:translateY(0);opacity:1}
 [data-tavlp-landing] .deadline-bar{position:sticky;top:0;z-index:40;padding:.5rem 1rem;text-align:center;font-size:.6875rem;font-weight:600;letter-spacing:.02em;background:rgba(236,72,153,.08);border-bottom:1px solid rgba(236,72,153,.15);backdrop-filter:blur(12px);color:var(--brand-light)}
