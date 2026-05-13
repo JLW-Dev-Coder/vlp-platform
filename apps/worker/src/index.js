@@ -20715,6 +20715,456 @@ Return a JSON array where each element has:
     },
   },
 
+  // GET /v1/tavlp/avatars — return the TAVLP avatar registry from R2.
+  // If the registry doesn't exist yet, fetch the avatar list from HeyGen and
+  // build it. Stored at `tavlp/config/avatar-registry.json`.
+  // Requires: wrangler secret put HEYGEN_API_KEY
+  {
+    method: 'GET', pattern: '/v1/tavlp/avatars',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const registryKey = 'tavlp/config/avatar-registry.json';
+
+      try {
+        const existing = await env.R2_VIRTUAL_LAUNCH.get(registryKey);
+        if (existing) {
+          const registry = await existing.json();
+          return json({ ok: true, avatars: registry.avatars || [], updated_at: registry.updated_at }, 200, request);
+        }
+      } catch (e) {
+        console.error('TAVLP avatars registry read error:', e);
+      }
+
+      const apiKey = env.HEYGEN_API_KEY;
+      if (!apiKey) {
+        return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
+      }
+
+      const TARGET_NAMES = ['Annie', 'Tariq', 'Genesis', 'Knox', 'Denyse', 'Griffin'];
+      const targetLower = new Set(TARGET_NAMES.map((n) => n.toLowerCase()));
+
+      let listRes;
+      try {
+        listRes = await fetch('https://api.heygen.com/v2/avatars', {
+          method: 'GET',
+          headers: { 'X-Api-Key': apiKey, 'Accept': 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP avatars HeyGen fetch error:', e);
+        return json({ ok: false, error: 'heygen_unreachable', message: 'Failed to reach HeyGen API' }, 502, request);
+      }
+      if (!listRes.ok) {
+        const errText = await listRes.text().catch(() => '');
+        console.error('TAVLP avatars HeyGen list error:', listRes.status, errText);
+        return json({ ok: false, error: 'heygen_list_failed', message: `HeyGen returned ${listRes.status}`, detail: errText.slice(0, 500) }, 502, request);
+      }
+
+      let listJson;
+      try { listJson = await listRes.json(); } catch {
+        return json({ ok: false, error: 'heygen_list_failed', message: 'Failed to parse HeyGen response' }, 502, request);
+      }
+
+      // HeyGen v2/avatars returns: { data: { avatars: [{ avatar_id, avatar_name, gender, preview_image_url, preview_video_url, premium }], talking_photos: [...] } }
+      // Looks are not nested per-avatar in this list — each "look" is itself a row
+      // where multiple rows share the same avatar_name. Group by avatar_name.
+      const rows = (listJson?.data?.avatars) || listJson?.avatars || [];
+      const byName = new Map();
+      for (const row of rows) {
+        const nm = (row?.avatar_name || '').trim();
+        if (!nm) continue;
+        if (!targetLower.has(nm.toLowerCase())) continue;
+        const key = nm.toLowerCase();
+        if (!byName.has(key)) {
+          byName.set(key, {
+            name: TARGET_NAMES.find((t) => t.toLowerCase() === key) || nm,
+            avatar_id: row.avatar_id,
+            default_voice_id: row.default_voice_id || row.voice_id || null,
+            looks: [],
+          });
+        }
+        const entry = byName.get(key);
+        entry.looks.push({
+          look_id: row.avatar_id,
+          name: row.avatar_name,
+          preview_image_url: row.preview_image_url || null,
+          gender: row.gender || null,
+        });
+      }
+
+      // If default_voice_id is still null, try to fetch per-avatar voice details.
+      // HeyGen's GET /v2/voices is workspace-wide; we can leave null and let the
+      // render endpoint surface a clear error if a voice can't be resolved.
+      const avatars = TARGET_NAMES
+        .map((n) => byName.get(n.toLowerCase()))
+        .filter(Boolean)
+        .map((a) => ({
+          name: a.name,
+          avatar_id: a.avatar_id,
+          looks_count: a.looks.length,
+          default_voice_id: a.default_voice_id,
+          looks: a.looks,
+        }));
+
+      const registry = { avatars, updated_at: new Date().toISOString() };
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(registryKey, JSON.stringify(registry), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP avatars registry write error:', e);
+      }
+
+      return json({ ok: true, avatars, updated_at: registry.updated_at }, 200, request);
+    },
+  },
+
+  // POST /v1/tavlp/render — kick off a HeyGen avatar video render for an
+  // approved script. Stores a render job at
+  // `tavlp/renders/{account_id}/{render_id}.json` with status `processing`.
+  {
+    method: 'POST', pattern: '/v1/tavlp/render',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      const { account_id, script_id, avatar_name } = body ?? {};
+      const provided_look_id = body?.look_id;
+      if (!account_id || !script_id || !avatar_name) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id, script_id, and avatar_name are required' }, 400, request);
+      }
+
+      const apiKey = env.HEYGEN_API_KEY;
+      if (!apiKey) {
+        return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
+      }
+
+      // Load script.
+      const scriptKey = `tavlp/scripts/${account_id}/${script_id}.json`;
+      let scriptObj;
+      try { scriptObj = await env.R2_VIRTUAL_LAUNCH.get(scriptKey); } catch (e) {
+        console.error('TAVLP render script read error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read script' }, 500, request);
+      }
+      if (!scriptObj) {
+        return json({ ok: false, error: 'script_not_found' }, 404, request);
+      }
+      let script;
+      try { script = await scriptObj.json(); } catch {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to parse script' }, 500, request);
+      }
+      if (script.status !== 'approved') {
+        return json({ ok: false, error: 'script_not_approved', message: `Script must be approved before rendering. Current status: ${script.status}` }, 400, request);
+      }
+
+      // Load registry.
+      let registry;
+      try {
+        const regObj = await env.R2_VIRTUAL_LAUNCH.get('tavlp/config/avatar-registry.json');
+        if (!regObj) {
+          return json({ ok: false, error: 'avatar_registry_missing', message: 'Avatar registry not initialized. Call GET /v1/tavlp/avatars first.' }, 500, request);
+        }
+        registry = await regObj.json();
+      } catch (e) {
+        console.error('TAVLP render registry read error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read avatar registry' }, 500, request);
+      }
+
+      const avatar = (registry.avatars || []).find((a) => a.name.toLowerCase() === String(avatar_name).toLowerCase());
+      if (!avatar) {
+        return json({ ok: false, error: 'avatar_not_found' }, 400, request);
+      }
+
+      const resolvedLookId = provided_look_id
+        || (avatar.looks && avatar.looks[0] && avatar.looks[0].look_id)
+        || avatar.avatar_id;
+      const resolvedVoiceId = avatar.default_voice_id;
+      if (!resolvedVoiceId) {
+        return json({ ok: false, error: 'voice_not_resolved', message: `No default_voice_id stored for avatar "${avatar.name}". Re-initialize the registry.` }, 500, request);
+      }
+
+      // HeyGen v2 /video/generate body. Each "look" of a stock avatar has its
+      // own avatar_id in HeyGen's catalog, so the resolved look_id IS the
+      // avatar_id we pass to the API.
+      const heygenBody = {
+        video_inputs: [
+          {
+            character: {
+              type: 'avatar',
+              avatar_id: resolvedLookId,
+              avatar_style: 'normal',
+            },
+            voice: {
+              type: 'text',
+              input_text: script.script || '',
+              voice_id: resolvedVoiceId,
+            },
+          },
+        ],
+        dimension: { width: 1920, height: 1080 },
+      };
+
+      let genRes;
+      try {
+        genRes = await fetch('https://api.heygen.com/v2/video/generate', {
+          method: 'POST',
+          headers: {
+            'X-Api-Key': apiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(heygenBody),
+        });
+      } catch (e) {
+        console.error('TAVLP render HeyGen fetch error:', e);
+        return json({ ok: false, error: 'heygen_unreachable', message: 'Failed to reach HeyGen API' }, 502, request);
+      }
+      const genText = await genRes.text().catch(() => '');
+      let genJson = null;
+      try { genJson = JSON.parse(genText); } catch {}
+      if (!genRes.ok) {
+        console.error('TAVLP render HeyGen generate error:', genRes.status, genText);
+        return json({ ok: false, error: 'heygen_generate_failed', message: `HeyGen returned ${genRes.status}`, detail: genText.slice(0, 500) }, 502, request);
+      }
+
+      const heygenVideoId = genJson?.data?.video_id || genJson?.video_id;
+      if (!heygenVideoId) {
+        return json({ ok: false, error: 'heygen_generate_failed', message: 'HeyGen response missing video_id', detail: genText.slice(0, 500) }, 502, request);
+      }
+
+      const renderId = crypto.randomUUID();
+      const createdAt = new Date().toISOString();
+      const renderRecord = {
+        render_id: renderId,
+        account_id,
+        script_id,
+        avatar_name: avatar.name,
+        look_id: resolvedLookId,
+        heygen_video_id: heygenVideoId,
+        status: 'processing',
+        video_url: null,
+        r2_video_key: null,
+        created_at: createdAt,
+        completed_at: null,
+        error: null,
+      };
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(
+          `tavlp/renders/${account_id}/${renderId}.json`,
+          JSON.stringify(renderRecord),
+          { httpMetadata: { contentType: 'application/json' } }
+        );
+      } catch (e) {
+        console.error('TAVLP render job write error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to persist render job' }, 500, request);
+      }
+
+      try {
+        script.status = 'rendering';
+        script.render_id = renderId;
+        await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(script), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP render script update error:', e);
+      }
+
+      return json({
+        ok: true,
+        render_id: renderId,
+        heygen_video_id: heygenVideoId,
+        status: 'processing',
+        message: `Video render started. Poll GET /v1/tavlp/render/${renderId}/status for updates.`,
+      }, 200, request);
+    },
+  },
+
+  // GET /v1/tavlp/render/:render_id/status — poll a HeyGen render. When
+  // HeyGen reports completion, lazily downloads the video into R2 at
+  // `tavlp/videos/{account_id}/{render_id}.mp4`.
+  {
+    method: 'GET', pattern: '/v1/tavlp/render/:render_id/status',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const url = new URL(request.url);
+      const account_id = url.searchParams.get('account_id');
+      if (!account_id) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id query param is required' }, 400, request);
+      }
+      const render_id = params.render_id;
+      const key = `tavlp/renders/${account_id}/${render_id}.json`;
+
+      let obj;
+      try { obj = await env.R2_VIRTUAL_LAUNCH.get(key); } catch (e) {
+        console.error('TAVLP render status read error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read render job' }, 500, request);
+      }
+      if (!obj) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+
+      let record;
+      try { record = await obj.json(); } catch {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to parse render job' }, 500, request);
+      }
+
+      if (record.status === 'completed' || record.status === 'failed') {
+        return json({
+          ok: true,
+          render_id,
+          status: record.status,
+          video_url: record.r2_video_key ? `/${record.r2_video_key}` : record.video_url,
+          error: record.error,
+        }, 200, request);
+      }
+
+      const apiKey = env.HEYGEN_API_KEY;
+      if (!apiKey) {
+        return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
+      }
+
+      let statusRes;
+      try {
+        statusRes = await fetch(`https://api.heygen.com/v1/video_status.get?video_id=${encodeURIComponent(record.heygen_video_id)}`, {
+          method: 'GET',
+          headers: { 'X-Api-Key': apiKey, 'Accept': 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP render status HeyGen fetch error:', e);
+        return json({ ok: false, error: 'heygen_unreachable', message: 'Failed to reach HeyGen API' }, 502, request);
+      }
+      const statusText = await statusRes.text().catch(() => '');
+      let statusJson = null;
+      try { statusJson = JSON.parse(statusText); } catch {}
+      if (!statusRes.ok) {
+        console.error('TAVLP render status HeyGen error:', statusRes.status, statusText);
+        return json({ ok: false, error: 'heygen_status_failed', message: `HeyGen returned ${statusRes.status}`, detail: statusText.slice(0, 500) }, 502, request);
+      }
+
+      const data = statusJson?.data || statusJson || {};
+      const hgStatus = data.status; // 'pending' | 'processing' | 'waiting' | 'completed' | 'failed'
+
+      if (hgStatus === 'completed') {
+        const videoUrl = data.video_url;
+        const r2Key = `tavlp/videos/${account_id}/${render_id}.mp4`;
+        if (videoUrl) {
+          try {
+            const vidRes = await fetch(videoUrl);
+            if (!vidRes.ok) throw new Error(`Video fetch returned ${vidRes.status}`);
+            const contentLength = vidRes.headers.get('content-length');
+            if (contentLength && Number(contentLength) > 100 * 1024 * 1024) {
+              console.warn(`TAVLP render ${render_id} video is ${contentLength} bytes — may exceed single-put limits`);
+            }
+            const buf = await vidRes.arrayBuffer();
+            await env.R2_VIRTUAL_LAUNCH.put(r2Key, buf, {
+              httpMetadata: { contentType: 'video/mp4' },
+            });
+            record.r2_video_key = r2Key;
+          } catch (e) {
+            console.error('TAVLP render video download/upload error:', e);
+            record.error = `video_persist_failed: ${e?.message || String(e)}`;
+          }
+        }
+        record.status = 'completed';
+        record.video_url = videoUrl || null;
+        record.completed_at = new Date().toISOString();
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
+            httpMetadata: { contentType: 'application/json' },
+          });
+        } catch (e) { console.error('TAVLP render job update error:', e); }
+
+        try {
+          const scriptKey = `tavlp/scripts/${account_id}/${record.script_id}.json`;
+          const sObj = await env.R2_VIRTUAL_LAUNCH.get(scriptKey);
+          if (sObj) {
+            const s = await sObj.json();
+            s.status = 'rendered';
+            s.rendered_at = record.completed_at;
+            s.r2_video_key = record.r2_video_key;
+            await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(s), {
+              httpMetadata: { contentType: 'application/json' },
+            });
+          }
+        } catch (e) { console.error('TAVLP render script status update error:', e); }
+      } else if (hgStatus === 'failed') {
+        record.status = 'failed';
+        record.error = data.error?.message || data.error || 'HeyGen reported failed status';
+        record.completed_at = new Date().toISOString();
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
+            httpMetadata: { contentType: 'application/json' },
+          });
+        } catch (e) { console.error('TAVLP render job update error:', e); }
+
+        try {
+          const scriptKey = `tavlp/scripts/${account_id}/${record.script_id}.json`;
+          const sObj = await env.R2_VIRTUAL_LAUNCH.get(scriptKey);
+          if (sObj) {
+            const s = await sObj.json();
+            s.status = 'render_failed';
+            await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(s), {
+              httpMetadata: { contentType: 'application/json' },
+            });
+          }
+        } catch (e) { console.error('TAVLP render script status update error:', e); }
+      }
+      // else: still processing — no updates.
+
+      return json({
+        ok: true,
+        render_id,
+        status: record.status,
+        video_url: record.r2_video_key ? `/${record.r2_video_key}` : record.video_url,
+        error: record.error,
+      }, 200, request);
+    },
+  },
+
+  // GET /v1/tavlp/renders/:account_id — list all render jobs for an account.
+  {
+    method: 'GET', pattern: '/v1/tavlp/renders/:account_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const account_id = params.account_id;
+      const prefix = `tavlp/renders/${account_id}/`;
+      let listResult;
+      try {
+        listResult = await env.R2_VIRTUAL_LAUNCH.list({ prefix, limit: 1000 });
+      } catch (e) {
+        console.error('TAVLP renders.list R2 list error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to list renders' }, 500, request);
+      }
+
+      const results = await Promise.all(
+        (listResult.objects || []).map(async (obj) => {
+          try {
+            const item = await env.R2_VIRTUAL_LAUNCH.get(obj.key);
+            if (!item) return null;
+            const data = await item.json();
+            return {
+              render_id: data.render_id,
+              script_id: data.script_id,
+              avatar_name: data.avatar_name,
+              status: data.status,
+              created_at: data.created_at,
+              completed_at: data.completed_at,
+            };
+          } catch { return null; }
+        })
+      );
+      const renders = results
+        .filter(Boolean)
+        .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+      return json({ ok: true, renders }, 200, request);
+    },
+  },
+
   // -------------------------------------------------------------------------
   // TPP (Tax Prep Pro) — narrow exception to the "no Worker routes" stance
   // (canonical-api.md §1). Only the SD-API onboarding broker lives here.
