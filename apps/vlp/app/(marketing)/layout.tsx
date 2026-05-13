@@ -1,4 +1,5 @@
-import { BusinessJsonLd, MarketingHeader, MarketingFooter, CookieConsent, ExitIntentPopup, LeadChatbot } from '@vlp/member-ui'
+import { Suspense } from 'react'
+import { BusinessJsonLd, MarketingHeader, MarketingFooter, CookieConsent, ExitIntentPopup, LeadChatbot, PostHogPageview } from '@vlp/member-ui'
 import { vlpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({
@@ -21,6 +22,9 @@ export default function MarketingLayout({
       <LeadChatbot config={vlpConfig} />
       <ExitIntentPopup config={vlpConfig} />
       <CookieConsent config={vlpConfig} />
+      <Suspense fallback={null}>
+        <PostHogPageview />
+      </Suspense>
     </div>
   )
 }

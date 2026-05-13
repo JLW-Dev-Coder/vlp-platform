@@ -15,6 +15,15 @@ export const tppConfig: PlatformConfig = {
   logoText: 'TPP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
 
+  posthog: {
+    apiKey: 'phc_o5nTrNkxc37W2G9PXFL8peXMjWzdjo5d2HSjE5XzggkY',
+    apiHost: 'https://us.i.posthog.com',
+    autocapture: true,
+    capturePageview: true,
+    capturePageleave: true,
+    disabledInDev: false,
+  },
+
   // Cal.com event types — see canonical-cal-events.md §3 for the full registry.
   calBookingNamespace: 'tpvlp-support',
   calBookingSlug: 'tax-monitor-pro/tpvlp-support',
