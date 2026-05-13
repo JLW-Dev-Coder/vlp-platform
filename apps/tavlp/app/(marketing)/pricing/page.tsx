@@ -260,6 +260,77 @@ export default function PricingPage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-[77.5rem] px-4 py-16">
+        <h2 className="text-3xl font-bold text-center mb-10">Compare Plans</h2>
+        <div className="max-w-5xl mx-auto overflow-x-auto rounded-2xl border border-white/10">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="bg-white/[0.03]">
+                <th className="text-left p-4 font-semibold text-white/70 w-1/4">Feature</th>
+                <th className="text-center p-4 font-semibold">Launch</th>
+                <th
+                  className="text-center p-4 font-semibold relative"
+                  style={{ backgroundColor: `${tavlpConfig.brandColor}1a`, color: tavlpConfig.brandColor }}
+                >
+                  <div>Growth</div>
+                  <div className="text-[10px] uppercase tracking-wide font-bold mt-0.5">Most Popular</div>
+                </th>
+                <th className="text-center p-4 font-semibold">Pro</th>
+              </tr>
+            </thead>
+            <tbody className="[&>tr]:border-t [&>tr]:border-white/10">
+              <tr>
+                <td className="p-4 font-medium text-white/80">Price</td>
+                <td className="p-4 text-center text-white/90">$49/mo</td>
+                <td className="p-4 text-center text-white/90" style={{ backgroundColor: `${tavlpConfig.brandColor}0d` }}>$99/mo</td>
+                <td className="p-4 text-center text-white/90">$149/mo</td>
+              </tr>
+              <tr>
+                <td className="p-4 font-medium text-white/80">Videos</td>
+                <td className="p-4 text-center text-white/90">4/mo (1/week)</td>
+                <td className="p-4 text-center text-white/90" style={{ backgroundColor: `${tavlpConfig.brandColor}0d` }}>8/mo (2/week)</td>
+                <td className="p-4 text-center text-white/90">12/mo (3/week)</td>
+              </tr>
+              <tr>
+                <td className="p-4 font-medium text-white/80">Avatar</td>
+                <td className="p-4 text-center text-white/90">1 of 6 stock</td>
+                <td className="p-4 text-center text-white/90" style={{ backgroundColor: `${tavlpConfig.brandColor}0d` }}>1 of 6 stock + 1 change/mo</td>
+                <td className="p-4 text-center text-white/90">Custom from your photo</td>
+              </tr>
+              <tr>
+                <td className="p-4 font-medium text-white/80">White-label</td>
+                <td className="p-4 text-center text-white/40">No</td>
+                <td className="p-4 text-center text-white/40" style={{ backgroundColor: `${tavlpConfig.brandColor}0d` }}>No</td>
+                <td className="p-4 text-center font-semibold" style={{ color: tavlpConfig.brandColor }}>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckIcon />
+                    Yes (no TAVLP branding)
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td className="p-4 font-medium text-white/80">Add-on videos</td>
+                <td className="p-4 text-center text-white/90">$15/each</td>
+                <td className="p-4 text-center text-white/90" style={{ backgroundColor: `${tavlpConfig.brandColor}0d` }}>$15/each</td>
+                <td className="p-4 text-center text-white/90">$15/each</td>
+              </tr>
+              <tr>
+                <td className="p-4 font-medium text-white/80">Setup fee</td>
+                <td className="p-4 text-center text-white/90">$99 one-time</td>
+                <td className="p-4 text-center text-white/90" style={{ backgroundColor: `${tavlpConfig.brandColor}0d` }}>$99 one-time</td>
+                <td className="p-4 text-center text-white/90">$99 one-time</td>
+              </tr>
+              <tr>
+                <td className="p-4 font-medium text-white/80">Annual option</td>
+                <td className="p-4 text-center text-white/90">$490/yr (2 mo free)</td>
+                <td className="p-4 text-center text-white/90" style={{ backgroundColor: `${tavlpConfig.brandColor}0d` }}>$990/yr (2 mo free)</td>
+                <td className="p-4 text-center text-white/90">$1,490/yr (2 mo free)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-3xl px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-10">Frequently asked questions</h2>
         <div className="space-y-4">
