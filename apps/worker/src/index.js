@@ -4169,6 +4169,28 @@ const ROUTES = [
   // FREEBIE LEADS (anonymous exit-intent capture, all platforms)
   // -------------------------------------------------------------------------
 
+  // Public freebie PDF serving — no auth, served from R2 `freebies/` prefix.
+  // Filename is restricted to lowercase letters, digits, hyphens to keep the
+  // surface area locked to curated freebie deliverables.
+  {
+    method: 'GET', pattern: '/freebies/:filename',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { filename } = params;
+      if (!filename || !/^[a-z0-9-]+\.pdf$/.test(filename)) {
+        return new Response('Not found', { status: 404 });
+      }
+      const obj = await env.R2_VIRTUAL_LAUNCH.get(`freebies/${filename}`);
+      if (!obj) return new Response('Not found', { status: 404 });
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': obj.httpMetadata?.contentType || 'application/pdf',
+          'Content-Disposition': `inline; filename="${filename}"`,
+          'Cache-Control': 'public, max-age=86400',
+        },
+      });
+    },
+  },
+
   {
     method: 'POST', pattern: '/v1/leads/freebie',
     handler: async (_method, _pattern, _params, request, env) => {
@@ -4257,16 +4279,30 @@ const ROUTES = [
           };
           const subject = subjectByFreebie[freebie_type] || `Thanks from ${platformMeta.name}`;
 
+          const pdf = FREEBIE_PDF_MAP[platform] || null;
+
           const unsubToken = await generateUnsubscribeToken(env, email);
           const unsubUrl = `https://api.virtuallaunch.pro/unsubscribe?email=${encodeURIComponent(email)}&campaign=${platform}_freebie&token=${unsubToken}`;
           const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+          const pdfButtonHtml = pdf
+            ? `<p style="margin:24px 0;text-align:center;">
+  <a href="${pdf.url}" style="display:inline-block;padding:14px 28px;background:${platformMeta.color};color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;font-size:16px;">
+    Download Your ${esc(pdf.name)}
+  </a>
+</p>`
+            : '';
+          const bodyParaHtml = pdf
+            ? `<p style="font-size:15px;line-height:1.6;color:#333;">Your <strong>${esc(pdf.name)}</strong> is ready — download it now using the button above. If you have any questions, just reply to this email and a human will read it.</p>`
+            : `<p style="font-size:15px;line-height:1.6;color:#333;">We got your request and we're putting your freebie together now. A team member will follow up shortly with your delivery — usually within one business day.</p>
+<p style="font-size:15px;line-height:1.6;color:#333;">In the meantime, if you have questions just reply to this email and a human will read it.</p>`;
 
           const html = `<!DOCTYPE html>
 <html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e;padding:24px;">
 <div style="border-top:4px solid ${platformMeta.color};padding-top:20px;">
 <h2 style="color:#1a1a2e;margin:0 0 12px;">Thanks for grabbing our freebie!</h2>
-<p style="font-size:15px;line-height:1.6;color:#333;">We got your request and we're putting your freebie together now. A team member will follow up shortly with your delivery — usually within one business day.</p>
-<p style="font-size:15px;line-height:1.6;color:#333;">In the meantime, if you have questions just reply to this email and a human will read it.</p>
+${bodyParaHtml}
+${pdfButtonHtml}
 <p style="font-size:15px;line-height:1.6;color:#333;margin-top:24px;">— The ${esc(platformMeta.name)} team<br><a href="${platformMeta.site}" style="color:${platformMeta.color};text-decoration:none;">${platformMeta.site.replace('https://', '')}</a></p>
 </div>
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
@@ -25923,6 +25959,15 @@ async function handleTcvlpGalaDripCron(env) {
 
 const FREEBIE_DRIP_LIMIT = 50;
 
+// Platforms with an auto-deliverable PDF freebie. Welcome + drip emails for
+// these platforms include a direct download link instead of "we'll follow up".
+const FREEBIE_PDF_MAP = {
+  ttmp:  { url: 'https://api.virtuallaunch.pro/freebies/ttmp-transcript-cheatsheet.pdf', name: 'IRS Transcript Cheat Sheet' },
+  tmp:   { url: 'https://api.virtuallaunch.pro/freebies/tmp-monitoring-checklist.pdf',   name: 'IRS Account Monitoring Checklist' },
+  tcvlp: { url: 'https://api.virtuallaunch.pro/freebies/tcvlp-kwong-checklist.pdf',      name: 'Kwong Eligibility Quick-Check' },
+  vlp:   { url: 'https://api.virtuallaunch.pro/freebies/vlp-platform-recommendation.pdf', name: 'Platform Recommendation Guide' },
+};
+
 const FREEBIE_PLATFORM_META = {
   ttmp:  { name: 'Transcript Tax Monitor',   color: '#14b8a6', domain: 'transcript.taxmonitor.pro' },
   tmp:   { name: 'Tax Monitor Pro',          color: '#f59e0b', domain: 'taxmonitor.pro' },
@@ -26196,15 +26241,43 @@ async function freebieEmail1Build(env, row) {
   };
   const subject = subjectByFreebie[row.freebie_type] || `Thanks from ${meta.name}`;
   const site = `https://${meta.domain}`;
+  const pdf = FREEBIE_PDF_MAP[platform] || null;
+  const pdfButtonHtml = pdf
+    ? `<p style="margin:24px 0;text-align:center;">
+  <a href="${pdf.url}" style="display:inline-block;padding:14px 28px;background:${meta.color};color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;font-size:16px;">
+    Download Your ${pdf.name}
+  </a>
+</p>`
+    : '';
+  const bodyParaHtml = pdf
+    ? `<p style="font-size:15px;line-height:1.6;color:#333;">Your <strong>${pdf.name}</strong> is ready — download it now using the button above. If you have any questions, just reply to this email and a human will read it.</p>`
+    : `<p style="font-size:15px;line-height:1.6;color:#333;">We got your request and we're putting your freebie together now. A team member will follow up shortly with your delivery — usually within one business day.</p>
+<p style="font-size:15px;line-height:1.6;color:#333;">In the meantime, if you have questions just reply to this email and a human will read it.</p>`;
   const bodyHtml = `<h2 style="color:#1a1a2e;margin:0 0 12px;">Thanks for grabbing our freebie!</h2>
-<p style="font-size:15px;line-height:1.6;color:#333;">We got your request and we're putting your freebie together now. A team member will follow up shortly with your delivery — usually within one business day.</p>
-<p style="font-size:15px;line-height:1.6;color:#333;">In the meantime, if you have questions just reply to this email and a human will read it.</p>
+${bodyParaHtml}
+${pdfButtonHtml}
 <p style="font-size:15px;line-height:1.6;color:#333;margin-top:24px;">— The ${meta.name} team<br><a href="${site}" style="color:${meta.color};text-decoration:none;">${meta.domain}</a></p>`;
   const footerHtml = await freebieFooterHtml(env, row.email, platform);
   const footerText = await freebieFooterText(env, row.email, platform);
   const html = freebieShellHtml(platform, bodyHtml, footerHtml);
-  const text = `Thanks for grabbing our freebie!\n\nWe got your request and a team member will follow up within one business day.\n\nReply to this email with any questions.\n\n— The ${meta.name} team\n${site}${footerText}`;
+  const textIntro = pdf
+    ? `Thanks for grabbing our freebie!\n\nYour ${pdf.name} is ready: ${pdf.url}\n\nReply to this email with any questions.`
+    : `Thanks for grabbing our freebie!\n\nWe got your request and a team member will follow up within one business day.\n\nReply to this email with any questions.`;
+  const text = `${textIntro}\n\n— The ${meta.name} team\n${site}${footerText}`;
   return { subject, html, text };
+}
+
+function freebiePdfPsHtml(platform) {
+  const pdf = FREEBIE_PDF_MAP[platform];
+  if (!pdf) return '';
+  const meta = freebiePlatformMeta(platform);
+  return `<p style="font-size:13px;color:#888;margin-top:24px;">P.S. — Haven't grabbed your free ${pdf.name} yet? <a href="${pdf.url}" style="color:${meta.color};">Download it here.</a></p>`;
+}
+
+function freebiePdfPsText(platform) {
+  const pdf = FREEBIE_PDF_MAP[platform];
+  if (!pdf) return '';
+  return `\n\nP.S. — Haven't grabbed your free ${pdf.name} yet? Download: ${pdf.url}`;
 }
 
 async function freebieEmail2Build(env, row) {
@@ -26212,8 +26285,8 @@ async function freebieEmail2Build(env, row) {
   if (!content) return null;
   const footerHtml = await freebieFooterHtml(env, row.email, row.platform);
   const footerText = await freebieFooterText(env, row.email, row.platform);
-  const html = freebieShellHtml(row.platform, content.html, footerHtml);
-  const text = content.text + footerText;
+  const html = freebieShellHtml(row.platform, content.html + freebiePdfPsHtml(row.platform), footerHtml);
+  const text = content.text + freebiePdfPsText(row.platform) + footerText;
   return { subject: content.subject, html, text };
 }
 
@@ -26222,8 +26295,8 @@ async function freebieEmail3Build(env, row) {
   if (!content) return null;
   const footerHtml = await freebieFooterHtml(env, row.email, row.platform);
   const footerText = await freebieFooterText(env, row.email, row.platform);
-  const html = freebieShellHtml(row.platform, content.html, footerHtml);
-  const text = content.text + footerText;
+  const html = freebieShellHtml(row.platform, content.html + freebiePdfPsHtml(row.platform), footerHtml);
+  const text = content.text + freebiePdfPsText(row.platform) + footerText;
   return { subject: content.subject, html, text };
 }
 
