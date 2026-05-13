@@ -691,6 +691,9 @@ function profileD1ProjectionValues(nested, tier = 'free') {
     status,
     tier: normalizedTier,
     featured: normalizedTier === 'free' ? 0 : 1,
+    caf_number: nested?.caf_number || null,
+    ptin: nested?.ptin || null,
+    license_number: nested?.license_number || null,
   };
 }
 
@@ -7155,8 +7158,8 @@ https://taxmonitor.pro/legal/refund
             const p = profileD1ProjectionValues(merged, tier);
             try {
               await d1Run(env.DB,
-                `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, tier=?, featured=?, updated_at=? WHERE professional_id=?`,
-                [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, now, existingRow.professional_id]
+                `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, tier=?, featured=?, caf_number=?, ptin=?, license_number=?, updated_at=? WHERE professional_id=?`,
+                [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, p.caf_number, p.ptin, p.license_number, now, existingRow.professional_id]
               );
             } catch (e) { console.error('D1 profile update error (POST upsert):', e); }
             return json({ ok: true, professional_id: existingRow.professional_id, profile: merged }, 200, request);
@@ -7182,9 +7185,9 @@ https://taxmonitor.pro/legal/refund
       const p = profileD1ProjectionValues(profile, tier);
       try {
         await d1Run(env.DB,
-          `INSERT INTO profiles (professional_id, account_id, display_name, bio, specialties, profession, phone, availability_text, business_hours, cal_booking_url, website, firm_name, city, state, zip, status, tier, featured, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [professionalId, session.account_id, p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, now, now]
+          `INSERT INTO profiles (professional_id, account_id, display_name, bio, specialties, profession, phone, availability_text, business_hours, cal_booking_url, website, firm_name, city, state, zip, status, tier, featured, caf_number, ptin, license_number, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [professionalId, session.account_id, p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, p.caf_number, p.ptin, p.license_number, now, now]
         );
       } catch (e) {
         // If D1 insert fails (e.g. duplicate), still return success since R2 is authoritative
@@ -7254,8 +7257,8 @@ https://taxmonitor.pro/legal/refund
       const p = profileD1ProjectionValues(merged, tier);
       try {
         await d1Run(env.DB,
-          `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, tier=?, featured=?, updated_at=? WHERE professional_id=?`,
-          [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, now, params.professional_id]
+          `UPDATE profiles SET display_name=?, bio=?, specialties=?, profession=?, phone=?, availability_text=?, business_hours=?, cal_booking_url=?, website=?, firm_name=?, city=?, state=?, zip=?, status=?, tier=?, featured=?, caf_number=?, ptin=?, license_number=?, updated_at=? WHERE professional_id=?`,
+          [p.display_name, p.bio, p.specialties, p.profession, p.phone, p.availability_text, p.business_hours, p.cal_booking_url, p.website, p.firm_name, p.city, p.state, p.zip, p.status, p.tier, p.featured, p.caf_number, p.ptin, p.license_number, now, params.professional_id]
         );
       } catch (e) {
         console.error('D1 profile update error:', e);
