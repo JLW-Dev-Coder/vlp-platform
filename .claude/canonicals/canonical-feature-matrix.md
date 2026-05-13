@@ -8,7 +8,7 @@ Parent: canonical-app-blueprint.md
 
 # canonical-feature-matrix.md — VLP Ecosystem Feature Matrix
 
-Last updated: 2026-04-26
+Last updated: 2026-05-12
 
 ---
 
@@ -44,22 +44,28 @@ Some shared components in `@vlp/member-ui` are opt-in per app rather than enable
 
 Legend: `✓` = live, `—` = not wired, `○` = partial (see notes).
 
-| Component         | VLP | TMP | TTMP | TTTMP | TCVLP | DVLP | GVLP | WLVLP |
-|-------------------|-----|-----|------|-------|-------|------|------|-------|
-| LeadChatbot       | —   | —   | ✓    | —     | —     | —    | —    | —     |
-| PostHogPageview   | —   | —   | ✓    | —     | —     | —    | —    | —     |
-| CookieConsent     | ✓   | —   | ✓    | —     | ✓     | —    | —    | —     |
-| ManageCookiesLink | ✓   | —   | ✓    | —     | ✓     | —    | ✓    | —     |
+| Component           | VLP | TMP | TTMP | TTTMP | TCVLP | DVLP | GVLP | WLVLP | TAVLP | TPP |
+|---------------------|-----|-----|------|-------|-------|------|------|-------|-------|-----|
+| LeadChatbot         | ✓   | ✓   | ✓    | ✓     | ✓     | ✓    | ✓    | ✓     | ✓     | ✓   |
+| ExitIntentPopup     | ✓   | ✓   | ✓    | ✓     | ✓     | ✓    | ✓    | ✓     | ✓     | ✓   |
+| PostHogPageview     | ✓   | ✓   | ✓    | ✓     | ✓     | ✓    | ✓    | ✓     | ✓     | ✓   |
+| CookieConsent       | ✓   | ✓   | ✓    | ✓     | ✓     | ✓    | ✓    | ✓     | ✓     | ✓   |
+| ManageCookiesLink   | ✓   | —   | ✓    | ✓     | ✓     | —    | ✓    | ✓     | —     | ✓   |
+| FreebieLeadCapture  | ✓   | ✓   | ✓    | ✓     | ✓     | ✓    | ✓    | ✓     | ✓     | ✓   |
+
+`FreebieLeadCapture` is the Worker endpoint `POST /v1/leads/freebie` (anonymous, deduped by email+platform) used by `ExitIntentPopup` — not a component. Listed here because it's shared infrastructure backing the popup on every platform.
 
 ### Notes
 
-**LeadChatbot** — TTMP wired 2026-04-18 via PlatformConfig.chatbot + marketing layout mount. Lead endpoint `POST /v1/leads/chatbot` (anonymous). Expansion to other apps paused pending TTMP conversion data.
+**LeadChatbot** — All 10 apps wired (2026-05-12). Includes phone capture with SMS consent, owner notification on phone leads. `POST /v1/leads/chatbot` (anonymous).
 
-**PostHogPageview** — TTMP wired 2026-04-18. US host (https://us.i.posthog.com). Autocapture + SPA pageview. SDK loads only after user opts in to analytics cookies. Expansion to other apps: add `posthog` block to each app's PlatformConfig and mount `<PostHogPageview />` (inside `<Suspense fallback={null}>`) in its `(marketing)/layout.tsx`.
+**ExitIntentPopup** — All 10 apps wired (2026-05-12). Config-driven via `PlatformConfig.exitIntent`. Exit-intent on desktop (mouseout), 45s inactivity on mobile. Shows once per 7 days. `POST /v1/leads/freebie` (anonymous, deduped by email+platform). 4 platforms auto-deliver PDF freebies (TTMP, TMP, TCVLP, VLP).
 
-**CookieConsent** — Banner + preferences panel. Lives in `@vlp/member-ui`. Mount in `(marketing)/layout.tsx` with `config={platformConfig}`. localStorage key derived from `brandAbbrev` (e.g., `ttmp_cookie_prefs_v1`) unless `cookiePrefsStorageKey` is set on PlatformConfig. See canonical-cookies.md.
+**PostHogPageview** — All 10 apps wired (2026-05-12). US host. Consent-gated via CookieConsent.
 
-**ManageCookiesLink** — Footer link that re-opens CookieConsent via the `vlp:open-cookie-prefs` custom event. Auto-rendered inside `MarketingFooter`'s legal column, so apps using shared `MarketingFooter` inherit it automatically. Apps with a local footer must either adopt `MarketingFooter` or dispatch the event manually from their own link. Note: rollout matrix shows `✓` where the shared `MarketingFooter` is mounted — which renders the link — regardless of whether `CookieConsent` itself is present to respond; an app with `ManageCookiesLink ✓` but `CookieConsent —` will dispatch into the void.
+**CookieConsent** — All 10 apps wired. Banner + preferences panel. Mount in marketing layout with `config={platformConfig}`. localStorage key derived from `brandAbbrev` (e.g., `ttmp_cookie_prefs_v1`) unless `cookiePrefsStorageKey` is set on PlatformConfig. See canonical-cookies.md.
+
+**ManageCookiesLink** — Footer link that re-opens CookieConsent via the `vlp:open-cookie-prefs` custom event. Auto-rendered inside `MarketingFooter`'s legal column, so apps using shared `MarketingFooter` inherit it automatically. Apps with a local footer (TMP, DVLP, TAVLP) must either adopt `MarketingFooter` or dispatch the event manually from their own link.
 
 Future shared components (MarketingHeader/Footer adoption, HelpCenter usage) can be added as rows here as they become opt-in.
 
