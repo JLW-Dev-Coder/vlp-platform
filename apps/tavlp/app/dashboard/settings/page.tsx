@@ -79,16 +79,35 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Topic Niche</h2>
+      <div className={styles.section} id="topic">
+        <h2 className={styles.sectionTitle}>Your Tax Topic</h2>
         <div className={styles.card}>
+          {!loading && !channel?.topic && (
+            <div
+              style={{
+                marginBottom: '0.875rem',
+                padding: '0.75rem 1rem',
+                borderRadius: '0.5rem',
+                border: '1px solid rgba(236, 72, 153, 0.35)',
+                background: 'rgba(236, 72, 153, 0.08)',
+                color: 'rgba(255,255,255,0.9)',
+                fontSize: '0.875rem',
+              }}
+            >
+              Set your tax topic to get scripts tailored to your specialty. Without it, scripts default to general tax education.
+            </div>
+          )}
           <div className={styles.field}>
-            <label className={styles.fieldLabel}>What does your channel focus on?</label>
+            <label className={styles.fieldLabel}>Tax Topic</label>
+            <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.5rem 0' }}>
+              Your AI scripts are tailored to this specialty. Change it anytime — your next batch of scripts will use the new topic.
+            </p>
             <input
               className={styles.input}
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. IRS transcript codes for tax pros"
+              maxLength={200}
               disabled={loading}
             />
           </div>

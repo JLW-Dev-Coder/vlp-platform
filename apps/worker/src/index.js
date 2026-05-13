@@ -5863,6 +5863,10 @@ Lenore, Inc., 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br>
                 const key = `tavlp/subscriptions/${account_id}.json`;
                 const existing = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
                 const created_at = existing?.created_at || now;
+                // Stripe bills on the same day each month based on session creation.
+                // Used by the daily monthly-script cron to fire on each subscriber's
+                // billing anniversary instead of a global day-1 sweep.
+                const billing_day = existing?.billing_day || (obj.created ? new Date(obj.created * 1000).getUTCDate() : new Date().getUTCDate());
                 await r2Put(env.R2_VIRTUAL_LAUNCH, key, {
                   account_id,
                   tier,
@@ -5870,6 +5874,7 @@ Lenore, Inc., 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br>
                   stripe_subscription_id: obj.subscription,
                   stripe_customer_id: obj.customer,
                   status: 'active',
+                  billing_day,
                   created_at,
                   updated_at: now,
                 });
@@ -22010,6 +22015,16 @@ Return a JSON array where each element has:
       if (body.selected_avatar !== undefined) record.selected_avatar = body.selected_avatar;
       if (body.transfer_requested !== undefined) record.transfer_requested = body.transfer_requested;
       if (body.transfer_requested_at !== undefined) record.transfer_requested_at = body.transfer_requested_at;
+      if (body.topic !== undefined) {
+        if (typeof body.topic !== 'string') {
+          return json({ ok: false, error: 'BAD_REQUEST', message: 'topic must be a string' }, 400, request);
+        }
+        const trimmed = body.topic.trim();
+        if (trimmed.length === 0 || trimmed.length > 200) {
+          return json({ ok: false, error: 'BAD_REQUEST', message: 'topic must be 1–200 characters' }, 400, request);
+        }
+        record.topic = trimmed;
+      }
 
       record.updated_at = now;
       if (!record.created_at) record.created_at = now;
@@ -33965,86 +33980,81 @@ async function handleTavlpScriptReminders(env) {
   return log;
 }
 
-// Monthly (1st of each UTC month) — auto-generates a fresh batch of scripts
-// for every active TAVLP subscriber. Tier-driven count: Launch=4, Growth=8,
-// Pro=12. Capped at 10 subscribers per run; remaining subscribers are picked
-// up on subsequent daily cron runs via a cursor at
-// tavlp/cron/monthly-gen-cursor.json (lists pending account_ids for the
-// current month).
+// Daily — auto-generates a fresh batch of scripts for each active TAVLP
+// subscriber on their billing anniversary day. Tier-driven count: Launch=4,
+// Growth=8, Pro=12. Idempotent: skips if a batch was already created in the
+// current UTC month. Edge case: if a subscriber's billing_day exceeds the
+// number of days in the current month, the last day of the month is used.
 async function handleTavlpMonthlyScriptGeneration(env) {
   const log = { type: 'tavlp_monthly_script_generation', timestamp: new Date().toISOString(), generated: 0, errors: 0, skipped: 0 };
   if (!env.ANTHROPIC_API_KEY) { log.skipped_all = 'no_anthropic_key'; return log; }
   const MAX_PER_RUN = 10;
-  const today = new Date();
-  const monthKey = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}`;
-  const cursorKey = 'tavlp/cron/monthly-gen-cursor.json';
+  const now = new Date();
+  const today = now.getUTCDate();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth(); // 0-indexed
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 
-  // On day 1, (re)seed the cursor with every active subscriber.
-  let cursor = null;
+  // One-time cleanup of the legacy cursor used by the prior day-1 sweep.
+  try { await env.R2_VIRTUAL_LAUNCH.delete('tavlp/cron/monthly-gen-cursor.json'); } catch {}
+
+  let subList;
   try {
-    const cObj = await env.R2_VIRTUAL_LAUNCH.get(cursorKey);
-    if (cObj) cursor = await cObj.json();
-  } catch {}
-
-  if (today.getUTCDate() === 1 && (!cursor || cursor.month !== monthKey)) {
-    const pending = [];
-    try {
-      const subList = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'tavlp/subscriptions/', limit: 1000 });
-      for (const o of subList.objects || []) {
-        const sObj = await env.R2_VIRTUAL_LAUNCH.get(o.key);
-        if (!sObj) continue;
-        const s = await sObj.json();
-        if (s.status === 'active' && s.account_id) pending.push(s.account_id);
-      }
-    } catch (e) { log.error = `seed_failed: ${e?.message || e}`; return log; }
-    cursor = { month: monthKey, pending, generated_for: [], seeded_at: new Date().toISOString() };
-    try { await env.R2_VIRTUAL_LAUNCH.put(cursorKey, JSON.stringify(cursor), { httpMetadata: { contentType: 'application/json' } }); } catch {}
-    log.seeded = pending.length;
-  }
-
-  if (!cursor || cursor.month !== monthKey || !cursor.pending || cursor.pending.length === 0) {
-    log.no_pending = true;
-    return log;
-  }
+    subList = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'tavlp/subscriptions/', limit: 1000 });
+  } catch (e) { log.error = `subs_list_failed: ${e?.message || e}`; return log; }
 
   const tierCount = { launch: 4, growth: 8, pro: 12 };
-  const batchSlice = cursor.pending.slice(0, MAX_PER_RUN);
 
-  for (const account_id of batchSlice) {
+  for (const o of subList.objects || []) {
+    if (log.generated >= MAX_PER_RUN) break;
     try {
-      const sObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/subscriptions/${account_id}.json`);
-      if (!sObj) { log.skipped++; cursor.pending = cursor.pending.filter((a) => a !== account_id); continue; }
+      const sObj = await env.R2_VIRTUAL_LAUNCH.get(o.key);
+      if (!sObj) continue;
       const sub = await sObj.json();
-      if (sub.status !== 'active') { log.skipped++; cursor.pending = cursor.pending.filter((a) => a !== account_id); continue; }
+      if (sub.status !== 'active' || !sub.account_id) continue;
+
+      // Resolve the effective billing day for this month, clamping to the
+      // last day for short months (e.g. billing_day=31 hits Feb 28/29).
+      const billingDayRaw = Number.isInteger(sub.billing_day) ? sub.billing_day : 1;
+      const effectiveDay = Math.min(billingDayRaw, daysInMonth);
+      if (today !== effectiveDay) { log.skipped++; continue; }
+
+      // Dedup: skip if any batch already exists in the current UTC month.
+      let alreadyGenerated = false;
+      try {
+        const batches = await env.R2_VIRTUAL_LAUNCH.list({ prefix: `tavlp/scripts/${sub.account_id}/batches/`, limit: 100 });
+        for (const b of batches.objects || []) {
+          const bObj = await env.R2_VIRTUAL_LAUNCH.get(b.key);
+          if (!bObj) continue;
+          const batch = await bObj.json();
+          if (!batch.created_at) continue;
+          const d = new Date(batch.created_at);
+          if (d.getUTCFullYear() === year && d.getUTCMonth() === month) { alreadyGenerated = true; break; }
+        }
+      } catch {}
+      if (alreadyGenerated) { log.skipped++; continue; }
 
       let topic = 'tax education';
-      let count = tierCount[(sub.tier || '').toLowerCase()] || 4;
+      const count = tierCount[(sub.tier || '').toLowerCase()] || 4;
       try {
-        const chObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/channels/${account_id}.json`);
+        const chObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/channels/${sub.account_id}.json`);
         if (chObj) {
           const ch = await chObj.json();
           if (typeof ch.topic === 'string' && ch.topic) topic = ch.topic;
         }
       } catch {}
 
-      const result = await generateTavlpScriptsInternal(env, { account_id, topic, count, tone: 'professional and approachable', video_length: '2 minutes' });
+      const result = await generateTavlpScriptsInternal(env, { account_id: sub.account_id, topic, count, tone: 'professional and approachable', video_length: '2 minutes' });
       if (result.ok) {
         log.generated++;
-        cursor.generated_for.push(account_id);
-        console.log(`[TAVLP monthly] Generated ${count} scripts for ${account_id}`);
+        console.log(`[TAVLP billing-day] Generated ${count} scripts for ${sub.account_id} (day ${billingDayRaw})`);
       } else {
         log.errors++;
-        console.error(`[TAVLP monthly] Generation failed for ${account_id}: ${result.error}`);
+        console.error(`[TAVLP billing-day] Generation failed for ${sub.account_id}: ${result.error}`);
       }
-      cursor.pending = cursor.pending.filter((a) => a !== account_id);
     } catch (e) { log.errors++; console.error('TAVLP monthly cron error:', e?.message || e); }
   }
 
-  try {
-    await env.R2_VIRTUAL_LAUNCH.put(cursorKey, JSON.stringify({ ...cursor, updated_at: new Date().toISOString() }), {
-      httpMetadata: { contentType: 'application/json' },
-    });
-  } catch {}
   return log;
 }
 
