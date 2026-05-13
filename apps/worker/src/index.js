@@ -5538,6 +5538,28 @@ Lenore, Inc., 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br>
               }
             }
 
+            // Handle TAVLP subscriptions — R2-only storage (no D1 table yet).
+            if (platform === 'tavlp' && account_id) {
+              try {
+                const tier = obj.metadata?.tier || null;
+                const key = `tavlp/subscriptions/${account_id}.json`;
+                const existing = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
+                const created_at = existing?.created_at || now;
+                await r2Put(env.R2_VIRTUAL_LAUNCH, key, {
+                  account_id,
+                  tier,
+                  stripe_subscription_id: obj.subscription,
+                  stripe_customer_id: obj.customer,
+                  status: 'active',
+                  created_at,
+                  updated_at: now,
+                });
+                console.log(`TAVLP subscription activated: ${account_id} -> ${tier}`);
+              } catch (e) {
+                console.error('TAVLP Stripe webhook error:', e);
+              }
+            }
+
             // Handle TMP membership activation
             if (platform === 'tmp' && plan_key) {
               try {
@@ -20363,6 +20385,59 @@ https://virtuallaunch.pro/payouts
         return json({ ok: true, url: stripeSession.url, session_id: stripeSession.id }, 200, request);
       } catch (e) {
         console.error('TCVLP checkout session error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 502, request);
+      }
+    },
+  },
+
+  // POST /v1/tavlp/checkout/sessions
+  // Creates a Stripe Checkout session for a TAVLP subscription tier.
+  // Uses placeholder price IDs until JLW creates real Stripe products.
+  {
+    method: 'POST', pattern: '/v1/tavlp/checkout/sessions',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      const { price_id, tier, success_url, cancel_url } = body ?? {};
+      if (!price_id || !success_url || !cancel_url) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'price_id, success_url, cancel_url required' }, 400, request);
+      }
+
+      // Validate price_id against the three known TAVLP tiers.
+      const VALID_TAVLP_PRICES = new Set([
+        env.STRIPE_PRICE_TAVLP_STARTER || 'price_placeholder_tavlp_starter',
+        env.STRIPE_PRICE_TAVLP_GROWTH  || 'price_placeholder_tavlp_growth',
+        env.STRIPE_PRICE_TAVLP_PRO     || 'price_placeholder_tavlp_pro',
+      ]);
+      if (!VALID_TAVLP_PRICES.has(price_id)) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'Invalid TAVLP price_id' }, 400, request);
+      }
+
+      // TAVLP price IDs will live on the VLP Stripe account — must use STRIPE_SECRET_KEY_VLP.
+      const vlpSecretKey = env.STRIPE_SECRET_KEY_VLP;
+      if (!vlpSecretKey) {
+        return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY_VLP is not set' }, 503, request);
+      }
+
+      try {
+        const stripeSession = await stripePost('/checkout/sessions', {
+          mode: 'subscription',
+          line_items: [{ price: price_id, quantity: 1 }],
+          allow_promotion_codes: true,
+          success_url,
+          cancel_url,
+          metadata: {
+            account_id: session.account_id,
+            platform: 'tavlp',
+            tier: tier || 'unknown',
+          },
+        }, env, vlpSecretKey);
+
+        return json({ ok: true, url: stripeSession.url, session_id: stripeSession.id }, 200, request);
+      } catch (e) {
+        console.error('TAVLP checkout session error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 502, request);
       }
     },
