@@ -35,7 +35,7 @@ const TIERS: Tier[] = [
     monthlyPriceId: STRIPE_PRICES.launchMonthly,
     annualPriceId: STRIPE_PRICES.launchAnnual,
     tagline: 'Your YouTube channel, without the camera.',
-    description: 'AI avatar channel — we build it, script it, and publish weekly.',
+    description: 'AI avatar channel — we build it, script it, and publish a fresh batch every month.',
     popular: false,
     features: [
       '4 videos/month (1 per week)',
@@ -55,7 +55,7 @@ const TIERS: Tier[] = [
     monthlyPriceId: STRIPE_PRICES.growthMonthly,
     annualPriceId: STRIPE_PRICES.growthAnnual,
     tagline: 'Double the content, double the visibility.',
-    description: '2x weekly publishing for faster channel growth.',
+    description: 'Double the monthly batch for faster channel growth.',
     popular: true,
     features: [
       'Everything in Launch',
@@ -83,6 +83,14 @@ const TIERS: Tier[] = [
 ];
 
 const FAQ = [
+  {
+    q: 'How do I get my videos each month?',
+    a: "On your billing date each month, we generate fresh video scripts tailored to your tax topic. You review and approve them from your dashboard — takes about a minute. Once approved, we render and publish automatically. You'll get an email when each video goes live.",
+  },
+  {
+    q: 'Do I have to create content myself?',
+    a: 'No. Our AI writes the scripts, our avatars present them, and we handle production, thumbnails, and publishing. Your only task is reviewing and approving your scripts each month.',
+  },
   {
     q: 'Do I own my content?',
     a: 'Yes. Every video we produce is on your channel. You can request full channel ownership transfer at any time — after the 7-day YouTube transfer process, you’re the primary owner with full control of your channel, videos, and subscribers.',

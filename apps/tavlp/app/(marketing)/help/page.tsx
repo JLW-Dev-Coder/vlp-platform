@@ -27,6 +27,27 @@ const FAQS: FaqCategory[] = [
     ],
   },
   {
+    name: 'How Your Monthly Cycle Works',
+    items: [
+      {
+        q: 'How does the monthly content cycle work?',
+        a: "Every month on your billing date, we automatically generate a fresh batch of video scripts tailored to your tax topic. You'll get an email letting you know they're ready. Log in to your dashboard, review the scripts, and approve the ones you want published. Once you approve, we render the videos with your AI avatar and publish them to your YouTube channel — all automatically. Your only job is to review and click approve.",
+      },
+      {
+        q: "What happens if I don't review my scripts right away?",
+        a: "No rush — but your videos can't go live until you approve the scripts. We'll send you a friendly reminder after 3 days, and one more after a week. After that, we won't bug you again. Approve whenever you're ready — it only takes a minute.",
+      },
+      {
+        q: 'Do I have to do anything to keep my channel active?',
+        a: "Just approve your scripts each month. That's it. We handle everything else — writing the scripts, rendering the videos, creating thumbnails, uploading to YouTube, and optimizing the metadata. Your channel stays active and growing as long as you keep approving content.",
+      },
+      {
+        q: 'When do my new scripts arrive each month?',
+        a: "On your billing date. If you subscribed on the 15th, your new scripts generate on the 15th of each month. You'll get an email notification the moment they're ready for review.",
+      },
+    ],
+  },
+  {
     name: 'Your Channel',
     items: [
       {

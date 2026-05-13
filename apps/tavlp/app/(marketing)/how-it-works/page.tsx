@@ -39,11 +39,11 @@ const steps = [
         <polyline points="9 15 11 17 15 13" />
       </svg>
     ),
-    body: 'Our AI writes video scripts on your chosen tax topic. You review every script in your dashboard before we produce it. Request changes or approve with one click. Nothing goes live without your OK.',
+    body: 'Every month on your billing date, our AI generates fresh video scripts on your chosen tax topic. You review each script in your dashboard — approve, or generate new ones. Nothing goes live without your OK. It only takes a minute.',
   },
   {
     n: 4,
-    title: 'We publish, you grow',
+    title: 'We produce & publish automatically',
     icon: (
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
@@ -52,7 +52,20 @@ const steps = [
         <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
       </svg>
     ),
-    body: 'Once you approve, we render the video with your avatar, create a professional thumbnail, and publish it to your branded YouTube channel. You watch your subscribers grow from your dashboard — no YouTube Studio login needed.',
+    body: 'Once you approve, we render the video with your AI avatar, create a professional thumbnail, and publish it to your branded YouTube channel. You get an email with a link to every new video the moment it goes live.',
+  },
+  {
+    n: 5,
+    title: 'Your channel grows on autopilot',
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polyline points="23 4 23 10 17 10" />
+        <polyline points="1 20 1 14 7 14" />
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+        <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
+      </svg>
+    ),
+    body: 'Every month, the cycle repeats — new scripts on your billing date, your approval, automatic production and publishing. Your channel builds a library of content that drives viewers to your firm. More videos mean more search visibility, more subscribers, and more leads finding their way to your intake page.',
   },
 ]
 

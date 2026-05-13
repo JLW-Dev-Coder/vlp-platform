@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Features | Tax Avatar Pro',
   description:
-    'Tax Avatar Pro is a fully managed AI YouTube channel for tax pros — custom avatar, IRS code scripts, branded channel setup, weekly publishing, and a lead pipeline into your TaxClaim Pro intake page.',
+    'Tax Avatar Pro is a fully managed AI YouTube channel for tax pros — custom avatar, IRS code scripts, branded channel setup, automated monthly publishing, and a lead pipeline into your TaxClaim Pro intake page.',
 }
 
 const coreFeatures = [
@@ -32,11 +32,11 @@ const coreFeatures = [
     ],
   },
   {
-    title: 'Weekly Publishing',
+    title: 'Automated Monthly Content',
     items: [
-      'Consistent schedule — Shorts and long-form.',
-      'Thumbnails, descriptions, tags included.',
-      'Published on your behalf — you review and approve.',
+      'Every month on your billing date, a fresh batch of video scripts lands in your dashboard — tailored to your tax specialty.',
+      'Approve the ones you like, and we handle the rest. Rendering, thumbnails, publishing, metadata — all automatic.',
+      'Your channel never goes stale, and you never touch a camera or an editing tool.',
     ],
   },
   {
