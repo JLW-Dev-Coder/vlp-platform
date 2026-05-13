@@ -7,11 +7,11 @@ import Header from '@/components/Header'
 import styles from './page.module.css'
 
 const PLAYLIST = [
-  { id: 'ahvwuWvR3gM', title: 'What Is An IRS Transcript And Why Should I Care?' },
-  { id: 'RSXXZznJnv0', title: 'How To Order IRS Transcripts (Online, Phone, Mail)' },
-  { id: 'ktPpc4ofhX8', title: 'How To Read IRS Transcript Sections (Top to Bottom)' },
-  { id: 'AFAL4qQUfW8', title: 'Common Transcript Codes and What They Mean' },
-  { id: 'NW62KZYXgXo', title: 'Putting It Together: Next Steps and Practical Examples' },
+  { id: 'WXoV60s2E6A', title: 'How to Explain an IRS Transcript to a Client Without Confusing Them' },
+  { id: 'tij_oyFgdVE', title: 'Account Transcript vs Return Transcript — Which One Do You Need?' },
+  { id: 'Su5KRPSD15A', title: 'What Is a Cycle Code on an IRS Transcript — And Why It Matters' },
+  { id: 'P5Nv2eoGkLg', title: 'IRS Code 150 — Your Client’s Return Was Filed and Processed' },
+  { id: 'WjAIAapiJR0', title: '5 IRS Transcript Red Flags Every Enrolled Agent Should Know' },
 ]
 
 const EBOOK_FEATURES = [

@@ -6,16 +6,12 @@ export default function ESign2848() {
   return (
     <div className={styles.page}>
       <h1 className={styles.pageTitle}>ESign 2848</h1>
-      <div className={styles.comingSoon}>
-        <div className={styles.comingSoonIcon}>
-          <svg width="48" height="48" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <h2 className={styles.comingSoonTitle}>Coming Soon</h2>
-        <p className={styles.comingSoonText}>
-          Electronic signature for IRS Form 2848 — Power of Attorney. Available in a future update.
-        </p>
+      <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-8 text-center">
+        <h2 className="text-xl font-semibold text-white mb-3">Form 2848 — Power of Attorney</h2>
+        <p className="text-white/50 mb-6">Generate IRS Form 2848 for your client.</p>
+        <a href="/forms/2848" className="inline-block rounded-lg bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+          Open Form 2848 Generator
+        </a>
       </div>
     </div>
   )

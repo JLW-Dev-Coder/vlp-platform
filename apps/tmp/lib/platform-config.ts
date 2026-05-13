@@ -37,6 +37,13 @@ export const tmpConfig: PlatformConfig = {
       ],
     },
     {
+      title: 'COMMUNICATION',
+      items: [
+        { label: 'Messages', href: '/messages', icon: 'MessageSquare' },
+        { label: 'Notifications', href: '/notifications', icon: 'Bell' },
+      ],
+    },
+    {
       title: 'EARNINGS',
       items: [
         { label: 'Receipts', href: '/dashboard/receipts', icon: 'Receipt' },
