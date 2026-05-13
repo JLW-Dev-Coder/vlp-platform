@@ -564,6 +564,14 @@ export default function HomePage() {
               Book a 15-min intro
             </a>
           </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginTop: '24px' }}>
+            {['No credit card required', '20% lifetime affiliate commission', 'Cancel anytime', '24/7 monitoring'].map((item) => (
+              <span key={item} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#888' }}>
+                <span style={{ color: '#22c55e', fontWeight: 700 }}>✓</span>
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
