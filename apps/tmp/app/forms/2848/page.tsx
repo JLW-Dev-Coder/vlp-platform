@@ -48,18 +48,14 @@ interface GenerateResponse {
   filename: string
 }
 
-// TODO: Replace placeholder with real pre-fill from the assigned pro's
-// profile — likely via a /v1/tmp/cases/{caseId} endpoint that returns the
-// representative block. Keeping a placeholder keeps the form reviewable
-// until the Worker route is live.
-const PLACEHOLDER_REP: Representative = {
-  name: 'Maria Chen, EA',
-  caf_number: '1234-56789R',
-  ptin: 'P01234567',
-  phone: '(415) 555-0142',
-  designation: 'Enrolled Agent',
-  address: '500 Market Street, Suite 1200, San Francisco, CA 94105',
-  initials: 'MC',
+const EMPTY_REP: Representative = {
+  name: '',
+  caf_number: '',
+  ptin: '',
+  phone: '',
+  designation: '',
+  address: '',
+  initials: '',
 }
 
 const MATTER_TYPES = [
@@ -147,9 +143,10 @@ function Form2848({ caseId }: { caseId: string }) {
   const [zip, setZip] = useState('')
   const [phone, setPhone] = useState('')
 
-  // Section 2 — representative (pre-filled)
-  const [rep, setRep] = useState<Representative>(PLACEHOLDER_REP)
+  // Section 2 — representative (pre-filled from the assigned pro's profile)
+  const [rep, setRep] = useState<Representative>(EMPTY_REP)
   const [repLoading, setRepLoading] = useState(true)
+  const [repError, setRepError] = useState<string | null>(null)
 
   // Section 3 — tax matters
   const [matters, setMatters] = useState<TaxMatter[]>([
@@ -176,19 +173,45 @@ function Form2848({ caseId }: { caseId: string }) {
   const [authRequired, setAuthRequired] = useState(false)
   const [success, setSuccess] = useState<GenerateResponse | null>(null)
 
-  // TODO: Replace with real case-data fetch once /v1/tmp/cases/{caseId}
-  // is wired. For now, mount the placeholder so the form renders in isolation.
   useEffect(() => {
     let cancelled = false
     setRepLoading(true)
-    const t = setTimeout(() => {
-      if (cancelled) return
-      setRep(PLACEHOLDER_REP)
-      setRepLoading(false)
-    }, 150)
+    setRepError(null)
+    ;(async () => {
+      try {
+        const res = await api.getTmpCase(caseId)
+        if (cancelled) return
+        const p = res.professional
+        if (!p) {
+          setRep(EMPTY_REP)
+          setRepError(
+            'No tax professional is assigned to this case yet. Please contact your tax monitor team.'
+          )
+        } else {
+          setRep({
+            name: p.name || '',
+            caf_number: p.caf_number || '',
+            ptin: p.ptin || '',
+            phone: p.phone || '',
+            designation: p.designation || p.credentials || '',
+            address: p.address || '',
+            initials: p.initials || '',
+          })
+        }
+      } catch (err) {
+        if (cancelled) return
+        setRep(EMPTY_REP)
+        setRepError(
+          err instanceof Error
+            ? `Unable to load representative: ${err.message}`
+            : 'Unable to load representative for this case.'
+        )
+      } finally {
+        if (!cancelled) setRepLoading(false)
+      }
+    })()
     return () => {
       cancelled = true
-      clearTimeout(t)
     }
   }, [caseId])
 
@@ -316,6 +339,11 @@ function Form2848({ caseId }: { caseId: string }) {
     try {
       const res = await api.generate2848(payload)
       setSuccess(res)
+      // Mark the case as e-signed so the compliance journey reflects progress.
+      // Non-fatal — failure here doesn't roll back the generated PDF.
+      try {
+        await api.patchTmpCase(caseId, { esign_2848_complete: true })
+      } catch (_) {}
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setAuthRequired(true)
@@ -562,6 +590,8 @@ function Form2848({ caseId }: { caseId: string }) {
 
           {repLoading ? (
             <div className={styles.loadingBox}>Loading representative…</div>
+          ) : repError ? (
+            <div className={styles.errorBanner}>{repError}</div>
           ) : (
             <div className={styles.repCard}>
               <div className={styles.repHead}>

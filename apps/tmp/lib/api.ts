@@ -662,6 +662,47 @@ export const api = {
       status: string
     }>('/v1/tmp/dashboard'),
 
+  getTmpCase: (case_id: string) =>
+    apiFetch<{
+      ok: boolean
+      case: {
+        case_id: string
+        professional_id: string | null
+        client_name: string | null
+        client_ssn_last4: string | null
+        client_city: string | null
+        client_state: string | null
+        client_zip: string | null
+        client_phone: string | null
+        tax_years: string | null
+        tax_matters: string | null
+        status: string
+        esign_2848_complete: number
+      }
+      professional: {
+        professional_id: string
+        name: string | null
+        credentials: string | null
+        designation: string | null
+        firm: string | null
+        phone: string | null
+        address: string | null
+        city: string | null
+        state: string | null
+        zip: string | null
+        license_number: string | null
+        caf_number: string | null
+        ptin: string | null
+        initials: string
+      } | null
+    }>(`/v1/tmp/cases/${encodeURIComponent(case_id)}`),
+
+  patchTmpCase: (case_id: string, body: Record<string, unknown>) =>
+    apiFetch<{ ok: boolean }>(`/v1/tmp/cases/${encodeURIComponent(case_id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
   generate2848: (payload: Record<string, unknown>) =>
     apiFetch<{
       ok: boolean
