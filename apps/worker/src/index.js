@@ -20913,13 +20913,16 @@ Return a JSON array where each element has:
       // HeyGen's stock /v2/avatars catalog may or may not list these — we use
       // any matches we find to discover additional looks and default_voice_id,
       // but always populate the registry with the hardcoded IDs.
+      // Hardcoded voice_id and gender are authoritative — they take precedence
+      // over any value returned by the HeyGen catalog lookup (which often
+      // returns null for custom/instant avatars).
       const TARGETS = [
-        { display: 'Annie',   avatar_id: 'e0e84faea390465896db75a83be45085' },
-        { display: 'Tariq',   avatar_id: 'bd3a37b07456488e87757da1f9f0673d' },
-        { display: 'Genesis', avatar_id: '5f090900d27246a284d568bcfe731f72' },
-        { display: 'Knox',    avatar_id: '2633ed30a7c24e42a218f5ef07719c82' },
-        { display: 'Denyse',  avatar_id: '530f637281fd43cb9a8dfcaf76514ca9' },
-        { display: 'Griffin', avatar_id: 'a2e213135a8040748efb0e8681dfd46e' },
+        { display: 'Annie',   avatar_id: 'e0e84faea390465896db75a83be45085', voice_id: '330290724a1b470fb63153f34d4c0183', gender: 'female' },
+        { display: 'Tariq',   avatar_id: 'bd3a37b07456488e87757da1f9f0673d', voice_id: 'c65bd88dd28f4ae2b6cb6d8676a41c03', gender: 'male' },
+        { display: 'Genesis', avatar_id: '5f090900d27246a284d568bcfe731f72', voice_id: '550779dfa38c4f26a8e69a27975c577f', gender: 'female' },
+        { display: 'Knox',    avatar_id: '2633ed30a7c24e42a218f5ef07719c82', voice_id: '158b76b48ed048d381951887e771e412', gender: 'male' },
+        { display: 'Denyse',  avatar_id: '530f637281fd43cb9a8dfcaf76514ca9', voice_id: 'ec0ffe0aee23425f80b22632ef3251b2', gender: 'female' },
+        { display: 'Griffin', avatar_id: 'a2e213135a8040748efb0e8681dfd46e', voice_id: '1897363f4c6a415b91066035f52105ef', gender: 'male' },
       ];
 
       let listRes;
@@ -20962,23 +20965,25 @@ Return a JSON array where each element has:
             look_id: r.avatar_id,
             name: r.avatar_name,
             preview_image_url: r.preview_image_url || null,
-            gender: r.gender || null,
+            gender: target.gender,
           }));
           avatars.push({
             name: target.display,
             display_name: target.display,
             heygen_name: firstRow.avatar_name || target.display,
             avatar_id: target.avatar_id,
+            gender: target.gender,
             looks_count: looks.length,
-            default_voice_id: firstRow.default_voice_id || firstRow.voice_id || null,
+            default_voice_id: target.voice_id,
             looks,
           });
           matchReport.push({
             display: target.display,
             matched: true,
             avatar_id: target.avatar_id,
+            gender: target.gender,
             looks_count: looks.length,
-            default_voice_id: firstRow.default_voice_id || firstRow.voice_id || null,
+            default_voice_id: target.voice_id,
           });
         } else {
           // Custom/instant avatar not in the stock catalog — register with the
@@ -20989,21 +20994,23 @@ Return a JSON array where each element has:
             display_name: target.display,
             heygen_name: target.display,
             avatar_id: target.avatar_id,
+            gender: target.gender,
             looks_count: 1,
-            default_voice_id: null,
+            default_voice_id: target.voice_id,
             looks: [{
               look_id: target.avatar_id,
               name: target.display,
               preview_image_url: null,
-              gender: null,
+              gender: target.gender,
             }],
           });
           matchReport.push({
             display: target.display,
             matched: false,
             avatar_id: target.avatar_id,
+            gender: target.gender,
             looks_count: 1,
-            default_voice_id: null,
+            default_voice_id: target.voice_id,
           });
         }
       }
