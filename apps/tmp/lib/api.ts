@@ -801,6 +801,39 @@ export const api = {
       body: JSON.stringify({ transcript_data }),
     }),
 
+  uploadMonitoringTranscriptPdf: async (
+    engagement_id: string,
+    file: File,
+  ): Promise<{
+    ok: boolean
+    upload_id: string
+    changes_detected: number
+    alerts: Array<{
+      alert_id: string
+      alert_type: string
+      description: string
+      transaction_code: string | null
+      old_value: string | null
+      new_value: string | null
+      severity: string
+    }>
+  }> => {
+    const form = new FormData()
+    form.append('file', file, file.name)
+    const res = await fetch(
+      `${API_BASE}/v1/tmp/monitoring/engagements/${encodeURIComponent(engagement_id)}/upload`,
+      { method: 'POST', credentials: 'include', body: form },
+    )
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      const msg = (body as { message?: string; error?: string }).message
+        || (body as { error?: string }).error
+        || `API error ${res.status}`
+      throw new ApiError(msg, res.status)
+    }
+    return res.json()
+  },
+
   getMonitoringAlerts: (engagement_id: string) =>
     apiFetch<{
       ok: boolean

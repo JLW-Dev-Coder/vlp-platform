@@ -750,6 +750,66 @@ async function extractTextFromPdf(pdfBytes) {
   }
 }
 
+// parseIrsTranscriptPdf — given raw PDF bytes for an IRS transcript, detect the
+// transcript type and extract transaction rows. Returns
+// { transcript_type, transactions } on success, or an object with an `error` key
+// on failure. Mirrors the logic in POST /v1/transcripts/upload.
+async function parseIrsTranscriptPdf(pdfBytes) {
+  const pdfText = await extractTextFromPdf(pdfBytes);
+  if (!pdfText || pdfText.trim().length < 20) {
+    return { error: 'EXTRACTION_FAILED', message: 'Could not extract text from PDF. The file may be scanned/image-based. Please use a digitally generated IRS transcript.' };
+  }
+
+  const lowerText = pdfText.toLowerCase();
+  let transcriptType = null;
+  if (lowerText.includes('record of account') || lowerText.includes('record_of_account')) {
+    transcriptType = 'record_of_account';
+  } else if (lowerText.includes('wage and income') || lowerText.includes('wage & income')) {
+    transcriptType = 'wage_income';
+  } else if (lowerText.includes('return transcript') || lowerText.includes('tax return transcript')) {
+    transcriptType = 'return';
+  } else if (lowerText.includes('account transcript') || lowerText.includes('account information')) {
+    transcriptType = 'account';
+  }
+  if (!transcriptType) {
+    return { error: 'UNRECOGNIZED_TRANSCRIPT', message: 'Could not detect transcript type. Supported: Account, Return, Wage & Income, Record of Account.' };
+  }
+
+  const transactions = [];
+  const lines = pdfText.split('\n');
+  const txPattern = /^\s*(\d{3})\s+.+?\s+(\d{2}[-/]\d{2}[-/]\d{4})\s+[-]?\$?([\d,]+\.?\d{0,2})/;
+  const txPatternAlt = /^\s*(\d{3})\s+.+?\s+(\d{2}[-/]\d{2}[-/]\d{4})\s+([-]?[\d,]+\.?\d{0,2})/;
+
+  for (const line of lines) {
+    let match = line.match(txPattern);
+    if (!match) match = line.match(txPatternAlt);
+    if (!match) continue;
+    const code = match[1];
+    const rawDate = match[2].replace(/\//g, '-');
+    const rawAmount = match[3].replace(/,/g, '');
+    const amount = parseFloat(rawAmount);
+    const dateParts = rawDate.split('-');
+    let isoDate = rawDate;
+    if (dateParts.length === 3 && dateParts[2].length === 4) {
+      isoDate = `${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
+    }
+    const isNegative = line.includes('-$') || (line.match(/\(\$?[\d,]+\.?\d*\)/) !== null);
+    if (!isNaN(amount)) {
+      transactions.push({
+        code,
+        date: isoDate,
+        amount: isNegative && amount > 0 ? -amount : amount,
+      });
+    }
+  }
+
+  if (transactions.length === 0) {
+    return { error: 'NO_TRANSACTIONS_FOUND', message: 'No IRS transaction codes found in the PDF. Ensure this is a valid IRS transcript with transaction lines.' };
+  }
+
+  return { transcript_type: transcriptType, transactions };
+}
+
 async function getSessionFromRequest(request, env) {
   let sessionId = null;
 
@@ -15206,17 +15266,55 @@ https://virtuallaunch.pro/payouts
         return json({ ok: false, error: 'FORBIDDEN', message: 'Only the assigned professional may upload transcripts.' }, 403, request);
       }
 
-      const payload = await parseBody(request);
-      if (!payload || typeof payload !== 'object' || !payload.transcript_data) {
-        return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'transcript_data is required (same shape as /v1/tools/transcript-parser)' }, 400, request);
-      }
-      const td = payload.transcript_data;
-      if (!td.transcript_type || !Array.isArray(td.transactions) || td.transactions.length === 0) {
-        return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'transcript_data must include transcript_type and a non-empty transactions array' }, 400, request);
-      }
-
       const uploadId = `UPL_${crypto.randomUUID()}`;
       const nowIso = new Date().toISOString();
+      const contentType = request.headers.get('content-type') || '';
+      let td = null;
+      let payload = null;
+      let pdfBytes = null;
+      let pdfFileName = null;
+
+      if (contentType.includes('multipart/form-data')) {
+        let formData;
+        try {
+          formData = await request.formData();
+        } catch {
+          return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'multipart/form-data with a file field is required' }, 400, request);
+        }
+        const file = formData.get('file');
+        if (!file || typeof file === 'string') {
+          return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'Missing file field — upload a PDF via multipart/form-data' }, 400, request);
+        }
+        if (file.type !== 'application/pdf' && !file.name?.toLowerCase().endsWith('.pdf')) {
+          return json({ ok: false, error: 'INVALID_FILE_TYPE', message: 'Only PDF files are accepted' }, 400, request);
+        }
+        const fileBuffer = await file.arrayBuffer();
+        const MAX_FILE_SIZE = 10 * 1024 * 1024;
+        if (fileBuffer.byteLength === 0) {
+          return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'Uploaded file is empty' }, 400, request);
+        }
+        if (fileBuffer.byteLength > MAX_FILE_SIZE) {
+          return json({ ok: false, error: 'FILE_TOO_LARGE', message: 'PDF must be under 10 MB' }, 400, request);
+        }
+        pdfBytes = new Uint8Array(fileBuffer);
+        pdfFileName = file.name || 'transcript.pdf';
+
+        const parsed = await parseIrsTranscriptPdf(pdfBytes);
+        if (parsed.error) {
+          return json({ ok: false, error: parsed.error, message: parsed.message }, 422, request);
+        }
+        td = { transcript_type: parsed.transcript_type, transactions: parsed.transactions };
+        payload = { transcript_data: td, source: 'pdf_upload', file_name: pdfFileName, file_size: fileBuffer.byteLength };
+      } else {
+        payload = await parseBody(request);
+        if (!payload || typeof payload !== 'object' || !payload.transcript_data) {
+          return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'Upload an IRS transcript PDF via multipart/form-data (file field), or send transcript_data JSON.' }, 400, request);
+        }
+        td = payload.transcript_data;
+        if (!td.transcript_type || !Array.isArray(td.transactions) || td.transactions.length === 0) {
+          return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'transcript_data must include transcript_type and a non-empty transactions array' }, 400, request);
+        }
+      }
 
       // Parse: same logic as /v1/tools/transcript-parser
       const codesFound = [...new Set(td.transactions.map((t) => String(t.code)))];
@@ -15239,9 +15337,21 @@ https://virtuallaunch.pro/payouts
 
       const rawKey = `tmp/transcripts/${engagementId}/${uploadId}.json`;
       const parsedKey = `tmp/transcripts/${engagementId}/${uploadId}-parsed.json`;
+      const pdfKey = pdfBytes ? `tmp/transcripts/${engagementId}/${uploadId}.pdf` : null;
       try {
         await r2Put(env.R2_VIRTUAL_LAUNCH, rawKey, payload);
         await r2Put(env.R2_VIRTUAL_LAUNCH, parsedKey, parsedResult);
+        if (pdfBytes && pdfKey) {
+          await env.R2_VIRTUAL_LAUNCH.put(pdfKey, pdfBytes, {
+            httpMetadata: { contentType: 'application/pdf' },
+            customMetadata: {
+              engagement_id: engagementId,
+              upload_id: uploadId,
+              uploaded_at: nowIso,
+              file_name: pdfFileName || 'transcript.pdf',
+            },
+          });
+        }
       } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
       }
