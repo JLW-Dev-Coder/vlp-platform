@@ -4,6 +4,7 @@ import {
   MarketingFooter,
   BusinessJsonLd,
   LeadChatbot,
+  ExitIntentPopup,
   CookieConsent,
   PostHogPageview,
 } from '@vlp/member-ui'
@@ -23,6 +24,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <main className="flex-1">{children}</main>
       <MarketingFooter config={ttmpConfig} />
       <LeadChatbot config={ttmpConfig} />
+      <ExitIntentPopup config={ttmpConfig} />
       <CookieConsent config={ttmpConfig} />
       <Suspense fallback={null}>
         <PostHogPageview />

@@ -166,4 +166,15 @@ export const tcvlpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: Kwong Eligibility Quick-Check',
+    description: "A simple checklist to determine if your client's penalties qualify under Kwong v. US. Filing deadline is July 2026.",
+    freebieType: 'kwong_checklist',
+    qualifierQuestion: 'Do you have clients with IRS penalties from 2020-2023?',
+    qualifierOptions: ['Yes', 'No', 'Not sure'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

@@ -147,6 +147,17 @@ export const tppConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: Tax Prep Workflow Assessment',
+    description: "We'll map your current client journey against our 8-phase system and show you where the gaps are.",
+    freebieType: 'workflow_assessment',
+    qualifierQuestion: 'How many returns does your firm prepare annually?',
+    qualifierOptions: ['1-100', '100-500', '500+'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }
 
 // Adapter for the shared ReviewDisplayPage / ReviewSubmitPage components.

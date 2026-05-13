@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
-import { BusinessJsonLd, CookieConsent, LeadChatbot, PostHogPageview } from '@vlp/member-ui';
+import { BusinessJsonLd, CookieConsent, ExitIntentPopup, LeadChatbot, PostHogPageview } from '@vlp/member-ui';
 import { dvlpConfig } from '@/lib/platform-config';
 import './globals.css';
 
@@ -58,6 +58,7 @@ export default function RootLayout({
         />
         {children}
         <LeadChatbot config={dvlpConfig} />
+        <ExitIntentPopup config={dvlpConfig} />
         <CookieConsent config={dvlpConfig} />
         <Suspense fallback={null}>
           <PostHogPageview />

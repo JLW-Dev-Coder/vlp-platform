@@ -128,4 +128,15 @@ export const tavlpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: AI Avatar Sample Clip',
+    description: "See a 30-second AI avatar say your firm's name. We'll generate a personalized demo clip and send it to your inbox.",
+    freebieType: 'avatar_sample',
+    qualifierQuestion: 'Do you have a YouTube channel?',
+    qualifierOptions: ['Yes', 'No', 'Planning one'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

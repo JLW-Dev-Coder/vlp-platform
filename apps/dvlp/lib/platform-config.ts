@@ -128,4 +128,15 @@ export const dvlpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: Developer Profile Review',
+    description: "Submit your profile and we'll give you feedback on how to attract more client introductions through the platform.",
+    freebieType: 'profile_review',
+    qualifierQuestion: 'Are you a developer or looking for one?',
+    qualifierOptions: ['Developer', 'Looking for a developer'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

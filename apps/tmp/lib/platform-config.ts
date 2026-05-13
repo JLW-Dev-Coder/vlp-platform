@@ -128,4 +128,15 @@ export const tmpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: IRS Account Monitoring Checklist',
+    description: "The step-by-step checklist for monitoring your clients' IRS accounts. Never miss a notice or status change.",
+    freebieType: 'monitoring_checklist',
+    qualifierQuestion: 'How many client accounts do you monitor?',
+    qualifierOptions: ['1-10', '11-50', '50+'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

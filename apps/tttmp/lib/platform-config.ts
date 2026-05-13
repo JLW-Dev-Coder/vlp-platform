@@ -166,4 +166,15 @@ export const tttmpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: 2 Game Tokens on Us',
+    description: 'Try any Starter game in the Tax Tools Arcade — no commitment, no credit card. Tokens delivered to your inbox.',
+    freebieType: 'free_tokens',
+    qualifierQuestion: 'Are you a tax professional or taxpayer?',
+    qualifierOptions: ['Tax Professional', 'Taxpayer'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

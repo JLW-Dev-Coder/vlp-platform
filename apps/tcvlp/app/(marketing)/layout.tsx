@@ -1,4 +1,4 @@
-import { MarketingHeader, MarketingFooter, CookieConsent, LeadChatbot } from '@vlp/member-ui'
+import { MarketingHeader, MarketingFooter, CookieConsent, ExitIntentPopup, LeadChatbot } from '@vlp/member-ui'
 import DeadlineBanner from '@/components/DeadlineBanner'
 import { tcvlpConfig } from '@/lib/platform-config'
 
@@ -14,6 +14,7 @@ export default function MarketingLayout({
       <main className="flex-1">{children}</main>
       <MarketingFooter config={tcvlpConfig} />
       <LeadChatbot config={tcvlpConfig} />
+      <ExitIntentPopup config={tcvlpConfig} />
       <CookieConsent config={tcvlpConfig} />
     </div>
   )

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { Sora, DM_Sans, IBM_Plex_Mono } from 'next/font/google'
-import { BusinessJsonLd, CookieConsent, LeadChatbot, PostHogPageview } from '@vlp/member-ui'
+import { BusinessJsonLd, CookieConsent, ExitIntentPopup, LeadChatbot, PostHogPageview } from '@vlp/member-ui'
 import { tmpConfig } from '@/lib/platform-config'
 import './globals.css'
 import Footer from '@/components/Footer'
@@ -58,6 +58,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <LeadChatbot config={tmpConfig} />
+        <ExitIntentPopup config={tmpConfig} />
         <CookieConsent config={tmpConfig} />
         <Suspense fallback={null}>
           <PostHogPageview />

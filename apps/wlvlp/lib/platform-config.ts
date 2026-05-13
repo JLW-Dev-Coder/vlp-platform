@@ -170,4 +170,15 @@ export const wlvlpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: Site Evaluation for Your Business',
+    description: "We'll review your current web presence and show you what a professional site could look like — on us.",
+    freebieType: 'site_evaluation',
+    qualifierQuestion: 'Do you currently have a website?',
+    qualifierOptions: ['Yes', 'No'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

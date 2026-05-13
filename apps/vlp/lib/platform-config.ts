@@ -165,4 +165,15 @@ export const vlpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: Platform Recommendation',
+    description: "Tell us your role and we'll recommend which VLP tools will save you the most time — personalized to your practice.",
+    freebieType: 'platform_recommendation',
+    qualifierQuestion: "What's your primary credential?",
+    qualifierOptions: ['CPA', 'EA', 'Attorney', 'Other'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

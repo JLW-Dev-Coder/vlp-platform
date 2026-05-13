@@ -165,4 +165,15 @@ export const gvlpConfig: PlatformConfig = {
       },
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: Demo Game for Your Clients',
+    description: 'Try one game with your clients for 30 days — see engagement data before committing.',
+    freebieType: 'demo_game',
+    qualifierQuestion: 'How many clients do you serve?',
+    qualifierOptions: ['1-50', '50-500', '500+'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

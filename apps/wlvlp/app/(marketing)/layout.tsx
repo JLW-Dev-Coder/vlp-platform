@@ -1,4 +1,4 @@
-import { MarketingHeader, MarketingFooter, LeadChatbot } from '@vlp/member-ui'
+import { MarketingHeader, MarketingFooter, ExitIntentPopup, LeadChatbot } from '@vlp/member-ui'
 import { wlvlpConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({
@@ -18,6 +18,7 @@ export default function MarketingLayout({
       {/* Bottom Vegas marquee strip */}
       <div className="marquee-strip w-full" aria-hidden="true" />
       <LeadChatbot config={wlvlpConfig} />
+      <ExitIntentPopup config={wlvlpConfig} />
     </div>
   )
 }

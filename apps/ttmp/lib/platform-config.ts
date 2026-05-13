@@ -200,4 +200,15 @@ export const ttmpConfig: PlatformConfig = {
       href: 'https://www.youtube.com/@TaxTranscriptAI',
     },
   },
+  exitIntent: {
+    enabled: true,
+    headline: "Wait — this one's on us.",
+    subheadline: 'Free: IRS Transcript Cheat Sheet',
+    description: 'The 20 transaction codes that matter most — explained in plain English. Yours free, instant download link via email.',
+    freebieType: 'transcript_cheatsheet',
+    qualifierQuestion: 'How many transcripts do you read per week?',
+    qualifierOptions: ['1-5', '6-20', '20+'],
+    ctaLabel: 'Send It to Me',
+    successMessage: "Check your inbox! It's on the way.",
+  },
 }

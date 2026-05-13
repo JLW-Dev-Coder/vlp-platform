@@ -1,4 +1,4 @@
-import { MarketingHeader, MarketingFooter, CookieConsent, LeadChatbot } from '@vlp/member-ui'
+import { MarketingHeader, MarketingFooter, CookieConsent, ExitIntentPopup, LeadChatbot } from '@vlp/member-ui'
 import { tppConfig } from '@/lib/platform-config'
 
 export default function MarketingLayout({
@@ -20,6 +20,7 @@ export default function MarketingLayout({
       <main className="flex-1">{children}</main>
       <MarketingFooter config={tppConfig} />
       <LeadChatbot config={tppConfig} />
+      <ExitIntentPopup config={tppConfig} />
       <CookieConsent config={tppConfig} />
     </div>
   )
