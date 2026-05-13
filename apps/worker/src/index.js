@@ -21165,6 +21165,292 @@ Return a JSON array where each element has:
     },
   },
 
+  // GET /v1/tavlp/channels/:account_id — read the YouTube channel registered
+  // for a TAVLP customer. Stored at `tavlp/channels/{account_id}.json`.
+  {
+    method: 'GET', pattern: '/v1/tavlp/channels/:account_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const account_id = params.account_id;
+      const key = `tavlp/channels/${account_id}.json`;
+      try {
+        const obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+        if (!obj) return json({ ok: true, channel: null }, 200, request);
+        const channel = await obj.json();
+        return json({ ok: true, channel }, 200, request);
+      } catch (e) {
+        console.error('TAVLP channels.get R2 error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read channel config' }, 500, request);
+      }
+    },
+  },
+
+  // PUT /v1/tavlp/channels/:account_id — register/update the YouTube channel
+  // for a TAVLP customer. Admin-only.
+  {
+    method: 'PUT', pattern: '/v1/tavlp/channels/:account_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const account_id = params.account_id;
+      const body = await parseBody(request);
+      const { channel_id, channel_name, channel_url } = body ?? {};
+      if (!channel_id || !channel_name) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'channel_id and channel_name are required' }, 400, request);
+      }
+
+      const key = `tavlp/channels/${account_id}.json`;
+      const now = new Date().toISOString();
+      let existing = null;
+      try {
+        const obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+        if (obj) existing = await obj.json();
+      } catch { /* ignore */ }
+
+      const record = {
+        account_id,
+        channel_id,
+        channel_name,
+        channel_url: channel_url || null,
+        created_at: existing?.created_at || now,
+        updated_at: now,
+      };
+
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP channels.put R2 error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to write channel config' }, 500, request);
+      }
+
+      return json({ ok: true, channel: record }, 200, request);
+    },
+  },
+
+  // POST /v1/tavlp/youtube/upload — upload a completed TAVLP render to YouTube.
+  // Reads the video from R2, posts it to YouTube via the Data API v3 resumable
+  // upload flow, and updates the render + script records with the resulting
+  // youtube_video_id / youtube_url. Admin-only — uploads happen on JLW's
+  // brand-account managed channels.
+  {
+    method: 'POST', pattern: '/v1/tavlp/youtube/upload',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await parseBody(request);
+      const { account_id, render_id, channel_id, playlist_id } = body ?? {};
+      const visibility = body?.visibility || 'private';
+      if (!account_id || !render_id || !channel_id) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id, render_id, and channel_id are required' }, 400, request);
+      }
+      if (!['private', 'unlisted', 'public'].includes(visibility)) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'visibility must be one of: private, unlisted, public' }, 400, request);
+      }
+
+      // Read the render job.
+      const renderKey = `tavlp/renders/${account_id}/${render_id}.json`;
+      let renderObj;
+      try {
+        renderObj = await env.R2_VIRTUAL_LAUNCH.get(renderKey);
+      } catch (e) {
+        console.error('TAVLP youtube.upload render read error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read render job' }, 500, request);
+      }
+      if (!renderObj) return json({ ok: false, error: 'render_not_found' }, 404, request);
+      const render = await renderObj.json();
+      if (render.status !== 'completed') {
+        return json({ ok: false, error: 'render_not_completed', message: `Render must be completed before uploading. Current status: ${render.status}` }, 400, request);
+      }
+      const r2VideoKey = render.r2_video_key || `tavlp/videos/${account_id}/${render_id}.mp4`;
+      const videoObj = await env.R2_VIRTUAL_LAUNCH.get(r2VideoKey);
+      if (!videoObj) {
+        return json({ ok: false, error: 'video_not_found', message: `Video not found at ${r2VideoKey}` }, 404, request);
+      }
+
+      // Read the script for metadata.
+      const scriptKey = `tavlp/scripts/${account_id}/${render.script_id}.json`;
+      const scriptObj = await env.R2_VIRTUAL_LAUNCH.get(scriptKey);
+      if (!scriptObj) {
+        return json({ ok: false, error: 'script_not_found', message: `Script ${render.script_id} not found` }, 404, request);
+      }
+      const script = await scriptObj.json();
+
+      // Get a fresh YouTube OAuth token.
+      const tokenState = await getFreshYouTubeOAuthToken(env);
+      if (!tokenState.connected || tokenState.error || !tokenState.record?.access_token) {
+        return json({
+          ok: false,
+          error: 'youtube_auth_failed',
+          message: 'YouTube OAuth not configured or token expired. Re-authorize at /v1/scale/youtube-oauth/start',
+          detail: tokenState.error || 'not_connected',
+        }, 503, request);
+      }
+      const accessToken = tokenState.record.access_token;
+
+      // Build the video metadata.
+      const descriptionFooter = '\n\n---\nSubscribe for weekly tax education content.\n📋 Free consultation: https://taxavatar.virtuallaunch.pro/contact\n\n#tax #IRS #taxplanning #taxprofessional';
+      const tags = Array.isArray(script.tags) ? script.tags : [];
+      const metadata = {
+        snippet: {
+          title: script.title || `TAVLP video ${render_id}`,
+          description: `${script.description || ''}${descriptionFooter}`,
+          tags,
+          categoryId: '27',
+          channelId: channel_id,
+        },
+        status: {
+          privacyStatus: visibility,
+          selfDeclaredMadeForKids: false,
+        },
+      };
+
+      // Load video bytes from R2.
+      let videoBytes;
+      try {
+        videoBytes = await videoObj.arrayBuffer();
+      } catch (e) {
+        console.error('TAVLP youtube.upload video read error:', e);
+        return json({ ok: false, error: 'video_read_failed', message: 'Failed to read video from R2' }, 500, request);
+      }
+      const videoSize = videoBytes.byteLength;
+
+      // Resumable upload — initiate.
+      let initRes;
+      try {
+        initRes = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-Upload-Content-Type': 'video/mp4',
+            'X-Upload-Content-Length': String(videoSize),
+          },
+          body: JSON.stringify(metadata),
+        });
+      } catch (e) {
+        console.error('TAVLP youtube.upload init error:', e);
+        return json({ ok: false, error: 'youtube_init_failed', message: 'Failed to reach YouTube API' }, 502, request);
+      }
+      if (!initRes.ok) {
+        const errText = await initRes.text().catch(() => '');
+        console.error('TAVLP youtube.upload init non-OK:', initRes.status, errText);
+        if (initRes.status === 401 || initRes.status === 403) {
+          return json({
+            ok: false,
+            error: 'youtube_auth_failed',
+            message: 'YouTube returned auth error. Re-authorize at /v1/scale/youtube-oauth/start',
+            detail: errText.slice(0, 500),
+          }, 503, request);
+        }
+        return json({ ok: false, error: 'youtube_init_failed', message: `YouTube returned ${initRes.status}`, detail: errText.slice(0, 500) }, 502, request);
+      }
+      const uploadUri = initRes.headers.get('Location') || initRes.headers.get('location');
+      if (!uploadUri) {
+        return json({ ok: false, error: 'youtube_init_failed', message: 'YouTube did not return an upload URI' }, 502, request);
+      }
+
+      // Resumable upload — PUT video bytes.
+      let uploadRes;
+      try {
+        uploadRes = await fetch(uploadUri, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'video/mp4',
+            'Content-Length': String(videoSize),
+          },
+          body: videoBytes,
+        });
+      } catch (e) {
+        console.error('TAVLP youtube.upload PUT error:', e);
+        return json({ ok: false, error: 'youtube_upload_failed', message: 'Video upload to YouTube failed' }, 502, request);
+      }
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text().catch(() => '');
+        console.error('TAVLP youtube.upload PUT non-OK:', uploadRes.status, errText);
+        return json({ ok: false, error: 'youtube_upload_failed', message: `YouTube returned ${uploadRes.status}`, detail: errText.slice(0, 500) }, 502, request);
+      }
+      let uploaded;
+      try { uploaded = await uploadRes.json(); } catch {
+        return json({ ok: false, error: 'youtube_upload_failed', message: 'Failed to parse YouTube response' }, 502, request);
+      }
+      const youtubeVideoId = uploaded?.id;
+      if (!youtubeVideoId) {
+        return json({ ok: false, error: 'youtube_upload_failed', message: 'YouTube response missing video id' }, 502, request);
+      }
+      const youtubeUrl = `https://www.youtube.com/watch?v=${youtubeVideoId}`;
+
+      // Optionally add to playlist.
+      let playlistAdded = false;
+      if (playlist_id) {
+        try {
+          const plRes = await fetch('https://www.googleapis.com/youtube/v3/playlistItems?part=snippet', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              snippet: {
+                playlistId: playlist_id,
+                resourceId: { kind: 'youtube#video', videoId: youtubeVideoId },
+              },
+            }),
+          });
+          if (plRes.ok) {
+            playlistAdded = true;
+          } else {
+            const errText = await plRes.text().catch(() => '');
+            console.error('TAVLP youtube.upload playlist insert non-OK:', plRes.status, errText);
+          }
+        } catch (e) {
+          console.error('TAVLP youtube.upload playlist insert error:', e);
+        }
+      }
+
+      // Update render + script records.
+      const uploadedAt = new Date().toISOString();
+      render.youtube_video_id = youtubeVideoId;
+      render.youtube_url = youtubeUrl;
+      render.uploaded_at = uploadedAt;
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(renderKey, JSON.stringify(render), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) { console.error('TAVLP youtube.upload render update error:', e); }
+
+      script.status = 'published';
+      script.youtube_video_id = youtubeVideoId;
+      script.youtube_url = youtubeUrl;
+      script.published_at = uploadedAt;
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(script), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) { console.error('TAVLP youtube.upload script update error:', e); }
+
+      return json({
+        ok: true,
+        render_id,
+        youtube_video_id: youtubeVideoId,
+        youtube_url: youtubeUrl,
+        visibility,
+        playlist_added: playlistAdded,
+      }, 200, request);
+    },
+  },
+
   // -------------------------------------------------------------------------
   // TPP (Tax Prep Pro) — narrow exception to the "no Worker routes" stance
   // (canonical-api.md §1). Only the SD-API onboarding broker lives here.
