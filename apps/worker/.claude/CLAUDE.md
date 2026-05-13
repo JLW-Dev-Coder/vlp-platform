@@ -73,7 +73,7 @@ Last updated: 2026-04-13
 | `0 7 * * SUN` | Sun 07:00 | `handleKpiWeeklySnapshot` | KPI weekly snapshot |
 | `0 8 * * *` | 08:00 | `handleValidateEmailsCron` | SCALE Reoon validate |
 | `0 9 * * 1` | Mon 09:00 | `handleClientPoolHealthCheck`, DVLP job-matching | Pool health + DVLP developer matches |
-| `0 10 * * *` | 10:00 | `handleEnrichmentBatch`, `handleWlvlpAuctionSettlementCron`, WLVLP hosting renewal check | FOIA enrich + WLVLP auction settle + hosting expiry |
+| `0 10 * * *` | 10:00 | `handleEnrichmentBatch`, `handleWlvlpAuctionSettlementCron`, `handleMonitoringCron`, WLVLP hosting renewal check | FOIA enrich + WLVLP auction settle + TMP monitoring (stale/expiry/abandoned) + hosting expiry |
 | `0 12 * * *` | 12:00 | `handlePendingCsvIngestion`, `handleDailyBatchGeneration` | SCALE CSV ingest + batch routing |
 | `0 13 * * *` | 13:00 | `handleWlvlpAssetEnrichmentCron` | WLVLP asset crawl |
 | `0 14 * * *` | 14:00 | `handleTtmpEmailSend`, `handleVlpEmailSend`, `handleWlvlpEmailSend` | SCALE email sends |

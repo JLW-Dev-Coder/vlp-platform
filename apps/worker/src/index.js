@@ -29973,6 +29973,160 @@ async function handleRedditMonitorCron(env) {
 // Errors are caught at every step so the cron never crashes the Worker. If the
 // client_pool tables do not exist yet (migrations not applied), per-step
 // catches log the error and the report records it.
+// TMP Phase 3a: Daily monitoring cron — runs stale, expiry, and abandoned checks.
+async function handleMonitoringCron(env) {
+  const nowIso = new Date().toISOString();
+  const log = { type: 'monitoring_cron', timestamp: nowIso, stale_reminders: 0, completed: 0, abandoned: 0, errors: 0 };
+
+  // Stale check: active engagements with cadence overdue
+  try {
+    const { results: actives = [] } = await env.DB.prepare(
+      "SELECT * FROM monitoring_engagements WHERE status = 'active' AND cadence_days IS NOT NULL"
+    ).all();
+    for (const eng of actives) {
+      try {
+        const lastIso = eng.last_upload_at || eng.started_at;
+        if (!lastIso) continue;
+        const ageDays = (Date.now() - Date.parse(lastIso)) / (24 * 60 * 60 * 1000);
+        if (ageDays > (eng.cadence_days + 2)) {
+          // Don't double-remind within 24h
+          if (eng.last_check_at && (Date.now() - Date.parse(eng.last_check_at)) < 24 * 60 * 60 * 1000) continue;
+          const proRow = eng.professional_account_id
+            ? await env.DB.prepare("SELECT email FROM accounts WHERE account_id = ?").bind(eng.professional_account_id).first()
+            : null;
+          if (proRow?.email) {
+            const endsAt = eng.ends_at ? new Date(eng.ends_at) : null;
+            const daysRemaining = endsAt ? Math.max(0, Math.ceil((endsAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : null;
+            const tierLabel = eng.tier ? eng.tier.charAt(0).toUpperCase() + eng.tier.slice(1) : '';
+            await sendEmail(
+              proRow.email,
+              `Reminder: monitoring client needs a transcript check (${eng.engagement_id})`,
+              `<p>Your ${tierLabel} monitoring engagement is overdue for a transcript check.</p>
+               <ul>
+                 <li>Engagement: <strong>${eng.engagement_id}</strong></li>
+                 <li>Last upload: ${eng.last_upload_at || 'never (started ' + eng.started_at + ')'}</li>
+                 <li>Cadence: every ${eng.cadence_days} days</li>
+                 ${daysRemaining !== null ? `<li>Days remaining: ${daysRemaining}</li>` : ''}
+               </ul>
+               <p>Upload now: <a href="https://taxmonitor.pro/dashboard/monitoring/${eng.engagement_id}">taxmonitor.pro/dashboard/monitoring/${eng.engagement_id}</a></p>
+               <p>— Tax Monitor Pro</p>`,
+              env
+            );
+            log.stale_reminders++;
+          }
+          await env.DB.prepare("UPDATE monitoring_engagements SET last_check_at = ? WHERE engagement_id = ?")
+            .bind(nowIso, eng.engagement_id).run();
+        }
+      } catch (e) {
+        log.errors++;
+        console.error('monitoring cron stale: ', eng.engagement_id, e?.message);
+      }
+    }
+  } catch (e) {
+    console.error('monitoring cron stale query failed', e?.message);
+  }
+
+  // Expiry check: active engagements past ends_at
+  try {
+    const { results: expired = [] } = await env.DB.prepare(
+      "SELECT * FROM monitoring_engagements WHERE status = 'active' AND ends_at IS NOT NULL AND ends_at <= datetime('now')"
+    ).all();
+    for (const eng of expired) {
+      try {
+        const { results: alerts = [] } = await env.DB.prepare(
+          "SELECT alert_type, description, severity, created_at FROM monitoring_alerts WHERE engagement_id = ? ORDER BY created_at DESC"
+        ).bind(eng.engagement_id).all();
+        const summary = {
+          engagement_id: eng.engagement_id,
+          tier: eng.tier,
+          taxpayer_account_id: eng.taxpayer_account_id,
+          professional_account_id: eng.professional_account_id,
+          started_at: eng.started_at,
+          ends_at: eng.ends_at,
+          total_uploads: eng.total_uploads,
+          total_alerts: eng.total_alerts,
+          alerts,
+          completed_at: nowIso,
+        };
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${eng.engagement_id}/summary.json`, summary);
+        await env.DB.prepare("UPDATE monitoring_engagements SET status = 'completed', updated_at = ? WHERE engagement_id = ?")
+          .bind(nowIso, eng.engagement_id).run();
+        // Update R2 canonical
+        try {
+          const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${eng.engagement_id}.json`);
+          if (raw) {
+            const rec = JSON.parse(raw);
+            await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${eng.engagement_id}.json`, { ...rec, status: 'completed', updated_at: nowIso });
+          }
+        } catch (_) {}
+        // Email both parties
+        const tierLabel = eng.tier ? eng.tier.charAt(0).toUpperCase() + eng.tier.slice(1) : '';
+        const items = alerts.slice(0, 10).map((a) => `<li>${a.description} (${a.severity})</li>`).join('');
+        const body = `<p>Your ${tierLabel} monitoring engagement is complete.</p>
+          <ul>
+            <li>Total uploads: ${eng.total_uploads || 0}</li>
+            <li>Total changes detected: ${eng.total_alerts || 0}</li>
+          </ul>
+          ${alerts.length ? `<p><strong>Key alerts:</strong></p><ul>${items}</ul>` : '<p>No changes detected during this engagement.</p>'}
+          <p>Renew or upgrade: <a href="https://taxmonitor.pro/pricing">taxmonitor.pro/pricing</a></p>
+          <p>— Tax Monitor Pro</p>`;
+        const taxpayerRow = await env.DB.prepare("SELECT email FROM accounts WHERE account_id = ?").bind(eng.taxpayer_account_id).first();
+        const proRow = eng.professional_account_id
+          ? await env.DB.prepare("SELECT email FROM accounts WHERE account_id = ?").bind(eng.professional_account_id).first()
+          : null;
+        const subject = `Your ${tierLabel} monitoring engagement is complete`;
+        if (taxpayerRow?.email) await sendEmail(taxpayerRow.email, subject, body, env);
+        if (proRow?.email) await sendEmail(proRow.email, subject, body, env);
+        log.completed++;
+      } catch (e) {
+        log.errors++;
+        console.error('monitoring cron expiry: ', eng.engagement_id, e?.message);
+      }
+    }
+  } catch (e) {
+    console.error('monitoring cron expiry query failed', e?.message);
+  }
+
+  // Abandoned check: pending_pro engagements > 14 days old
+  try {
+    const { results: abandoned = [] } = await env.DB.prepare(
+      "SELECT * FROM monitoring_engagements WHERE status = 'pending_pro' AND created_at <= datetime('now', '-14 days')"
+    ).all();
+    for (const eng of abandoned) {
+      try {
+        await env.DB.prepare("UPDATE monitoring_engagements SET status = 'expired', updated_at = ? WHERE engagement_id = ?")
+          .bind(nowIso, eng.engagement_id).run();
+        try {
+          const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${eng.engagement_id}.json`);
+          if (raw) {
+            const rec = JSON.parse(raw);
+            await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${eng.engagement_id}.json`, { ...rec, status: 'expired', updated_at: nowIso });
+          }
+        } catch (_) {}
+        const taxpayerRow = await env.DB.prepare("SELECT email FROM accounts WHERE account_id = ?").bind(eng.taxpayer_account_id).first();
+        if (taxpayerRow?.email) {
+          await sendEmail(
+            taxpayerRow.email,
+            `We were unable to match you with a tax professional`,
+            `<p>We were unable to match you with a tax professional within 14 days for engagement <strong>${eng.engagement_id}</strong>.</p>
+             <p>Please contact us at support@taxmonitor.pro for a refund or to extend your match window.</p>
+             <p>— Tax Monitor Pro</p>`,
+            env
+          );
+        }
+        log.abandoned++;
+      } catch (e) {
+        log.errors++;
+        console.error('monitoring cron abandoned: ', eng.engagement_id, e?.message);
+      }
+    }
+  } catch (e) {
+    console.error('monitoring cron abandoned query failed', e?.message);
+  }
+
+  return log;
+}
+
 async function handleClientPoolHealthCheck(env) {
   const now = new Date();
   const nowIso = now.toISOString();
@@ -31895,6 +32049,12 @@ export default {
         console.log('WLVLP auction settlement cron:', JSON.stringify(auctionLog));
       } catch (e) {
         console.error('WLVLP auction settlement cron failed:', e);
+      }
+      try {
+        const monitoringLog = await handleMonitoringCron(env);
+        console.log('TMP monitoring cron:', JSON.stringify(monitoringLog));
+      } catch (e) {
+        console.error('TMP monitoring cron failed:', e);
       }
     }
 
