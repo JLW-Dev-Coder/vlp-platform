@@ -79,9 +79,20 @@ npx turbo build --filter=tavlp
 
 ---
 
-## Status
+### Pipeline
 
-- Scaffold: in progress
-- Full landing page port from `tavlp-site/index.html`: deferred
-- Worker product/Stripe integration: not started
-- Member dashboard: deferred (lives in TCVLP)
+Fully automated: subscribe → generate scripts (Claude API) → approve → render (HeyGen API) → auto-upload (YouTube Data API) → published.
+
+Manual steps: channel setup (onboarding), channel registration (SCALE), YouTube ownership transfer (if requested).
+
+Script lifecycle: `pending_review → approved → rendering → rendered → published` (or `render_failed`).
+
+Auto-upload triggers in the render status poll endpoint when HeyGen reports completion. Falls back to manual upload endpoint if auto-upload fails.
+
+Transfer lifecycle: `requested → approved → completed`. Approval cancels Stripe subscription and sends notification emails. Day-7 cron reminds JLW to check YouTube Studio.
+
+SCALE admin: `/scale/tavlp` — subscribers, transfers, quick actions.
+
+Endpoints: 16 total under `/v1/tavlp/*`. See README.md for the full table.
+
+Secrets: ANTHROPIC_API_KEY, HEYGEN_API_KEY, STRIPE_SECRET_KEY_VLP, RESEND_API_KEY. YouTube OAuth via ENRICHMENT_KV.

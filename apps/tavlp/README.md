@@ -30,6 +30,125 @@ Tax Avatar Pro (TAVLP) is the 9th platform in the VLP ecosystem. It delegates a 
 
 ---
 
+## Pipeline
+
+TAVLP runs a fully automated video production pipeline. Once a customer subscribes and their channel is registered, the entire flow from script to published YouTube video requires no manual intervention except script review.
+
+### Automated Flow
+
+```
+Customer subscribes (Stripe Checkout)
+        ↓
+JLW registers channel (SCALE → PUT /v1/tavlp/channels/:account_id)
+        ↓
+Customer generates scripts (Dashboard → POST /v1/tavlp/scripts/generate)
+        ↓ Claude API writes 1-4 scripts → R2
+Customer reviews & approves scripts (Dashboard → POST /v1/tavlp/scripts/:script_id/approve)
+        ↓
+Render triggered (POST /v1/tavlp/render)
+        ↓ HeyGen API renders avatar video → polls for completion → downloads to R2
+Auto-upload to YouTube (triggered by render status poll on completion)
+        ↓ YouTube Data API uploads video → sets metadata → adds to playlist
+Customer sees published video in Dashboard with YouTube link
+```
+
+### Script Lifecycle
+
+```
+pending_review → approved → rendering → rendered → published
+                                      ↘ render_failed
+```
+
+### Manual Steps (not automated)
+
+| Step | When | Who |
+|------|------|-----|
+| Channel setup | New subscriber onboarding | JLW via SCALE |
+| Channel registration | After channel setup | JLW via SCALE (PUT /v1/tavlp/channels) |
+| YouTube ownership transfer | Customer requests from Dashboard | JLW manually in YouTube Studio (7-day process) |
+
+### Transfer Workflow
+
+```
+Customer requests transfer (Dashboard)
+        ↓ Email 1 → JLW
+JLW approves in SCALE (POST /v1/tavlp/transfer/approve)
+        ↓ Stripe subscription cancelled
+        ↓ Email 2 → Customer ("transfer initiated, 7 business days")
+        ↓ Google Calendar event created (day 8)
+Day 7: Cron sends Email 3 → JLW ("check YouTube Studio")
+        ↓
+JLW confirms transfer in YouTube Studio, marks complete in SCALE
+        ↓ Email 4 → Customer ("transfer complete, channel is yours")
+```
+
+### Worker Endpoints
+
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/v1/tavlp/checkout/sessions` | Session | Stripe checkout |
+| POST | `/v1/tavlp/scripts/generate` | Session | Generate scripts (Claude API) |
+| GET | `/v1/tavlp/scripts/:account_id` | Session | List scripts |
+| POST | `/v1/tavlp/scripts/:script_id/approve` | Session | Approve script |
+| GET | `/v1/tavlp/avatars` | Session | Avatar registry (lazy-build from HeyGen) |
+| POST | `/v1/tavlp/render` | Session | Start HeyGen render |
+| GET | `/v1/tavlp/render/:render_id/status` | Session | Poll render status (auto-uploads on completion) |
+| GET | `/v1/tavlp/renders/:account_id` | Session | List renders |
+| POST | `/v1/tavlp/youtube/upload` | Admin | Manual YouTube upload (fallback) |
+| GET | `/v1/tavlp/channels/:account_id` | Session | Get channel config |
+| PUT | `/v1/tavlp/channels/:account_id` | Admin | Register/update channel |
+| POST | `/v1/tavlp/transfer/request` | Session | Request channel transfer |
+| POST | `/v1/tavlp/transfer/approve` | Admin | Approve transfer (cancels Stripe) |
+| POST | `/v1/tavlp/transfer/complete` | Admin | Mark transfer complete |
+| GET | `/v1/tavlp/transfers` | Admin | List transfer requests |
+| GET | `/v1/tavlp/subscribers` | Admin | List subscribers |
+
+### R2 Storage Map
+
+| Key Pattern | Content |
+|-------------|---------|
+| `tavlp/config/avatar-registry.json` | Cached HeyGen avatar catalog |
+| `tavlp/scripts/{account_id}/{script_id}.json` | Individual script |
+| `tavlp/scripts/{account_id}/batches/{batch_id}.json` | Script batch manifest |
+| `tavlp/renders/{account_id}/{render_id}.json` | Render job record |
+| `tavlp/videos/{account_id}/{render_id}.mp4` | Rendered video file |
+| `tavlp/channels/{account_id}.json` | Channel config |
+| `tavlp/subscriptions/{account_id}.json` | Subscription record |
+| `tavlp/transfer-requests/{account_id}.json` | Transfer request |
+| `tavlp/channel-stats.json` | Aggregated channel stats (cron-refreshed) |
+
+### Worker Secrets Required
+
+| Secret | Purpose |
+|--------|---------|
+| `ANTHROPIC_API_KEY` | Claude API for script generation |
+| `HEYGEN_API_KEY` | HeyGen API for avatar video rendering |
+| `STRIPE_SECRET_KEY_VLP` | Stripe subscription management |
+| `RESEND_API_KEY` | Transactional emails |
+
+YouTube OAuth uses the existing SCALE integration (`getFreshYouTubeOAuthToken` via `ENRICHMENT_KV`). Google Calendar uses per-account OAuth tokens.
+
+### Pricing
+
+| Tier | Monthly | Annual | Videos/mo |
+|------|---------|--------|-----------|
+| Launch | $49/mo | $490/yr | 4 (1/week) |
+| Growth | $99/mo | $990/yr | 8 (2/week) |
+| Pro | $149/mo | $1,490/yr | 12 (3/week) |
+
+- One-time channel setup fee: $99 (waived with annual billing)
+- Additional videos: $15/each on any tier
+- Pro tier includes custom avatar from customer's photo and white-label (no TAVLP branding)
+
+### SCALE Admin
+
+TAVLP management lives at `/scale/tavlp` in the VLP app. Three sections:
+- **Subscribers** — all active/cancelled subscribers with tier, channel, video count, transfer status
+- **Transfers** — pending and completed transfer requests with approve/complete actions
+- **Quick Actions** — register channel, generate scripts, seed avatar registry
+
+---
+
 ## 3. Responsibilities
 
 | Owner | Responsibility |

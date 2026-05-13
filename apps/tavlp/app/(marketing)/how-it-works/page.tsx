@@ -3,107 +3,114 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'How It Works | Tax Avatar Pro',
   description:
-    'Photo in. Leads out. Four steps to a fully managed AI YouTube channel for your tax practice — choose your avatar, we build the channel, your avatar publishes weekly, leads land on your dashboard.',
+    'From signup to your first published video in 48 hours. Pick a plan, choose an AI avatar, approve your scripts, and we publish to your branded YouTube channel.',
 }
 
 const steps = [
   {
     n: 1,
-    title: 'Choose your avatar',
-    items: [
-      'Pick from 6 proven AI presenters or request a custom avatar from your photo.',
-      'Each avatar has multiple looks (12–57) for visual variety.',
-    ],
-    cta: { label: 'Browse the roster →', href: '/avatars' },
+    title: 'Choose your plan & topic',
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M9 11l3 3L22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+    ),
+    body: "Pick Launch, Growth, or Pro based on how many videos you want per month. Tell us your tax specialty — penalty abatement, IRS collections, audit representation, whatever you focus on. We'll tailor every script to your niche.",
   },
   {
     n: 2,
-    title: 'We build your channel',
-    items: [
-      'Branded to your firm — name, logo, colors.',
-      'Content calendar planned: IRS code explainers your clients search for.',
-      'Channel art, descriptions, SEO — all configured.',
-    ],
+    title: 'Pick your AI avatar',
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
+    body: 'Choose from 6 professional AI presenters — or bring your own face with a custom avatar on the Pro plan. Your avatar delivers your content with natural speech, expressions, and gestures. You never step in front of a camera.',
   },
   {
     n: 3,
-    title: 'Your avatar publishes weekly',
-    items: [
-      'Shorts and long-form on a consistent schedule.',
-      'Every video ends with your CTA driving to your TaxClaim Pro intake page.',
-      'Thumbnails, descriptions, and tags included.',
-      'You review and approve before anything goes live.',
-    ],
+    title: 'Review & approve your scripts',
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <polyline points="9 15 11 17 15 13" />
+      </svg>
+    ),
+    body: 'Our AI writes video scripts on your chosen tax topic. You review every script in your dashboard before we produce it. Request changes or approve with one click. Nothing goes live without your OK.',
   },
   {
     n: 4,
-    title: 'Leads land on your dashboard',
-    items: [
-      'Taxpayers self-serve the intake on your branded claim page.',
-      'Form 843 generates automatically.',
-      'You get notified via email.',
-      'Review, sign, mail — that&apos;s your entire workflow.',
-    ],
+    title: 'We publish, you grow',
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+        <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+      </svg>
+    ),
+    body: 'Once you approve, we render the video with your avatar, create a professional thumbnail, and publish it to your branded YouTube channel. You watch your subscribers grow from your dashboard — no YouTube Studio login needed.',
   },
 ]
 
-const timeline = [
-  { when: 'Day 0', what: 'Submit intake form' },
-  { when: 'Day 1–3', what: 'Avatar selected, channel built, first videos produced' },
-  { when: 'Day 3', what: 'You review and approve' },
-  { when: 'Day 7+', what: 'Channel ownership transferred to you' },
-  { when: 'Ongoing', what: 'Weekly publishing, you review and approve' },
+const benefits = [
+  "Branded YouTube channel with your firm's name and colors",
+  'AI-generated scripts tailored to your tax specialty',
+  'Professional AI avatar videos published on schedule',
+  'Lead generation — every video drives viewers to your intake page',
+  'YouTube stats dashboard updated daily',
+  'Full channel ownership whenever you want it',
 ]
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-surface-bg">
+    <div className="min-h-screen flex flex-col bg-[#0a0a0a] text-white">
       {/* Hero */}
       <section className="mx-auto max-w-[1280px] w-full px-6 md:px-8 pb-10 pt-16 md:pb-14 md:pt-24">
         <div className="mx-auto max-w-5xl text-center">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-subtle bg-surface-card px-4 py-2">
-            <span className="h-2 w-2 rounded-full bg-brand-primary" aria-hidden="true" />
-            <span className="text-sm text-text-muted">Four steps. One decision.</span>
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
+            <span className="h-2 w-2 rounded-full bg-[#ec4899]" aria-hidden="true" />
+            <span className="text-sm text-white/70">Signup to first video in 48 hours</span>
           </div>
 
-          <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl text-text-primary">
-            Photo in.{' '}
-            <span className="bg-gradient-to-br from-brand-primary to-brand-gradient-to bg-clip-text text-transparent">
-              Leads out.
-            </span>
+          <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+            How{' '}
+            <span className="bg-gradient-to-br from-[#ec4899] to-[#f472b6] bg-clip-text text-transparent">
+              Tax Avatar Pro
+            </span>{' '}
+            Works
           </h1>
 
-          <p className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-text-muted md:text-2xl">
-            Four steps. One decision — which avatar represents your practice.
+          <p className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-white/70 md:text-2xl">
+            From signup to your first published video in 48 hours. No camera required.
           </p>
         </div>
       </section>
 
       {/* Steps */}
-      <section className="border-t border-subtle">
+      <section className="border-t border-white/10">
         <div className="mx-auto max-w-[1280px] w-full px-6 md:px-8 py-16 md:py-20">
           <div className="grid gap-6 md:gap-8 max-w-4xl mx-auto">
             {steps.map((step) => (
-              <div key={step.n} className="rounded-2xl border border-subtle bg-surface-card p-8 md:p-10 shadow-md">
+              <div
+                key={step.n}
+                className="rounded-2xl border border-white/10 bg-white/5 p-8 md:p-10 shadow-md"
+              >
                 <div className="flex items-start gap-5">
-                  <div className="shrink-0 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-brand-gradient-to text-brand-text-on-primary font-extrabold text-lg">
-                    {step.n}
+                  <div className="shrink-0 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[#ec4899] to-[#f472b6] text-white">
+                    {step.icon}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-extrabold text-text-primary mb-4">{step.title}</h3>
-                    <ul className="space-y-3 text-base text-text-muted">
-                      {step.items.map((item, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-brand-primary shrink-0" aria-hidden="true" />
-                          <span dangerouslySetInnerHTML={{ __html: item }} />
-                        </li>
-                      ))}
-                    </ul>
-                    {step.cta && (
-                      <a href={step.cta.href} className="inline-block mt-5 text-brand-primary hover:underline font-semibold text-sm">
-                        {step.cta.label}
-                      </a>
-                    )}
+                    <div className="flex items-baseline gap-3 mb-3">
+                      <span className="text-sm font-extrabold tracking-widest text-[#ec4899]">
+                        STEP {step.n}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-extrabold mb-4">{step.title}</h3>
+                    <p className="text-base leading-relaxed text-white/70">{step.body}</p>
                   </div>
                 </div>
               </div>
@@ -112,36 +119,69 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Timeline */}
-      <section className="border-t border-subtle bg-surface-card">
+      {/* What you get */}
+      <section className="border-t border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-[1280px] w-full px-6 md:px-8 py-16 md:py-20">
           <div className="mx-auto max-w-3xl">
-            <p className="text-xs font-semibold tracking-widest text-brand-primary text-center">TIMELINE</p>
-            <h2 className="mt-3 mb-10 text-4xl font-extrabold md:text-5xl text-text-primary text-center">From submit to live in a week</h2>
-            <div className="rounded-2xl border border-subtle bg-surface-bg p-6 md:p-8 shadow-md">
-              <ul className="divide-y divide-subtle">
-                {timeline.map((row) => (
-                  <li key={row.when} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 py-4 first:pt-0 last:pb-0">
-                    <span className="text-sm font-extrabold text-brand-primary tracking-wide w-32 shrink-0">{row.when}</span>
-                    <span className="text-text-muted">{row.what}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <p className="text-xs font-semibold tracking-widest text-[#ec4899] text-center">
+              WHAT YOU GET
+            </p>
+            <h2 className="mt-3 mb-10 text-4xl font-extrabold md:text-5xl text-center">
+              Everything you need to launch
+            </h2>
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {benefits.map((benefit) => (
+                <li
+                  key={benefit}
+                  className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-5"
+                >
+                  <span
+                    className="mt-1.5 h-2 w-2 rounded-full bg-[#ec4899] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="text-base text-white/80">{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Channel ownership callout */}
+      <section className="border-t border-white/10">
+        <div className="mx-auto max-w-[1280px] w-full px-6 md:px-8 py-16 md:py-20">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-[#ec4899]/30 bg-gradient-to-br from-[#ec4899]/10 to-transparent p-8 md:p-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">It&apos;s your channel</h2>
+            <p className="text-lg leading-relaxed text-white/80">
+              We build and manage the channel for you. You&apos;re added as a Channel Manager with
+              full visibility. When you&apos;re ready, request a transfer from your dashboard —
+              after 7 business days, you&apos;re the primary owner with full control of your
+              channel, videos, and subscribers.
+            </p>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-24 bg-gradient-to-br from-surface-bg via-surface-card to-brand-primary/20 text-text-primary">
+      <section className="py-16 md:py-24 bg-gradient-to-br from-[#0a0a0a] via-[#1a0a14] to-[#ec4899]/20">
         <div className="max-w-4xl mx-auto px-6 md:px-8 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-text-primary">Ready to start?</h2>
-          <p className="text-lg md:text-xl text-text-muted mb-8 max-w-2xl mx-auto">
-            Choose your avatar. We&apos;ll handle the channel.
-          </p>
-          <a href="/#start" className="inline-block bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary font-bold px-10 py-4 rounded-xl text-lg transition-all shadow-lg hover:shadow-xl">
-            Get Started — Choose Your Avatar →
-          </a>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+            Ready to launch your channel?
+          </h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="/pricing"
+              className="inline-block bg-[#ec4899] hover:bg-[#db2777] text-white font-bold px-10 py-4 rounded-xl text-lg transition-all shadow-lg hover:shadow-xl"
+            >
+              See Pricing
+            </a>
+            <a
+              href="/contact"
+              className="inline-block text-white/80 hover:text-white underline-offset-4 hover:underline font-semibold px-6 py-4 text-base"
+            >
+              Questions? Talk to us →
+            </a>
+          </div>
         </div>
       </section>
     </div>
