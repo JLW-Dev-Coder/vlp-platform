@@ -16,7 +16,7 @@ const problems = [
 const solutions = [
   { title: 'AI avatar replaces camera time', body: 'Same content quality, zero hours of you on camera.' },
   { title: 'Proven scripts on IRS codes taxpayers search', body: 'Codes 150, 810, 826, 971 — Kwong v. US penalty content — already researched and ready.' },
-  { title: '$29/mo flat', body: 'Less than the cost of a single freelancer video. Predictable. No per-asset surprises.' },
+  { title: 'Plans from $49/mo', body: 'Launch, Growth, and Pro tiers. Less than the cost of a single freelancer video. Predictable. No per-asset surprises.' },
   { title: 'Delegated end-to-end', body: 'You don’t open YouTube Studio. We post. You review and approve.' },
 ]
 

@@ -39,8 +39,8 @@ const trustItems = [
     description: 'You pick an avatar. We handle scripting, recording, editing, publishing, and growth. You stay focused on tax work.',
   },
   {
-    title: 'Add-on, not replacement',
-    description: 'Tax Avatar Pro is a $29/mo add-on to TaxClaim Pro. Your existing client work and tools stay exactly where they are.',
+    title: 'Standalone subscription',
+    description: 'Tax Avatar Pro is a standalone product — Launch ($49/mo), Growth ($99/mo), or Pro ($149/mo). Your existing client work and tools stay exactly where they are.',
   },
   {
     title: 'Transparent pricing',

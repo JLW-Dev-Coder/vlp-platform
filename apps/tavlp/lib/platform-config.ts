@@ -116,7 +116,7 @@ export const tavlpConfig: PlatformConfig = {
         id: 'q3',
         label: 'What does it cost?',
         response: [
-          "Tax Avatar Pro starts at $29/mo. That includes your AI avatar, YouTube channel setup, and landing page integration. Book an intro call to see a live demo of an avatar in action.",
+          "Plans start at $49/mo for weekly video publishing. See our pricing page for Launch, Growth, and Pro tiers.",
         ],
         primaryCta: { label: 'Book an intro call →', action: { type: 'cal-intro' } },
         secondaryCta: { label: 'See pricing', action: { type: 'link', href: '/pricing' } },

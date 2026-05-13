@@ -186,10 +186,10 @@ export default function AvatarsPage() {
           Pick your avatar, send us a photo (or use one of theirs), and we'll have your branded YouTube channel publishing within 14 days.
         </p>
         <Link
-          href="/#start"
+          href="/pricing"
           className="inline-flex items-center gap-2 px-10 py-4 rounded-lg font-semibold text-white text-[1.0625rem] bg-gradient-to-br from-[#ec4899] to-[#db2777] shadow-[0_0_30px_rgba(236,72,153,0.18)] transition hover:brightness-110 hover:-translate-y-0.5"
         >
-          Get Your Avatar Channel — $29/mo →
+          Get Your Avatar Channel — from $49/mo →
         </Link>
       </section>
     </div>

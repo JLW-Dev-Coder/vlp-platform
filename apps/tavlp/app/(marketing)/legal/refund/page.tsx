@@ -19,7 +19,7 @@ export default function RefundPage() {
     >
       <LegalSection>
         <p>
-          Tax Avatar Pro is a $29/mo managed AI YouTube channel subscription (the &ldquo;Service&rdquo;), sold as an add-on to TaxClaim Pro. This Refund Policy applies to all purchases of the Service. For help with an order, use the{' '}
+          Tax Avatar Pro is a managed AI YouTube channel subscription (the &ldquo;Service&rdquo;), offered in Launch ($49/mo), Growth ($99/mo), and Pro ($149/mo) tiers, with monthly and annual billing options. This Refund Policy applies to all purchases of the Service. For help with an order, use the{' '}
           <Link href="/contact" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">
             contact page
           </Link>.

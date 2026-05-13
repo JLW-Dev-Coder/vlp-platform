@@ -18,7 +18,7 @@ export default function TermsPage() {
       currentPage="terms"
     >
       <LegalSection>
-        <p>Tax Avatar Pro provides a managed AI YouTube channel service for tax professionals (the &ldquo;Service&rdquo;), sold as a $29/mo add-on to TaxClaim Pro. This Agreement is entered into by and between Tax Avatar Pro&apos;s operating entity (&ldquo;Provider&rdquo;) and the individual or entity purchasing, accessing, or using the Service (&ldquo;Client&rdquo;).</p>
+        <p>Tax Avatar Pro provides a managed AI YouTube channel service for tax professionals (the &ldquo;Service&rdquo;), offered as a standalone subscription with Launch ($49/mo), Growth ($99/mo), and Pro ($149/mo) tiers (with annual billing options) and optional add-ons (channel setup fee, additional videos). This Agreement is entered into by and between Tax Avatar Pro&apos;s operating entity (&ldquo;Provider&rdquo;) and the individual or entity purchasing, accessing, or using the Service (&ldquo;Client&rdquo;).</p>
       </LegalSection>
 
       <LegalSection title="Section 1. Covered Services & Scope of Use">
@@ -34,7 +34,7 @@ export default function TermsPage() {
             <li key={item} className="flex items-start gap-3"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" /><span>{item}</span></li>
           ))}
         </ul>
-        <p>Tax Avatar Pro requires an active TaxClaim Pro subscription. Cancellation of TaxClaim Pro will result in cancellation of Tax Avatar Pro.</p>
+        <p>Tax Avatar Pro is a standalone subscription and does not require any other VLP product.</p>
       </LegalSection>
 
       <LegalSection title="Section 2. No Professional or Regulated Advice">
@@ -72,7 +72,7 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection title="Section 8. Fees and Payment">
-        <p className="mb-3">Client agrees to pay $29/mo in advance for Tax Avatar Pro, in addition to the $10/mo TaxClaim Pro base subscription required to access this add-on.</p>
+        <p className="mb-3">Client agrees to pay the subscription fee for the selected Tax Avatar Pro tier in advance — $49/mo (Launch), $99/mo (Growth), or $149/mo (Pro) — or the equivalent annual price. A one-time $99 channel setup fee applies to monthly plans and is waived for annual billing. Additional videos beyond the included monthly allowance are $15 each.</p>
         <p>Fees are non-refundable except as described in the <Link href="/legal/refund" className="text-brand-primary underline underline-offset-2 hover:text-brand-hover">Refund Policy</Link>.</p>
       </LegalSection>
 

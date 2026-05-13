@@ -17,21 +17,24 @@ See monorepo root `.claude/CLAUDE.md` for shared context, canonical docs, and ar
 
 ## What TAVLP Is
 
-Tax Avatar Pro is a $29/mo managed AI YouTube channel add-on for tax professionals (EAs, CPAs, attorneys). It is sold as an add-on to TaxClaim Pro (TCVLP) — the $10/mo TCVLP base subscription is required, making the combined service $39/mo.
-
-We use HeyGen avatars to produce a fully-managed, branded YouTube channel for tax pros: scripts written, avatars recorded, episodes uploaded, channel grown — all turnkey. The customer chooses an avatar and we handle the rest.
+Tax Avatar Pro is a standalone, fully-managed AI YouTube channel subscription for tax professionals (EAs, CPAs, attorneys). We use HeyGen avatars to produce a branded YouTube channel for tax pros: scripts written, avatars recorded, episodes uploaded, channel grown — all turnkey. The customer chooses an avatar and we handle the rest.
 
 ---
 
-## Pricing
+### Pricing
 
-| Tier | Price | Notes |
-|------|-------|-------|
-| TaxClaim Pro (base) | $10/mo | Required to add Tax Avatar Pro |
-| Tax Avatar Pro (add-on) | $29/mo | Managed AI YouTube channel |
-| Combined | $39/mo | Most common purchase path |
+TAVLP is a standalone 3-tier subscription product.
 
-Stripe price IDs to be added once products are created.
+| Tier | Monthly | Annual | Videos/mo |
+|------|---------|--------|-----------|
+| Launch | $49/mo | $490/yr | 4 (1/week) |
+| Growth | $99/mo | $990/yr | 8 (2/week) |
+| Pro | $149/mo | $1,490/yr | 12 (3/week) |
+
+- One-time channel setup fee: $99 (waived with annual billing)
+- Additional videos: $15/each on any tier
+- Pro tier includes custom avatar from customer's photo and white-label (no TAVLP branding)
+- Channel ownership transfer is opt-in from the customer dashboard; transfer cancels subscription
 
 ---
 
@@ -56,7 +59,7 @@ TAVLP passes `tavlpConfig` (defined in `lib/platform-config.ts`) to shared compo
 `/`, `/avatars`, `/pricing`, `/contact`, `/sign-in`, `/legal/privacy`, `/legal/terms`, `/legal/refund`
 
 ### Member (authenticated) — not yet built
-Member area lives in TCVLP. TAVLP is an add-on, no separate dashboard yet.
+TAVLP member dashboard is not yet built; customer onboarding is handled via email + Cal.com after Stripe checkout.
 
 ---
 

@@ -20391,8 +20391,9 @@ https://virtuallaunch.pro/payouts
   },
 
   // POST /v1/tavlp/checkout/sessions
-  // Creates a Stripe Checkout session for a TAVLP subscription tier.
-  // Uses placeholder price IDs until JLW creates real Stripe products.
+  // Creates a Stripe Checkout session for a TAVLP subscription tier (monthly or annual).
+  // Optionally includes the one-time $99 channel setup fee as a second line item
+  // (typically added for monthly billing; waived for annual).
   {
     method: 'POST', pattern: '/v1/tavlp/checkout/sessions',
     handler: async (_method, _pattern, _params, request, env) => {
@@ -20400,31 +20401,39 @@ https://virtuallaunch.pro/payouts
       if (error) return error;
 
       const body = await parseBody(request);
-      const { price_id, tier, success_url, cancel_url } = body ?? {};
+      const { price_id, tier, billing, include_setup_fee, success_url, cancel_url } = body ?? {};
       if (!price_id || !success_url || !cancel_url) {
         return json({ ok: false, error: 'BAD_REQUEST', message: 'price_id, success_url, cancel_url required' }, 400, request);
       }
 
-      // Validate price_id against the three known TAVLP tiers.
+      // Validate price_id against the known TAVLP subscription prices (monthly + annual).
+      const TAVLP_SETUP_FEE_PRICE_ID = env.STRIPE_PRICE_TAVLP_SETUP_FEE || 'price_1TWiSf9ROeyeXOqeP7hLJsCz';
       const VALID_TAVLP_PRICES = new Set([
-        env.STRIPE_PRICE_TAVLP_STARTER || 'price_placeholder_tavlp_starter',
-        env.STRIPE_PRICE_TAVLP_GROWTH  || 'price_placeholder_tavlp_growth',
-        env.STRIPE_PRICE_TAVLP_PRO     || 'price_placeholder_tavlp_pro',
+        env.STRIPE_PRICE_TAVLP_LAUNCH_MONTHLY || 'price_1TWiSC9ROeyeXOqedv5uOcus',
+        env.STRIPE_PRICE_TAVLP_LAUNCH_ANNUAL  || 'price_1TWiSH9ROeyeXOqe0HKKgWz5',
+        env.STRIPE_PRICE_TAVLP_GROWTH_MONTHLY || 'price_1TWiSL9ROeyeXOqeGpzhH94E',
+        env.STRIPE_PRICE_TAVLP_GROWTH_ANNUAL  || 'price_1TWiSQ9ROeyeXOqebVkuziCa',
+        env.STRIPE_PRICE_TAVLP_PRO_MONTHLY    || 'price_1TWiSV9ROeyeXOqeNiFXysEf',
+        env.STRIPE_PRICE_TAVLP_PRO_ANNUAL     || 'price_1TWiSa9ROeyeXOqeldUf9FlZ',
       ]);
       if (!VALID_TAVLP_PRICES.has(price_id)) {
         return json({ ok: false, error: 'BAD_REQUEST', message: 'Invalid TAVLP price_id' }, 400, request);
       }
 
-      // TAVLP price IDs will live on the VLP Stripe account — must use STRIPE_SECRET_KEY_VLP.
+      // TAVLP price IDs live on the VLP Stripe account — must use STRIPE_SECRET_KEY_VLP.
       const vlpSecretKey = env.STRIPE_SECRET_KEY_VLP;
       if (!vlpSecretKey) {
         return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED', message: 'STRIPE_SECRET_KEY_VLP is not set' }, 503, request);
       }
 
       try {
+        const line_items = [{ price: price_id, quantity: 1 }];
+        if (include_setup_fee) {
+          line_items.push({ price: TAVLP_SETUP_FEE_PRICE_ID, quantity: 1 });
+        }
         const stripeSession = await stripePost('/checkout/sessions', {
           mode: 'subscription',
-          line_items: [{ price: price_id, quantity: 1 }],
+          line_items,
           allow_promotion_codes: true,
           success_url,
           cancel_url,
@@ -20432,6 +20441,7 @@ https://virtuallaunch.pro/payouts
             account_id: session.account_id,
             platform: 'tavlp',
             tier: tier || 'unknown',
+            billing: billing || 'unknown',
           },
         }, env, vlpSecretKey);
 

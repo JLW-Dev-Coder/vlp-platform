@@ -20,7 +20,7 @@ const coreFeatures = [
     items: [
       'Researched, accurate content covering codes taxpayers search: 150, 810, 826, 971.',
       'Script variants to differentiate your channel.',
-      'Kwong v. US penalty abatement content included.',
+      'Penalty abatement, IRS collections, audit representation — content tailored to your practice area.',
     ],
   },
   {
@@ -124,7 +124,7 @@ export default function FeaturesPage() {
         <div className="max-w-4xl mx-auto px-6 md:px-8 text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-6 text-text-primary">Ready to delegate your YouTube channel?</h2>
           <p className="text-lg md:text-xl text-text-muted mb-8 max-w-2xl mx-auto">
-            $29/mo as an add-on to TaxClaim Pro. Combined: $39/mo for a fully managed marketing engine and Form 843 toolkit.
+            Plans start at $49/mo. Launch, Growth, and Pro tiers for every stage of your channel.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/#start" className="bg-brand-primary hover:bg-brand-hover text-brand-text-on-primary font-bold px-10 py-4 rounded-xl text-lg transition-all shadow-lg hover:shadow-xl">

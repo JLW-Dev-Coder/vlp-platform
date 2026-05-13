@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     default: 'Tax Avatar Pro — AI YouTube Channel for Tax Pros',
     template: '%s | Tax Avatar Pro',
   },
-  description: 'Tax Avatar Pro is a fully-managed AI YouTube channel for tax professionals. We pick the avatar, write the scripts, publish the episodes, and grow your audience — for $29/mo as an add-on to TaxClaim Pro.',
+  description: 'Tax Avatar Pro is a fully-managed AI YouTube channel for tax professionals. We pick the avatar, write the scripts, publish the episodes, and grow your audience — plans starting at $49/mo.',
   icons: {
     icon: '/favicon.svg',
     apple: '/favicon.svg',
@@ -38,7 +38,7 @@ export default function RootLayout({
           description="Managed AI YouTube channel for tax professionals. Avatar selection, script writing, episode production, and channel growth handled end-to-end."
           url="https://taxavatar.virtuallaunch.pro"
           type="ProfessionalService"
-          priceRange="$29/mo"
+          priceRange="$49–$149/mo"
         />
         {children}
       </body>

@@ -5,15 +5,23 @@ import Link from 'next/link';
 import { tavlpConfig } from '@/lib/platform-config';
 
 const STRIPE_PRICES = {
-  starter: 'price_placeholder_tavlp_starter',
-  growth: 'price_placeholder_tavlp_growth',
-  pro: 'price_placeholder_tavlp_pro',
+  launchMonthly: 'price_1TWiSC9ROeyeXOqedv5uOcus',
+  launchAnnual: 'price_1TWiSH9ROeyeXOqe0HKKgWz5',
+  growthMonthly: 'price_1TWiSL9ROeyeXOqeGpzhH94E',
+  growthAnnual: 'price_1TWiSQ9ROeyeXOqebVkuziCa',
+  proMonthly: 'price_1TWiSV9ROeyeXOqeNiFXysEf',
+  proAnnual: 'price_1TWiSa9ROeyeXOqeldUf9FlZ',
+  setupFee: 'price_1TWiSf9ROeyeXOqeP7hLJsCz',
+  additionalVideo: 'price_1TWiSk9ROeyeXOqegbPOYQKT',
 } as const;
 
 type Tier = {
   name: string;
-  price: number;
-  priceId: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  monthlyPriceId: string;
+  annualPriceId: string;
+  tagline: string;
   description: string;
   features: string[];
   popular: boolean;
@@ -21,70 +29,79 @@ type Tier = {
 
 const TIERS: Tier[] = [
   {
-    name: 'Starter',
-    price: 49,
-    priceId: STRIPE_PRICES.starter,
-    description: 'AI avatar channel — you manage publishing.',
+    name: 'Launch',
+    monthlyPrice: 49,
+    annualPrice: 490,
+    monthlyPriceId: STRIPE_PRICES.launchMonthly,
+    annualPriceId: STRIPE_PRICES.launchAnnual,
+    tagline: 'Your YouTube channel, without the camera.',
+    description: 'AI avatar channel — we build it, script it, and publish weekly.',
     popular: false,
     features: [
-      'Custom AI avatar',
-      'Branded channel setup',
-      '4 videos/month (scripts provided)',
+      '4 videos/month (1 per week)',
+      '1 AI avatar (choose from 6 proven presenters)',
+      'AI-generated scripts on your tax topic',
+      'Professional thumbnails',
+      'Branded YouTube channel setup',
       'YouTube stats dashboard',
-      'Channel ownership transfer',
+      'Lead generation pipeline to your intake page',
+      'Review & approve workflow — nothing goes live without your OK',
     ],
   },
   {
     name: 'Growth',
-    price: 99,
-    priceId: STRIPE_PRICES.growth,
-    description: 'Full-service — we publish for you weekly.',
+    monthlyPrice: 99,
+    annualPrice: 990,
+    monthlyPriceId: STRIPE_PRICES.growthMonthly,
+    annualPriceId: STRIPE_PRICES.growthAnnual,
+    tagline: 'Double the content, double the visibility.',
+    description: '2x weekly publishing for faster channel growth.',
     popular: true,
     features: [
-      'Everything in Starter',
-      'Weekly publishing (4+ videos/mo)',
-      'Thumbnail & description optimization',
-      'Lead generation pipeline to TaxClaim Pro intake',
-      'Review & approve workflow',
+      'Everything in Launch',
+      '8 videos/month (2 per week)',
+      '1 avatar change per month',
+      'Priority rendering',
     ],
   },
   {
     name: 'Pro',
-    price: 199,
-    priceId: STRIPE_PRICES.pro,
-    description: 'Premium — full content strategy + multiple avatars.',
+    monthlyPrice: 149,
+    annualPrice: 1490,
+    monthlyPriceId: STRIPE_PRICES.proMonthly,
+    annualPriceId: STRIPE_PRICES.proAnnual,
+    tagline: 'Your face. Your channel. Your brand only.',
+    description: 'Custom avatar from your photo. White-label — no Tax Avatar Pro branding.',
     popular: false,
     features: [
       'Everything in Growth',
-      '8+ videos/month',
-      'Multiple avatar selection',
-      'Kwong v. US content pack',
-      'Dedicated account manager',
-      'Priority support',
+      '12 videos/month (3 per week)',
+      'Custom AI avatar generated from your photo',
+      'White-label channel (no Tax Avatar Pro branding visible)',
     ],
   },
 ];
 
 const FAQ = [
   {
-    q: 'How does the AI avatar work?',
-    a: 'You choose from our avatar library (or we generate one from your photo). Your AI spokesperson then records every video — IRS code explainers, taxpayer guidance, deadline reminders — on your branded YouTube channel. You never have to be on camera.',
+    q: 'Do I own my content?',
+    a: 'Yes. Every video we produce is on your channel. You can request full channel ownership transfer at any time — after the 7-day YouTube transfer process, you’re the primary owner with full control of your channel, videos, and subscribers.',
   },
   {
-    q: 'Do I own the YouTube channel?',
-    a: 'Yes. The channel is configured under your brand and transferred to you after the 7-day YouTube transfer period. You’re the primary owner with full control.',
+    q: 'Am I renting a channel?',
+    a: 'We build and manage the channel for you. You’re added as a Channel Manager with full visibility into analytics, comments, and content. Think of it as a managed service — we handle production, you keep control. Request ownership transfer whenever you’re ready.',
   },
   {
-    q: 'Who writes the scripts?',
-    a: 'We do. Every script covers IRS codes that taxpayers search at midnight — researched, accurate, and ready to publish. On Growth and Pro tiers, we also handle thumbnails and descriptions.',
+    q: 'What happens if I cancel?',
+    a: 'Your channel and all published videos remain live on YouTube. We simply stop producing new content. Your subscribers, views, and SEO rankings stay with the channel. If you transfer ownership before canceling, the channel is fully yours.',
   },
   {
-    q: 'How do leads come back to my practice?',
-    a: 'Every video drives viewers to your branded TaxClaim Pro intake page. Taxpayers self-serve, Form 843 generates, and you get notified. Lead pipeline is included on Growth and Pro.',
+    q: 'How do the AI scripts work?',
+    a: 'You tell us your tax topic niche at onboarding — penalty abatement, IRS collections, audit representation, whatever you specialize in. Our AI generates scripts tailored to your expertise. You review and approve every script before we render the video. Nothing goes live without your OK.',
   },
   {
-    q: 'Can I cancel anytime?',
-    a: 'Yes. There are no long-term contracts. Cancel anytime — the channel stays yours.',
+    q: 'Can I change my avatar?',
+    a: 'Launch plan customers can switch to a different stock avatar once when they first set up. Growth and Pro customers get 1 avatar change per month. Pro customers can also create a custom avatar generated from their own photo.',
   },
 ];
 
@@ -97,6 +114,7 @@ function CheckIcon() {
 }
 
 export default function PricingPage() {
+  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,6 +130,7 @@ export default function PricingPage() {
         body: JSON.stringify({
           price_id: priceId,
           tier: tierName,
+          billing,
           success_url: `${origin}/pricing/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${origin}/pricing`,
         }),
@@ -136,7 +155,7 @@ export default function PricingPage() {
   return (
     <div className="bg-black text-white">
       <section className="mx-auto max-w-[77.5rem] px-4 pb-12 pt-16 md:pt-24">
-        <div className="mx-auto max-w-3xl text-center mb-12">
+        <div className="mx-auto max-w-3xl text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Pick your{' '}
             <span style={{ color: tavlpConfig.brandColor }}>plan</span>
@@ -146,6 +165,28 @@ export default function PricingPage() {
           </p>
         </div>
 
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1">
+            <button
+              type="button"
+              onClick={() => setBilling('monthly')}
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${billing === 'monthly' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+              style={billing === 'monthly' ? { backgroundColor: tavlpConfig.brandColor } : undefined}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setBilling('annual')}
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${billing === 'annual' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+              style={billing === 'annual' ? { backgroundColor: tavlpConfig.brandColor } : undefined}
+            >
+              Annual
+              <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-white/15">Save 2 months</span>
+            </button>
+          </div>
+        </div>
+
         {error && (
           <p className="text-center text-sm text-red-400 mb-6" role="alert">{error}</p>
         )}
@@ -153,6 +194,9 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {TIERS.map((tier) => {
             const isPopular = tier.popular;
+            const price = billing === 'monthly' ? tier.monthlyPrice : tier.annualPrice;
+            const priceId = billing === 'monthly' ? tier.monthlyPriceId : tier.annualPriceId;
+            const suffix = billing === 'monthly' ? '/mo' : '/yr';
             return (
               <div
                 key={tier.name}
@@ -172,12 +216,19 @@ export default function PricingPage() {
                   </div>
                 )}
                 <div className="text-xl font-semibold mb-1">{tier.name}</div>
+                <p className="text-sm font-medium mb-1" style={{ color: tavlpConfig.brandColor }}>{tier.tagline}</p>
                 <p className="text-sm text-white/60 mb-6">{tier.description}</p>
-                <div className="flex items-baseline mb-6">
+                <div className="flex items-baseline mb-2">
                   <span className="text-2xl font-bold">$</span>
-                  <span className="text-5xl font-bold">{tier.price}</span>
-                  <span className="text-white/60 ml-1">/mo</span>
+                  <span className="text-5xl font-bold">{price.toLocaleString()}</span>
+                  <span className="text-white/60 ml-1">{suffix}</span>
                 </div>
+                {billing === 'annual' && (
+                  <p className="text-xs text-white/60 mb-6">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wide" style={{ backgroundColor: `${tavlpConfig.brandColor}20`, color: tavlpConfig.brandColor }}>Save 2 months</span>
+                  </p>
+                )}
+                {billing === 'monthly' && <div className="mb-6" />}
                 <ul className="space-y-3 mb-8 flex-1">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-3 text-sm text-white/80">
@@ -187,7 +238,7 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => handleCheckout(tier.priceId, tier.name)}
+                  onClick={() => handleCheckout(priceId, tier.name)}
                   disabled={loading !== null}
                   className="block w-full text-center px-6 py-3 rounded-full text-sm font-semibold transition-all disabled:opacity-50"
                   style={
@@ -203,9 +254,10 @@ export default function PricingPage() {
           })}
         </div>
 
-        <p className="text-center text-sm text-white/50 mt-8 max-w-2xl mx-auto">
-          Cancel anytime. No setup fees.
-        </p>
+        <div className="mt-10 max-w-3xl mx-auto space-y-3 text-center text-sm text-white/70">
+          <p>One-time <strong className="text-white">$99 channel setup fee</strong>. Waived with annual billing.</p>
+          <p>Need more videos? Add extras at <strong className="text-white">$15/each</strong> on any plan.</p>
+        </div>
       </section>
 
       <section className="mx-auto max-w-3xl px-4 py-16">

@@ -279,7 +279,7 @@ const BODY_HTML = `
     <section class="reveal">
       <div class="inner-wide">
         <p class="label" style="text-align:center">The difference</p>
-        <h2 style="text-align:center">The old way costs you $1,250 per video.<br>This costs $29/mo.</h2>
+        <h2 style="text-align:center">The old way costs you $1,250 per video.<br>This starts at $49/mo.</h2>
 
         <div class="flow-compare">
           <div class="flow-col flow-col-old">
@@ -301,7 +301,7 @@ const BODY_HTML = `
             <div class="flow-step"><div class="flow-icon" style="background:rgba(236,72,153,.08);color:var(--brand)">3</div><div>Avatar records. Perfect take, every time.</div></div>
             <div class="flow-step"><div class="flow-icon" style="background:rgba(236,72,153,.08);color:var(--brand)">4</div><div>We publish with your CTA and branding.</div></div>
             <div class="flow-step"><div class="flow-icon" style="background:rgba(236,72,153,.08);color:var(--brand)">5</div><div>Leads land on your dashboard. You review.</div></div>
-            <div class="flow-step" style="border-top:2px solid rgba(236,72,153,.2);margin-top:.5rem;padding-top:.75rem"><div class="flow-icon" style="background:rgba(236,72,153,.12);color:var(--brand)">⏱</div><div><strong style="color:rgba(255,255,255,.65)">0 hours from you</strong><br>Your cost: <strong style="color:var(--brand-light)">$29/mo</strong></div></div>
+            <div class="flow-step" style="border-top:2px solid rgba(236,72,153,.2);margin-top:.5rem;padding-top:.75rem"><div class="flow-icon" style="background:rgba(236,72,153,.12);color:var(--brand)">⏱</div><div><strong style="color:rgba(255,255,255,.65)">0 hours from you</strong><br>Your cost: <strong style="color:var(--brand-light)">from $49/mo</strong></div></div>
           </div>
         </div>
       </div>
@@ -428,12 +428,12 @@ const BODY_HTML = `
         <h2 style="text-align:center">The math isn't close.</h2>
 
         <div class="price-box">
-          <span class="price-big">$29</span><span class="price-per">/mo</span>
+          <span class="price-big">$49</span><span class="price-per">/mo</span>
           <p style="font-size:.9375rem;color:var(--muted);margin-top:1rem;line-height:1.6">
-            Avatar creation &middot; Content production &middot; Channel management<br>
+            Launch ($49/mo) &middot; Growth ($99/mo) &middot; Pro ($149/mo)<br>
             Weekly publishing &middot; You review and approve &middot; Cancel anytime
           </p>
-          <div class="price-compare">Add-on to TaxClaim Pro ($10/mo). Total: $39/mo for a fully managed channel + Form 843 automation.</div>
+          <div class="price-compare">One-time $99 channel setup fee (waived with annual). Need more videos? Add extras at $15/each on any plan.</div>
 
           <div class="diy-math">
             <p style="font-size:.5625rem;text-transform:uppercase;letter-spacing:.15em;color:var(--dim);margin-bottom:.75rem;font-weight:600">DIY cost per video</p>
@@ -447,7 +447,7 @@ const BODY_HTML = `
 
           <p style="font-size:.8125rem;color:var(--dim);margin-top:2rem;line-height:1.7">
             4 videos per month at DIY rates = <strong style="color:#f87171">$1,940–$4,400/mo</strong>.<br>
-            Tax Avatar Pro = <strong style="color:var(--brand-light)">$29/mo</strong>.
+            Tax Avatar Pro = <strong style="color:var(--brand-light)">from $49/mo</strong>. <a href="/pricing" style="color:var(--brand);text-decoration:none">See all plans →</a>
           </p>
         </div>
       </div>
@@ -463,9 +463,9 @@ const BODY_HTML = `
         <div class="faq" id="tavlp-faq-list">
           <div class="faq-item"><button class="faq-q" data-faq><span>Will AI content get my channel banned?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>No. YouTube's 2026 policy allows AI-generated narration and presentation. What they ban is mass-produced, low-quality spam. Our content is IRS-specific, researched, educational, and published on a consistent schedule — exactly the kind of content YouTube promotes. Every video is reviewed before publishing.</p></div></div>
           <div class="faq-item"><button class="faq-q" data-faq><span>Won't my clients distrust a video from an avatar?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>Your clients aren't watching at 2pm in your office. They're searching "IRS Code 810" at midnight on their phone. Trust comes from accuracy — correct information delivered clearly. The avatar is the delivery mechanism. The IRS code explanation is the value. Ask yourself: when you search a topic on YouTube, do you care about the presenter's identity or the answer to your question?</p></div></div>
-          <div class="faq-item"><button class="faq-q" data-faq><span>Can't I just do this myself with ChatGPT and Canva?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>You can. And at your billing rate of $250/hr, each video costs you 3–5 hours of billable time. That's $750 to $1,250 per video in opportunity cost. Or $29/mo for us to handle everything. The tools are available to anyone. The time isn't. That's what you're buying — your time back.</p></div></div>
+          <div class="faq-item"><button class="faq-q" data-faq><span>Can't I just do this myself with ChatGPT and Canva?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>You can. And at your billing rate of $250/hr, each video costs you 3–5 hours of billable time. That's $750 to $1,250 per video in opportunity cost. Or starting at $49/mo for us to handle everything. The tools are available to anyone. The time isn't. That's what you're buying — your time back.</p></div></div>
           <div class="faq-item"><button class="faq-q" data-faq><span>What happens after the Kwong deadline?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>IRS codes don't expire. Code 150, 810, 826, 971 — taxpayers search these every single day regardless of Kwong. The ruling is launch fuel — it creates urgency for tax pros to sign up and urgency for taxpayers to find your content. But the IRS code explainer content drives views forever. Kwong gets you in the door. IRS codes keep the channel compounding.</p></div></div>
-          <div class="faq-item"><button class="faq-q" data-faq><span>Do I need to be on TaxClaim Pro already?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>Tax Avatar Pro is a $29/mo add-on to TaxClaim Pro. If you're not on TCVLP yet, you can start at $10/mo for the Form 843 generation tool — that's what your avatar's video CTAs drive viewers to. The combo is $39/mo total for a fully managed YouTube channel plus automated Form 843 intake.</p></div></div>
+          <div class="faq-item"><button class="faq-q" data-faq><span>Do I need to be on TaxClaim Pro already?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>No. Tax Avatar Pro is a standalone subscription — Launch $49/mo, Growth $99/mo, or Pro $149/mo. Your video CTAs can drive viewers to any branded intake page you choose. TaxClaim Pro is one option (Form 843 automation), but it's not required.</p></div></div>
           <div class="faq-item"><button class="faq-q" data-faq><span>How quickly will I see results?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="faq-a"><p>YouTube is a compounding channel, not a switch. Our proof-of-concept channels hit 923 views in 30 days with zero promotion. Your first videos will start indexing in YouTube search within days. But the real value compounds over months as your video library grows and each video becomes a permanent entry point for taxpayers searching IRS codes.</p></div></div>
         </div>
       </div>
@@ -522,7 +522,7 @@ const BODY_HTML = `
           400,000 CPAs left the industry in the last 5 years and 50% of those remaining retire within 7 years. The shortage extends to EAs and tax attorneys too — the entire profession is thinning. The firms that build client acquisition systems now — not next year, not next season — are the ones that survive the shortage.
         </p>
         <div style="margin-top:2.5rem">
-          <a href="#start" class="cta">Get Your Avatar Channel — $29/mo →</a>
+          <a href="/pricing" class="cta">Get Your Avatar Channel — from $49/mo →</a>
         </div>
       </div>
     </section>
@@ -609,17 +609,17 @@ export default function LandingPage() {
         h: "What's holding you back?",
         b: "We've heard every objection. Pick the one that's closest to yours — we'll answer it honestly.",
         o: [
-          { l: '"$29/mo on top of $10/mo and I have zero proof this works."', n: 'obj1' },
+          { l: '"$49/mo and I have zero proof this works."', n: 'obj1' },
           { l: '"AI content will get my channel banned."', n: 'obj2' },
           { l: '"My clients won\'t trust a video from an avatar."', n: 'obj3' },
           { l: '"I can just do this myself with ChatGPT and Canva."', n: 'obj4' },
           { l: '"What happens after Kwong?"', n: 'obj5' },
         ],
       },
-      obj1: { h: "Fair. Let's be honest about where we are.", b: "We're early. We launched three channels 30 days ago with zero paid promotion. Tax Transcript AI has 923 organic views and 26 videos. Our top video — IRS Code 150 — pulled 475 views. A real taxpayer commented asking for help with codes 810, 150, and 806 on their transcript.\n\nIs that millions of views? No. Is it proof that IRS code content gets found organically on YouTube? Yes.\n\nYou're paying $39/mo total ($10 TaxClaim Pro + $29 Tax Avatar Pro). One qualified lead covers months of that. And the channel compounds — every video you publish is a permanent entry point.\n\nThe question isn't whether $39/mo is worth one lead. It's whether you can afford another month of your competitor ranking for 'IRS Code 810' while you don't.", o: [{ l: "I'm ready. Let's start.", n: 'form' }, { l: 'I have another concern', n: 's' }] },
+      obj1: { h: "Fair. Let's be honest about where we are.", b: "We're early. We launched three channels 30 days ago with zero paid promotion. Tax Transcript AI has 923 organic views and 26 videos. Our top video — IRS Code 150 — pulled 475 views. A real taxpayer commented asking for help with codes 810, 150, and 806 on their transcript.\n\nIs that millions of views? No. Is it proof that IRS code content gets found organically on YouTube? Yes.\n\nYou're paying $49/mo on the Launch plan. One qualified lead covers months of that. And the channel compounds — every video you publish is a permanent entry point.\n\nThe question isn't whether $49/mo is worth one lead. It's whether you can afford another month of your competitor ranking for 'IRS Code 810' while you don't.", o: [{ l: "I'm ready. Let's start.", n: 'form' }, { l: 'I have another concern', n: 's' }] },
       obj2: { h: "YouTube's 2026 policy is clear on this.", b: "YouTube allows AI-generated narration and presentation. What they ban is mass-produced, low-quality spam — think auto-generated listicles with stock footage.\n\nOur content is the opposite: IRS-specific, researched, educational, published on a consistent schedule, and reviewed by a tax professional (you) before it goes live.\n\nYouTube promotes educational content that answers specific queries. An IRS Code 810 explainer that accurately walks through what the code means, why it appears on a transcript, and what to do next — that's exactly what YouTube wants on the platform.\n\nEvery video is reviewed by you before publishing. You approve the content. Your name is on the channel.", o: [{ l: "That makes sense. Let's start.", n: 'form' }, { l: 'I have another concern', n: 's' }] },
       obj3: { h: "Your clients aren't browsing — they're searching.", b: "Nobody finds your video by scrolling their feed and thinking 'nice avatar.' They find it by typing 'IRS Code 810 meaning' into YouTube at midnight because they just got a letter from the IRS.\n\nAt that moment, trust comes from one thing: does this video accurately explain what Code 810 means and what I should do next?\n\nThe avatar is the delivery mechanism. The IRS code explanation is the value. If the information is accurate, clear, and actionable — the viewer doesn't care whether a human or an avatar delivered it.\n\nAnd here's the thing — your name, your firm, and your branded intake page are what they click next. The avatar earns the view. Your credentials earn the trust.", o: [{ l: "That makes sense. Let's start.", n: 'form' }, { l: 'I have another concern', n: 's' }] },
-      obj4: { h: "You absolutely can. Here's what it costs.", b: "ChatGPT can write the script. Canva can make the thumbnail. You can record on your phone. All true.\n\nBut here's the math:\n• Script + research: 45 minutes\n• Setup + recording (4–7 takes): 60 minutes\n• Editing + captions + thumbnail: 90 minutes\n• Upload + description + tags: 15 minutes\n\nThat's 3.5 hours minimum. At your billing rate ($250/hr), that's $875 in opportunity cost. Per video.\n\nFour videos per month = $3,500 in lost billing time.\n\nOr $29/mo. We script, record, edit, and publish. You review and approve.\n\nThe tools are available to anyone. Your time isn't. That's what you're buying back.", o: [{ l: "The math is clear. Let's start.", n: 'form' }, { l: 'I have another concern', n: 's' }] },
+      obj4: { h: "You absolutely can. Here's what it costs.", b: "ChatGPT can write the script. Canva can make the thumbnail. You can record on your phone. All true.\n\nBut here's the math:\n• Script + research: 45 minutes\n• Setup + recording (4–7 takes): 60 minutes\n• Editing + captions + thumbnail: 90 minutes\n• Upload + description + tags: 15 minutes\n\nThat's 3.5 hours minimum. At your billing rate ($250/hr), that's $875 in opportunity cost. Per video.\n\nFour videos per month = $3,500 in lost billing time.\n\nOr starting at $49/mo. We script, record, edit, and publish. You review and approve.\n\nThe tools are available to anyone. Your time isn't. That's what you're buying back.", o: [{ l: "The math is clear. Let's start.", n: 'form' }, { l: 'I have another concern', n: 's' }] },
       obj5: { h: "IRS codes don't expire. Kwong does.", b: "The Kwong ruling creates urgency right now — taxpayers with penalties from Jan 2020 to July 2023 need to file Form 843 before the July 10, 2026 deadline. That's the launch fuel.\n\nBut Code 150 (tax return filed), Code 810 (refund freeze), Code 826 (refund offset), Code 971 (notice issued) — taxpayers search these every single day. Kwong or no Kwong.\n\nYour IRS code explainer videos are evergreen content. A video published today still drives views in 6 months, 12 months, 2 years. The channel compounds.\n\nKwong gets tax pros through the door right now. IRS codes keep the channel growing after the deadline passes. You're building an asset, not running a promotion.", o: [{ l: "Long game makes sense. Let's start.", n: 'form' }, { l: 'I have another concern', n: 's' }] },
       form: { h: "Let's get your channel started.", b: null, isForm: true, o: [] },
     }

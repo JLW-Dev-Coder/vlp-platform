@@ -8,7 +8,7 @@
 
 ## 1. System Overview
 
-Tax Avatar Pro (TAVLP) is the 9th platform in the VLP ecosystem. It delegates a tax practice's YouTube marketing to an AI avatar — same content quality, zero camera time. TAVLP is positioned as a $29/mo add-on to TaxClaim Pro and shares the same intake pipeline (penalty_type: `tavlp_channel_interest`).
+Tax Avatar Pro (TAVLP) is the 9th platform in the VLP ecosystem. It delegates a tax practice's YouTube marketing to an AI avatar — same content quality, zero camera time. TAVLP is a standalone 3-tier subscription (Launch $49/mo, Growth $99/mo, Pro $149/mo) with optional add-ons (channel setup fee, additional videos).
 
 **What it is:** A marketing site + intake form + R2-served media (videos, avatars) + YouTube channel stats dashboard.
 **What it is not:** A self-serve software product. There is no member dashboard for end customers — TAVLP is a managed service.
