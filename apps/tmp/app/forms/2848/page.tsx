@@ -298,41 +298,44 @@ function Form2848({ caseId }: { caseId: string }) {
       return
     }
 
+    // Flatten to the shape POST /v1/tools/2848/generate expects. The Worker's
+    // PDF coordinate map is keyed on flat field names — reshape here rather
+    // than in the Worker so that map stays untouched. tin_type and the
+    // signature block are intentionally dropped: the generator has no PDF
+    // coordinates for them (the typed signature is a UI-level audit only).
+    const taxpayerAddress = [
+      street.trim(),
+      [city.trim(), state, zip.trim()].filter(Boolean).join(', '),
+    ]
+      .filter(Boolean)
+      .join(', ')
+      .slice(0, 200)
+
     const payload = {
       case_id: caseId,
-      taxpayer: {
-        full_legal_name: fullName.trim(),
-        tin_type: tinType,
-        tin: tin.replace(/\D/g, ''),
-        mailing_address: {
-          street: street.trim(),
-          city: city.trim(),
-          state,
-          zip: zip.trim(),
-        },
-        phone: phone.replace(/\D/g, ''),
-      },
-      representative: {
-        name: rep.name,
-        caf_number: rep.caf_number,
-        ptin: rep.ptin,
-        phone: rep.phone,
-        designation: rep.designation,
-        address: rep.address,
-      },
+      generated_by: 'client',
+      taxpayer_name: fullName.trim(),
+      taxpayer_address: taxpayerAddress,
+      taxpayer_tin: tin.replace(/\D/g, ''),
+      taxpayer_daytime_phone: phone.replace(/\D/g, ''),
+      rep_name: rep.name,
+      rep_caf_number: rep.caf_number,
+      rep_ptin: rep.ptin,
+      rep_phone: rep.phone,
+      rep_address: rep.address,
+      rep_designation: rep.designation || 'Other',
       tax_matters: matters
         .filter((m) => m.description.trim())
         .map((m) => ({
           description: m.description,
-          form_number: m.form_number.trim(),
+          tax_form: m.form_number.trim(),
           years_or_periods: m.years.trim(),
         })),
-      authorizations: auths,
-      signature: {
-        typed_name: signature.trim(),
-        signed_date: signatureDate,
-        agreed: true,
-      },
+      line5a_access_irs_records: auths.access_records,
+      line5a_sign_consent_disclosure: auths.sign_consent_disclose,
+      line5a_substitute_return: auths.sign_substitute_return,
+      line5a_sign_claim_refund: auths.sign_claim_refund,
+      line5a_receive_refund: auths.receive_refund_checks,
     }
 
     setSubmitting(true)
