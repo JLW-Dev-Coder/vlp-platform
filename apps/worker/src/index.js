@@ -25485,8 +25485,9 @@ const TCVLP_GALA_DRIP_FROM = 'TaxClaim Pro <noreply@virtuallaunch.pro>';
 const TCVLP_GALA_DRIP_REPLY_TO = 'outreach@virtuallaunch.pro';
 const TCVLP_GALA_DRIP_LIMIT = 50;
 
-function galaCanspamFooterText(email) {
+async function galaCanspamFooterText(env, email) {
   const enc = encodeURIComponent(email || '');
+  const token = await generateUnsubscribeToken(env, email || '');
   return `
 
 —
@@ -25499,21 +25500,24 @@ Lenore, Inc c/o Virtual Launch Pro
 El Cajon, CA 92020
 
 To stop receiving these emails:
-https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=gala
+https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=gala&token=${token}
 `;
 }
 
-function galaCanspamFooterHtml(email) {
+async function galaCanspamFooterHtml(env, email) {
   const enc = encodeURIComponent(email || '');
+  const token = await generateUnsubscribeToken(env, email || '');
   return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0 16px;" />
 <p style="font-size:12px;color:#6b7280;line-height:1.6;margin:0;">
   Jamie L Williams, EA &middot; TaxClaim Pro &middot; <a href="https://taxclaim.virtuallaunch.pro" style="color:#6b7280;">taxclaim.virtuallaunch.pro</a><br />
   Lenore, Inc c/o Virtual Launch Pro &middot; 1175 Avocado Avenue Suite 101 PMB 1010, El Cajon, CA 92020<br />
-  <a href="https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=gala" style="color:#6b7280;">Unsubscribe</a> from TaxClaim Pro emails.
+  <a href="https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=gala&token=${token}" style="color:#6b7280;">Unsubscribe</a> from TaxClaim Pro emails.
 </p>`;
 }
 
-function galaDripEmail1(firstName, email) {
+async function galaDripEmail1(firstName, email, env) {
+  const footerHtml = await galaCanspamFooterHtml(env, email);
+  const footerText = await galaCanspamFooterText(env, email);
   const subject = 'Your TaxClaim Pro access is ready';
   const text = `Hey ${firstName},
 
@@ -25547,12 +25551,14 @@ https://taxclaim.virtuallaunch.pro/gala
   <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Open TaxClaim Pro</a></p>
   <p style="font-size:14px;color:#6b7280;">If you want the fastest path, use the Gala guide:<br><a href="https://taxclaim.virtuallaunch.pro/gala" style="color:#eab308;">https://taxclaim.virtuallaunch.pro/gala</a></p>
   <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
-  ${galaCanspamFooterHtml(email)}
+  ${footerHtml}
 </div>`;
-  return { subject, text: text + galaCanspamFooterText(email), html };
+  return { subject, text: text + footerText, html };
 }
 
-function galaDripEmail2(firstName, email) {
+async function galaDripEmail2(firstName, email, env) {
+  const footerHtml = await galaCanspamFooterHtml(env, email);
+  const footerText = await galaCanspamFooterText(env, email);
   const subject = 'The fastest way to prep Form 843 claims (without cutting corners)';
   const text = `Hey ${firstName},
 
@@ -25590,12 +25596,14 @@ https://taxclaim.virtuallaunch.pro/gala
   </ul>
   <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro/gala" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">See the Gala Flow</a></p>
   <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
-  ${galaCanspamFooterHtml(email)}
+  ${footerHtml}
 </div>`;
-  return { subject, text: text + galaCanspamFooterText(email), html };
+  return { subject, text: text + footerText, html };
 }
 
-function galaDripEmail3(firstName, email) {
+async function galaDripEmail3(firstName, email, env) {
+  const footerHtml = await galaCanspamFooterHtml(env, email);
+  const footerText = await galaCanspamFooterText(env, email);
   const subject = 'July 2026 is closer than it looks';
   const text = `Hey ${firstName},
 
@@ -25625,9 +25633,9 @@ https://taxclaim.virtuallaunch.pro/gala
   </ol>
   <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro/gala" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Start the Claim Guide</a></p>
   <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
-  ${galaCanspamFooterHtml(email)}
+  ${footerHtml}
 </div>`;
-  return { subject, text: text + galaCanspamFooterText(email), html };
+  return { subject, text: text + footerText, html };
 }
 
 async function sendGalaDripEmail(env, to, subject, text, html) {
@@ -25673,7 +25681,7 @@ async function runGalaDripStage(env, stats, query, column, buildEmail) {
     if (stats.sent + stats.errors.length >= TCVLP_GALA_DRIP_LIMIT) break;
     try {
       const firstName = (row.name || '').split(/\s+/)[0] || 'there';
-      const { subject, text, html } = buildEmail(firstName, row.email);
+      const { subject, text, html } = await buildEmail(firstName, row.email, env);
       await sendGalaDripEmail(env, row.email, subject, text, html);
       const nowIso = new Date().toISOString();
       await env.DB.prepare(
@@ -25842,6 +25850,32 @@ async function verifyVesperiUnsubToken(env, email, token) {
   const expected = await vesperiUnsubscribeUrl(env, email);
   const m = expected.match(/token=([a-f0-9]+)/);
   return !!(m && m[1] === token);
+}
+
+// Global unsubscribe HMAC — used by /unsubscribe handler and all email footers
+// (TTMP/VLP/WLVLP SCALE, TCVLP Gala drip) that link to api.virtuallaunch.pro/unsubscribe.
+// Signs `unsubscribe:${lowercased-email}` with SESSION_SECRET; 32-char hex output.
+const GLOBAL_UNSUB_SECRET_FALLBACK = 'global-unsub-v1';
+async function generateUnsubscribeToken(env, email) {
+  const secret = env.SESSION_SECRET || GLOBAL_UNSUB_SECRET_FALLBACK;
+  const data = new TextEncoder().encode(`unsubscribe:${String(email || '').toLowerCase()}`);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, data);
+  const bytes = new Uint8Array(sig);
+  let hex = '';
+  for (let i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+  return hex.slice(0, 32);
+}
+async function verifyUnsubscribeToken(env, email, token) {
+  if (!email || !token) return false;
+  const expected = await generateUnsubscribeToken(env, email);
+  return expected === token;
 }
 
 function vesperiGamesForTopic(topic) {
@@ -27101,8 +27135,9 @@ https://transcript.taxmonitor.pro/pricing
 // ---- CAN-SPAM compliance footers --------------------------------------------
 // Appended to every campaign email body. Includes physical mailing address
 // and a per-recipient unsubscribe link served by the Worker at /unsubscribe.
-function canspamTtmpFooter(email) {
+async function canspamTtmpFooter(env, email) {
   const enc = encodeURIComponent(email || '');
+  const token = await generateUnsubscribeToken(env, email || '');
   return `
 —
 Jamie L Williams, EA
@@ -27114,11 +27149,12 @@ Lenore, Inc c/o Virtual Launch Pro
 El Cajon, CA 92020
 
 To stop receiving these emails:
-https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=ttmp
+https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=ttmp&token=${token}
 `;
 }
-function canspamVlpFooter(email) {
+async function canspamVlpFooter(env, email) {
   const enc = encodeURIComponent(email || '');
+  const token = await generateUnsubscribeToken(env, email || '');
   return `
 —
 Jamie L Williams, EA
@@ -27130,11 +27166,12 @@ Lenore, Inc c/o Virtual Launch Pro
 El Cajon, CA 92020
 
 To stop receiving these emails:
-https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=vlp
+https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=vlp&token=${token}
 `;
 }
-function canspamWlvlpFooter(email) {
+async function canspamWlvlpFooter(env, email) {
   const enc = encodeURIComponent(email || '');
+  const token = await generateUnsubscribeToken(env, email || '');
   return `
 —
 Jamie L Williams, EA
@@ -27146,11 +27183,11 @@ Lenore, Inc c/o Virtual Launch Pro
 El Cajon, CA 92020
 
 To stop receiving these emails:
-https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=wlvlp
+https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=wlvlp&token=${token}
 `;
 }
 
-function buildTtmpQueueRecord(rec, ctx) {
+async function buildTtmpQueueRecord(rec, ctx, env) {
   const { first, lastDisplay, firstDisplay, city, state, slug, email, profession, cred, todayIso, baseDate, domain } = ctx;
   const e1 = ttmpEmail1(firstDisplay, cred);
   const e2 = ttmpEmail2(firstDisplay, cred, slug);
@@ -27158,7 +27195,7 @@ function buildTtmpQueueRecord(rec, ctx) {
   const e4 = ttmpEmail4(firstDisplay);
   const e5 = ttmpEmail5(firstDisplay);
   const e6 = ttmpEmail6(firstDisplay);
-  const footer = canspamTtmpFooter(email);
+  const footer = await canspamTtmpFooter(env, email);
   e1.body += footer; e2.body += footer; e3.body += footer;
   e4.body += footer; e5.body += footer; e6.body += footer;
   return {
@@ -27180,7 +27217,7 @@ function buildTtmpQueueRecord(rec, ctx) {
     email_6_scheduled_for: dailyPlusDays(baseDate, 10),
   };
 }
-function buildVlpQueueRecord(rec, ctx) {
+async function buildVlpQueueRecord(rec, ctx, env) {
   const { firstDisplay, lastDisplay, city, state, slug, email, profession, cred, todayIso, baseDate, domain } = ctx;
   const e1 = vlpEmail1(firstDisplay, city || 'your area', cred, slug);
   const e2 = vlpEmail2(firstDisplay, city || 'your area', cred, slug);
@@ -27188,7 +27225,7 @@ function buildVlpQueueRecord(rec, ctx) {
   const e4 = vlpEmail4(firstDisplay, cred, slug);
   const e5 = vlpEmail5(firstDisplay, slug);
   const e6 = vlpEmail6(firstDisplay, city || 'your area');
-  const footer = canspamVlpFooter(email);
+  const footer = await canspamVlpFooter(env, email);
   e1.body += footer; e2.body += footer; e3.body += footer;
   e4.body += footer; e5.body += footer; e6.body += footer;
   return {
@@ -27210,7 +27247,7 @@ function buildVlpQueueRecord(rec, ctx) {
     email_6_scheduled_for: dailyPlusDays(baseDate, 10),
   };
 }
-function buildWlvlpQueueRecord(rec, ctx) {
+async function buildWlvlpQueueRecord(rec, ctx, env) {
   const { firstDisplay, lastDisplay, city, state, slug, email, profession, cred, todayIso, baseDate, domain } = ctx;
   const e1 = wlvlpRouterEmail1(firstDisplay, city, cred, slug);
   const e2 = wlvlpRouterEmail2(firstDisplay, city, cred, slug);
@@ -27218,7 +27255,7 @@ function buildWlvlpQueueRecord(rec, ctx) {
   const e4 = wlvlpRouterEmail4(firstDisplay, slug);
   const e5 = wlvlpRouterEmail5(firstDisplay, slug);
   const e6 = wlvlpRouterEmail6(firstDisplay, slug);
-  const footer = canspamWlvlpFooter(email);
+  const footer = await canspamWlvlpFooter(env, email);
   e1.body += footer; e2.body += footer; e3.body += footer;
   e4.body += footer; e5.body += footer; e6.body += footer;
   return {
@@ -27364,7 +27401,7 @@ async function handleDailyBatchGeneration(env) {
     }
 
     if (dest === 'ttmp') {
-      ttmpRecs.push(buildTtmpQueueRecord(r, ctx));
+      ttmpRecs.push(await buildTtmpQueueRecord(r, ctx, env));
       r.ttmp_email_1_prepared_at = todayIso;
       r.ttmp_asset_slug = slug;
       ttmpAssetWrites.push({
@@ -27372,7 +27409,7 @@ async function handleDailyBatchGeneration(env) {
         page: buildTtmpAssetPageData({ slug, credKey, cred, firstDisplay, lastDisplay, city, state, firm: r.DBA || `${firstDisplay} ${lastDisplay}`.trim(), nowIso: todayIso }),
       });
     } else if (dest === 'vlp') {
-      vlpRecs.push(buildVlpQueueRecord(r, ctx));
+      vlpRecs.push(await buildVlpQueueRecord(r, ctx, env));
       r.vlp_email_1_prepared_at = todayIso;
       r.vlp_asset_slug = slug;
       vlpAssetWrites.push({
@@ -27400,7 +27437,7 @@ async function handleDailyBatchGeneration(env) {
         },
       });
     } else {
-      wlvlpRecs.push(buildWlvlpQueueRecord(r, ctx));
+      wlvlpRecs.push(await buildWlvlpQueueRecord(r, ctx, env));
       r.wlvlp_email_1_prepared_at = todayIso;
       r.wlvlp_asset_slug = slug;
       // Minimal asset page so the /asset/{slug} link resolves
@@ -30107,8 +30144,10 @@ export default {
     if (pathname === '/unsubscribe' && method === 'GET') {
       const emailParam = (url.searchParams.get('email') || '').trim();
       const campaignParam = (url.searchParams.get('campaign') || '').trim();
+      const tokenParam = (url.searchParams.get('token') || '').trim();
       console.log('Unsubscribe:', emailParam, campaignParam, new Date().toISOString());
       const htmlHeaders = { 'Content-Type': 'text/html;charset=UTF-8', ...getCorsHeaders(request) };
+      const invalidPage = `<!DOCTYPE html><html><head><title>Unsubscribe</title></head><body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;"><h2>This unsubscribe link is invalid or expired.</h2><p>Please contact <a href="mailto:outreach@virtuallaunch.pro">outreach@virtuallaunch.pro</a> for assistance.</p></body></html>`;
       if (!emailParam) {
         return new Response(
           `<!DOCTYPE html><html><head><title>Unsubscribe</title></head><body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;"><h2>No email specified.</h2></body></html>`,
@@ -30117,6 +30156,28 @@ export default {
       }
       const target = emailParam.toLowerCase();
       const nowIso = new Date().toISOString();
+
+      // HMAC token validation.
+      // - Token present + valid: proceed.
+      // - Token present + invalid: reject (someone tampered).
+      // - Token absent: legacy fallback — still process, log to R2 for audit.
+      // TODO: remove legacy no-token fallback after 2026-08-12 (90 days from deploy)
+      if (tokenParam) {
+        const valid = await verifyUnsubscribeToken(env, target, tokenParam);
+        if (!valid) {
+          return new Response(invalidPage, { status: 400, headers: htmlHeaders });
+        }
+      } else {
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(
+            `receipts/unsubscribe/legacy/${nowIso}_${encodeURIComponent(target)}.json`,
+            JSON.stringify({ email: target, campaign: campaignParam, at: nowIso, ua: request.headers.get('user-agent') || '' }),
+            { httpMetadata: { contentType: 'application/json' } }
+          );
+        } catch (e) {
+          console.error('Unsubscribe: legacy audit log write failed:', e);
+        }
+      }
 
       // 1. Mutate master NDJSON
       try {
@@ -30244,7 +30305,7 @@ export default {
           let recordsPatched = 0;
           let bodiesPatched = 0;
           for (const rec of arr) {
-            const footer = t.footerFn(rec.email || '');
+            const footer = await t.footerFn(env, rec.email || '');
             let patched = false;
             for (const bk of bodyKeys) {
               const cur = rec[bk];
