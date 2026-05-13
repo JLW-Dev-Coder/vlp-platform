@@ -1,6 +1,6 @@
 # VLP Platform — Virtual Launch Pro Ecosystem
 
-Monorepo for the VLP ecosystem: 9 platform apps, 1 Cloudflare Worker, shared packages.
+Monorepo for the VLP ecosystem: 10 platform apps, 1 Cloudflare Worker, shared packages.
 
 ## Platforms
 
@@ -15,11 +15,12 @@ Monorepo for the VLP ecosystem: 9 platform apps, 1 Cloudflare Worker, shared pac
 | 7 | TCVLP | TaxClaim Pro | taxclaim.virtuallaunch.pro | Form 843 automation for Kwong claims | static export |
 | 8 | WLVLP | Website Lotto VLP | websitelotto.virtuallaunch.pro | Website bidding and hosting | static export |
 | 9 | TAVLP | Tax Avatar Pro | taxavatar.virtuallaunch.pro | AI YouTube channels for tax professionals | static export |
+| 10 | TPP | Tax Prep Pro | taxprep.virtuallaunch.pro | SuiteDash-led tax prep lead-gen site | static export |
 
 ## Architecture
 
-- **Frontend:** Next.js (App Router) × 9 apps
-- **Backend:** Single Cloudflare Worker (`apps/worker/`) serving all 9 platforms
+- **Frontend:** Next.js (App Router) × 10 apps
+- **Backend:** Single Cloudflare Worker (`apps/worker/`) serving all 10 platforms
 - **Storage:** Cloudflare R2 (authoritative), D1 (projection)
 - **Shared UI:** `packages/member-ui/` — canonical components used across all apps
 - **Styling:** Tailwind CSS with shared design tokens per `canonical-style.md`
@@ -41,6 +42,7 @@ vlp-platform/
 │   ├── tcvlp/        # TaxClaim Pro
 │   ├── wlvlp/        # Website Lotto VLP
 │   ├── tavlp/        # Tax Avatar Pro
+│   ├── taxprep/      # Tax Prep Pro
 │   └── worker/       # Cloudflare Worker (API for all platforms)
 ├── packages/
 │   └── member-ui/    # Shared UI components
