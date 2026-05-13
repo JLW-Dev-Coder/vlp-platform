@@ -4166,6 +4166,162 @@ const ROUTES = [
   },
 
   // -------------------------------------------------------------------------
+  // FREEBIE LEADS (anonymous exit-intent capture, all platforms)
+  // -------------------------------------------------------------------------
+
+  {
+    method: 'POST', pattern: '/v1/leads/freebie',
+    handler: async (_method, _pattern, _params, request, env) => {
+      try {
+        const body = await parseBody(request);
+        if (!body || typeof body !== 'object') {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'JSON body required' }, 400, request);
+        }
+        const email = typeof body.email === 'string' ? body.email.trim().toLowerCase().slice(0, 320) : '';
+        const platform = typeof body.platform === 'string' ? body.platform.trim().toLowerCase() : '';
+        const qualifier_question = typeof body.qualifier_question === 'string' ? body.qualifier_question.slice(0, 256) : null;
+        const qualifier_answer = typeof body.qualifier_answer === 'string' ? body.qualifier_answer.slice(0, 256) : null;
+        const freebie_type = typeof body.freebie_type === 'string' ? body.freebie_type.trim().slice(0, 64) : '';
+
+        const VALID_PLATFORMS = new Set(['vlp', 'tmp', 'ttmp', 'tttmp', 'dvlp', 'gvlp', 'tcvlp', 'wlvlp', 'tavlp', 'tpp']);
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'valid email required' }, 400, request);
+        }
+        if (!VALID_PLATFORMS.has(platform)) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'unknown platform' }, 400, request);
+        }
+        if (!freebie_type) {
+          return json({ ok: false, error: 'INVALID_REQUEST', message: 'freebie_type required' }, 400, request);
+        }
+
+        // Dedup: if email+platform combo already exists, do not re-insert or re-email.
+        try {
+          const existing = await env.DB.prepare(
+            `SELECT id FROM freebie_leads WHERE LOWER(email) = ? AND platform = ? LIMIT 1`
+          ).bind(email, platform).first();
+          if (existing && existing.id) {
+            return json({ ok: true, already_subscribed: true, id: existing.id }, 200, request);
+          }
+        } catch (e) {
+          console.error('[freebie-lead] dedup query failed:', e?.message || e);
+        }
+
+        const id = `FREEBIE_${crypto.randomUUID()}`;
+        const createdAt = Date.now();
+        const createdIso = new Date(createdAt).toISOString();
+        const d = new Date(createdAt);
+        const yyyy = d.getUTCFullYear();
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const dd = String(d.getUTCDate()).padStart(2, '0');
+        const r2Key = `leads/freebie/${platform}/${yyyy}/${mm}/${dd}/${id}.json`;
+
+        const record = {
+          id, email, platform, qualifier_question, qualifier_answer,
+          freebie_type, source: 'exit_intent', created_at: createdIso,
+        };
+
+        await r2Put(env.R2_VIRTUAL_LAUNCH, r2Key, record);
+        await d1Run(env.DB,
+          `INSERT INTO freebie_leads
+           (id, email, platform, qualifier_question, qualifier_answer, freebie_type, created_at, source)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, email, platform, qualifier_question, qualifier_answer, freebie_type, createdIso, 'exit_intent']
+        );
+
+        // Welcome email (immediate) + owner notification — non-blocking
+        if (env.RESEND_API_KEY) {
+          const platformMeta = {
+            vlp:   { name: 'Virtual Launch Pro',       site: 'https://virtuallaunch.pro',                    color: '#f97316' },
+            tmp:   { name: 'Tax Monitor Pro',          site: 'https://taxmonitor.pro',                       color: '#f59e0b' },
+            ttmp:  { name: 'Transcript Tax Monitor',   site: 'https://transcript.taxmonitor.pro',            color: '#14b8a6' },
+            tttmp: { name: 'Tax Tools Arcade',         site: 'https://taxtools.taxmonitor.pro',              color: '#8b5cf6' },
+            dvlp:  { name: 'Developers VLP',           site: 'https://developers.virtuallaunch.pro',         color: '#3b82f6' },
+            gvlp:  { name: 'Games VLP',                site: 'https://games.virtuallaunch.pro',              color: '#22c55e' },
+            tcvlp: { name: 'Tax Claim VLP',            site: 'https://taxclaim.virtuallaunch.pro',           color: '#eab308' },
+            wlvlp: { name: 'Website Lotto VLP',        site: 'https://websitelotto.virtuallaunch.pro',       color: '#00D4FF' },
+            tavlp: { name: 'Tax Avatar Pro',           site: 'https://taxavatar.virtuallaunch.pro',          color: '#ec4899' },
+            tpp:   { name: 'Tax Prep Pro',             site: 'https://taxprep.virtuallaunch.pro',            color: '#E91E63' },
+          }[platform] || { name: 'Virtual Launch Pro', site: 'https://virtuallaunch.pro', color: '#f97316' };
+
+          const subjectByFreebie = {
+            transcript_cheatsheet:    'Your IRS Transcript Cheat Sheet is on the way',
+            monitoring_checklist:     'Your IRS Account Monitoring Checklist is on the way',
+            free_tokens:              'Your free arcade tokens are on the way',
+            kwong_checklist:          'Your Kwong Eligibility Quick-Check is on the way',
+            site_evaluation:          'Your free site evaluation is on the way',
+            profile_review:           'Your developer profile review is on the way',
+            demo_game:                'Your demo game access is on the way',
+            avatar_sample:            'Your AI avatar sample clip is on the way',
+            platform_recommendation:  'Your personalized VLP platform recommendation is on the way',
+            workflow_assessment:      'Your tax prep workflow assessment is on the way',
+          };
+          const subject = subjectByFreebie[freebie_type] || `Thanks from ${platformMeta.name}`;
+
+          const unsubToken = await generateUnsubscribeToken(env, email);
+          const unsubUrl = `https://api.virtuallaunch.pro/unsubscribe?email=${encodeURIComponent(email)}&campaign=${platform}_freebie&token=${unsubToken}`;
+          const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+          const html = `<!DOCTYPE html>
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e;padding:24px;">
+<div style="border-top:4px solid ${platformMeta.color};padding-top:20px;">
+<h2 style="color:#1a1a2e;margin:0 0 12px;">Thanks for grabbing our freebie!</h2>
+<p style="font-size:15px;line-height:1.6;color:#333;">We got your request and we're putting your freebie together now. A team member will follow up shortly with your delivery — usually within one business day.</p>
+<p style="font-size:15px;line-height:1.6;color:#333;">In the meantime, if you have questions just reply to this email and a human will read it.</p>
+<p style="font-size:15px;line-height:1.6;color:#333;margin-top:24px;">— The ${esc(platformMeta.name)} team<br><a href="${platformMeta.site}" style="color:${platformMeta.color};text-decoration:none;">${platformMeta.site.replace('https://', '')}</a></p>
+</div>
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+<p style="font-size:11px;color:#6b7280;line-height:1.5;">
+You're receiving this because you requested a freebie from ${esc(platformMeta.name)}.<br>
+Lenore, Inc., 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br>
+<a href="${unsubUrl}" style="color:#6b7280;">Unsubscribe</a> from ${esc(platformMeta.name)} emails.
+</p>
+</body></html>`;
+
+          try {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: `${platformMeta.name} <noreply@virtuallaunch.pro>`,
+                to: [email],
+                subject,
+                html,
+              }),
+            });
+          } catch (e) {
+            console.error('[freebie-lead] welcome email failed:', e?.message || e);
+          }
+
+          // Owner notification
+          const ownerHtml = `<p>New freebie lead captured.</p>
+<ul>
+  <li><strong>Platform:</strong> ${esc(platform)} (${esc(platformMeta.name)})</li>
+  <li><strong>Email:</strong> ${esc(email)}</li>
+  <li><strong>Freebie type:</strong> ${esc(freebie_type)}</li>
+  <li><strong>Qualifier Q:</strong> ${esc(qualifier_question || '(none)')}</li>
+  <li><strong>Qualifier A:</strong> ${esc(qualifier_answer || '(none)')}</li>
+  <li><strong>Timestamp:</strong> ${createdIso}</li>
+  <li><strong>Lead ID:</strong> ${esc(id)}</li>
+</ul>`;
+          try {
+            await sendEmail('outreach@virtuallaunch.pro', `New Freebie Lead — ${platform} — ${freebie_type}`, ownerHtml, env);
+          } catch (e) {
+            console.error('[freebie-lead] notify owner failed:', e?.message || e);
+          }
+        }
+
+        return json({ ok: true, id }, 200, request);
+      } catch (e) {
+        console.error('[freebie-lead] failed:', e?.message || e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Freebie lead submit failed' }, 500, request);
+      }
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // SUBMISSIONS (cross-platform reviews, case studies, testimonials)
   // -------------------------------------------------------------------------
 
@@ -30229,6 +30385,15 @@ export default {
         ).bind(target).run();
       } catch (e) {
         console.error('Unsubscribe: gala intake update failed:', e);
+      }
+
+      // 1d. Flip drip_unsubscribed on freebie_leads (exit-intent freebie drip)
+      try {
+        await env.DB.prepare(
+          `UPDATE freebie_leads SET drip_unsubscribed = 1 WHERE LOWER(email) = ?`
+        ).bind(target).run();
+      } catch (e) {
+        console.error('Unsubscribe: freebie_leads update failed:', e);
       }
 
       // 2. Flip status in each queue
