@@ -63,6 +63,14 @@ export type Avatar = {
   looks: AvatarLook[];
 };
 
+export type CustomAvatar = {
+  group_id: string;
+  talking_photo_id: string;
+  training_status: 'pending' | 'training' | 'ready' | 'failed' | string;
+  gender: 'male' | 'female' | string;
+  created_at?: string;
+};
+
 export type Channel = {
   account_id: string;
   channel_url?: string;
@@ -70,6 +78,8 @@ export type Channel = {
   channel_handle?: string;
   topic?: string;
   selected_avatar?: string;
+  avatar_preference?: string;
+  custom_avatar?: CustomAvatar;
   subscriber_count?: number;
   view_count?: number;
   video_count?: number;
@@ -93,4 +103,28 @@ export const tavlpApi = {
     jsonFetch(`/v1/tavlp/channels/${encodeURIComponent(accountId)}`),
   setChannel: (accountId: string, channel: Partial<Channel>) =>
     jsonFetch(`/v1/tavlp/channels/${encodeURIComponent(accountId)}`, { method: 'PUT', body: JSON.stringify(channel) }),
+  getCustomAvatarStatus: (accountId: string): Promise<{ ok: boolean; custom_avatar: CustomAvatar | null }> =>
+    jsonFetch(`/v1/tavlp/avatar/status/${encodeURIComponent(accountId)}`),
+  uploadCustomAvatar: async (
+    accountId: string,
+    photo: File,
+    gender: 'male' | 'female',
+  ): Promise<{ ok: boolean; group_id: string; talking_photo_id: string; training_status: string; message?: string }> => {
+    const fd = new FormData();
+    fd.append('photo', photo);
+    fd.append('account_id', accountId);
+    fd.append('gender', gender);
+    const res = await fetch(`${API_BASE}/v1/tavlp/avatar/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: fd,
+    });
+    if (res.status === 401) {
+      if (typeof window !== 'undefined') window.location.href = '/sign-in';
+      throw new Error('unauthorized');
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || `Upload failed (${res.status})`);
+    return data;
+  },
 };

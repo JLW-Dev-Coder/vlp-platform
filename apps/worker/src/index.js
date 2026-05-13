@@ -21039,6 +21039,294 @@ Return a JSON array where each element has:
     },
   },
 
+  // POST /v1/tavlp/avatar/upload — upload a customer photo and create a
+  // HeyGen Photo Avatar Group (Pro tier custom avatar). Fire-and-forget
+  // training kickoff. Stores record at `tavlp/custom-avatars/{account_id}.json`.
+  {
+    method: 'POST', pattern: '/v1/tavlp/avatar/upload',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const apiKey = env.HEYGEN_API_KEY;
+      if (!apiKey) {
+        return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
+      }
+
+      let formData;
+      try {
+        formData = await request.formData();
+      } catch {
+        return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'multipart/form-data with photo, account_id, gender required' }, 400, request);
+      }
+
+      const photo = formData.get('photo');
+      const account_id = formData.get('account_id');
+      const gender = formData.get('gender');
+
+      if (!account_id || typeof account_id !== 'string') {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id is required' }, 400, request);
+      }
+      if (gender !== 'male' && gender !== 'female') {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'gender must be "male" or "female"' }, 400, request);
+      }
+      if (!photo || typeof photo === 'string') {
+        return json({ ok: false, error: 'invalid_photo', message: 'Photo must be JPEG or PNG, max 10MB' }, 400, request);
+      }
+      const photoType = photo.type;
+      if (photoType !== 'image/jpeg' && photoType !== 'image/png') {
+        return json({ ok: false, error: 'invalid_photo', message: 'Photo must be JPEG or PNG, max 10MB' }, 400, request);
+      }
+      const photoBuf = await photo.arrayBuffer();
+      if (photoBuf.byteLength === 0 || photoBuf.byteLength > 10 * 1024 * 1024) {
+        return json({ ok: false, error: 'invalid_photo', message: 'Photo must be JPEG or PNG, max 10MB' }, 400, request);
+      }
+
+      // Verify Pro tier (skip if no subscription record — admin testing edge case).
+      try {
+        const subObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/subscriptions/${account_id}.json`);
+        if (subObj) {
+          const sub = await subObj.json();
+          const tier = String(sub?.tier || sub?.plan || '').toLowerCase();
+          if (tier && tier !== 'pro') {
+            return json({ ok: false, error: 'pro_tier_required', message: 'Custom avatar is available on the Pro plan only' }, 403, request);
+          }
+        } else {
+          console.warn(`TAVLP avatar upload: no subscription record for ${account_id} — allowing (admin/testing)`);
+        }
+      } catch (e) {
+        console.error('TAVLP avatar upload subscription read error:', e);
+      }
+
+      // Store photo in R2.
+      const upload_id = crypto.randomUUID();
+      const ext = photoType === 'image/png' ? 'png' : 'jpg';
+      const r2PhotoKey = `tavlp/avatar-uploads/${account_id}/${upload_id}.${ext}`;
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(r2PhotoKey, photoBuf, {
+          httpMetadata: { contentType: photoType },
+        });
+      } catch (e) {
+        console.error('TAVLP avatar upload R2 photo write error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to store photo' }, 500, request);
+      }
+
+      // Upload to HeyGen Asset API. Per HeyGen docs, /v1/asset accepts the raw
+      // image bytes in the body with the image MIME type as Content-Type.
+      let assetRes;
+      try {
+        assetRes = await fetch('https://api.heygen.com/v1/asset', {
+          method: 'POST',
+          headers: {
+            'X-Api-Key': apiKey,
+            'Content-Type': photoType,
+          },
+          body: photoBuf,
+        });
+      } catch (e) {
+        console.error('TAVLP avatar upload HeyGen asset fetch error:', e);
+        return json({ ok: false, error: 'heygen_unreachable', message: 'Failed to reach HeyGen Asset API' }, 502, request);
+      }
+      const assetText = await assetRes.text().catch(() => '');
+      let assetJson = null;
+      try { assetJson = JSON.parse(assetText); } catch {}
+      if (!assetRes.ok) {
+        console.error('TAVLP avatar upload HeyGen asset error:', assetRes.status, assetText);
+        return json({ ok: false, error: 'heygen_asset_failed', message: `HeyGen Asset API returned ${assetRes.status}`, detail: assetText.slice(0, 500) }, 502, request);
+      }
+      const image_key = assetJson?.data?.image_key || assetJson?.image_key;
+      if (!image_key) {
+        return json({ ok: false, error: 'heygen_asset_failed', message: 'HeyGen Asset response missing image_key', detail: assetText.slice(0, 500) }, 502, request);
+      }
+
+      // Create Photo Avatar Group.
+      let groupRes;
+      try {
+        groupRes = await fetch('https://api.heygen.com/v2/photo_avatar/avatar_group/create', {
+          method: 'POST',
+          headers: {
+            'X-Api-Key': apiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            name: `TAVLP_${account_id}`,
+            image_key,
+          }),
+        });
+      } catch (e) {
+        console.error('TAVLP avatar upload HeyGen group fetch error:', e);
+        return json({ ok: false, error: 'heygen_unreachable', message: 'Failed to reach HeyGen Photo Avatar API' }, 502, request);
+      }
+      const groupText = await groupRes.text().catch(() => '');
+      let groupJson = null;
+      try { groupJson = JSON.parse(groupText); } catch {}
+      if (!groupRes.ok) {
+        console.error('TAVLP avatar upload HeyGen group error:', groupRes.status, groupText);
+        return json({ ok: false, error: 'heygen_group_failed', message: `HeyGen Photo Avatar Group API returned ${groupRes.status}`, detail: groupText.slice(0, 500) }, 502, request);
+      }
+      const groupData = groupJson?.data || groupJson || {};
+      const group_id = groupData.group_id || groupData.id;
+      const looks = groupData.image_key_list || groupData.looks || groupData.list || [];
+      const talking_photo_id =
+        groupData.talking_photo_id ||
+        groupData.image_id ||
+        (Array.isArray(looks) && looks[0] && (looks[0].id || looks[0].image_id || looks[0].talking_photo_id)) ||
+        groupData.id;
+      if (!group_id || !talking_photo_id) {
+        return json({ ok: false, error: 'heygen_group_failed', message: 'HeyGen Photo Avatar Group response missing group_id or look id', detail: groupText.slice(0, 500) }, 502, request);
+      }
+
+      // Fire-and-forget training kickoff.
+      try {
+        await fetch(`https://api.heygen.com/v2/photo_avatar/train`, {
+          method: 'POST',
+          headers: {
+            'X-Api-Key': apiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ group_id }),
+        });
+      } catch (e) {
+        console.warn('TAVLP avatar upload HeyGen train kickoff error (non-fatal):', e);
+      }
+
+      const voice_id = gender === 'female'
+        ? '330290724a1b470fb63153f34d4c0183'  // Annie
+        : 'c65bd88dd28f4ae2b6cb6d8676a41c03'; // Tariq
+
+      const now = new Date().toISOString();
+      const record = {
+        account_id,
+        group_id,
+        talking_photo_id,
+        image_key,
+        r2_photo_key: r2PhotoKey,
+        gender,
+        voice_id,
+        training_status: 'pending',
+        created_at: now,
+        updated_at: now,
+      };
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(
+          `tavlp/custom-avatars/${account_id}.json`,
+          JSON.stringify(record),
+          { httpMetadata: { contentType: 'application/json' } }
+        );
+      } catch (e) {
+        console.error('TAVLP avatar upload R2 record write error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to persist custom avatar record' }, 500, request);
+      }
+
+      // Update channel config.
+      try {
+        const chKey = `tavlp/channels/${account_id}.json`;
+        const chObj = await env.R2_VIRTUAL_LAUNCH.get(chKey);
+        const channel = chObj ? await chObj.json() : { account_id };
+        channel.custom_avatar = { group_id, talking_photo_id, voice_id, gender, training_status: 'pending' };
+        channel.updated_at = now;
+        await env.R2_VIRTUAL_LAUNCH.put(chKey, JSON.stringify(channel), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP avatar upload channel update error:', e);
+      }
+
+      return json({
+        ok: true,
+        group_id,
+        talking_photo_id,
+        training_status: 'pending',
+        message: 'Custom avatar created. Training in progress — your avatar will be ready for video rendering shortly.',
+      }, 200, request);
+    },
+  },
+
+  // GET /v1/tavlp/avatar/status/:account_id — read the custom avatar record
+  // and lazily refresh training status from HeyGen.
+  {
+    method: 'GET', pattern: '/v1/tavlp/avatar/status/:account_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const account_id = params.account_id;
+      const key = `tavlp/custom-avatars/${account_id}.json`;
+      let obj;
+      try { obj = await env.R2_VIRTUAL_LAUNCH.get(key); } catch (e) {
+        console.error('TAVLP avatar status read error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read custom avatar record' }, 500, request);
+      }
+      if (!obj) return json({ ok: true, custom_avatar: null }, 200, request);
+
+      let record;
+      try { record = await obj.json(); } catch {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to parse custom avatar record' }, 500, request);
+      }
+
+      if (record.training_status === 'pending' || record.training_status === 'training') {
+        const apiKey = env.HEYGEN_API_KEY;
+        if (apiKey) {
+          try {
+            const statusRes = await fetch(`https://api.heygen.com/v2/photo_avatar/train/status/${encodeURIComponent(record.group_id)}`, {
+              method: 'GET',
+              headers: { 'X-Api-Key': apiKey, 'Accept': 'application/json' },
+            });
+            const statusText = await statusRes.text().catch(() => '');
+            let statusJson = null;
+            try { statusJson = JSON.parse(statusText); } catch {}
+            if (statusRes.ok) {
+              const data = statusJson?.data || statusJson || {};
+              const hgStatus = String(data.status || '').toLowerCase();
+              let next = record.training_status;
+              if (hgStatus === 'ready' || hgStatus === 'completed' || hgStatus === 'success') next = 'ready';
+              else if (hgStatus === 'failed' || hgStatus === 'error') next = 'failed';
+              else if (hgStatus === 'training' || hgStatus === 'in_progress') next = 'training';
+              if (next !== record.training_status) {
+                record.training_status = next;
+                record.updated_at = new Date().toISOString();
+                try {
+                  await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
+                    httpMetadata: { contentType: 'application/json' },
+                  });
+                  // Mirror status into channel config.
+                  const chKey = `tavlp/channels/${account_id}.json`;
+                  const chObj = await env.R2_VIRTUAL_LAUNCH.get(chKey);
+                  if (chObj) {
+                    const channel = await chObj.json();
+                    if (channel.custom_avatar) {
+                      channel.custom_avatar.training_status = next;
+                      channel.updated_at = record.updated_at;
+                      await env.R2_VIRTUAL_LAUNCH.put(chKey, JSON.stringify(channel), {
+                        httpMetadata: { contentType: 'application/json' },
+                      });
+                    }
+                  }
+                } catch (e) { console.error('TAVLP avatar status write error:', e); }
+              }
+            } else {
+              console.warn('TAVLP avatar status HeyGen non-ok:', statusRes.status, statusText.slice(0, 200));
+            }
+          } catch (e) {
+            console.error('TAVLP avatar status HeyGen fetch error:', e);
+          }
+        }
+      }
+
+      return json({
+        ok: true,
+        custom_avatar: {
+          group_id: record.group_id,
+          talking_photo_id: record.talking_photo_id,
+          training_status: record.training_status,
+          gender: record.gender,
+          created_at: record.created_at,
+        },
+      }, 200, request);
+    },
+  },
+
   // POST /v1/tavlp/render — kick off a HeyGen avatar video render for an
   // approved script. Stores a render job at
   // `tavlp/renders/{account_id}/{render_id}.json` with status `processing`.
@@ -21060,6 +21348,8 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
       }
 
+      const useCustomAvatar = String(avatar_name).toLowerCase() === 'custom';
+
       // Load script.
       const scriptKey = `tavlp/scripts/${account_id}/${script_id}.json`;
       let scriptObj;
@@ -21078,43 +21368,73 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'script_not_approved', message: `Script must be approved before rendering. Current status: ${script.status}` }, 400, request);
       }
 
-      // Load registry.
-      let registry;
-      try {
-        const regObj = await env.R2_VIRTUAL_LAUNCH.get('tavlp/config/avatar-registry.json');
-        if (!regObj) {
-          return json({ ok: false, error: 'avatar_registry_missing', message: 'Avatar registry not initialized. Call GET /v1/tavlp/avatars first.' }, 500, request);
+      let resolvedAvatarName = avatar_name;
+      let resolvedLookId = null;
+      let resolvedVoiceId = null;
+      let character;
+
+      if (useCustomAvatar) {
+        let customObj;
+        try { customObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/custom-avatars/${account_id}.json`); } catch (e) {
+          console.error('TAVLP render custom avatar read error:', e);
+          return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read custom avatar' }, 500, request);
         }
-        registry = await regObj.json();
-      } catch (e) {
-        console.error('TAVLP render registry read error:', e);
-        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read avatar registry' }, 500, request);
-      }
+        if (!customObj) {
+          return json({ ok: false, error: 'no_custom_avatar' }, 400, request);
+        }
+        const custom = await customObj.json();
+        if (custom.training_status !== 'ready') {
+          return json({ ok: false, error: 'avatar_not_ready', message: `Custom avatar is still training. Check status at GET /v1/tavlp/avatar/status/${account_id}` }, 400, request);
+        }
+        resolvedAvatarName = 'custom';
+        resolvedLookId = custom.talking_photo_id;
+        resolvedVoiceId = custom.voice_id;
+        character = {
+          type: 'talking_photo',
+          talking_photo_id: custom.talking_photo_id,
+        };
+      } else {
+        // Load registry.
+        let registry;
+        try {
+          const regObj = await env.R2_VIRTUAL_LAUNCH.get('tavlp/config/avatar-registry.json');
+          if (!regObj) {
+            return json({ ok: false, error: 'avatar_registry_missing', message: 'Avatar registry not initialized. Call GET /v1/tavlp/avatars first.' }, 500, request);
+          }
+          registry = await regObj.json();
+        } catch (e) {
+          console.error('TAVLP render registry read error:', e);
+          return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read avatar registry' }, 500, request);
+        }
 
-      const avatar = (registry.avatars || []).find((a) => a.name.toLowerCase() === String(avatar_name).toLowerCase());
-      if (!avatar) {
-        return json({ ok: false, error: 'avatar_not_found' }, 400, request);
-      }
+        const avatar = (registry.avatars || []).find((a) => a.name.toLowerCase() === String(avatar_name).toLowerCase());
+        if (!avatar) {
+          return json({ ok: false, error: 'avatar_not_found' }, 400, request);
+        }
 
-      const resolvedLookId = provided_look_id
-        || (avatar.looks && avatar.looks[0] && avatar.looks[0].look_id)
-        || avatar.avatar_id;
-      const resolvedVoiceId = avatar.default_voice_id;
-      if (!resolvedVoiceId) {
-        return json({ ok: false, error: 'voice_not_resolved', message: `No default_voice_id stored for avatar "${avatar.name}". Re-initialize the registry.` }, 500, request);
+        resolvedLookId = provided_look_id
+          || (avatar.looks && avatar.looks[0] && avatar.looks[0].look_id)
+          || avatar.avatar_id;
+        resolvedVoiceId = avatar.default_voice_id;
+        if (!resolvedVoiceId) {
+          return json({ ok: false, error: 'voice_not_resolved', message: `No default_voice_id stored for avatar "${avatar.name}". Re-initialize the registry.` }, 500, request);
+        }
+        resolvedAvatarName = avatar.name;
+        character = {
+          type: 'avatar',
+          avatar_id: resolvedLookId,
+          avatar_style: 'normal',
+        };
       }
 
       // HeyGen v2 /video/generate body. Each "look" of a stock avatar has its
       // own avatar_id in HeyGen's catalog, so the resolved look_id IS the
-      // avatar_id we pass to the API.
+      // avatar_id we pass to the API. For custom photo avatars, we send
+      // character.type: 'talking_photo' with character.talking_photo_id.
       const heygenBody = {
         video_inputs: [
           {
-            character: {
-              type: 'avatar',
-              avatar_id: resolvedLookId,
-              avatar_style: 'normal',
-            },
+            character,
             voice: {
               type: 'text',
               input_text: script.script || '',
@@ -21159,7 +21479,7 @@ Return a JSON array where each element has:
         render_id: renderId,
         account_id,
         script_id,
-        avatar_name: avatar.name,
+        avatar_name: resolvedAvatarName,
         look_id: resolvedLookId,
         heygen_video_id: heygenVideoId,
         status: 'processing',
@@ -21440,23 +21760,23 @@ Return a JSON array where each element has:
   },
 
   // PUT /v1/tavlp/channels/:account_id — register/update the YouTube channel
-  // for a TAVLP customer. Admin-only.
+  // for a TAVLP customer. Admin can set channel_id/channel_name; the customer
+  // (own account) can patch self-service fields (avatar_preference,
+  // selected_avatar, transfer_requested*).
   {
     method: 'PUT', pattern: '/v1/tavlp/channels/:account_id',
     handler: async (_method, _pattern, params, request, env) => {
       const { session, error } = await requireSession(request, env);
       if (error) return error;
-      if (!isAdminEmail(session.email)) {
+
+      const account_id = params.account_id;
+      const isAdmin = isAdminEmail(session.email);
+      const isOwner = session.account_id === account_id;
+      if (!isAdmin && !isOwner) {
         return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
       }
 
-      const account_id = params.account_id;
-      const body = await parseBody(request);
-      const { channel_id, channel_name, channel_url } = body ?? {};
-      if (!channel_id || !channel_name) {
-        return json({ ok: false, error: 'BAD_REQUEST', message: 'channel_id and channel_name are required' }, 400, request);
-      }
-
+      const body = await parseBody(request) || {};
       const key = `tavlp/channels/${account_id}.json`;
       const now = new Date().toISOString();
       let existing = null;
@@ -21465,14 +21785,26 @@ Return a JSON array where each element has:
         if (obj) existing = await obj.json();
       } catch { /* ignore */ }
 
-      const record = {
-        account_id,
-        channel_id,
-        channel_name,
-        channel_url: channel_url || null,
-        created_at: existing?.created_at || now,
-        updated_at: now,
-      };
+      const record = existing ? { ...existing } : { account_id, created_at: now };
+      record.account_id = account_id;
+
+      if (isAdmin) {
+        // Admin can register/update channel identity.
+        if (body.channel_id !== undefined) record.channel_id = body.channel_id;
+        if (body.channel_name !== undefined) record.channel_name = body.channel_name;
+        if (body.channel_url !== undefined) record.channel_url = body.channel_url || null;
+        if (!existing && (!record.channel_id || !record.channel_name)) {
+          return json({ ok: false, error: 'BAD_REQUEST', message: 'channel_id and channel_name are required for new channels' }, 400, request);
+        }
+      }
+      // Customer (and admin) self-service fields.
+      if (body.avatar_preference !== undefined) record.avatar_preference = body.avatar_preference;
+      if (body.selected_avatar !== undefined) record.selected_avatar = body.selected_avatar;
+      if (body.transfer_requested !== undefined) record.transfer_requested = body.transfer_requested;
+      if (body.transfer_requested_at !== undefined) record.transfer_requested_at = body.transfer_requested_at;
+
+      record.updated_at = now;
+      if (!record.created_at) record.created_at = now;
 
       try {
         await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
