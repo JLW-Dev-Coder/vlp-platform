@@ -26,6 +26,7 @@ export const tmpConfig: PlatformConfig = {
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Compliance Report', href: '/dashboard/compliance-report', icon: 'FileCheck' },
         { label: 'Transcript Changes', href: '/dashboard/transcript-changes', icon: 'ScrollText' },
+        { label: 'Upload Transcript', href: '/dashboard/transcript-upload', icon: 'Upload' },
         { label: 'ESign 2848', href: '/dashboard/esign-2848', icon: 'PenTool' },
       ],
     },
@@ -54,6 +55,7 @@ export const tmpConfig: PlatformConfig = {
       title: 'SETTINGS',
       items: [
         { label: 'Profile', href: '/dashboard/profile', icon: 'UserCircle' },
+        { label: 'Help Center', href: '/dashboard/help-center', icon: 'HelpCircle' },
         { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
       ],
     },

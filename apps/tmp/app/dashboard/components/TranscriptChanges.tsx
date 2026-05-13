@@ -222,7 +222,7 @@ export default function TranscriptChanges() {
                     </button>
                     {isPro && eng.status === 'active' ? (
                       <Link
-                        href={`/dashboard/transcript-changes/upload?engagement=${eng.engagement_id}`}
+                        href={`/dashboard/transcript-upload?engagement=${eng.engagement_id}`}
                         className={styles.btnPrimary}
                         style={{ textDecoration: 'none', textAlign: 'center' }}
                       >

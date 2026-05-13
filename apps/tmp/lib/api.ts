@@ -776,6 +776,31 @@ export const api = {
       alerts: MonitoringAlert[]
     }>(`/v1/tmp/monitoring/engagements/${encodeURIComponent(engagement_id)}`),
 
+  uploadMonitoringTranscript: (
+    engagement_id: string,
+    transcript_data: {
+      transcript_type: string
+      transactions: Array<{ code: string; date: string; amount: number }>
+    },
+  ) =>
+    apiFetch<{
+      ok: boolean
+      upload_id: string
+      changes_detected: number
+      alerts: Array<{
+        alert_id: string
+        alert_type: string
+        description: string
+        transaction_code: string | null
+        old_value: string | null
+        new_value: string | null
+        severity: string
+      }>
+    }>(`/v1/tmp/monitoring/engagements/${encodeURIComponent(engagement_id)}/upload`, {
+      method: 'POST',
+      body: JSON.stringify({ transcript_data }),
+    }),
+
   getMonitoringAlerts: (engagement_id: string) =>
     apiFetch<{
       ok: boolean
