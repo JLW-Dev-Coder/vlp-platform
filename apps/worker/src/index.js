@@ -20716,8 +20716,12 @@ Return a JSON array where each element has:
   },
 
   // GET /v1/tavlp/avatars — return the TAVLP avatar registry from R2.
-  // If the registry doesn't exist yet, fetch the avatar list from HeyGen and
-  // build it. Stored at `tavlp/config/avatar-registry.json`.
+  // If the registry doesn't exist yet (or `?rebuild=1`), fetch the avatar list
+  // from HeyGen and build it. Stored at `tavlp/config/avatar-registry.json`.
+  // Query params:
+  //   ?rebuild=1  — force re-fetch from HeyGen and overwrite the cached registry
+  //   ?debug=1    — include the full HeyGen avatar_name catalog + unmatched
+  //                 names in the response for diagnostics
   // Requires: wrangler secret put HEYGEN_API_KEY
   {
     method: 'GET', pattern: '/v1/tavlp/avatars',
@@ -20725,16 +20729,25 @@ Return a JSON array where each element has:
       const { error } = await requireSession(request, env);
       if (error) return error;
 
+      const url = new URL(request.url);
+      const forceRebuild = url.searchParams.get('rebuild') === '1';
+      const debug = url.searchParams.get('debug') === '1';
+
       const registryKey = 'tavlp/config/avatar-registry.json';
 
-      try {
-        const existing = await env.R2_VIRTUAL_LAUNCH.get(registryKey);
-        if (existing) {
-          const registry = await existing.json();
-          return json({ ok: true, avatars: registry.avatars || [], updated_at: registry.updated_at }, 200, request);
+      if (!forceRebuild && !debug) {
+        try {
+          const existing = await env.R2_VIRTUAL_LAUNCH.get(registryKey);
+          if (existing) {
+            const registry = await existing.json();
+            if (Array.isArray(registry.avatars) && registry.avatars.length > 0) {
+              return json({ ok: true, avatars: registry.avatars, updated_at: registry.updated_at }, 200, request);
+            }
+            // Empty cached registry — fall through to rebuild rather than serve stale empty.
+          }
+        } catch (e) {
+          console.error('TAVLP avatars registry read error:', e);
         }
-      } catch (e) {
-        console.error('TAVLP avatars registry read error:', e);
       }
 
       const apiKey = env.HEYGEN_API_KEY;
@@ -20742,8 +20755,19 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
       }
 
-      const TARGET_NAMES = ['Annie', 'Tariq', 'Genesis', 'Knox', 'Denyse', 'Griffin'];
-      const targetLower = new Set(TARGET_NAMES.map((n) => n.toLowerCase()));
+      // Display names → expected look counts (from the marketing /avatars page).
+      // Used as a tiebreaker when multiple HeyGen names match a target.
+      const TARGETS = [
+        { display: 'Annie',   expectedLooks: 57 },
+        { display: 'Tariq',   expectedLooks: 14 },
+        { display: 'Genesis', expectedLooks: 12 },
+        { display: 'Knox',    expectedLooks: 25 },
+        { display: 'Denyse',  expectedLooks: 33 },
+        { display: 'Griffin', expectedLooks: 20 },
+      ];
+
+      const normalize = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const firstWord = (s) => (s || '').trim().split(/[\s_\-]+/)[0] || '';
 
       let listRes;
       try {
@@ -20766,46 +20790,81 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'heygen_list_failed', message: 'Failed to parse HeyGen response' }, 502, request);
       }
 
-      // HeyGen v2/avatars returns: { data: { avatars: [{ avatar_id, avatar_name, gender, preview_image_url, preview_video_url, premium }], talking_photos: [...] } }
-      // Looks are not nested per-avatar in this list — each "look" is itself a row
-      // where multiple rows share the same avatar_name. Group by avatar_name.
+      // HeyGen v2/avatars returns rows where each row is itself a "look".
+      // Multiple rows share the same avatar_name (or a prefix). Group by
+      // normalized first-word of avatar_name, which handles variants like
+      // "Annie in Black Suit", "Annie_Casual", "Annie - Sitting".
       const rows = (listJson?.data?.avatars) || listJson?.avatars || [];
-      const byName = new Map();
+
+      // Group all rows by the normalized first word.
+      const groups = new Map(); // normFirst -> { firstWord, rows: [] }
       for (const row of rows) {
         const nm = (row?.avatar_name || '').trim();
         if (!nm) continue;
-        if (!targetLower.has(nm.toLowerCase())) continue;
-        const key = nm.toLowerCase();
-        if (!byName.has(key)) {
-          byName.set(key, {
-            name: TARGET_NAMES.find((t) => t.toLowerCase() === key) || nm,
-            avatar_id: row.avatar_id,
-            default_voice_id: row.default_voice_id || row.voice_id || null,
-            looks: [],
-          });
-        }
-        const entry = byName.get(key);
-        entry.looks.push({
-          look_id: row.avatar_id,
-          name: row.avatar_name,
-          preview_image_url: row.preview_image_url || null,
-          gender: row.gender || null,
-        });
+        const fw = firstWord(nm);
+        const key = normalize(fw);
+        if (!key) continue;
+        if (!groups.has(key)) groups.set(key, { firstWord: fw, rows: [] });
+        groups.get(key).rows.push(row);
       }
 
-      // If default_voice_id is still null, try to fetch per-avatar voice details.
-      // HeyGen's GET /v2/voices is workspace-wide; we can leave null and let the
-      // render endpoint surface a clear error if a voice can't be resolved.
-      const avatars = TARGET_NAMES
-        .map((n) => byName.get(n.toLowerCase()))
-        .filter(Boolean)
-        .map((a) => ({
-          name: a.name,
-          avatar_id: a.avatar_id,
-          looks_count: a.looks.length,
-          default_voice_id: a.default_voice_id,
-          looks: a.looks,
+      // Match each target to its best HeyGen group:
+      //   1. exact normalized first-word match
+      //   2. otherwise, group whose normalized name contains the target (or vice versa)
+      //   3. tiebreaker among candidates: closest to expectedLooks
+      const matchTarget = (target) => {
+        const targetNorm = normalize(target.display);
+        // Exact first-word match
+        if (groups.has(targetNorm)) return groups.get(targetNorm);
+        // Substring match either direction
+        const candidates = [];
+        for (const [key, g] of groups.entries()) {
+          if (key.includes(targetNorm) || targetNorm.includes(key)) candidates.push(g);
+        }
+        if (candidates.length === 0) return null;
+        if (candidates.length === 1) return candidates[0];
+        candidates.sort((a, b) =>
+          Math.abs(a.rows.length - target.expectedLooks) -
+          Math.abs(b.rows.length - target.expectedLooks)
+        );
+        return candidates[0];
+      };
+
+      const avatars = [];
+      const matchedKeys = new Set();
+      const matchReport = [];
+      for (const target of TARGETS) {
+        const g = matchTarget(target);
+        if (!g) {
+          matchReport.push({ display: target.display, matched: false, expectedLooks: target.expectedLooks });
+          continue;
+        }
+        matchedKeys.add(normalize(g.firstWord));
+        const firstRow = g.rows[0];
+        const looks = g.rows.map((r) => ({
+          look_id: r.avatar_id,
+          name: r.avatar_name,
+          preview_image_url: r.preview_image_url || null,
+          gender: r.gender || null,
         }));
+        avatars.push({
+          name: target.display,
+          display_name: target.display,
+          heygen_name: g.firstWord,
+          avatar_id: firstRow.avatar_id,
+          looks_count: looks.length,
+          default_voice_id: firstRow.default_voice_id || firstRow.voice_id || null,
+          looks,
+        });
+        matchReport.push({
+          display: target.display,
+          matched: true,
+          heygen_name: g.firstWord,
+          looks_count: looks.length,
+          expectedLooks: target.expectedLooks,
+          sample_avatar_id: firstRow.avatar_id,
+        });
+      }
 
       const registry = { avatars, updated_at: new Date().toISOString() };
       try {
@@ -20816,7 +20875,24 @@ Return a JSON array where each element has:
         console.error('TAVLP avatars registry write error:', e);
       }
 
-      return json({ ok: true, avatars, updated_at: registry.updated_at }, 200, request);
+      const response = { ok: true, avatars, updated_at: registry.updated_at };
+      if (debug) {
+        const allNames = Array.from(new Set(rows.map((r) => (r?.avatar_name || '').trim()).filter(Boolean))).sort();
+        const unmatchedFirstWords = [];
+        for (const [key, g] of groups.entries()) {
+          if (!matchedKeys.has(key)) unmatchedFirstWords.push({ first_word: g.firstWord, looks_count: g.rows.length });
+        }
+        unmatchedFirstWords.sort((a, b) => b.looks_count - a.looks_count);
+        response._debug = {
+          total_rows: rows.length,
+          unique_avatar_names: allNames.length,
+          all_avatar_names: allNames,
+          unmatched_first_words: unmatchedFirstWords,
+          match_report: matchReport,
+        };
+      }
+
+      return json(response, 200, request);
     },
   },
 
