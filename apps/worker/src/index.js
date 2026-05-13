@@ -20907,19 +20907,20 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
       }
 
-      // Display names → expected look counts (from the marketing /avatars page).
-      // Used as a tiebreaker when multiple HeyGen names match a target.
+      // Hardcoded canonical avatar IDs for the 6 TAVLP avatars (custom/instant
+      // avatars in our HeyGen account). These IDs are passed directly to
+      // /v2/video/generate, so they are the source of truth for the registry.
+      // HeyGen's stock /v2/avatars catalog may or may not list these — we use
+      // any matches we find to discover additional looks and default_voice_id,
+      // but always populate the registry with the hardcoded IDs.
       const TARGETS = [
-        { display: 'Annie',   expectedLooks: 57 },
-        { display: 'Tariq',   expectedLooks: 14 },
-        { display: 'Genesis', expectedLooks: 12 },
-        { display: 'Knox',    expectedLooks: 25 },
-        { display: 'Denyse',  expectedLooks: 33 },
-        { display: 'Griffin', expectedLooks: 20 },
+        { display: 'Annie',   avatar_id: 'e0e84faea390465896db75a83be45085' },
+        { display: 'Tariq',   avatar_id: 'bd3a37b07456488e87757da1f9f0673d' },
+        { display: 'Genesis', avatar_id: '5f090900d27246a284d568bcfe731f72' },
+        { display: 'Knox',    avatar_id: '2633ed30a7c24e42a218f5ef07719c82' },
+        { display: 'Denyse',  avatar_id: '530f637281fd43cb9a8dfcaf76514ca9' },
+        { display: 'Griffin', avatar_id: 'a2e213135a8040748efb0e8681dfd46e' },
       ];
-
-      const normalize = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      const firstWord = (s) => (s || '').trim().split(/[\s_\-]+/)[0] || '';
 
       let listRes;
       try {
@@ -20942,80 +20943,69 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'heygen_list_failed', message: 'Failed to parse HeyGen response' }, 502, request);
       }
 
-      // HeyGen v2/avatars returns rows where each row is itself a "look".
-      // Multiple rows share the same avatar_name (or a prefix). Group by
-      // normalized first-word of avatar_name, which handles variants like
-      // "Annie in Black Suit", "Annie_Casual", "Annie - Sitting".
       const rows = (listJson?.data?.avatars) || listJson?.avatars || [];
 
-      // Group all rows by the normalized first word.
-      const groups = new Map(); // normFirst -> { firstWord, rows: [] }
-      for (const row of rows) {
-        const nm = (row?.avatar_name || '').trim();
-        if (!nm) continue;
-        const fw = firstWord(nm);
-        const key = normalize(fw);
-        if (!key) continue;
-        if (!groups.has(key)) groups.set(key, { firstWord: fw, rows: [] });
-        groups.get(key).rows.push(row);
-      }
-
-      // Match each target to its best HeyGen group:
-      //   1. exact normalized first-word match
-      //   2. otherwise, group whose normalized name contains the target (or vice versa)
-      //   3. tiebreaker among candidates: closest to expectedLooks
-      const matchTarget = (target) => {
-        const targetNorm = normalize(target.display);
-        // Exact first-word match
-        if (groups.has(targetNorm)) return groups.get(targetNorm);
-        // Substring match either direction
-        const candidates = [];
-        for (const [key, g] of groups.entries()) {
-          if (key.includes(targetNorm) || targetNorm.includes(key)) candidates.push(g);
-        }
-        if (candidates.length === 0) return null;
-        if (candidates.length === 1) return candidates[0];
-        candidates.sort((a, b) =>
-          Math.abs(a.rows.length - target.expectedLooks) -
-          Math.abs(b.rows.length - target.expectedLooks)
-        );
-        return candidates[0];
-      };
-
       const avatars = [];
-      const matchedKeys = new Set();
       const matchReport = [];
       for (const target of TARGETS) {
-        const g = matchTarget(target);
-        if (!g) {
-          matchReport.push({ display: target.display, matched: false, expectedLooks: target.expectedLooks });
-          continue;
+        // Find any catalog rows where avatar_id starts with or contains the
+        // hardcoded ID. Custom/instant avatars usually won't be present, but
+        // when they are this discovers alternate looks and the default voice.
+        const matchingRows = rows.filter((r) => {
+          const id = r?.avatar_id || '';
+          return id === target.avatar_id || id.startsWith(target.avatar_id) || id.includes(target.avatar_id);
+        });
+
+        if (matchingRows.length > 0) {
+          const firstRow = matchingRows[0];
+          const looks = matchingRows.map((r) => ({
+            look_id: r.avatar_id,
+            name: r.avatar_name,
+            preview_image_url: r.preview_image_url || null,
+            gender: r.gender || null,
+          }));
+          avatars.push({
+            name: target.display,
+            display_name: target.display,
+            heygen_name: firstRow.avatar_name || target.display,
+            avatar_id: target.avatar_id,
+            looks_count: looks.length,
+            default_voice_id: firstRow.default_voice_id || firstRow.voice_id || null,
+            looks,
+          });
+          matchReport.push({
+            display: target.display,
+            matched: true,
+            avatar_id: target.avatar_id,
+            looks_count: looks.length,
+            default_voice_id: firstRow.default_voice_id || firstRow.voice_id || null,
+          });
+        } else {
+          // Custom/instant avatar not in the stock catalog — register with the
+          // hardcoded ID as its sole look. /v2/video/generate accepts this ID
+          // directly.
+          avatars.push({
+            name: target.display,
+            display_name: target.display,
+            heygen_name: target.display,
+            avatar_id: target.avatar_id,
+            looks_count: 1,
+            default_voice_id: null,
+            looks: [{
+              look_id: target.avatar_id,
+              name: target.display,
+              preview_image_url: null,
+              gender: null,
+            }],
+          });
+          matchReport.push({
+            display: target.display,
+            matched: false,
+            avatar_id: target.avatar_id,
+            looks_count: 1,
+            default_voice_id: null,
+          });
         }
-        matchedKeys.add(normalize(g.firstWord));
-        const firstRow = g.rows[0];
-        const looks = g.rows.map((r) => ({
-          look_id: r.avatar_id,
-          name: r.avatar_name,
-          preview_image_url: r.preview_image_url || null,
-          gender: r.gender || null,
-        }));
-        avatars.push({
-          name: target.display,
-          display_name: target.display,
-          heygen_name: g.firstWord,
-          avatar_id: firstRow.avatar_id,
-          looks_count: looks.length,
-          default_voice_id: firstRow.default_voice_id || firstRow.voice_id || null,
-          looks,
-        });
-        matchReport.push({
-          display: target.display,
-          matched: true,
-          heygen_name: g.firstWord,
-          looks_count: looks.length,
-          expectedLooks: target.expectedLooks,
-          sample_avatar_id: firstRow.avatar_id,
-        });
       }
 
       const registry = { avatars, updated_at: new Date().toISOString() };
@@ -21030,16 +21020,10 @@ Return a JSON array where each element has:
       const response = { ok: true, avatars, updated_at: registry.updated_at };
       if (debug) {
         const allNames = Array.from(new Set(rows.map((r) => (r?.avatar_name || '').trim()).filter(Boolean))).sort();
-        const unmatchedFirstWords = [];
-        for (const [key, g] of groups.entries()) {
-          if (!matchedKeys.has(key)) unmatchedFirstWords.push({ first_word: g.firstWord, looks_count: g.rows.length });
-        }
-        unmatchedFirstWords.sort((a, b) => b.looks_count - a.looks_count);
         response._debug = {
           total_rows: rows.length,
           unique_avatar_names: allNames.length,
           all_avatar_names: allNames,
-          unmatched_first_words: unmatchedFirstWords,
           match_report: matchReport,
         };
       }
