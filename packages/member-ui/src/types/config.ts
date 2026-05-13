@@ -113,7 +113,20 @@ export interface PlatformConfig {
   cookiePrefsStorageKey?: string;      // e.g., "vlp_cookie_prefs_v1" — defaults to `${brandAbbrev.toLowerCase()}_cookie_prefs_v1`
   marketing?: MarketingConfig;
   chatbot?: ChatbotConfig;
+  exitIntent?: ExitIntentConfig;
   posthog?: PostHogAnalyticsConfig;
+}
+
+export interface ExitIntentConfig {
+  enabled: boolean;
+  headline: string;            // e.g., "Wait — this one's on us."
+  subheadline: string;         // e.g., "Free: IRS Transcript Cheat Sheet"
+  description: string;         // 1-2 sentences on what they get
+  freebieType: string;         // stored in D1, identifies which freebie
+  qualifierQuestion: string;   // e.g., "How many transcripts do you read per week?"
+  qualifierOptions: string[];  // e.g., ["1-5", "6-20", "20+"]
+  ctaLabel: string;            // e.g., "Send My Free Guide"
+  successMessage: string;      // e.g., "Check your inbox! Your cheat sheet is on the way."
 }
 
 export interface PostHogAnalyticsConfig {

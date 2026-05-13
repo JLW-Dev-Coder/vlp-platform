@@ -42,6 +42,10 @@ export type { AnalyticsEvent, AnalyticsEventName, InitPostHogOptions } from './a
 export { LeadChatbot } from './components/chatbot/LeadChatbot'
 export type { LeadChatbotProps } from './components/chatbot/LeadChatbot'
 
+// Exit-Intent
+export { ExitIntentPopup } from './components/exit-intent/ExitIntentPopup'
+export type { ExitIntentPopupProps } from './components/exit-intent/ExitIntentPopup'
+
 // Legal Components
 export { LegalPageLayout } from './components/legal/LegalPageLayout'
 export type { LegalPageLayoutProps } from './components/legal/LegalPageLayout'
@@ -69,6 +73,7 @@ export type {
   ChatbotCtaAction,
   ChatbotQuestion,
   ChatbotHumanPath,
+  ExitIntentConfig,
 } from './types/config'
 export type { ReviewConfig, ReviewCardData } from './types/review'
 export type { ReviewCardProps } from './components/reviews/ReviewCard'
