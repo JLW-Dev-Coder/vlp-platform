@@ -38,10 +38,47 @@ export default function OverviewPage() {
     return d.getUTCFullYear() === now.getUTCFullYear() && d.getUTCMonth() === now.getUTCMonth();
   }).length;
 
+  const needsSetup = !loading && (!channel?.channel_id || !channel?.selected_avatar || !channel?.topic);
+
   return (
     <div>
       <h1 className={styles.pageTitle}>Overview</h1>
       <p className={styles.pageDesc}>Welcome back. Here&apos;s the status of your AI YouTube channel.</p>
+
+      {needsSetup && (
+        <div
+          style={{
+            margin: '0 0 1.5rem 0',
+            padding: '1rem 1.25rem',
+            borderRadius: '0.75rem',
+            border: '1px solid rgba(236, 72, 153, 0.35)',
+            background: 'rgba(236, 72, 153, 0.08)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+          }}
+        >
+          <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem' }}>
+            <strong style={{ color: '#ec4899' }}>Complete your setup</strong> — pick your avatar and confirm your topic so we can generate scripts.
+          </div>
+          <Link
+            href="/dashboard/channel"
+            style={{
+              background: '#ec4899',
+              color: '#fff',
+              padding: '0.5rem 1rem',
+              borderRadius: '9999px',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            Finish setup →
+          </Link>
+        </div>
+      )}
 
       <div className={styles.grid}>
         <div className={styles.card}>

@@ -64,6 +64,7 @@ export const tavlpConfig: PlatformConfig = {
       ],
       explore: [
         { label: 'Pricing', href: '/pricing' },
+        { label: 'Help Center', href: '/help' },
       ],
       toolsExtras: [
         { label: 'TaxClaim Pro', href: 'https://taxclaim.virtuallaunch.pro' },
@@ -75,6 +76,7 @@ export const tavlpConfig: PlatformConfig = {
     },
     footerTagline: 'AI YouTube channel for tax pros',
     footerResources: [
+      { label: 'Help Center', href: '/help' },
       { label: 'TaxClaim Pro', href: 'https://taxclaim.virtuallaunch.pro', external: true },
       { label: 'Tax Transcript AI', href: 'https://transcript.taxmonitor.pro', external: true },
       { label: 'Affiliate Program', href: 'https://virtuallaunch.pro/affiliate', external: true },

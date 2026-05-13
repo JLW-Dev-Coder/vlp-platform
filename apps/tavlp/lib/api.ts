@@ -73,6 +73,7 @@ export type CustomAvatar = {
 
 export type Channel = {
   account_id: string;
+  channel_id?: string;
   channel_url?: string;
   channel_name?: string;
   channel_handle?: string;

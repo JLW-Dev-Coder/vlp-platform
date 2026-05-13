@@ -8,10 +8,22 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  "We'll configure your branded YouTube channel within 24 hours.",
-  "You'll receive an email to select your avatar and confirm your topic niche.",
-  "Your first batch of video scripts will be ready for review within 48 hours.",
-  "Once you approve, we render and publish your first videos.",
+  {
+    title: 'Check your email',
+    body: "We just sent you a welcome message. Save it — your channel-ready notification will come from the same address (noreply@virtuallaunch.pro).",
+  },
+  {
+    title: 'We set up your channel (within 24 hours)',
+    body: "We'll configure your branded YouTube channel with your firm's name, colors, and SEO settings. You'll get an email the moment it's live.",
+  },
+  {
+    title: 'Log in and finish setup',
+    body: 'Open your dashboard, pick your AI avatar, and confirm your tax topic. Pro tier customers can upload a photo for a custom avatar.',
+  },
+  {
+    title: 'Approve scripts → videos go live',
+    body: "Your first batch of scripts will be ready for review within 48 hours. Approve them and we render and publish to your channel automatically.",
+  },
 ];
 
 export default function PricingSuccessPage() {
@@ -29,28 +41,42 @@ export default function PricingSuccessPage() {
         Welcome to Tax Avatar Pro!
       </h1>
       <p className="text-lg text-white/70 mb-10">
-        Your channel is being set up. Here&apos;s what happens next:
+        Your subscription is confirmed. Here&apos;s how to finish your setup:
       </p>
       <ol className="text-left max-w-xl mx-auto space-y-4 mb-12">
         {STEPS.map((step, i) => (
-          <li key={i} className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+          <li
+            key={i}
+            className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-5"
+          >
             <span
               className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold"
               style={{ backgroundColor: tavlpConfig.brandColor, color: '#fff' }}
             >
               {i + 1}
             </span>
-            <span className="text-white/85 text-sm leading-relaxed pt-1">{step}</span>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-white">{step.title}</div>
+              <div className="text-white/70 text-sm leading-relaxed mt-1">{step.body}</div>
+            </div>
           </li>
         ))}
       </ol>
-      <Link
-        href="/"
-        className="inline-block px-8 py-3 rounded-full text-sm font-semibold transition-all"
-        style={{ backgroundColor: tavlpConfig.brandColor, color: '#fff' }}
-      >
-        Back to homepage
-      </Link>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <Link
+          href="/dashboard"
+          className="inline-block px-8 py-3 rounded-full text-sm font-semibold transition-all"
+          style={{ backgroundColor: tavlpConfig.brandColor, color: '#fff' }}
+        >
+          Go to dashboard
+        </Link>
+        <Link
+          href="/help"
+          className="inline-block px-8 py-3 rounded-full text-sm font-semibold border border-white/20 text-white/80 hover:bg-white/[0.04] transition-all"
+        >
+          Visit Help Center
+        </Link>
+      </div>
     </section>
   );
 }
