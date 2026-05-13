@@ -9,6 +9,7 @@ interface PlanCardProps {
   features: string[]
   recommended?: boolean
   badge?: string
+  subtitle?: string
   onSelect: () => void
   loading?: boolean
 }
@@ -20,6 +21,7 @@ export default function PlanCard({
   features,
   recommended,
   badge,
+  subtitle,
   onSelect,
   loading,
 }: PlanCardProps) {
@@ -60,6 +62,8 @@ export default function PlanCard({
           <span className={`${styles.badge} ${badgeClass}`}>{badge}</span>
         )}
       </div>
+
+      {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
 
       <div className={styles.pricing}>
         <div>

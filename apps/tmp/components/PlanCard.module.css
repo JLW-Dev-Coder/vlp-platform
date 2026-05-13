@@ -33,8 +33,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   position: relative;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.813rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+  min-height: 2.4em;
 }
 
 .name {

@@ -47,16 +47,28 @@ const BADGES: Record<string, string> = {
   Premier: 'Advanced',
 }
 
+const SUBTITLES: Record<string, string> = {
+  Free: 'Try the platform — no credit card needed.',
+  Essential: 'For taxpayers who want a couple of transcript pulls each month.',
+  Plus: 'For active monitoring with more tokens and learning games.',
+  Premier: 'For ongoing IRS oversight with the most tokens included.',
+}
+
 const FAQ_ITEMS = [
   {
-    question: 'What is a Transcript Token?',
+    question: 'What is a Transcript Token and what can I do with it?',
     answer:
-      'A Transcript Token lets you request and analyze one IRS transcript through the Tax Monitor Pro platform. Tokens are included with paid plans and roll over for 60 days if unused.',
+      'A Transcript Token is the currency you spend to pull one IRS transcript through Tax Monitor Pro. Use it to fetch your account, return, wage & income, or record-of-account transcript and run it through our analyzer for plain-English findings. Tokens are included with paid plans and unused tokens roll over for 60 days.',
   },
   {
-    question: 'What is a Tax Tool Game Token?',
+    question: 'What does monitoring actually do?',
     answer:
-      'Tax Tool Game Tokens give you access to interactive tax education games on TaxTools Arcade. Each token allows one game session. Unused tokens roll over for 60 days.',
+      'Monitoring (Plan II) watches your IRS account on a recurring cadence and alerts you when something changes — new transaction codes, balance shifts, lien or levy activity, examination/audit indicators, refund holds, CP notices, and status updates. You get an email alert and an entry in your dashboard so nothing slips by silently.',
+  },
+  {
+    question: "What's the difference between Plan I memberships and Plan II monitoring packages?",
+    answer:
+      'Plan I is a recurring membership that gives you platform access plus monthly Transcript Tokens and Tax Tool Game Tokens — best for ongoing self-service. Plan II is a one-time monitoring engagement covering a fixed window (6, 8, or 12 weeks, or a single snapshot) where we actively watch the IRS account and alert you to changes. Many members use both.',
   },
   {
     question: 'Can I upgrade or downgrade anytime?',
@@ -71,7 +83,7 @@ const FAQ_ITEMS = [
   {
     question: 'Is there a contract or commitment?',
     answer:
-      'No. All plans are month-to-month with no long-term commitment. You can cancel anytime from your dashboard. The Free plan never requires a payment method.',
+      'No. Plan I memberships are month-to-month (or yearly, your choice) with no long-term commitment — cancel anytime. Plan II monitoring is a one-time engagement with no recurring charge. The Free plan never requires a payment method.',
   },
 ]
 
@@ -172,6 +184,15 @@ export default function PricingPage() {
       ? plan.key === 'tmp_plus'
       : plan.key === 'tmp_plus_yearly'
 
+  /* Compute yearly savings % from the Plus tier (recommended) so the badge is honest */
+  const yearlySavingsPct = (() => {
+    const plusMonthly = plansI.find((p) => p.interval === 'month' && /plus/i.test(p.name))?.price
+    const plusYearly = plansI.find((p) => p.interval === 'year' && /plus/i.test(p.name))?.price
+    if (!plusMonthly || !plusYearly) return 0
+    const pct = Math.round((1 - plusYearly / (plusMonthly * 12)) * 100)
+    return pct > 0 ? pct : 0
+  })()
+
   return (
     <>
       <Header variant="site" />
@@ -193,25 +214,36 @@ export default function PricingPage() {
 
         {/* Plan I cards */}
         <section className={styles.plans}>
-          <h2 className={styles.sectionTitle}>Plan I &mdash; Monthly Memberships</h2>
+          <h2 className={styles.sectionTitle}>Plan I &mdash; Memberships</h2>
           <p className={styles.sectionDesc}>
-            Access the TMP platform month-to-month. Upgrade or cancel anytime.
+            Your TMP membership includes platform access, Transcript Tokens, and Tax Tool Game Tokens. Pick the tier that fits how much you monitor.
           </p>
 
           {/* Billing interval toggle */}
-          <div className={styles.toggleRow}>
-            <button
-              className={billingInterval === 'month' ? styles.toggleActive : styles.toggleBtn}
-              onClick={() => setBillingInterval('month')}
-            >
-              Monthly
-            </button>
-            <button
-              className={billingInterval === 'year' ? styles.toggleActive : styles.toggleBtn}
-              onClick={() => setBillingInterval('year')}
-            >
-              Yearly
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className={styles.toggleRow} role="tablist" aria-label="Billing interval">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={billingInterval === 'month'}
+                className={billingInterval === 'month' ? styles.toggleActive : styles.toggleBtn}
+                onClick={() => setBillingInterval('month')}
+              >
+                Monthly
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={billingInterval === 'year'}
+                className={billingInterval === 'year' ? styles.toggleActive : styles.toggleBtn}
+                onClick={() => setBillingInterval('year')}
+              >
+                Yearly
+                {yearlySavingsPct > 0 && (
+                  <span className={styles.toggleSavings}>Save {yearlySavingsPct}%</span>
+                )}
+              </button>
+            </div>
           </div>
 
           {loadingPricing ? (
@@ -234,6 +266,7 @@ export default function PricingPage() {
                     features={plan.features}
                     recommended={isRecommended(plan)}
                     badge={BADGES[plan.name]}
+                    subtitle={SUBTITLES[plan.name]}
                     onSelect={
                       isActivePlan(plan.key)
                         ? () => router.push('/dashboard')
@@ -255,7 +288,7 @@ export default function PricingPage() {
         <section className={styles.plans}>
           <h2 className={styles.sectionTitle}>Plan II &mdash; Monitoring Services</h2>
           <p className={styles.sectionDesc}>
-            IRS transcript monitoring engagements. One-time service fee. Add MFJ (+${mfjAddon?.price ?? 79}) for a second spouse.
+            One-time monitoring engagements — no subscription. We watch the IRS account on a recurring cadence for the package length and alert you on every change. Add MFJ (+${mfjAddon?.price ?? 79}) to include a second spouse on the same engagement.
           </p>
 
           {loadingPricing ? (
