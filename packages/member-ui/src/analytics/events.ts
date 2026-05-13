@@ -21,5 +21,10 @@ export type AnalyticsEvent =
       }
     }
   | { name: 'chatbot_lead'; props: { app: string; intent?: string } }
+  | { name: 'exit_intent_shown'; props: { app: string; freebie_type?: string } }
+  | {
+      name: 'exit_intent_submitted'
+      props: { app: string; freebie_type?: string; qualifier_answer?: string }
+    }
 
 export type AnalyticsEventName = AnalyticsEvent['name']

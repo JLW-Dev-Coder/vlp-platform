@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import type { PlatformConfig } from '../../types/config'
+import { capture } from '../../analytics'
 
 const SHOWN_KEY_SUFFIX = '_exit_shown'
 const SHOWN_TTL_DAYS = 7
@@ -70,6 +71,10 @@ export function ExitIntentPopup({ config }: ExitIntentPopupProps) {
       triggerTimer.current = window.setTimeout(() => {
         setOpen(true)
         markShown(config.brandAbbrev)
+        capture({
+          name: 'exit_intent_shown',
+          props: { app: config.brandAbbrev.toLowerCase(), freebie_type: ei?.freebieType },
+        })
       }, TRIGGER_DELAY_MS)
     }
 
@@ -170,6 +175,14 @@ export function ExitIntentPopup({ config }: ExitIntentPopupProps) {
         return
       }
       setDone(data?.already_subscribed ? 'already' : 'success')
+      capture({
+        name: 'exit_intent_submitted',
+        props: {
+          app: config.brandAbbrev.toLowerCase(),
+          freebie_type: ei!.freebieType,
+          qualifier_answer: selected ?? undefined,
+        },
+      })
       autoCloseTimer.current = window.setTimeout(close, 3000)
     } catch {
       setError('Network error. Please try again.')

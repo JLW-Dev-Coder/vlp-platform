@@ -25910,6 +25910,433 @@ async function handleTcvlpGalaDripCron(env) {
 }
 
 // ---------------------------------------------------------------------------
+// Freebie Welcome Drip Cron — 15:00 UTC daily.
+//
+// 3-email sequence for exit-intent freebie leads (freebie_leads table).
+// Email 1 retry: any row missing drip_email1_sent_at after 5 min — re-sends
+//   the welcome email (same content as POST /v1/leads/freebie).
+// Email 2: +2 days from created_at, per-platform value/tease content.
+// Email 3: +5 days from created_at, per-platform final-touch content.
+//
+// Capped at 50 sends per stage per cron run. Resend 429 halts the stage.
+// ---------------------------------------------------------------------------
+
+const FREEBIE_DRIP_LIMIT = 50;
+
+const FREEBIE_PLATFORM_META = {
+  ttmp:  { name: 'Transcript Tax Monitor',   color: '#14b8a6', domain: 'transcript.taxmonitor.pro' },
+  tmp:   { name: 'Tax Monitor Pro',          color: '#f59e0b', domain: 'taxmonitor.pro' },
+  tttmp: { name: 'Tax Tools Arcade',         color: '#8b5cf6', domain: 'taxtools.taxmonitor.pro' },
+  tcvlp: { name: 'TaxClaim Pro',             color: '#eab308', domain: 'taxclaim.virtuallaunch.pro' },
+  wlvlp: { name: 'Website Lotto',            color: '#00D4FF', domain: 'websitelotto.virtuallaunch.pro' },
+  dvlp:  { name: 'Developers VLP',           color: '#3b82f6', domain: 'developers.virtuallaunch.pro' },
+  gvlp:  { name: 'Games VLP',                color: '#22c55e', domain: 'games.virtuallaunch.pro' },
+  tavlp: { name: 'Tax Avatar Pro',           color: '#ec4899', domain: 'taxavatar.virtuallaunch.pro' },
+  vlp:   { name: 'Virtual Launch Pro',       color: '#f97316', domain: 'virtuallaunch.pro' },
+  tpp:   { name: 'Tax Prep Pro',             color: '#E91E63', domain: 'taxprep.virtuallaunch.pro' },
+};
+
+function freebiePlatformMeta(platform) {
+  return FREEBIE_PLATFORM_META[platform] || FREEBIE_PLATFORM_META.vlp;
+}
+
+async function freebieFooterHtml(env, email, platform) {
+  const meta = freebiePlatformMeta(platform);
+  const enc = encodeURIComponent(email || '');
+  const token = await generateUnsubscribeToken(env, email || '');
+  return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0 16px;" />
+<p style="font-size:12px;color:#6b7280;line-height:1.6;margin:0;">
+  You're receiving this because you requested a freebie from ${meta.name}.<br />
+  Lenore, Inc. &middot; 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020<br />
+  <a href="https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=${platform}_freebie&token=${token}" style="color:#6b7280;">Unsubscribe</a> from ${meta.name} emails.
+</p>`;
+}
+
+async function freebieFooterText(env, email, platform) {
+  const meta = freebiePlatformMeta(platform);
+  const enc = encodeURIComponent(email || '');
+  const token = await generateUnsubscribeToken(env, email || '');
+  return `
+
+—
+You're receiving this because you requested a freebie from ${meta.name}.
+Lenore, Inc. | 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020
+Unsubscribe: https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=${platform}_freebie&token=${token}
+`;
+}
+
+function freebieShellHtml(platform, bodyHtml, footerHtml) {
+  const meta = freebiePlatformMeta(platform);
+  return `<!DOCTYPE html>
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e;padding:24px;">
+<div style="border-top:4px solid ${meta.color};padding-top:20px;">
+${bodyHtml}
+</div>
+${footerHtml}
+</body></html>`;
+}
+
+// Email 2 content per platform — value/curiosity tease.
+function freebieEmail2Content(platform, row) {
+  const meta = freebiePlatformMeta(platform);
+  const c = meta.color;
+  const d = `https://${meta.domain}`;
+  const qa = (row && row.qualifier_answer) ? String(row.qualifier_answer) : '';
+  switch (platform) {
+    case 'ttmp':
+      return {
+        subject: '3 transcript codes that trip up every tax pro',
+        html: `<p style="font-size:15px;line-height:1.6;">Three codes we see misread on nearly every transcript review:</p>
+<ul style="font-size:15px;line-height:1.7;padding-left:20px;">
+  <li><strong>TC 922</strong> — looks like a "review" but actually closes the account</li>
+  <li><strong>TC 290 with $0.00</strong> — does NOT always mean "no change"</li>
+  <li><strong>TC 971 AC 199</strong> — the silent freeze your client never gets notified about</li>
+</ul>
+<p style="font-size:15px;line-height:1.6;">Our parser flags all three automatically the moment you drop in a transcript.</p>
+<p style="margin:24px 0;"><a href="${d}/pricing" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">See the parser</a></p>`,
+        text: `Three transcript codes that trip up every tax pro:\n\n- TC 922 looks like a review but closes the account\n- TC 290 with $0.00 does NOT always mean no change\n- TC 971 AC 199 — the silent freeze your client never gets notified about\n\nOur parser flags all three automatically.\n\n${d}/pricing`,
+      };
+    case 'tmp':
+      return {
+        subject: "The IRS notice your clients won't tell you about",
+        html: `<p style="font-size:15px;line-height:1.6;">The most-missed notice in our monitoring data: <strong>CP14 follow-ups</strong>. Clients pay the first one and assume it's resolved — then a CP504 lands 60 days later and they call you in a panic.</p>
+<p style="font-size:15px;line-height:1.6;">If you're monitoring transcripts daily, you catch this in week 1. Manually, you catch it after the second notice.</p>
+<p style="font-size:15px;line-height:1.6;">Tax Monitor Pro watches every assigned account so you don't have to.</p>
+<p style="margin:24px 0;"><a href="${d}/pricing" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">See pricing</a></p>`,
+        text: `The most-missed IRS notice: CP14 follow-ups. Clients pay the first, assume it's resolved, then CP504 lands 60 days later.\n\nDaily monitoring catches it in week 1.\n\n${d}/pricing`,
+      };
+    case 'tttmp':
+      return {
+        subject: "The game tax pros can't stop playing",
+        html: `<p style="font-size:15px;line-height:1.6;">Most-replayed game in the Arcade right now: <strong>IRS Tax Detective</strong>. Two tokens, ten minutes, and you'll never misread a TC 922 again.</p>
+<p style="font-size:15px;line-height:1.6;">Tax pros are using it for staff onboarding. CPE candidates are using it to drill before exams.</p>
+<p style="margin:24px 0;"><a href="${d}/games" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Play IRS Tax Detective</a></p>`,
+        text: `Most-replayed game right now: IRS Tax Detective. Two tokens, ten minutes.\n\nTax pros use it for staff onboarding.\n\n${d}/games`,
+      };
+    case 'tcvlp':
+      return {
+        subject: 'Kwong deadline: what most CPAs are missing',
+        html: `<p style="font-size:15px;line-height:1.6;">Three things most CPAs miss on Kwong filings:</p>
+<ol style="font-size:15px;line-height:1.7;padding-left:20px;">
+  <li>The penalty window covers <strong>Jan 2020 through July 2023</strong> — not just 2020/2021</li>
+  <li>Refunds require the matching transcript codes, not just the assessment</li>
+  <li>The July 2026 deadline is on the claim, not the notice response</li>
+</ol>
+<p style="font-size:15px;line-height:1.6;">TaxClaim Pro generates the Form 843 with all three handled.</p>
+<p style="margin:24px 0;"><a href="${d}/gala" style="display:inline-block;padding:12px 24px;background:${c};color:#1a1a2e;text-decoration:none;border-radius:6px;font-weight:700;">Run the eligibility check</a></p>`,
+        text: `Three things most CPAs miss on Kwong:\n\n1. Penalty window is Jan 2020 - July 2023\n2. Refunds require matching transcript codes\n3. July 2026 deadline is on the claim, not the notice\n\n${d}/gala`,
+      };
+    case 'wlvlp':
+      return {
+        subject: "Your competitors' websites vs yours",
+        html: `<p style="font-size:15px;line-height:1.6;">We evaluated 200 tax-pro websites last quarter. The gap between top-quartile and bottom-quartile firms:</p>
+<ul style="font-size:15px;line-height:1.7;padding-left:20px;">
+  <li>Top firms: 3-second load, mobile-first, clear booking CTA above the fold</li>
+  <li>Bottom firms: 8+ second load, broken on mobile, contact form buried in footer</li>
+</ul>
+<p style="font-size:15px;line-height:1.6;">Want us to evaluate yours? Free, no obligation.</p>
+<p style="margin:24px 0;"><a href="${d}/sites" style="display:inline-block;padding:12px 24px;background:${c};color:#1a1a2e;text-decoration:none;border-radius:6px;font-weight:700;">Request evaluation</a></p>`,
+        text: `Top-quartile tax-pro sites: 3s load, mobile-first, clear booking CTA.\nBottom: 8s+, broken on mobile, contact buried.\n\nFree evaluation: ${d}/sites`,
+      };
+    case 'dvlp':
+      return {
+        subject: 'The intro that landed a $15K contract',
+        html: `<p style="font-size:15px;line-height:1.6;">One of our developers landed a $15K contract last month with a 4-sentence intro:</p>
+<blockquote style="border-left:3px solid ${c};padding:8px 16px;color:#374151;font-style:italic;">I built X for a firm doing Y. Their result was Z in 30 days. I have capacity for one more client this quarter. Want a 15-min walk-through?</blockquote>
+<p style="font-size:15px;line-height:1.6;">Notice: result first, capacity scarcity, low-commitment CTA. We work with developers on this kind of positioning.</p>
+<p style="margin:24px 0;"><a href="${d}/developers" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">See the program</a></p>`,
+        text: `$15K contract from a 4-sentence intro: result-first, capacity-scarce, low-commit CTA.\n\n${d}/developers`,
+      };
+    case 'gvlp':
+      return {
+        subject: 'Your clients played 47 games last month',
+        html: `<p style="font-size:15px;line-height:1.6;">Average client engagement on Games VLP last month: <strong>47 game sessions per active client</strong>. Compare to the typical tax-pro newsletter open rate of 18%.</p>
+<p style="font-size:15px;line-height:1.6;">Games stick. Newsletters don't. That's the whole pitch.</p>
+<p style="margin:24px 0;"><a href="${d}/pricing" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">See pricing</a></p>`,
+        text: `Average client engagement on Games VLP: 47 sessions/month vs. 18% newsletter open rate.\n\nGames stick.\n\n${d}/pricing`,
+      };
+    case 'tavlp':
+      return {
+        subject: 'This AI avatar got 2,000 views in a week',
+        html: `<p style="font-size:15px;line-height:1.6;">One of our pilot avatars hit <strong>2,000 YouTube views in 7 days</strong> with three uploads. The firm did zero on-camera work — every video was avatar-generated.</p>
+<p style="font-size:15px;line-height:1.6;">If you've been "meaning to do video" for two years, this removes the bottleneck entirely.</p>
+<p style="margin:24px 0;"><a href="${d}" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">See sample clips</a></p>`,
+        text: `Pilot avatar: 2,000 YouTube views in 7 days, zero on-camera work.\n\n${d}`,
+      };
+    case 'vlp': {
+      const tease = qa
+        ? `Based on what you told us (<em>${qa.replace(/[<>&]/g, '')}</em>), one tool stands out for your situation.`
+        : `Based on the path you picked, one tool stands out.`;
+      return {
+        subject: 'Which VLP tool fits your practice? (results)',
+        html: `<p style="font-size:15px;line-height:1.6;">${tease}</p>
+<p style="font-size:15px;line-height:1.6;">Most firms in your bucket start with <strong>Tax Monitor Pro</strong> for daily transcript watch, then layer Transcript Tax Monitor for ad-hoc cases. We'll deliver the full breakdown shortly.</p>
+<p style="margin:24px 0;"><a href="${d}" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Browse the ecosystem</a></p>`,
+        text: `${qa ? `Based on what you told us (${qa}), ` : ''}most firms in your bucket start with Tax Monitor Pro, then layer Transcript Tax Monitor.\n\n${d}`,
+      };
+    }
+    case 'tpp':
+      return {
+        subject: 'The 8-phase workflow your competitors use',
+        html: `<p style="font-size:15px;line-height:1.6;">High-throughput tax prep firms all share the same 8-phase pattern:</p>
+<ol style="font-size:15px;line-height:1.7;padding-left:20px;">
+  <li>Intake → 2. Document gather → 3. Triage → 4. Prep</li>
+  <li>Review → 6. Client review → 7. Sign &amp; file → 8. Archive</li>
+</ol>
+<p style="font-size:15px;line-height:1.6;">Most firms collapse 2–3 of these into one and lose visibility. Tax Prep Pro keeps them separate so you can see where work is stuck.</p>
+<p style="margin:24px 0;"><a href="${d}/contact" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Walk through the flow</a></p>`,
+        text: `High-throughput firms share an 8-phase pattern. Most collapse 2-3 phases and lose visibility.\n\n${d}/contact`,
+      };
+  }
+  return null;
+}
+
+// Email 3 content per platform — final touch with stronger CTA.
+function freebieEmail3Content(platform, row) {
+  const meta = freebiePlatformMeta(platform);
+  const c = meta.color;
+  const d = `https://${meta.domain}`;
+  const qa = (row && row.qualifier_answer) ? String(row.qualifier_answer) : '';
+  switch (platform) {
+    case 'ttmp':
+      return {
+        subject: 'Your free transcript parse is waiting',
+        html: `<p style="font-size:15px;line-height:1.6;">Quick reminder: every Transcript Tax Monitor account gets the first parse free. Drop in a TIF or PDF, get back a flagged summary in seconds.</p>
+<p style="margin:24px 0;"><a href="${d}/dashboard" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Try it free</a></p>`,
+        text: `Every TTMP account gets the first parse free.\n\n${d}/dashboard`,
+      };
+    case 'tmp':
+      return {
+        subject: 'Monitor 1 client free — here\'s how',
+        html: `<p style="font-size:15px;line-height:1.6;">You can monitor your first client account on TMP free — no card, no commit. If we catch one notice that would have blindsided you, the tool pays for itself for the year.</p>
+<p style="margin:24px 0;"><a href="${d}/pricing" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Start the free monitor</a></p>`,
+        text: `Monitor your first client free. No card, no commit.\n\n${d}/pricing`,
+      };
+    case 'tttmp':
+      return {
+        subject: '2 tokens, 4 games, zero risk',
+        html: `<p style="font-size:15px;line-height:1.6;">New accounts get 2 free tokens — enough to play four of our 2-token starter games. Pick one, see what your team thinks, decide from there.</p>
+<p style="margin:24px 0;"><a href="${d}/games" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Grab your tokens</a></p>`,
+        text: `2 free tokens, 4 starter games, zero risk.\n\n${d}/games`,
+      };
+    case 'tcvlp':
+      return {
+        subject: 'July 2026 is closer than you think',
+        html: `<p style="font-size:15px;line-height:1.6;">If you have Kwong-eligible clients, the claim has to be filed by July 2026. That sounds far. It isn't — especially if your queue is already a year out.</p>
+<p style="font-size:15px;line-height:1.6;">Run the Gala eligibility check on one client today. If it qualifies, you have a workflow. If not, you've spent five minutes.</p>
+<p style="margin:24px 0;"><a href="${d}/gala" style="display:inline-block;padding:12px 24px;background:${c};color:#1a1a2e;text-decoration:none;border-radius:6px;font-weight:700;">Run Gala now</a></p>`,
+        text: `July 2026 Kwong deadline is closer than it sounds.\n\nRun Gala on one client today.\n\n${d}/gala`,
+      };
+    case 'wlvlp':
+      return {
+        subject: "Pick a site. It's on us to evaluate.",
+        html: `<p style="font-size:15px;line-height:1.6;">Last chance on the free site evaluation: send us your URL (or a competitor's) and we'll send back a 1-page audit covering load speed, mobile, CTA placement, and trust signals.</p>
+<p style="margin:24px 0;"><a href="${d}/sites" style="display:inline-block;padding:12px 24px;background:${c};color:#1a1a2e;text-decoration:none;border-radius:6px;font-weight:700;">Send your URL</a></p>`,
+        text: `Free site evaluation: send your URL, get a 1-page audit.\n\n${d}/sites`,
+      };
+    case 'dvlp':
+      return {
+        subject: 'Your profile review is ready',
+        html: `<p style="font-size:15px;line-height:1.6;">As promised — your developer profile review is ready when you are. We'll cover positioning, sample pricing for your stack, and a sample intro you can send tomorrow.</p>
+<p style="margin:24px 0;"><a href="${d}/developers" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Schedule the review</a></p>`,
+        text: `Your profile review is ready. Positioning, sample pricing, sample intro.\n\n${d}/developers`,
+      };
+    case 'gvlp':
+      return {
+        subject: '30 days of games, free — last chance',
+        html: `<p style="font-size:15px;line-height:1.6;">First-time accounts get 30 days of full game access free. If you don't see the engagement bump in week 1, you walk. No card on file.</p>
+<p style="margin:24px 0;"><a href="${d}/pricing" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Start 30 days free</a></p>`,
+        text: `30 days of games free. No card.\n\n${d}/pricing`,
+      };
+    case 'tavlp':
+      return {
+        subject: 'Your AI avatar demo is one click away',
+        html: `<p style="font-size:15px;line-height:1.6;">We'll generate a 30-second avatar clip with your script — free, one click. See yourself (well, your avatar) on camera before you commit to anything.</p>
+<p style="margin:24px 0;"><a href="${d}" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Generate a demo clip</a></p>`,
+        text: `Free 30-second avatar demo clip with your script.\n\n${d}`,
+      };
+    case 'vlp': {
+      const tease = qa
+        ? `Firms that picked "${qa.replace(/[<>&]/g, '')}" most often started with our transcript + monitoring stack.`
+        : `Firms in your bucket most often start with our transcript + monitoring stack.`;
+      return {
+        subject: "Still deciding? Here's what firms like yours picked",
+        html: `<p style="font-size:15px;line-height:1.6;">${tease}</p>
+<p style="font-size:15px;line-height:1.6;">Browse the full ecosystem and see which tools layer cleanly onto your current practice.</p>
+<p style="margin:24px 0;"><a href="${d}" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">See the ecosystem</a></p>`,
+        text: `${tease}\n\n${d}`,
+      };
+    }
+    case 'tpp':
+      return {
+        subject: 'See your firm name in the portal — free walkthrough',
+        html: `<p style="font-size:15px;line-height:1.6;">We'll spin up a sandbox with your firm name and walk you through the full 8-phase flow on a live call. 20 minutes. No pitch — if it's not a fit, we say so on the call.</p>
+<p style="margin:24px 0;"><a href="${d}/contact" style="display:inline-block;padding:12px 24px;background:${c};color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Book the walkthrough</a></p>`,
+        text: `Free 20-min walkthrough with your firm name in the sandbox.\n\n${d}/contact`,
+      };
+  }
+  return null;
+}
+
+// Re-build the welcome email (matches POST /v1/leads/freebie content).
+async function freebieEmail1Build(env, row) {
+  const platform = row.platform;
+  const meta = freebiePlatformMeta(platform);
+  const subjectByFreebie = {
+    transcript_cheatsheet:   'Your IRS Transcript Cheat Sheet is on the way',
+    monitoring_checklist:    'Your IRS Account Monitoring Checklist is on the way',
+    free_tokens:             'Your free arcade tokens are on the way',
+    kwong_checklist:         'Your Kwong Eligibility Quick-Check is on the way',
+    site_evaluation:         'Your free site evaluation is on the way',
+    profile_review:          'Your developer profile review is on the way',
+    demo_game:               'Your demo game access is on the way',
+    avatar_sample:           'Your AI avatar sample clip is on the way',
+    platform_recommendation: 'Your personalized VLP platform recommendation is on the way',
+    workflow_assessment:     'Your tax prep workflow assessment is on the way',
+  };
+  const subject = subjectByFreebie[row.freebie_type] || `Thanks from ${meta.name}`;
+  const site = `https://${meta.domain}`;
+  const bodyHtml = `<h2 style="color:#1a1a2e;margin:0 0 12px;">Thanks for grabbing our freebie!</h2>
+<p style="font-size:15px;line-height:1.6;color:#333;">We got your request and we're putting your freebie together now. A team member will follow up shortly with your delivery — usually within one business day.</p>
+<p style="font-size:15px;line-height:1.6;color:#333;">In the meantime, if you have questions just reply to this email and a human will read it.</p>
+<p style="font-size:15px;line-height:1.6;color:#333;margin-top:24px;">— The ${meta.name} team<br><a href="${site}" style="color:${meta.color};text-decoration:none;">${meta.domain}</a></p>`;
+  const footerHtml = await freebieFooterHtml(env, row.email, platform);
+  const footerText = await freebieFooterText(env, row.email, platform);
+  const html = freebieShellHtml(platform, bodyHtml, footerHtml);
+  const text = `Thanks for grabbing our freebie!\n\nWe got your request and a team member will follow up within one business day.\n\nReply to this email with any questions.\n\n— The ${meta.name} team\n${site}${footerText}`;
+  return { subject, html, text };
+}
+
+async function freebieEmail2Build(env, row) {
+  const content = freebieEmail2Content(row.platform, row);
+  if (!content) return null;
+  const footerHtml = await freebieFooterHtml(env, row.email, row.platform);
+  const footerText = await freebieFooterText(env, row.email, row.platform);
+  const html = freebieShellHtml(row.platform, content.html, footerHtml);
+  const text = content.text + footerText;
+  return { subject: content.subject, html, text };
+}
+
+async function freebieEmail3Build(env, row) {
+  const content = freebieEmail3Content(row.platform, row);
+  if (!content) return null;
+  const footerHtml = await freebieFooterHtml(env, row.email, row.platform);
+  const footerText = await freebieFooterText(env, row.email, row.platform);
+  const html = freebieShellHtml(row.platform, content.html, footerHtml);
+  const text = content.text + footerText;
+  return { subject: content.subject, html, text };
+}
+
+async function sendFreebieDripEmail(env, row, subject, text, html) {
+  const meta = freebiePlatformMeta(row.platform);
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: `${meta.name} <noreply@virtuallaunch.pro>`,
+      to: [row.email],
+      reply_to: 'outreach@virtuallaunch.pro',
+      subject,
+      text,
+      html,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    const e = new Error(`resend_${res.status}: ${err.slice(0, 200)}`);
+    e.status = res.status;
+    throw e;
+  }
+  const data = await res.json().catch(() => ({}));
+  return data.id || null;
+}
+
+async function runFreebieDripStage(env, stats, query, column, buildEmail) {
+  const rows = (await env.DB.prepare(query).all()).results || [];
+  for (const row of rows) {
+    if (stats.sent + stats.errors.length >= FREEBIE_DRIP_LIMIT) break;
+    try {
+      const built = await buildEmail(env, row);
+      if (!built) {
+        stats.errors.push({ id: row.id, email: row.email, error: 'no_template_for_platform' });
+        continue;
+      }
+      await sendFreebieDripEmail(env, row, built.subject, built.text, built.html);
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(
+        `UPDATE freebie_leads SET ${column} = ? WHERE id = ?`
+      ).bind(nowIso, row.id).run();
+      stats.sent++;
+    } catch (e) {
+      console.error(`[freebie-drip] send failed for ${row.email}:`, e?.message || e);
+      stats.errors.push({ id: row.id, email: row.email, error: e?.message || String(e) });
+      if (e && e.status === 429) {
+        stats.halted_on_rate_limit = true;
+        break;
+      }
+      if (e && e.status === 422) continue;
+    }
+  }
+}
+
+async function handleFreebieDripCron(env) {
+  const startedAt = new Date();
+  const stats = { sent: 0, errors: [], stages: { email1: 0, email2: 0, email3: 0 } };
+
+  const before1 = stats.sent;
+  await runFreebieDripStage(
+    env,
+    stats,
+    `SELECT id, email, platform, freebie_type, qualifier_answer FROM freebie_leads
+       WHERE drip_email1_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed != 1)
+         AND created_at <= datetime('now', '-5 minutes')
+       LIMIT ${FREEBIE_DRIP_LIMIT}`,
+    'drip_email1_sent_at',
+    freebieEmail1Build,
+  );
+  stats.stages.email1 = stats.sent - before1;
+
+  const before2 = stats.sent;
+  await runFreebieDripStage(
+    env,
+    stats,
+    `SELECT id, email, platform, freebie_type, qualifier_answer FROM freebie_leads
+       WHERE drip_email1_sent_at IS NOT NULL
+         AND drip_email2_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed != 1)
+         AND created_at <= datetime('now', '-2 days')
+       LIMIT ${FREEBIE_DRIP_LIMIT}`,
+    'drip_email2_sent_at',
+    freebieEmail2Build,
+  );
+  stats.stages.email2 = stats.sent - before2;
+
+  const before3 = stats.sent;
+  await runFreebieDripStage(
+    env,
+    stats,
+    `SELECT id, email, platform, freebie_type, qualifier_answer FROM freebie_leads
+       WHERE drip_email2_sent_at IS NOT NULL
+         AND drip_email3_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed != 1)
+         AND created_at <= datetime('now', '-5 days')
+       LIMIT ${FREEBIE_DRIP_LIMIT}`,
+    'drip_email3_sent_at',
+    freebieEmail3Build,
+  );
+  stats.stages.email3 = stats.sent - before3;
+
+  const endedAt = new Date();
+  const summary = { ...stats, started_at: startedAt.toISOString(), ended_at: endedAt.toISOString(), duration_ms: endedAt - startedAt };
+  console.log('Freebie drip cron:', JSON.stringify(summary));
+  return summary;
+}
+
+// ---------------------------------------------------------------------------
 // TTTMP Vesperi Welcome Drip
 // ---------------------------------------------------------------------------
 // 3-email welcome sequence for the /vesperi Tax Tools Arcade game-guide intake.
@@ -31048,6 +31475,12 @@ export default {
         console.log('TTTMP Vesperi drip cron:', JSON.stringify(vesperiStats));
       } catch (e) {
         console.error('TTTMP Vesperi drip cron failed:', e);
+      }
+      try {
+        const freebieStats = await handleFreebieDripCron(env);
+        console.log('Freebie drip cron:', JSON.stringify(freebieStats));
+      } catch (e) {
+        console.error('Freebie drip cron failed:', e);
       }
       return;
     }
