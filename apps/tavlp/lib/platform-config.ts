@@ -23,7 +23,11 @@ export const tavlpConfig: PlatformConfig = {
     {
       title: 'WORKSPACE',
       items: [
-        { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+        { label: 'Overview', href: '/dashboard', icon: 'LayoutDashboard' },
+        { label: 'Scripts', href: '/dashboard/scripts', icon: 'FileText' },
+        { label: 'Videos', href: '/dashboard/videos', icon: 'Video' },
+        { label: 'Channel', href: '/dashboard/channel', icon: 'Youtube' },
+        { label: 'Settings', href: '/dashboard/settings', icon: 'Settings' },
       ],
     },
   ],
