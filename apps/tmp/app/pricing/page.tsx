@@ -177,7 +177,9 @@ export default function PricingPage() {
   const isActivePlan = (key: string) =>
     membership?.status === 'active' && membership.plan_key === key
 
-  const visiblePlansI = plansI.filter((p) => p.interval === billingInterval)
+  const visiblePlansI = plansI.filter(
+    (p) => p.interval === billingInterval || p.price === 0,
+  )
 
   const isRecommended = (plan: PlanI) =>
     billingInterval === 'month'
