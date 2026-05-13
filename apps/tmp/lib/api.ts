@@ -207,6 +207,53 @@ export interface PayoutResponse {
   status: string
 }
 
+/* ── Monitoring (Plan II) types ── */
+export type MonitoringTier = 'bronze' | 'silver' | 'gold' | 'snapshot' | string
+export type MonitoringStatus = 'pending_pro' | 'active' | 'completed' | 'expired' | 'abandoned' | string
+export type AlertSeverity = 'critical' | 'warning' | 'info' | string
+
+export interface MonitoringEngagement {
+  engagement_id: string
+  taxpayer_account_id: string
+  professional_account_id: string | null
+  tier: MonitoringTier
+  duration_weeks: number | null
+  cadence_days: number
+  started_at: string | null
+  ends_at: string | null
+  status: MonitoringStatus
+  last_upload_at: string | null
+  last_check_at: string | null
+  total_uploads: number
+  total_alerts: number
+  mfj_spouse: number
+  taxpayer_name?: string | null
+  created_at: string
+  updated_at: string | null
+}
+
+export interface MonitoringUpload {
+  upload_id: string
+  account_id: string
+  r2_key: string
+  parsed_result_r2_key: string | null
+  diff_r2_key: string | null
+  changes_detected: number
+  uploaded_at: string
+}
+
+export interface MonitoringAlert {
+  alert_id: string
+  upload_id: string | null
+  alert_type: string
+  description: string
+  transaction_code: string | null
+  old_value: string | null
+  new_value: string | null
+  severity: AlertSeverity
+  created_at: string
+}
+
 /* ── Support types ── */
 export interface SupportTicketRow {
   ticket_id: string
@@ -712,6 +759,29 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+
+  // Monitoring Engagements (Plan II)
+  getMonitoringEngagements: () =>
+    apiFetch<{
+      ok: boolean
+      engagements: MonitoringEngagement[]
+      viewer_account_id: string
+    }>('/v1/tmp/monitoring/engagements'),
+
+  getMonitoringEngagement: (engagement_id: string) =>
+    apiFetch<{
+      ok: boolean
+      engagement: MonitoringEngagement
+      uploads: MonitoringUpload[]
+      alerts: MonitoringAlert[]
+    }>(`/v1/tmp/monitoring/engagements/${encodeURIComponent(engagement_id)}`),
+
+  getMonitoringAlerts: (engagement_id: string) =>
+    apiFetch<{
+      ok: boolean
+      engagement_id: string
+      alerts: MonitoringAlert[]
+    }>(`/v1/tmp/monitoring/engagements/${encodeURIComponent(engagement_id)}/alerts`),
 
   getTmpMonitoringStatus: () =>
     apiFetch<{

@@ -14986,6 +14986,27 @@ https://virtuallaunch.pro/payouts
   // changes trigger alerts. Cron checks for stale uploads + expiry.
   // ==========================================================================
   {
+    method: 'GET', pattern: '/v1/tmp/monitoring/engagements',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      let rows = [];
+      try {
+        const r = await env.DB.prepare(
+          `SELECT engagement_id, taxpayer_account_id, professional_account_id, tier, duration_weeks, cadence_days,
+                  started_at, ends_at, status, last_upload_at, last_check_at, total_uploads, total_alerts,
+                  mfj_spouse, created_at, updated_at
+             FROM monitoring_engagements
+            WHERE taxpayer_account_id = ? OR professional_account_id = ?
+            ORDER BY created_at DESC`
+        ).bind(session.account_id, session.account_id).all();
+        rows = r.results || [];
+      } catch (_) {}
+      return json({ ok: true, engagements: rows, viewer_account_id: session.account_id }, 200, request);
+    },
+  },
+
+  {
     method: 'POST', pattern: '/v1/tmp/monitoring/engagements',
     handler: async (_method, _pattern, _params, request, env) => {
       const { session, error } = await requireSession(request, env);

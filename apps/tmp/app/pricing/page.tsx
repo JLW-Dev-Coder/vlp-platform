@@ -54,6 +54,25 @@ const SUBTITLES: Record<string, string> = {
   Premier: 'For ongoing IRS oversight with the most tokens included.',
 }
 
+const PLAN_II_DESCRIPTIONS: Record<string, string> = {
+  bronze:
+    '6 weeks of weekly transcript monitoring. We check your IRS account every 7 days and alert you to any changes — new notices, balance shifts, holds, or liens.',
+  silver:
+    '8 weeks of weekly monitoring. Same weekly cadence, more time to catch seasonal changes and correspondence cycles.',
+  gold:
+    '12 weeks of accelerated monitoring. Checks every 5 days for the most active resolution periods — audits, installment agreements, or penalty abatement windows.',
+  snapshot:
+    'One-time transcript analysis. We pull and parse your transcript once, flag every issue, and deliver a comprehensive report. No recurring monitoring.',
+}
+
+function planIIDescription(plan: PlanII): string {
+  const key = plan.key.toLowerCase()
+  for (const tier of Object.keys(PLAN_II_DESCRIPTIONS)) {
+    if (key.includes(tier)) return PLAN_II_DESCRIPTIONS[tier]
+  }
+  return plan.duration
+}
+
 const FAQ_ITEMS = [
   {
     question: 'What is a Transcript Token and what can I do with it?',
@@ -287,7 +306,7 @@ export default function PricingPage() {
         </section>
 
         {/* Plan II cards */}
-        <section className={styles.plans}>
+        <section className={styles.plans} id="plan-ii">
           <h2 className={styles.sectionTitle}>Plan II &mdash; Monitoring Services</h2>
           <p className={styles.sectionDesc}>
             One-time monitoring engagements — no subscription. We watch the IRS account on a recurring cadence for the package length and alert you on every change. Add MFJ (+${mfjAddon?.price ?? 79}) to include a second spouse on the same engagement.
@@ -319,7 +338,7 @@ export default function PricingPage() {
                       <span className={styles.monitorCardInterval}> / one-time</span>
                     </div>
 
-                    <p className={styles.monitorCardDesc}>{plan.duration}</p>
+                    <p className={styles.monitorCardDesc}>{planIIDescription(plan)}</p>
 
                     {/* MFJ checkbox */}
                     {mfjAddon && (
@@ -363,6 +382,34 @@ export default function PricingPage() {
           <p className={styles.planNote}>
             One-time service fee. No recurring charges. MFJ add-on covers a second spouse on the same engagement.
           </p>
+
+          {/* How Monitoring Works */}
+          <div className={styles.howMonitoring}>
+            <h3 className={styles.howMonitoringTitle}>How Monitoring Works</h3>
+            <div className={styles.howMonitoringGrid}>
+              <div className={styles.howStep}>
+                <div className={styles.howStepNumber}>1</div>
+                <div className={styles.howStepTitle}>Choose your package</div>
+                <p className={styles.howStepDesc}>
+                  Pick the monitoring length that fits your situation.
+                </p>
+              </div>
+              <div className={styles.howStep}>
+                <div className={styles.howStepNumber}>2</div>
+                <div className={styles.howStepTitle}>We assign a tax pro</div>
+                <p className={styles.howStepDesc}>
+                  A credentialed professional from our network orders your IRS transcript using their Power of Attorney access.
+                </p>
+              </div>
+              <div className={styles.howStep}>
+                <div className={styles.howStepNumber}>3</div>
+                <div className={styles.howStepTitle}>You get alerts</div>
+                <p className={styles.howStepDesc}>
+                  Every time something changes on your IRS account, you&apos;ll receive an email with exactly what changed and what it means.
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* FAQ */}
