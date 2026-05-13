@@ -8,14 +8,14 @@ const sora = Sora({
   subsets: ['latin'],
   variable: '--font-sora',
   display: 'swap',
-  weight: ['600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
 })
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
   display: 'swap',
-  weight: ['400', '500', '600'],
+  weight: ['300', '400', '500', '600', '700'],
 })
 
 const ibmPlexMono = IBM_Plex_Mono({
