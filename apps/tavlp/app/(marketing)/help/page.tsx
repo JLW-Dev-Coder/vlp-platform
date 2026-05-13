@@ -27,7 +27,7 @@ const FAQS: FaqCategory[] = [
     ],
   },
   {
-    name: 'How Your Monthly Cycle Works',
+    name: 'How Your Script Generation Works',
     items: [
       {
         q: 'How does the monthly content cycle work?',
