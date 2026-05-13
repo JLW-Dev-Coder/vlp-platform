@@ -52,10 +52,12 @@ const STEPS = [
 
 function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement | null>(null)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(true)
   useEffect(() => {
     const el = ref.current
-    if (!el) return
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    if (el.getBoundingClientRect().top < window.innerHeight) return
+    setVisible(false)
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -68,7 +70,11 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
       { threshold: 0.12 },
     )
     io.observe(el)
-    return () => io.disconnect()
+    const fallback = window.setTimeout(() => setVisible(true), 1500)
+    return () => {
+      io.disconnect()
+      window.clearTimeout(fallback)
+    }
   }, [])
   return (
     <div
