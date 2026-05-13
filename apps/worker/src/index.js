@@ -15395,6 +15395,249 @@ https://virtuallaunch.pro/payouts
   },
 
   // -------------------------------------------------------------------------
+  // TMP — Cases (Form 2848 case file: client + assigned professional)
+  // -------------------------------------------------------------------------
+
+  // POST /v1/tmp/cases — create a new case. The session pro becomes the default
+  // assigned representative.
+  {
+    method: 'POST', pattern: '/v1/tmp/cases',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = (await parseBody(request)) || {};
+      const caseId = `CASE_${crypto.randomUUID()}`;
+      const now = new Date().toISOString();
+
+      let professionalId = body.professional_id || null;
+      if (!professionalId) {
+        try {
+          const row = await env.DB.prepare(
+            'SELECT professional_id FROM profiles WHERE account_id = ?'
+          ).bind(session.account_id).first();
+          professionalId = row?.professional_id || null;
+        } catch (_) {}
+      }
+
+      const record = {
+        case_id: caseId,
+        account_id: session.account_id,
+        professional_id: professionalId,
+        client_name: body.client_name || null,
+        client_ssn_last4: body.client_ssn_last4 || null,
+        client_address: body.client_address || null,
+        client_city: body.client_city || null,
+        client_state: body.client_state || null,
+        client_zip: body.client_zip || null,
+        client_phone: body.client_phone || null,
+        tax_years: body.tax_years || null,
+        tax_matters: body.tax_matters || null,
+        status: body.status || 'open',
+        esign_2848_complete: 0,
+        created_at: now,
+        updated_at: now,
+      };
+
+      await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/cases/${caseId}.json`, record);
+
+      try {
+        await env.DB.prepare(`
+          INSERT INTO tmp_cases (
+            case_id, account_id, professional_id,
+            client_name, client_ssn_last4, client_address, client_city,
+            client_state, client_zip, client_phone, tax_years, tax_matters,
+            status, esign_2848_complete, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          caseId, session.account_id, professionalId,
+          record.client_name, record.client_ssn_last4, record.client_address, record.client_city,
+          record.client_state, record.client_zip, record.client_phone, record.tax_years, record.tax_matters,
+          record.status, 0, now, now
+        ).run();
+      } catch (e) {
+        console.error('tmp_cases insert error:', e?.message);
+      }
+
+      return json({ ok: true, case_id: caseId, case: record }, 200, request);
+    },
+  },
+
+  // GET /v1/tmp/cases/:case_id — returns the case + assigned professional details
+  // for Form 2848 prefill. Public read (taxpayer-facing form), but only returns
+  // non-sensitive fields. Client SSN is never returned, only last4.
+  {
+    method: 'GET', pattern: '/v1/tmp/cases/:case_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const caseId = params.case_id;
+      if (!caseId || !/^CASE_[a-zA-Z0-9_-]+$/.test(caseId)) {
+        return json({ ok: false, error: 'validation_failed', message: 'invalid case_id' }, 400, request);
+      }
+
+      let record = null;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/cases/${caseId}.json`);
+        if (raw) record = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!record) {
+        try {
+          const row = await env.DB.prepare(
+            'SELECT * FROM tmp_cases WHERE case_id = ?'
+          ).bind(caseId).first();
+          if (row) record = row;
+        } catch (_) {}
+      }
+
+      if (!record) {
+        return json({ ok: false, error: 'NOT_FOUND', message: 'Case not found' }, 404, request);
+      }
+
+      // Load professional info from R2 profile (authoritative).
+      let professional = null;
+      if (record.professional_id) {
+        try {
+          const obj = await env.R2_VIRTUAL_LAUNCH.get(`profiles/${record.professional_id}.json`);
+          if (obj) {
+            const prof = await obj.json();
+            const designationMap = {
+              CPA: 'CPA',
+              EA: 'Enrolled Agent',
+              Attorney: 'Attorney',
+            };
+            const credentials = prof.credentials || prof.profession || null;
+            const fullName = prof.display_name || prof.name || null;
+            const initials = fullName
+              ? fullName.split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase()
+              : '';
+            const addressParts = [prof.address, prof.address_line2].filter(Boolean).join(', ');
+            const cityStateZip = [prof.city, prof.state, prof.zip].filter(Boolean).join(', ');
+            const fullAddress = [addressParts, cityStateZip].filter(Boolean).join(', ');
+            professional = {
+              professional_id: record.professional_id,
+              name: fullName,
+              credentials,
+              designation: designationMap[credentials] || credentials || 'Other',
+              firm: prof.firm_name || null,
+              phone: prof.phone || null,
+              address: fullAddress || null,
+              city: prof.city || null,
+              state: prof.state || null,
+              zip: prof.zip || null,
+              license_number: prof.license_number || null,
+              caf_number: prof.caf_number || null,
+              ptin: prof.ptin || null,
+              initials,
+            };
+          }
+        } catch (e) {
+          console.error('tmp_cases pro lookup error:', e?.message);
+        }
+      }
+
+      // Strip sensitive fields from case payload (no full SSN, no PII the
+      // taxpayer-facing form doesn't need).
+      const safeCase = {
+        case_id: record.case_id,
+        professional_id: record.professional_id || null,
+        client_name: record.client_name || null,
+        client_ssn_last4: record.client_ssn_last4 || null,
+        client_city: record.client_city || null,
+        client_state: record.client_state || null,
+        client_zip: record.client_zip || null,
+        client_phone: record.client_phone || null,
+        tax_years: record.tax_years || null,
+        tax_matters: record.tax_matters || null,
+        status: record.status || 'open',
+        esign_2848_complete: record.esign_2848_complete || 0,
+      };
+
+      return json({ ok: true, case: safeCase, professional }, 200, request);
+    },
+  },
+
+  // PATCH /v1/tmp/cases/:case_id — update case fields (authenticated)
+  {
+    method: 'PATCH', pattern: '/v1/tmp/cases/:case_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const caseId = params.case_id;
+      if (!caseId || !/^CASE_[a-zA-Z0-9_-]+$/.test(caseId)) {
+        return json({ ok: false, error: 'validation_failed', message: 'invalid case_id' }, 400, request);
+      }
+
+      const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/cases/${caseId}.json`);
+      if (!raw) {
+        return json({ ok: false, error: 'NOT_FOUND', message: 'Case not found' }, 404, request);
+      }
+      const existing = JSON.parse(raw);
+
+      // Ownership: account_id owner OR assigned professional.
+      let isAssignedPro = false;
+      if (existing.professional_id) {
+        try {
+          const row = await env.DB.prepare(
+            'SELECT professional_id FROM profiles WHERE account_id = ?'
+          ).bind(session.account_id).first();
+          isAssignedPro = row?.professional_id === existing.professional_id;
+        } catch (_) {}
+      }
+      if (existing.account_id !== session.account_id && !isAssignedPro) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = (await parseBody(request)) || {};
+      const allowed = [
+        'professional_id', 'client_name', 'client_ssn_last4', 'client_address',
+        'client_city', 'client_state', 'client_zip', 'client_phone',
+        'tax_years', 'tax_matters', 'status', 'esign_2848_complete',
+      ];
+      const patch = {};
+      for (const k of allowed) {
+        if (k in body) patch[k] = k === 'esign_2848_complete' ? (body[k] ? 1 : 0) : body[k];
+      }
+
+      const now = new Date().toISOString();
+      const merged = { ...existing, ...patch, case_id: caseId, updated_at: now };
+      await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/cases/${caseId}.json`, merged);
+
+      const setCols = [];
+      const vals = [];
+      for (const [k, v] of Object.entries(patch)) {
+        setCols.push(`${k} = ?`);
+        vals.push(v);
+      }
+      setCols.push('updated_at = ?');
+      vals.push(now);
+      if (setCols.length > 1) {
+        try {
+          await env.DB.prepare(
+            `UPDATE tmp_cases SET ${setCols.join(', ')} WHERE case_id = ?`
+          ).bind(...vals, caseId).run();
+        } catch (e) {
+          console.error('tmp_cases update error:', e?.message);
+        }
+      }
+
+      // If the case is being marked esign_2848_complete, mirror onto the
+      // client-side compliance_status row keyed by account_id.
+      if (patch.esign_2848_complete) {
+        try {
+          await env.DB.prepare(
+            `UPDATE compliance_status SET esign_2848_complete = 1, updated_at = ? WHERE account_id = ?`
+          ).bind(now, existing.account_id).run();
+        } catch (e) {
+          console.error('compliance_status sync error:', e?.message);
+        }
+      }
+
+      return json({ ok: true, case: merged }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // VLP Account Preferences Routes
   // -------------------------------------------------------------------------
 
