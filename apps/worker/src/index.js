@@ -20453,6 +20453,268 @@ https://virtuallaunch.pro/payouts
     },
   },
 
+  // POST /v1/tavlp/scripts/generate
+  // Generates YouTube video scripts for a TAVLP customer using the Anthropic
+  // Claude API. Each generated script is stored in R2 at
+  // `tavlp/scripts/{account_id}/{script_id}.json` with status `pending_review`,
+  // plus a batch manifest at `tavlp/scripts/{account_id}/batches/{batch_id}.json`.
+  // Requires: wrangler secret put ANTHROPIC_API_KEY
+  {
+    method: 'POST', pattern: '/v1/tavlp/scripts/generate',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      const { account_id, topic } = body ?? {};
+      let { count, tone, video_length } = body ?? {};
+      if (!account_id || typeof account_id !== 'string') {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id is required' }, 400, request);
+      }
+      if (!topic || typeof topic !== 'string') {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'topic is required' }, 400, request);
+      }
+      if (count === undefined || count === null) count = 4;
+      if (typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > 4) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'count must be an integer between 1 and 4' }, 400, request);
+      }
+      if (!tone || typeof tone !== 'string') tone = 'professional and approachable';
+      if (!video_length || typeof video_length !== 'string') video_length = '2 minutes';
+
+      const apiKey = env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        return json({ ok: false, error: 'ANTHROPIC_NOT_CONFIGURED', message: 'ANTHROPIC_API_KEY is not set' }, 503, request);
+      }
+
+      const systemPrompt = `You are a tax education content writer for YouTube videos. You write scripts for AI avatar presenters aimed at tax professionals and their potential clients.
+
+Rules:
+- Each script should be 250-400 words (approximately 2 minutes when spoken).
+- Open with a hook question or surprising fact to grab attention in the first 5 seconds.
+- Use plain language — explain IRS codes and procedures as if talking to someone who is not a tax professional.
+- End each script with a clear call to action: "If you think this applies to you, click the link in the description to get started."
+- Do NOT give specific legal advice. Frame everything as educational: "you may be eligible", "consult a tax professional", etc.
+- Include the IRS code or ruling reference where applicable.
+- Each script should be self-contained — a viewer watching just this one video should get value.
+
+Respond ONLY with valid JSON. No markdown, no preamble, no backticks. The response must be a JSON array of script objects.`;
+
+      const userPrompt = `Generate ${count} YouTube video scripts about "${topic}" for a tax professional's educational channel.
+
+Tone: ${tone}. Target video length: ${video_length}.
+
+Return a JSON array where each element has:
+- "title": a YouTube-friendly title (under 60 characters)
+- "description": a 1-sentence YouTube description
+- "script": the full script text
+- "tags": an array of 4-6 relevant YouTube tags
+- "hook": the opening line of the script (first 1-2 sentences, used for thumbnail text)`;
+
+      let claudeRes;
+      try {
+        claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 4000,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
+          }),
+        });
+      } catch (e) {
+        console.error('TAVLP scripts.generate fetch error:', e);
+        return json({ ok: false, error: 'script_generation_failed', message: 'Failed to reach Claude API' }, 502, request);
+      }
+
+      if (!claudeRes.ok) {
+        const errText = await claudeRes.text().catch(() => '');
+        console.error('TAVLP scripts.generate Claude API error:', claudeRes.status, errText);
+        return json({ ok: false, error: 'script_generation_failed', message: 'Claude API request failed' }, 502, request);
+      }
+
+      let claudeJson;
+      try {
+        claudeJson = await claudeRes.json();
+      } catch {
+        return json({ ok: false, error: 'script_generation_failed', message: 'Failed to parse generated scripts' }, 502, request);
+      }
+
+      const text = claudeJson?.content?.[0]?.text;
+      if (typeof text !== 'string') {
+        return json({ ok: false, error: 'script_generation_failed', message: 'Failed to parse generated scripts' }, 502, request);
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        return json({ ok: false, error: 'script_generation_failed', message: 'Failed to parse generated scripts' }, 502, request);
+      }
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        return json({ ok: false, error: 'script_generation_failed', message: 'Failed to parse generated scripts' }, 502, request);
+      }
+
+      const createdAt = new Date().toISOString();
+      const batchId = crypto.randomUUID();
+      const scriptIds = [];
+      const responseScripts = [];
+
+      for (const item of parsed) {
+        const scriptId = crypto.randomUUID();
+        const record = {
+          script_id: scriptId,
+          account_id,
+          topic,
+          title: typeof item?.title === 'string' ? item.title : '',
+          description: typeof item?.description === 'string' ? item.description : '',
+          script: typeof item?.script === 'string' ? item.script : '',
+          tags: Array.isArray(item?.tags) ? item.tags : [],
+          hook: typeof item?.hook === 'string' ? item.hook : '',
+          status: 'pending_review',
+          created_at: createdAt,
+          approved_at: null,
+          rendered_at: null,
+        };
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(
+            `tavlp/scripts/${account_id}/${scriptId}.json`,
+            JSON.stringify(record),
+            { httpMetadata: { contentType: 'application/json' } }
+          );
+        } catch (e) {
+          console.error('TAVLP scripts.generate R2 put error:', e);
+          return json({ ok: false, error: 'script_generation_failed', message: 'Failed to store generated script' }, 502, request);
+        }
+        scriptIds.push(scriptId);
+        responseScripts.push({
+          script_id: scriptId,
+          title: record.title,
+          hook: record.hook,
+          status: 'pending_review',
+        });
+      }
+
+      const manifest = {
+        batch_id: batchId,
+        account_id,
+        topic,
+        count: scriptIds.length,
+        script_ids: scriptIds,
+        status: 'pending_review',
+        created_at: createdAt,
+      };
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(
+          `tavlp/scripts/${account_id}/batches/${batchId}.json`,
+          JSON.stringify(manifest),
+          { httpMetadata: { contentType: 'application/json' } }
+        );
+      } catch (e) {
+        console.error('TAVLP scripts.generate manifest put error:', e);
+      }
+
+      return json({ ok: true, batch_id: batchId, scripts: responseScripts }, 200, request);
+    },
+  },
+
+  // GET /v1/tavlp/scripts/:account_id — list scripts for an account
+  {
+    method: 'GET', pattern: '/v1/tavlp/scripts/:account_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const account_id = params.account_id;
+      const prefix = `tavlp/scripts/${account_id}/`;
+      const batchPrefix = `tavlp/scripts/${account_id}/batches/`;
+
+      let listResult;
+      try {
+        listResult = await env.R2_VIRTUAL_LAUNCH.list({ prefix, limit: 1000 });
+      } catch (e) {
+        console.error('TAVLP scripts.list R2 list error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to list scripts' }, 500, request);
+      }
+
+      const scriptObjects = (listResult.objects || []).filter((o) => !o.key.startsWith(batchPrefix));
+      const results = await Promise.all(
+        scriptObjects.map(async (obj) => {
+          try {
+            const item = await env.R2_VIRTUAL_LAUNCH.get(obj.key);
+            if (!item) return null;
+            const data = await item.json();
+            return {
+              script_id: data.script_id,
+              title: data.title,
+              hook: data.hook,
+              status: data.status,
+              created_at: data.created_at,
+            };
+          } catch { return null; }
+        })
+      );
+      const scripts = results
+        .filter(Boolean)
+        .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+      return json({ ok: true, scripts }, 200, request);
+    },
+  },
+
+  // POST /v1/tavlp/scripts/:script_id/approve — approve a generated script
+  {
+    method: 'POST', pattern: '/v1/tavlp/scripts/:script_id/approve',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      const { account_id } = body ?? {};
+      if (!account_id || typeof account_id !== 'string') {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id is required' }, 400, request);
+      }
+      const script_id = params.script_id;
+      const key = `tavlp/scripts/${account_id}/${script_id}.json`;
+
+      let obj;
+      try {
+        obj = await env.R2_VIRTUAL_LAUNCH.get(key);
+      } catch (e) {
+        console.error('TAVLP scripts.approve R2 get error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read script' }, 500, request);
+      }
+      if (!obj) {
+        return json({ ok: false, error: 'NOT_FOUND', message: 'Script not found' }, 404, request);
+      }
+
+      let record;
+      try {
+        record = await obj.json();
+      } catch {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to parse stored script' }, 500, request);
+      }
+
+      record.status = 'approved';
+      record.approved_at = new Date().toISOString();
+
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP scripts.approve R2 put error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to update script' }, 500, request);
+      }
+
+      return json({ ok: true, script_id, status: 'approved' }, 200, request);
+    },
+  },
+
   // -------------------------------------------------------------------------
   // TPP (Tax Prep Pro) — narrow exception to the "no Worker routes" stance
   // (canonical-api.md §1). Only the SD-API onboarding broker lives here.
