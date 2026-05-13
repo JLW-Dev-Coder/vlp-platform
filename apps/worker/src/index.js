@@ -892,6 +892,157 @@ async function getFreshYouTubeOAuthToken(env) {
   return { connected: true, record: rec }
 }
 
+// Upload a completed TAVLP render to YouTube using the resumable upload flow.
+// Returns { ok: true, youtube_video_id, youtube_url, playlist_added, uploaded_at, visibility }
+// on success, or { ok: false, error, message, status, detail } on failure.
+// Also updates the render + script records in R2 with publish metadata.
+// Shared by POST /v1/tavlp/youtube/upload and the auto-upload path inside
+// GET /v1/tavlp/render/:render_id/status.
+async function uploadTavlpVideoToYouTube(env, render, script, channel, opts) {
+  const options = opts || {};
+  const visibility = options.visibility || 'private';
+  const playlist_id = options.playlist_id || null;
+  const account_id = render.account_id;
+  const render_id = render.render_id;
+  const channel_id = channel?.channel_id;
+  if (!channel_id) {
+    return { ok: false, error: 'channel_not_registered', message: 'No channel_id in channel config' };
+  }
+  const r2VideoKey = render.r2_video_key || `tavlp/videos/${account_id}/${render_id}.mp4`;
+  const videoObj = await env.R2_VIRTUAL_LAUNCH.get(r2VideoKey);
+  if (!videoObj) {
+    return { ok: false, error: 'video_not_found', message: `Video not found at ${r2VideoKey}` };
+  }
+
+  const tokenState = await getFreshYouTubeOAuthToken(env);
+  if (!tokenState.connected || tokenState.error || !tokenState.record?.access_token) {
+    return {
+      ok: false,
+      error: 'youtube_auth_failed',
+      message: 'YouTube OAuth not configured or token expired',
+      detail: tokenState.error || 'not_connected',
+      status: 503,
+    };
+  }
+  const accessToken = tokenState.record.access_token;
+
+  const descriptionFooter = '\n\n---\nSubscribe for weekly tax education content.\n📋 Free consultation: https://taxavatar.virtuallaunch.pro/contact\n\n#tax #IRS #taxplanning #taxprofessional';
+  const tags = Array.isArray(script.tags) ? script.tags : [];
+  const metadata = {
+    snippet: {
+      title: script.title || `TAVLP video ${render_id}`,
+      description: `${script.description || ''}${descriptionFooter}`,
+      tags,
+      categoryId: '27',
+      channelId: channel_id,
+    },
+    status: { privacyStatus: visibility, selfDeclaredMadeForKids: false },
+  };
+
+  let videoBytes;
+  try { videoBytes = await videoObj.arrayBuffer(); } catch (e) {
+    return { ok: false, error: 'video_read_failed', message: 'Failed to read video from R2' };
+  }
+  const videoSize = videoBytes.byteLength;
+
+  let initRes;
+  try {
+    initRes = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Upload-Content-Type': 'video/mp4',
+        'X-Upload-Content-Length': String(videoSize),
+      },
+      body: JSON.stringify(metadata),
+    });
+  } catch (e) {
+    return { ok: false, error: 'youtube_init_failed', message: 'Failed to reach YouTube API' };
+  }
+  if (!initRes.ok) {
+    const errText = await initRes.text().catch(() => '');
+    if (initRes.status === 401 || initRes.status === 403) {
+      return { ok: false, error: 'youtube_auth_failed', message: `YouTube auth ${initRes.status}`, detail: errText.slice(0, 500), status: 503 };
+    }
+    return { ok: false, error: 'youtube_init_failed', message: `YouTube returned ${initRes.status}`, detail: errText.slice(0, 500) };
+  }
+  const uploadUri = initRes.headers.get('Location') || initRes.headers.get('location');
+  if (!uploadUri) {
+    return { ok: false, error: 'youtube_init_failed', message: 'YouTube did not return an upload URI' };
+  }
+
+  let uploadRes;
+  try {
+    uploadRes = await fetch(uploadUri, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'video/mp4', 'Content-Length': String(videoSize) },
+      body: videoBytes,
+    });
+  } catch (e) {
+    return { ok: false, error: 'youtube_upload_failed', message: 'Video upload to YouTube failed' };
+  }
+  if (!uploadRes.ok) {
+    const errText = await uploadRes.text().catch(() => '');
+    return { ok: false, error: 'youtube_upload_failed', message: `YouTube returned ${uploadRes.status}`, detail: errText.slice(0, 500) };
+  }
+  let uploaded;
+  try { uploaded = await uploadRes.json(); } catch {
+    return { ok: false, error: 'youtube_upload_failed', message: 'Failed to parse YouTube response' };
+  }
+  const youtubeVideoId = uploaded?.id;
+  if (!youtubeVideoId) {
+    return { ok: false, error: 'youtube_upload_failed', message: 'YouTube response missing video id' };
+  }
+  const youtubeUrl = `https://www.youtube.com/watch?v=${youtubeVideoId}`;
+
+  let playlistAdded = false;
+  if (playlist_id) {
+    try {
+      const plRes = await fetch('https://www.googleapis.com/youtube/v3/playlistItems?part=snippet', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          snippet: { playlistId: playlist_id, resourceId: { kind: 'youtube#video', videoId: youtubeVideoId } },
+        }),
+      });
+      if (plRes.ok) playlistAdded = true;
+      else console.error('TAVLP playlist insert non-OK:', plRes.status, await plRes.text().catch(() => ''));
+    } catch (e) { console.error('TAVLP playlist insert error:', e); }
+  }
+
+  const uploadedAt = new Date().toISOString();
+  render.youtube_video_id = youtubeVideoId;
+  render.youtube_url = youtubeUrl;
+  render.uploaded_at = uploadedAt;
+  try {
+    const renderKey = `tavlp/renders/${account_id}/${render_id}.json`;
+    await env.R2_VIRTUAL_LAUNCH.put(renderKey, JSON.stringify(render), {
+      httpMetadata: { contentType: 'application/json' },
+    });
+  } catch (e) { console.error('TAVLP upload: render update error:', e); }
+
+  script.status = 'published';
+  script.youtube_video_id = youtubeVideoId;
+  script.youtube_url = youtubeUrl;
+  script.published_at = uploadedAt;
+  try {
+    const scriptKey = `tavlp/scripts/${account_id}/${render.script_id}.json`;
+    await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(script), {
+      httpMetadata: { contentType: 'application/json' },
+    });
+  } catch (e) { console.error('TAVLP upload: script update error:', e); }
+
+  return {
+    ok: true,
+    youtube_video_id: youtubeVideoId,
+    youtube_url: youtubeUrl,
+    visibility,
+    playlist_added: playlistAdded,
+    uploaded_at: uploadedAt,
+  };
+}
+
 async function fetchYouTubeOAuthAnalytics(env, channelId, videos) {
   if (!channelId) return { connected: false }
   const cacheKey = `youtube:oauth:analytics:v1:${channelId}`
@@ -1669,10 +1820,11 @@ async function stripeGet(path, env, secretKey) {
   return data;
 }
 
-async function stripeDelete(path, env) {
+async function stripeDelete(path, env, secretKey) {
+  const key = secretKey || env.STRIPE_SECRET_KEY;
   const res = await fetch(`https://api.stripe.com/v1${path}`, {
     method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
+    headers: { 'Authorization': `Bearer ${key}` },
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.error?.message ?? `Stripe error ${res.status}`);
@@ -21093,6 +21245,9 @@ Return a JSON array where each element has:
           status: record.status,
           video_url: record.r2_video_key ? `/${record.r2_video_key}` : record.video_url,
           error: record.error,
+          auto_uploaded: false,
+          youtube_video_id: record.youtube_video_id || null,
+          youtube_url: record.youtube_url || null,
         }, 200, request);
       }
 
@@ -21122,6 +21277,7 @@ Return a JSON array where each element has:
       const data = statusJson?.data || statusJson || {};
       const hgStatus = data.status; // 'pending' | 'processing' | 'waiting' | 'completed' | 'failed'
 
+      let autoUploaded = false;
       if (hgStatus === 'completed') {
         const videoUrl = data.video_url;
         const r2Key = `tavlp/videos/${account_id}/${render_id}.mp4`;
@@ -21152,19 +21308,45 @@ Return a JSON array where each element has:
           });
         } catch (e) { console.error('TAVLP render job update error:', e); }
 
+        let scriptRecord = null;
         try {
           const scriptKey = `tavlp/scripts/${account_id}/${record.script_id}.json`;
           const sObj = await env.R2_VIRTUAL_LAUNCH.get(scriptKey);
           if (sObj) {
-            const s = await sObj.json();
-            s.status = 'rendered';
-            s.rendered_at = record.completed_at;
-            s.r2_video_key = record.r2_video_key;
-            await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(s), {
+            scriptRecord = await sObj.json();
+            scriptRecord.status = 'rendered';
+            scriptRecord.rendered_at = record.completed_at;
+            scriptRecord.r2_video_key = record.r2_video_key;
+            await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(scriptRecord), {
               httpMetadata: { contentType: 'application/json' },
             });
           }
         } catch (e) { console.error('TAVLP render script status update error:', e); }
+
+        // Auto-upload to YouTube if a channel is registered and video persisted.
+        // Fire-and-forget: failures leave script at 'rendered' for manual retry.
+        if (record.r2_video_key && scriptRecord) {
+          try {
+            const chObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/channels/${account_id}.json`);
+            if (chObj) {
+              const channel = await chObj.json();
+              if (channel?.channel_id) {
+                const upRes = await uploadTavlpVideoToYouTube(env, record, scriptRecord, channel, { visibility: 'private' });
+                if (upRes.ok) {
+                  autoUploaded = true;
+                } else {
+                  console.warn(`TAVLP auto-upload failed for ${render_id}: ${upRes.error} ${upRes.message || ''}`);
+                }
+              } else {
+                console.log(`TAVLP auto-upload skipped for ${render_id}: channel has no channel_id`);
+              }
+            } else {
+              console.log(`TAVLP auto-upload skipped for ${render_id}: no channel registered for ${account_id}`);
+            }
+          } catch (e) {
+            console.error(`TAVLP auto-upload error for ${render_id}:`, e);
+          }
+        }
       } else if (hgStatus === 'failed') {
         record.status = 'failed';
         record.error = data.error?.message || data.error || 'HeyGen reported failed status';
@@ -21195,6 +21377,9 @@ Return a JSON array where each element has:
         status: record.status,
         video_url: record.r2_video_key ? `/${record.r2_video_key}` : record.video_url,
         error: record.error,
+        auto_uploaded: autoUploaded,
+        youtube_video_id: record.youtube_video_id || null,
+        youtube_url: record.youtube_url || null,
       }, 200, request);
     },
   },
@@ -21335,13 +21520,9 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'BAD_REQUEST', message: 'visibility must be one of: private, unlisted, public' }, 400, request);
       }
 
-      // Read the render job.
       const renderKey = `tavlp/renders/${account_id}/${render_id}.json`;
       let renderObj;
-      try {
-        renderObj = await env.R2_VIRTUAL_LAUNCH.get(renderKey);
-      } catch (e) {
-        console.error('TAVLP youtube.upload render read error:', e);
+      try { renderObj = await env.R2_VIRTUAL_LAUNCH.get(renderKey); } catch (e) {
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read render job' }, 500, request);
       }
       if (!renderObj) return json({ ok: false, error: 'render_not_found' }, 404, request);
@@ -21349,13 +21530,6 @@ Return a JSON array where each element has:
       if (render.status !== 'completed') {
         return json({ ok: false, error: 'render_not_completed', message: `Render must be completed before uploading. Current status: ${render.status}` }, 400, request);
       }
-      const r2VideoKey = render.r2_video_key || `tavlp/videos/${account_id}/${render_id}.mp4`;
-      const videoObj = await env.R2_VIRTUAL_LAUNCH.get(r2VideoKey);
-      if (!videoObj) {
-        return json({ ok: false, error: 'video_not_found', message: `Video not found at ${r2VideoKey}` }, 404, request);
-      }
-
-      // Read the script for metadata.
       const scriptKey = `tavlp/scripts/${account_id}/${render.script_id}.json`;
       const scriptObj = await env.R2_VIRTUAL_LAUNCH.get(scriptKey);
       if (!scriptObj) {
@@ -21363,167 +21537,443 @@ Return a JSON array where each element has:
       }
       const script = await scriptObj.json();
 
-      // Get a fresh YouTube OAuth token.
-      const tokenState = await getFreshYouTubeOAuthToken(env);
-      if (!tokenState.connected || tokenState.error || !tokenState.record?.access_token) {
-        return json({
-          ok: false,
-          error: 'youtube_auth_failed',
-          message: 'YouTube OAuth not configured or token expired. Re-authorize at /v1/scale/youtube-oauth/start',
-          detail: tokenState.error || 'not_connected',
-        }, 503, request);
+      const result = await uploadTavlpVideoToYouTube(env, render, script, { channel_id }, { visibility, playlist_id });
+      if (!result.ok) {
+        const status = result.status || (result.error === 'render_not_completed' ? 400 : result.error === 'video_not_found' ? 404 : 502);
+        return json(result, status, request);
       }
-      const accessToken = tokenState.record.access_token;
-
-      // Build the video metadata.
-      const descriptionFooter = '\n\n---\nSubscribe for weekly tax education content.\n📋 Free consultation: https://taxavatar.virtuallaunch.pro/contact\n\n#tax #IRS #taxplanning #taxprofessional';
-      const tags = Array.isArray(script.tags) ? script.tags : [];
-      const metadata = {
-        snippet: {
-          title: script.title || `TAVLP video ${render_id}`,
-          description: `${script.description || ''}${descriptionFooter}`,
-          tags,
-          categoryId: '27',
-          channelId: channel_id,
-        },
-        status: {
-          privacyStatus: visibility,
-          selfDeclaredMadeForKids: false,
-        },
-      };
-
-      // Load video bytes from R2.
-      let videoBytes;
-      try {
-        videoBytes = await videoObj.arrayBuffer();
-      } catch (e) {
-        console.error('TAVLP youtube.upload video read error:', e);
-        return json({ ok: false, error: 'video_read_failed', message: 'Failed to read video from R2' }, 500, request);
-      }
-      const videoSize = videoBytes.byteLength;
-
-      // Resumable upload — initiate.
-      let initRes;
-      try {
-        initRes = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json; charset=UTF-8',
-            'X-Upload-Content-Type': 'video/mp4',
-            'X-Upload-Content-Length': String(videoSize),
-          },
-          body: JSON.stringify(metadata),
-        });
-      } catch (e) {
-        console.error('TAVLP youtube.upload init error:', e);
-        return json({ ok: false, error: 'youtube_init_failed', message: 'Failed to reach YouTube API' }, 502, request);
-      }
-      if (!initRes.ok) {
-        const errText = await initRes.text().catch(() => '');
-        console.error('TAVLP youtube.upload init non-OK:', initRes.status, errText);
-        if (initRes.status === 401 || initRes.status === 403) {
-          return json({
-            ok: false,
-            error: 'youtube_auth_failed',
-            message: 'YouTube returned auth error. Re-authorize at /v1/scale/youtube-oauth/start',
-            detail: errText.slice(0, 500),
-          }, 503, request);
-        }
-        return json({ ok: false, error: 'youtube_init_failed', message: `YouTube returned ${initRes.status}`, detail: errText.slice(0, 500) }, 502, request);
-      }
-      const uploadUri = initRes.headers.get('Location') || initRes.headers.get('location');
-      if (!uploadUri) {
-        return json({ ok: false, error: 'youtube_init_failed', message: 'YouTube did not return an upload URI' }, 502, request);
-      }
-
-      // Resumable upload — PUT video bytes.
-      let uploadRes;
-      try {
-        uploadRes = await fetch(uploadUri, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'video/mp4',
-            'Content-Length': String(videoSize),
-          },
-          body: videoBytes,
-        });
-      } catch (e) {
-        console.error('TAVLP youtube.upload PUT error:', e);
-        return json({ ok: false, error: 'youtube_upload_failed', message: 'Video upload to YouTube failed' }, 502, request);
-      }
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text().catch(() => '');
-        console.error('TAVLP youtube.upload PUT non-OK:', uploadRes.status, errText);
-        return json({ ok: false, error: 'youtube_upload_failed', message: `YouTube returned ${uploadRes.status}`, detail: errText.slice(0, 500) }, 502, request);
-      }
-      let uploaded;
-      try { uploaded = await uploadRes.json(); } catch {
-        return json({ ok: false, error: 'youtube_upload_failed', message: 'Failed to parse YouTube response' }, 502, request);
-      }
-      const youtubeVideoId = uploaded?.id;
-      if (!youtubeVideoId) {
-        return json({ ok: false, error: 'youtube_upload_failed', message: 'YouTube response missing video id' }, 502, request);
-      }
-      const youtubeUrl = `https://www.youtube.com/watch?v=${youtubeVideoId}`;
-
-      // Optionally add to playlist.
-      let playlistAdded = false;
-      if (playlist_id) {
-        try {
-          const plRes = await fetch('https://www.googleapis.com/youtube/v3/playlistItems?part=snippet', {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              snippet: {
-                playlistId: playlist_id,
-                resourceId: { kind: 'youtube#video', videoId: youtubeVideoId },
-              },
-            }),
-          });
-          if (plRes.ok) {
-            playlistAdded = true;
-          } else {
-            const errText = await plRes.text().catch(() => '');
-            console.error('TAVLP youtube.upload playlist insert non-OK:', plRes.status, errText);
-          }
-        } catch (e) {
-          console.error('TAVLP youtube.upload playlist insert error:', e);
-        }
-      }
-
-      // Update render + script records.
-      const uploadedAt = new Date().toISOString();
-      render.youtube_video_id = youtubeVideoId;
-      render.youtube_url = youtubeUrl;
-      render.uploaded_at = uploadedAt;
-      try {
-        await env.R2_VIRTUAL_LAUNCH.put(renderKey, JSON.stringify(render), {
-          httpMetadata: { contentType: 'application/json' },
-        });
-      } catch (e) { console.error('TAVLP youtube.upload render update error:', e); }
-
-      script.status = 'published';
-      script.youtube_video_id = youtubeVideoId;
-      script.youtube_url = youtubeUrl;
-      script.published_at = uploadedAt;
-      try {
-        await env.R2_VIRTUAL_LAUNCH.put(scriptKey, JSON.stringify(script), {
-          httpMetadata: { contentType: 'application/json' },
-        });
-      } catch (e) { console.error('TAVLP youtube.upload script update error:', e); }
 
       return json({
         ok: true,
         render_id,
-        youtube_video_id: youtubeVideoId,
-        youtube_url: youtubeUrl,
-        visibility,
-        playlist_added: playlistAdded,
+        youtube_video_id: result.youtube_video_id,
+        youtube_url: result.youtube_url,
+        visibility: result.visibility,
+        playlist_added: result.playlist_added,
       }, 200, request);
+    },
+  },
+
+  // POST /v1/tavlp/transfer/request — customer initiates channel ownership
+  // transfer. Marks the channel transfer_requested and emails JLW.
+  {
+    method: 'POST', pattern: '/v1/tavlp/transfer/request',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      const { account_id } = body ?? {};
+      if (!account_id) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id is required' }, 400, request);
+      }
+
+      const channelKey = `tavlp/channels/${account_id}.json`;
+      const chObj = await env.R2_VIRTUAL_LAUNCH.get(channelKey);
+      if (!chObj) return json({ ok: false, error: 'channel_not_found' }, 404, request);
+      const channel = await chObj.json();
+      if (!channel?.channel_id) {
+        return json({ ok: false, error: 'channel_not_found' }, 404, request);
+      }
+      if (channel.transfer_requested) {
+        return json({ ok: false, error: 'transfer_already_requested' }, 400, request);
+      }
+
+      const now = new Date().toISOString();
+      channel.transfer_requested = true;
+      channel.transfer_requested_at = now;
+      channel.transfer_status = 'requested';
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(channelKey, JSON.stringify(channel), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP transfer.request channel update error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      const transferRec = {
+        account_id,
+        channel_id: channel.channel_id,
+        channel_name: channel.channel_name,
+        channel_url: channel.channel_url || null,
+        transfer_status: 'requested',
+        requested_at: now,
+        approved_at: null,
+        reminder_sent_at: null,
+        completed_at: null,
+      };
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(`tavlp/transfer-requests/${account_id}.json`,
+          JSON.stringify(transferRec),
+          { httpMetadata: { contentType: 'application/json' } });
+      } catch (e) { console.error('TAVLP transfer.request record write error:', e); }
+
+      // Email JLW.
+      if (env.RESEND_API_KEY) {
+        try {
+          const reviewUrl = `https://virtuallaunch.pro/scale/tavlp?account_id=${encodeURIComponent(account_id)}`;
+          const html = `<h2>Channel Transfer Requested</h2>
+<p><strong>Customer:</strong> ${session.email || account_id}</p>
+<p><strong>Channel:</strong> ${escapeHtml(channel.channel_name || '')}</p>
+<p><strong>Channel URL:</strong> ${channel.channel_url ? `<a href="${escapeHtml(channel.channel_url)}">${escapeHtml(channel.channel_url)}</a>` : '(none)'}</p>
+<p><strong>Requested at:</strong> ${now}</p>
+<br>
+<p><a href="${reviewUrl}">Review in SCALE →</a></p>`;
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'Tax Avatar Pro <noreply@virtuallaunch.pro>',
+              to: ['outreach@virtuallaunch.pro'],
+              subject: `TAVLP Transfer Request — ${channel.channel_name || account_id}`,
+              html,
+            }),
+          });
+        } catch (e) { console.error('TAVLP transfer.request email error:', e); }
+      }
+
+      return json({ ok: true, transfer_status: 'requested' }, 200, request);
+    },
+  },
+
+  // POST /v1/tavlp/transfer/approve — admin approves transfer, cancels Stripe
+  // subscription, emails customer, creates day-8 calendar event.
+  {
+    method: 'POST', pattern: '/v1/tavlp/transfer/approve',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await parseBody(request);
+      const { account_id } = body ?? {};
+      if (!account_id) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id is required' }, 400, request);
+      }
+
+      const transferKey = `tavlp/transfer-requests/${account_id}.json`;
+      const tObj = await env.R2_VIRTUAL_LAUNCH.get(transferKey);
+      if (!tObj) return json({ ok: false, error: 'transfer_not_found' }, 404, request);
+      const transfer = await tObj.json();
+      if (transfer.transfer_status !== 'requested') {
+        return json({ ok: false, error: 'invalid_state', message: `Cannot approve from status: ${transfer.transfer_status}` }, 400, request);
+      }
+
+      const now = new Date().toISOString();
+
+      // Cancel Stripe subscription if present.
+      try {
+        const subKey = `tavlp/subscriptions/${account_id}.json`;
+        const subObj = await env.R2_VIRTUAL_LAUNCH.get(subKey);
+        if (subObj) {
+          const sub = await subObj.json();
+          if (sub.stripe_subscription_id && env.STRIPE_SECRET_KEY_VLP) {
+            try {
+              await stripeDelete(`/subscriptions/${sub.stripe_subscription_id}`, env, env.STRIPE_SECRET_KEY_VLP);
+            } catch (e) {
+              console.error('TAVLP transfer.approve Stripe cancel error:', e?.message || e);
+            }
+          } else if (!sub.stripe_subscription_id) {
+            console.warn(`TAVLP transfer.approve: no stripe_subscription_id for ${account_id}`);
+          }
+          sub.status = 'cancelled_transfer';
+          sub.cancelled_at = now;
+          sub.updated_at = now;
+          await env.R2_VIRTUAL_LAUNCH.put(subKey, JSON.stringify(sub), {
+            httpMetadata: { contentType: 'application/json' },
+          });
+        } else {
+          console.warn(`TAVLP transfer.approve: no subscription record for ${account_id}`);
+        }
+      } catch (e) {
+        console.error('TAVLP transfer.approve subscription update error:', e);
+      }
+
+      transfer.transfer_status = 'approved';
+      transfer.approved_at = now;
+      await env.R2_VIRTUAL_LAUNCH.put(transferKey, JSON.stringify(transfer), {
+        httpMetadata: { contentType: 'application/json' },
+      });
+
+      const channelKey = `tavlp/channels/${account_id}.json`;
+      let channel = null;
+      const chObj = await env.R2_VIRTUAL_LAUNCH.get(channelKey);
+      if (chObj) {
+        channel = await chObj.json();
+        channel.transfer_status = 'approved';
+        channel.transfer_approved_at = now;
+        await env.R2_VIRTUAL_LAUNCH.put(channelKey, JSON.stringify(channel), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      }
+
+      // Resolve customer email from accounts table.
+      let customerEmail = null;
+      try {
+        const row = await env.DB.prepare('SELECT email FROM accounts WHERE account_id = ?').bind(account_id).first();
+        customerEmail = row?.email || null;
+      } catch (e) { console.error('TAVLP transfer.approve account email lookup error:', e); }
+
+      // Email customer.
+      if (customerEmail && env.RESEND_API_KEY) {
+        try {
+          const html = `<h2>Your Channel Transfer Has Been Initiated</h2>
+<p>Hi,</p>
+<p>We've begun the process of transferring full ownership of your YouTube channel <strong>${escapeHtml(channel?.channel_name || transfer.channel_name || '')}</strong> to you.</p>
+<p><strong>What happens next:</strong></p>
+<ul>
+  <li>The YouTube transfer process takes 7 business days.</li>
+  <li>You'll receive a final confirmation email once the transfer is complete.</li>
+  <li>Your subscription has been cancelled — no further charges will occur.</li>
+</ul>
+<p>You can always re-subscribe and invite us back as a channel manager if you'd like new videos in the future.</p>
+<br>
+<p>— Tax Avatar Pro</p>`;
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'Tax Avatar Pro <noreply@virtuallaunch.pro>',
+              to: [customerEmail],
+              subject: 'Your channel transfer has been initiated',
+              html,
+            }),
+          });
+        } catch (e) { console.error('TAVLP transfer.approve customer email error:', e); }
+      } else if (!customerEmail) {
+        console.warn(`TAVLP transfer.approve: no customer email for ${account_id} — skipping email`);
+      }
+
+      // Create day-8 Google Calendar event using admin's per-account OAuth.
+      try {
+        const row = await env.DB.prepare(
+          'SELECT google_access_token, google_refresh_token, google_token_expiry FROM accounts WHERE account_id = ?'
+        ).bind(session.account_id).first();
+        if (row?.google_access_token) {
+          let accessToken = row.google_access_token;
+          const expiry = row.google_token_expiry ? new Date(row.google_token_expiry).getTime() : 0;
+          if (Date.now() + 60000 > expiry && row.google_refresh_token && env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
+            const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                refresh_token: row.google_refresh_token,
+                client_id: env.GOOGLE_CLIENT_ID,
+                client_secret: env.GOOGLE_CLIENT_SECRET,
+                grant_type: 'refresh_token',
+              }),
+            });
+            if (refreshRes.ok) {
+              const t = await refreshRes.json();
+              accessToken = t.access_token;
+              const newExpiry = new Date(Date.now() + (t.expires_in ?? 3600) * 1000).toISOString();
+              await d1Run(env.DB,
+                'UPDATE accounts SET google_access_token = ?, google_token_expiry = ? WHERE account_id = ?',
+                [accessToken, newExpiry, session.account_id]);
+            }
+          }
+          const eventDate = new Date(Date.now() + 8 * 86400000);
+          const yyyy = eventDate.getUTCFullYear();
+          const mm = String(eventDate.getUTCMonth() + 1).padStart(2, '0');
+          const dd = String(eventDate.getUTCDate()).padStart(2, '0');
+          const startDate = `${yyyy}-${mm}-${dd}`;
+          const endObj = new Date(eventDate.getTime() + 86400000);
+          const endDate = `${endObj.getUTCFullYear()}-${String(endObj.getUTCMonth() + 1).padStart(2, '0')}-${String(endObj.getUTCDate()).padStart(2, '0')}`;
+          const chName = channel?.channel_name || transfer.channel_name || account_id;
+          const calRes = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              summary: `TAVLP Transfer Complete — ${chName}`,
+              description: `YouTube channel transfer for ${chName} (account: ${account_id}). The 7-day transfer period should be complete. Check YouTube Studio to confirm the customer is now Primary Owner, then mark complete in SCALE: https://virtuallaunch.pro/scale/tavlp?account_id=${account_id}`,
+              start: { date: startDate },
+              end: { date: endDate },
+            }),
+          });
+          if (!calRes.ok) {
+            const errText = await calRes.text().catch(() => '');
+            console.warn('TAVLP transfer.approve calendar insert non-OK:', calRes.status, errText.slice(0, 300));
+          }
+        } else {
+          console.warn(`TAVLP transfer.approve: no Google OAuth for admin ${session.account_id} — calendar event skipped`);
+        }
+      } catch (e) { console.error('TAVLP transfer.approve calendar event error:', e); }
+
+      return json({ ok: true, transfer_status: 'approved' }, 200, request);
+    },
+  },
+
+  // POST /v1/tavlp/transfer/complete — admin marks transfer complete after
+  // YouTube confirms primary-owner change. Sends final confirmation email.
+  {
+    method: 'POST', pattern: '/v1/tavlp/transfer/complete',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await parseBody(request);
+      const { account_id } = body ?? {};
+      if (!account_id) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'account_id is required' }, 400, request);
+      }
+
+      const transferKey = `tavlp/transfer-requests/${account_id}.json`;
+      const tObj = await env.R2_VIRTUAL_LAUNCH.get(transferKey);
+      if (!tObj) return json({ ok: false, error: 'transfer_not_found' }, 404, request);
+      const transfer = await tObj.json();
+      if (transfer.transfer_status !== 'approved') {
+        return json({ ok: false, error: 'invalid_state', message: `Cannot complete from status: ${transfer.transfer_status}` }, 400, request);
+      }
+
+      const now = new Date().toISOString();
+      transfer.transfer_status = 'completed';
+      transfer.completed_at = now;
+      await env.R2_VIRTUAL_LAUNCH.put(transferKey, JSON.stringify(transfer), {
+        httpMetadata: { contentType: 'application/json' },
+      });
+
+      const channelKey = `tavlp/channels/${account_id}.json`;
+      let channel = null;
+      const chObj = await env.R2_VIRTUAL_LAUNCH.get(channelKey);
+      if (chObj) {
+        channel = await chObj.json();
+        channel.transfer_status = 'completed';
+        channel.transfer_completed_at = now;
+        channel.transferred_to_customer = true;
+        await env.R2_VIRTUAL_LAUNCH.put(channelKey, JSON.stringify(channel), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      }
+
+      let customerEmail = null;
+      try {
+        const row = await env.DB.prepare('SELECT email FROM accounts WHERE account_id = ?').bind(account_id).first();
+        customerEmail = row?.email || null;
+      } catch (e) { console.error('TAVLP transfer.complete account email lookup error:', e); }
+
+      if (customerEmail && env.RESEND_API_KEY) {
+        try {
+          const chName = channel?.channel_name || transfer.channel_name || '';
+          const html = `<h2>Your Channel Transfer Is Complete!</h2>
+<p>Hi,</p>
+<p>Great news — you are now the primary owner of your YouTube channel <strong>${escapeHtml(chName)}</strong>.</p>
+<p>You have full control of your channel, all published videos, your subscribers, and your analytics.</p>
+<p><strong>Want new videos?</strong> You can always re-subscribe at <a href="https://taxavatar.virtuallaunch.pro/pricing">taxavatar.virtuallaunch.pro/pricing</a> and invite us back as a channel manager.</p>
+<br>
+<p>— Tax Avatar Pro</p>`;
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'Tax Avatar Pro <noreply@virtuallaunch.pro>',
+              to: [customerEmail],
+              subject: 'Your channel transfer is complete!',
+              html,
+            }),
+          });
+        } catch (e) { console.error('TAVLP transfer.complete email error:', e); }
+      }
+
+      return json({ ok: true, transfer_status: 'completed' }, 200, request);
+    },
+  },
+
+  // GET /v1/tavlp/transfers — admin list of all transfer requests.
+  {
+    method: 'GET', pattern: '/v1/tavlp/transfers',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      let listResult;
+      try {
+        listResult = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'tavlp/transfer-requests/', limit: 1000 });
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+      const results = await Promise.all((listResult.objects || []).map(async (o) => {
+        try {
+          const item = await env.R2_VIRTUAL_LAUNCH.get(o.key);
+          if (!item) return null;
+          const r = await item.json();
+          return {
+            account_id: r.account_id,
+            channel_name: r.channel_name,
+            transfer_status: r.transfer_status,
+            requested_at: r.requested_at,
+            approved_at: r.approved_at || null,
+            completed_at: r.completed_at || null,
+          };
+        } catch { return null; }
+      }));
+      const transfers = results.filter(Boolean).sort((a, b) => (b.requested_at || '').localeCompare(a.requested_at || ''));
+      return json({ ok: true, transfers }, 200, request);
+    },
+  },
+
+  // GET /v1/tavlp/subscribers — admin list of all TAVLP subscribers + channel state.
+  {
+    method: 'GET', pattern: '/v1/tavlp/subscribers',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      let listResult;
+      try {
+        listResult = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'tavlp/subscriptions/', limit: 1000 });
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      const subs = await Promise.all((listResult.objects || []).map(async (o) => {
+        try {
+          const item = await env.R2_VIRTUAL_LAUNCH.get(o.key);
+          if (!item) return null;
+          const s = await item.json();
+          let channel = null;
+          try {
+            const cObj = await env.R2_VIRTUAL_LAUNCH.get(`tavlp/channels/${s.account_id}.json`);
+            if (cObj) channel = await cObj.json();
+          } catch {}
+          let videosPublished = 0;
+          try {
+            const scriptsList = await env.R2_VIRTUAL_LAUNCH.list({ prefix: `tavlp/scripts/${s.account_id}/`, limit: 1000 });
+            for (const so of scriptsList.objects || []) {
+              try {
+                const it = await env.R2_VIRTUAL_LAUNCH.get(so.key);
+                if (!it) continue;
+                const sc = await it.json();
+                if (sc.status === 'published') videosPublished++;
+              } catch {}
+            }
+          } catch {}
+          return {
+            account_id: s.account_id,
+            tier: s.tier || null,
+            status: s.status || null,
+            stripe_subscription_id: s.stripe_subscription_id || null,
+            channel_name: channel?.channel_name || null,
+            channel_id: channel?.channel_id || null,
+            videos_published: videosPublished,
+            transfer_status: channel?.transfer_status || 'none',
+            created_at: s.created_at,
+          };
+        } catch { return null; }
+      }));
+      const subscribers = subs.filter(Boolean).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+      return json({ ok: true, subscribers }, 200, request);
     },
   },
 
@@ -32800,6 +33250,78 @@ async function handleTavlpChannelStats(env) {
   return log;
 }
 
+// Daily — sends day-7 reminder emails for TAVLP channel transfers whose
+// approved_at was ~7 days ago and have not yet had a reminder. Capped at
+// 10 sends per run to bound cost.
+async function handleTavlpTransferReminders(env) {
+  const log = { type: 'tavlp_transfer_reminders', timestamp: new Date().toISOString(), reminders_sent: 0, checked: 0, errors: 0 };
+  if (!env.RESEND_API_KEY) {
+    log.skipped = 'no_resend_key';
+    return log;
+  }
+  let listResult;
+  try {
+    listResult = await env.R2_VIRTUAL_LAUNCH.list({ prefix: 'tavlp/transfer-requests/', limit: 1000 });
+  } catch (e) {
+    log.error = `list_failed: ${e?.message || e}`;
+    return log;
+  }
+  const now = Date.now();
+  const targetMs = 7 * 86400000;
+  const windowMs = 12 * 3600000;
+  const MAX_PER_RUN = 10;
+
+  for (const o of listResult.objects || []) {
+    if (log.reminders_sent >= MAX_PER_RUN) break;
+    log.checked++;
+    try {
+      const item = await env.R2_VIRTUAL_LAUNCH.get(o.key);
+      if (!item) continue;
+      const t = await item.json();
+      if (t.transfer_status !== 'approved') continue;
+      if (t.reminder_sent_at) continue;
+      const approved = t.approved_at ? Date.parse(t.approved_at) : 0;
+      if (!approved) continue;
+      const age = now - approved;
+      if (Math.abs(age - targetMs) > windowMs) continue;
+
+      const chName = t.channel_name || t.account_id;
+      const html = `<h2>Channel Transfer — 7-Day Check</h2>
+<p>The 7-day YouTube transfer period for <strong>${escapeHtml(chName)}</strong> ends tomorrow.</p>
+<p><strong>Action needed:</strong></p>
+<ol>
+  <li>Open <a href="https://studio.youtube.com">YouTube Studio</a></li>
+  <li>Confirm the customer is now Primary Owner of ${escapeHtml(chName)}</li>
+  <li><a href="https://virtuallaunch.pro/scale/tavlp?account_id=${encodeURIComponent(t.account_id)}">Mark transfer complete in SCALE →</a></li>
+</ol>`;
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Tax Avatar Pro <noreply@virtuallaunch.pro>',
+          to: ['outreach@virtuallaunch.pro'],
+          subject: `TAVLP Transfer Check — ${chName}`,
+          html,
+        }),
+      });
+      if (!res.ok) {
+        log.errors++;
+        console.error(`TAVLP reminder send failed for ${t.account_id}: ${res.status}`);
+        continue;
+      }
+      t.reminder_sent_at = new Date().toISOString();
+      await env.R2_VIRTUAL_LAUNCH.put(o.key, JSON.stringify(t), {
+        httpMetadata: { contentType: 'application/json' },
+      });
+      log.reminders_sent++;
+    } catch (e) {
+      log.errors++;
+      console.error('TAVLP transfer reminder error:', e?.message || e);
+    }
+  }
+  return log;
+}
+
 
 // ---------------------------------------------------------------------------
 // Fetch handler
@@ -33720,6 +34242,12 @@ export default {
         console.log('TAVLP channel stats cron:', JSON.stringify(log));
       } catch (e) {
         console.error('TAVLP channel stats cron failed:', e);
+      }
+      try {
+        const log = await handleTavlpTransferReminders(env);
+        console.log('TAVLP transfer reminders cron:', JSON.stringify(log));
+      } catch (e) {
+        console.error('TAVLP transfer reminders cron failed:', e);
       }
       return;
     }
