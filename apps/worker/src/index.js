@@ -14979,6 +14979,415 @@ https://virtuallaunch.pro/payouts
     },
   },
 
+  // ==========================================================================
+  // TMP MONITORING ENGAGEMENTS — Phase 3a
+  // Time-boxed monitoring relationship between a taxpayer and a tax pro.
+  // Tiers: bronze/silver/gold/snapshot. Pros upload transcripts on cadence;
+  // changes trigger alerts. Cron checks for stale uploads + expiry.
+  // ==========================================================================
+  {
+    method: 'POST', pattern: '/v1/tmp/monitoring/engagements',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const body = await parseBody(request) || {};
+      const tier = String(body.tier || '').toLowerCase();
+      const cfg = MONITORING_TIERS[tier];
+      if (!cfg) {
+        return json({ ok: false, error: 'INVALID_TIER', message: 'tier must be one of: bronze, silver, gold, snapshot' }, 400, request);
+      }
+      const engagementId = `ENG_${crypto.randomUUID()}`;
+      const nowIso = new Date().toISOString();
+      const record = {
+        engagement_id: engagementId,
+        taxpayer_account_id: session.account_id,
+        professional_account_id: null,
+        tier,
+        duration_weeks: cfg.weeks,
+        cadence_days: cfg.cadence_days || 7,
+        started_at: null,
+        ends_at: null,
+        status: 'pending_pro',
+        last_upload_at: null,
+        last_check_at: null,
+        total_uploads: 0,
+        total_alerts: 0,
+        mfj_spouse: body.mfj_spouse ? 1 : 0,
+        taxpayer_name: body.taxpayer_name || null,
+        taxpayer_tin_last4: body.taxpayer_tin_last4 || null,
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${engagementId}.json`, record);
+      } catch (e) {
+        console.error('monitoring/engagements create: r2 write failed', e?.message);
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+      try {
+        await env.DB.prepare(
+          `INSERT INTO monitoring_engagements
+           (engagement_id, taxpayer_account_id, tier, duration_weeks, cadence_days, status, mfj_spouse, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(engagementId, session.account_id, tier, cfg.weeks, cfg.cadence_days || 7, 'pending_pro', record.mfj_spouse, nowIso, nowIso).run();
+      } catch (e) {
+        console.error('monitoring/engagements create: D1 insert failed (R2 authoritative)', e?.message);
+      }
+      return json({ ok: true, engagement_id: engagementId, status: 'pending_pro' }, 200, request);
+    },
+  },
+
+  {
+    method: 'GET', pattern: '/v1/tmp/monitoring/engagements/:engagement_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const engagementId = params.engagement_id;
+      let record;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${engagementId}.json`);
+        if (!raw) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+        record = JSON.parse(raw);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+      if (record.taxpayer_account_id !== session.account_id
+          && record.professional_account_id !== session.account_id) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      let uploads = [];
+      let alerts = [];
+      try {
+        const u = await env.DB.prepare(
+          'SELECT upload_id, account_id, r2_key, parsed_result_r2_key, diff_r2_key, changes_detected, uploaded_at FROM transcript_uploads WHERE engagement_id = ? ORDER BY uploaded_at DESC'
+        ).bind(engagementId).all();
+        uploads = u.results || [];
+        const a = await env.DB.prepare(
+          'SELECT alert_id, upload_id, alert_type, description, transaction_code, old_value, new_value, severity, created_at FROM monitoring_alerts WHERE engagement_id = ? ORDER BY created_at DESC'
+        ).bind(engagementId).all();
+        alerts = a.results || [];
+      } catch (_) {}
+      return json({ ok: true, engagement: record, uploads, alerts }, 200, request);
+    },
+  },
+
+  {
+    method: 'POST', pattern: '/v1/tmp/monitoring/engagements/:engagement_id/accept',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const engagementId = params.engagement_id;
+
+      let hasActiveSub = false;
+      try {
+        const m = await env.DB.prepare(
+          "SELECT membership_id FROM memberships WHERE account_id = ? AND status = 'active' LIMIT 1"
+        ).bind(session.account_id).first();
+        hasActiveSub = !!m;
+      } catch (_) {}
+      if (!hasActiveSub) {
+        return json({ ok: false, error: 'SUBSCRIPTION_REQUIRED', message: 'An active VLP subscription is required to accept monitoring clients.' }, 403, request);
+      }
+
+      let record;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${engagementId}.json`);
+        if (!raw) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+        record = JSON.parse(raw);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+      if (record.status !== 'pending_pro') {
+        if (record.professional_account_id === session.account_id) {
+          return json({ ok: true, deduped: true, engagement_id: engagementId, status: record.status }, 200, request);
+        }
+        return json({ ok: false, error: 'NOT_AVAILABLE', message: 'Engagement already accepted or no longer available.' }, 409, request);
+      }
+
+      const now = new Date().toISOString();
+      let endsAt = null;
+      if (record.duration_weeks) {
+        const end = new Date(Date.now() + record.duration_weeks * 7 * 24 * 60 * 60 * 1000);
+        endsAt = end.toISOString();
+      }
+      const updated = {
+        ...record,
+        professional_account_id: session.account_id,
+        status: 'active',
+        started_at: now,
+        ends_at: endsAt,
+        updated_at: now,
+      };
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${engagementId}.json`, updated);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+      try {
+        await env.DB.prepare(
+          "UPDATE monitoring_engagements SET professional_account_id = ?, status = 'active', started_at = ?, ends_at = ?, updated_at = ? WHERE engagement_id = ?"
+        ).bind(session.account_id, now, endsAt, now, engagementId).run();
+      } catch (_) {}
+
+      // Notify taxpayer + pro (best-effort)
+      try {
+        const taxpayerEmailRow = await env.DB.prepare("SELECT email FROM accounts WHERE account_id = ?").bind(record.taxpayer_account_id).first();
+        const proEmailRow = await env.DB.prepare("SELECT email FROM accounts WHERE account_id = ?").bind(session.account_id).first();
+        const tierLabel = record.tier ? record.tier.charAt(0).toUpperCase() + record.tier.slice(1) : '';
+        if (taxpayerEmailRow?.email) {
+          await sendEmail(
+            taxpayerEmailRow.email,
+            `A tax professional has been assigned to your monitoring engagement`,
+            `<p>Good news — a qualified tax professional has accepted your ${tierLabel} monitoring engagement and will begin checking your IRS transcripts.</p><p>Engagement: <strong>${engagementId}</strong></p><p>— Tax Monitor Pro</p>`,
+            env
+          );
+        }
+        if (proEmailRow?.email) {
+          await sendEmail(
+            proEmailRow.email,
+            `You've accepted a monitoring client (${engagementId})`,
+            `<p>You've accepted a ${tierLabel} monitoring engagement.</p>
+             <ul>
+               <li>Engagement: <strong>${engagementId}</strong></li>
+               <li>Cadence: every ${record.cadence_days} days</li>
+               <li>Duration: ${record.duration_weeks ? record.duration_weeks + ' weeks' : 'one-time snapshot'}</li>
+               <li>Ends: ${endsAt || 'n/a (snapshot)'}</li>
+             </ul>
+             <p>Upload transcripts at <a href="https://taxmonitor.pro/dashboard/monitoring/${engagementId}">taxmonitor.pro/dashboard/monitoring/${engagementId}</a>.</p>
+             <p>— Tax Monitor Pro</p>`,
+            env
+          );
+        }
+      } catch (e) {
+        console.error('monitoring/accept: email failed', e?.message);
+      }
+
+      return json({ ok: true, engagement_id: engagementId, status: 'active', started_at: now, ends_at: endsAt }, 200, request);
+    },
+  },
+
+  {
+    method: 'POST', pattern: '/v1/tmp/monitoring/engagements/:engagement_id/upload',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const engagementId = params.engagement_id;
+
+      let record;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${engagementId}.json`);
+        if (!raw) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+        record = JSON.parse(raw);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+      if (record.professional_account_id !== session.account_id) {
+        return json({ ok: false, error: 'FORBIDDEN', message: 'Only the assigned professional may upload transcripts.' }, 403, request);
+      }
+
+      const payload = await parseBody(request);
+      if (!payload || typeof payload !== 'object' || !payload.transcript_data) {
+        return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'transcript_data is required (same shape as /v1/tools/transcript-parser)' }, 400, request);
+      }
+      const td = payload.transcript_data;
+      if (!td.transcript_type || !Array.isArray(td.transactions) || td.transactions.length === 0) {
+        return json({ ok: false, error: 'INVALID_PAYLOAD', message: 'transcript_data must include transcript_type and a non-empty transactions array' }, 400, request);
+      }
+
+      const uploadId = `UPL_${crypto.randomUUID()}`;
+      const nowIso = new Date().toISOString();
+
+      // Parse: same logic as /v1/tools/transcript-parser
+      const codesFound = [...new Set(td.transactions.map((t) => String(t.code)))];
+      let balanceOwed = 0;
+      let refundAmount = 0;
+      td.transactions.forEach((t) => {
+        if (['150', '290', '300'].includes(String(t.code))) balanceOwed += Number(t.amount) || 0;
+        if (String(t.code) === '846') refundAmount += Math.abs(Number(t.amount) || 0);
+      });
+      const parsedResult = {
+        upload_id: uploadId,
+        engagement_id: engagementId,
+        transcript_type: td.transcript_type,
+        codes_found: codesFound,
+        balance_owed: Math.max(0, balanceOwed),
+        refund_amount: refundAmount,
+        transactions: td.transactions,
+        parsed_at: nowIso,
+      };
+
+      const rawKey = `tmp/transcripts/${engagementId}/${uploadId}.json`;
+      const parsedKey = `tmp/transcripts/${engagementId}/${uploadId}-parsed.json`;
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, rawKey, payload);
+        await r2Put(env.R2_VIRTUAL_LAUNCH, parsedKey, parsedResult);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+
+      // Diff against previous upload for this engagement, if any
+      let prevParsed = null;
+      try {
+        const prev = await env.DB.prepare(
+          'SELECT parsed_result_r2_key FROM transcript_uploads WHERE engagement_id = ? ORDER BY uploaded_at DESC LIMIT 1'
+        ).bind(engagementId).first();
+        if (prev?.parsed_result_r2_key) {
+          const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, prev.parsed_result_r2_key);
+          if (raw) prevParsed = JSON.parse(raw);
+        }
+      } catch (_) {}
+
+      const alerts = [];
+      if (prevParsed) {
+        const prevCodes = new Set(prevParsed.codes_found || []);
+        const newCodes = codesFound.filter((c) => !prevCodes.has(c));
+        for (const c of newCodes) {
+          const lienLevyCodes = ['582', '670', '971', '480', '520', '530'];
+          const severity = lienLevyCodes.includes(c) ? 'critical' : 'warning';
+          alerts.push({
+            alert_type: 'new_transaction_code',
+            description: `New IRS transaction code ${c} appeared on the transcript.`,
+            transaction_code: c,
+            old_value: null,
+            new_value: c,
+            severity,
+          });
+        }
+        if ((parsedResult.balance_owed || 0) !== (prevParsed.balance_owed || 0)) {
+          alerts.push({
+            alert_type: 'balance_changed',
+            description: `Balance owed changed from $${prevParsed.balance_owed || 0} to $${parsedResult.balance_owed}.`,
+            transaction_code: null,
+            old_value: String(prevParsed.balance_owed || 0),
+            new_value: String(parsedResult.balance_owed),
+            severity: 'warning',
+          });
+        }
+        if ((parsedResult.refund_amount || 0) !== (prevParsed.refund_amount || 0)) {
+          alerts.push({
+            alert_type: 'refund_changed',
+            description: `Refund amount changed from $${prevParsed.refund_amount || 0} to $${parsedResult.refund_amount}.`,
+            transaction_code: null,
+            old_value: String(prevParsed.refund_amount || 0),
+            new_value: String(parsedResult.refund_amount),
+            severity: 'info',
+          });
+        }
+        // Compare assessment dates (code 290 / 300 dates)
+        const prevAssessDates = new Set((prevParsed.transactions || []).filter((t) => ['290', '300'].includes(String(t.code))).map((t) => t.date));
+        const newAssessDates = (td.transactions || []).filter((t) => ['290', '300'].includes(String(t.code))).map((t) => t.date);
+        for (const d of newAssessDates) {
+          if (!prevAssessDates.has(d)) {
+            alerts.push({
+              alert_type: 'new_assessment_date',
+              description: `New assessment date detected: ${d}.`,
+              transaction_code: '290',
+              old_value: null,
+              new_value: d,
+              severity: 'warning',
+            });
+          }
+        }
+      }
+
+      const diff = {
+        upload_id: uploadId,
+        engagement_id: engagementId,
+        previous_upload_id: prevParsed?.upload_id || null,
+        changes_detected: alerts.length,
+        alerts,
+        diffed_at: nowIso,
+      };
+      const diffKey = `tmp/transcripts/${engagementId}/${uploadId}-diff.json`;
+      try { await r2Put(env.R2_VIRTUAL_LAUNCH, diffKey, diff); } catch (_) {}
+
+      try {
+        await env.DB.prepare(
+          'INSERT INTO transcript_uploads (upload_id, engagement_id, account_id, r2_key, parsed_result_r2_key, diff_r2_key, changes_detected, uploaded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        ).bind(uploadId, engagementId, session.account_id, rawKey, parsedKey, diffKey, alerts.length, nowIso).run();
+      } catch (e) {
+        console.error('monitoring/upload: D1 upload insert failed', e?.message);
+      }
+
+      const insertedAlerts = [];
+      for (const a of alerts) {
+        const alertId = `ALT_${crypto.randomUUID()}`;
+        try {
+          await env.DB.prepare(
+            'INSERT INTO monitoring_alerts (alert_id, engagement_id, upload_id, alert_type, description, transaction_code, old_value, new_value, severity, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          ).bind(alertId, engagementId, uploadId, a.alert_type, a.description, a.transaction_code, a.old_value, a.new_value, a.severity, nowIso).run();
+        } catch (_) {}
+        insertedAlerts.push({ alert_id: alertId, ...a });
+      }
+
+      // Update engagement counters in R2 + D1
+      try {
+        const updatedEng = {
+          ...record,
+          last_upload_at: nowIso,
+          total_uploads: (record.total_uploads || 0) + 1,
+          total_alerts: (record.total_alerts || 0) + alerts.length,
+          updated_at: nowIso,
+        };
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${engagementId}.json`, updatedEng);
+        await env.DB.prepare(
+          'UPDATE monitoring_engagements SET last_upload_at = ?, total_uploads = total_uploads + 1, total_alerts = total_alerts + ?, updated_at = ? WHERE engagement_id = ?'
+        ).bind(nowIso, alerts.length, nowIso, engagementId).run();
+      } catch (e) {
+        console.error('monitoring/upload: engagement counter update failed', e?.message);
+      }
+
+      // Notify taxpayer if alerts
+      if (alerts.length > 0) {
+        try {
+          const taxpayerEmailRow = await env.DB.prepare("SELECT email FROM accounts WHERE account_id = ?").bind(record.taxpayer_account_id).first();
+          if (taxpayerEmailRow?.email) {
+            const items = insertedAlerts.map((a) => `<li><strong>${a.alert_type}</strong> (${a.severity}): ${a.description}</li>`).join('');
+            await sendEmail(
+              taxpayerEmailRow.email,
+              `${alerts.length} change${alerts.length === 1 ? '' : 's'} detected on your IRS transcript`,
+              `<p>Your tax professional just uploaded a fresh IRS transcript and we detected the following changes:</p><ul>${items}</ul><p>View details: <a href="https://taxmonitor.pro/dashboard/monitoring/${engagementId}">taxmonitor.pro/dashboard/monitoring/${engagementId}</a></p><p>— Tax Monitor Pro</p>`,
+              env
+            );
+          }
+        } catch (e) {
+          console.error('monitoring/upload: taxpayer alert email failed', e?.message);
+        }
+      }
+
+      return json({ ok: true, upload_id: uploadId, changes_detected: alerts.length, alerts: insertedAlerts }, 200, request);
+    },
+  },
+
+  {
+    method: 'GET', pattern: '/v1/tmp/monitoring/engagements/:engagement_id/alerts',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const engagementId = params.engagement_id;
+      let record;
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `tmp/engagements/${engagementId}.json`);
+        if (!raw) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+        record = JSON.parse(raw);
+      } catch (e) {
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
+      if (record.taxpayer_account_id !== session.account_id
+          && record.professional_account_id !== session.account_id) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      let alerts = [];
+      try {
+        const a = await env.DB.prepare(
+          'SELECT alert_id, upload_id, alert_type, description, transaction_code, old_value, new_value, severity, created_at FROM monitoring_alerts WHERE engagement_id = ? ORDER BY created_at DESC'
+        ).bind(engagementId).all();
+        alerts = a.results || [];
+      } catch (_) {}
+      return json({ ok: true, engagement_id: engagementId, alerts }, 200, request);
+    },
+  },
+
   // POST /v1/billing/connect/onboard
   // Thin alias of the affiliate Connect onboarding so pros can set up payouts
   // from the Client Pool flow without going through the affiliate UI. Reuses
@@ -26212,6 +26621,14 @@ const FREEBIE_PDF_MAP = {
   tmp:   { url: 'https://api.virtuallaunch.pro/freebies/tmp-monitoring-checklist.pdf',   name: 'IRS Account Monitoring Checklist' },
   tcvlp: { url: 'https://api.virtuallaunch.pro/freebies/tcvlp-kwong-checklist.pdf',      name: 'Kwong Eligibility Quick-Check' },
   vlp:   { url: 'https://api.virtuallaunch.pro/freebies/vlp-platform-recommendation.pdf', name: 'Platform Recommendation Guide' },
+};
+
+// Monitoring engagement tier config (TMP Phase 3a)
+const MONITORING_TIERS = {
+  bronze:   { weeks: 6,    cadence_days: 7, price: 275, mfj_addon: 79 },
+  silver:   { weeks: 8,    cadence_days: 7, price: 325, mfj_addon: 79 },
+  gold:     { weeks: 12,   cadence_days: 5, price: 425, mfj_addon: 79 },
+  snapshot: { weeks: null, cadence_days: null, price: 425, mfj_addon: 79 },
 };
 
 const FREEBIE_PLATFORM_META = {
