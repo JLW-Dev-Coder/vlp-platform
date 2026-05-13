@@ -25485,7 +25485,35 @@ const TCVLP_GALA_DRIP_FROM = 'TaxClaim Pro <noreply@virtuallaunch.pro>';
 const TCVLP_GALA_DRIP_REPLY_TO = 'outreach@virtuallaunch.pro';
 const TCVLP_GALA_DRIP_LIMIT = 50;
 
-function galaDripEmail1(firstName) {
+function galaCanspamFooterText(email) {
+  const enc = encodeURIComponent(email || '');
+  return `
+
+—
+Jamie L Williams, EA
+TaxClaim Pro
+taxclaim.virtuallaunch.pro
+
+Lenore, Inc c/o Virtual Launch Pro
+1175 Avocado Avenue Suite 101 PMB 1010
+El Cajon, CA 92020
+
+To stop receiving these emails:
+https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=gala
+`;
+}
+
+function galaCanspamFooterHtml(email) {
+  const enc = encodeURIComponent(email || '');
+  return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0 16px;" />
+<p style="font-size:12px;color:#6b7280;line-height:1.6;margin:0;">
+  Jamie L Williams, EA &middot; TaxClaim Pro &middot; <a href="https://taxclaim.virtuallaunch.pro" style="color:#6b7280;">taxclaim.virtuallaunch.pro</a><br />
+  Lenore, Inc c/o Virtual Launch Pro &middot; 1175 Avocado Avenue Suite 101 PMB 1010, El Cajon, CA 92020<br />
+  <a href="https://api.virtuallaunch.pro/unsubscribe?email=${enc}&campaign=gala" style="color:#6b7280;">Unsubscribe</a> from TaxClaim Pro emails.
+</p>`;
+}
+
+function galaDripEmail1(firstName, email) {
   const subject = 'Your TaxClaim Pro access is ready';
   const text = `Hey ${firstName},
 
@@ -25519,11 +25547,12 @@ https://taxclaim.virtuallaunch.pro/gala
   <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Open TaxClaim Pro</a></p>
   <p style="font-size:14px;color:#6b7280;">If you want the fastest path, use the Gala guide:<br><a href="https://taxclaim.virtuallaunch.pro/gala" style="color:#eab308;">https://taxclaim.virtuallaunch.pro/gala</a></p>
   <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
+  ${galaCanspamFooterHtml(email)}
 </div>`;
-  return { subject, text, html };
+  return { subject, text: text + galaCanspamFooterText(email), html };
 }
 
-function galaDripEmail2(firstName) {
+function galaDripEmail2(firstName, email) {
   const subject = 'The fastest way to prep Form 843 claims (without cutting corners)';
   const text = `Hey ${firstName},
 
@@ -25561,11 +25590,12 @@ https://taxclaim.virtuallaunch.pro/gala
   </ul>
   <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro/gala" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">See the Gala Flow</a></p>
   <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
+  ${galaCanspamFooterHtml(email)}
 </div>`;
-  return { subject, text, html };
+  return { subject, text: text + galaCanspamFooterText(email), html };
 }
 
-function galaDripEmail3(firstName) {
+function galaDripEmail3(firstName, email) {
   const subject = 'July 2026 is closer than it looks';
   const text = `Hey ${firstName},
 
@@ -25595,8 +25625,9 @@ https://taxclaim.virtuallaunch.pro/gala
   </ol>
   <p style="margin:28px 0;"><a href="https://taxclaim.virtuallaunch.pro/gala" style="display:inline-block;padding:12px 28px;background:#eab308;color:#1a1a2e;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">Start the Claim Guide</a></p>
   <p style="font-size:14px;color:#6b7280;margin-top:24px;">— TaxClaim Pro</p>
+  ${galaCanspamFooterHtml(email)}
 </div>`;
-  return { subject, text, html };
+  return { subject, text: text + galaCanspamFooterText(email), html };
 }
 
 async function sendGalaDripEmail(env, to, subject, text, html) {
@@ -25642,7 +25673,7 @@ async function runGalaDripStage(env, stats, query, column, buildEmail) {
     if (stats.sent + stats.errors.length >= TCVLP_GALA_DRIP_LIMIT) break;
     try {
       const firstName = (row.name || '').split(/\s+/)[0] || 'there';
-      const { subject, text, html } = buildEmail(firstName);
+      const { subject, text, html } = buildEmail(firstName, row.email);
       await sendGalaDripEmail(env, row.email, subject, text, html);
       const nowIso = new Date().toISOString();
       await env.DB.prepare(
@@ -25668,6 +25699,7 @@ async function handleTcvlpGalaDripCron(env) {
     stats,
     `SELECT intake_id, name, email FROM gala_intakes
        WHERE drip_email1_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed != 1)
          AND submitted_at < datetime('now', '-5 minutes')
        LIMIT ${TCVLP_GALA_DRIP_LIMIT}`,
     'drip_email1_sent_at',
@@ -25683,6 +25715,7 @@ async function handleTcvlpGalaDripCron(env) {
     `SELECT intake_id, name, email FROM gala_intakes
        WHERE drip_email1_sent_at IS NOT NULL
          AND drip_email2_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed != 1)
          AND submitted_at < datetime('now', '-2 days')
        LIMIT ${TCVLP_GALA_DRIP_LIMIT}`,
     'drip_email2_sent_at',
@@ -25698,6 +25731,7 @@ async function handleTcvlpGalaDripCron(env) {
     `SELECT intake_id, name, email FROM gala_intakes
        WHERE drip_email2_sent_at IS NOT NULL
          AND drip_email3_sent_at IS NULL
+         AND (drip_unsubscribed IS NULL OR drip_unsubscribed != 1)
          AND submitted_at < datetime('now', '-5 days')
        LIMIT ${TCVLP_GALA_DRIP_LIMIT}`,
     'drip_email3_sent_at',
@@ -30125,6 +30159,15 @@ export default {
         ).bind(target).run();
       } catch (e) {
         console.error('Unsubscribe: vesperi intake update failed:', e);
+      }
+
+      // 1c. Flip drip_unsubscribed on gala_intakes for matching email (TCVLP Gala drip)
+      try {
+        await env.DB.prepare(
+          `UPDATE gala_intakes SET drip_unsubscribed = 1 WHERE LOWER(email) = ?`
+        ).bind(target).run();
+      } catch (e) {
+        console.error('Unsubscribe: gala intake update failed:', e);
       }
 
       // 2. Flip status in each queue
