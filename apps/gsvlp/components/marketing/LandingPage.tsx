@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const VIDEO_URL = 'https://api.virtuallaunch.pro/r2/gsvlp/videos/demo-call-45s.mov'
+const VIDEO_URL_MP4 = 'https://api.virtuallaunch.pro/r2/gsvlp/videos/demo-call-45s.mp4'
+const VIDEO_URL_MOV = 'https://api.virtuallaunch.pro/r2/gsvlp/videos/demo-call-45s.mov'
 
 export default function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -119,12 +120,12 @@ export default function LandingPage() {
           <h2 className="gsp-h2 gsp-reveal">One call. Twenty-eight seconds.</h2>
           <div className="gsp-video-wrap gsp-reveal">
             <video controls playsInline preload="metadata" className="gsp-video">
-              <source src={VIDEO_URL} type="video/quicktime" />
+              <source src={VIDEO_URL_MP4} type="video/mp4" />
+              <source src={VIDEO_URL_MOV} type="video/quicktime" />
               {/* TODO(video-route): Worker R2 serving route not yet created for gsvlp bucket */}
-              {/* TODO(mp4): Convert .mov to .mp4 for cross-browser support */}
               <p className="gsp-video-fallback">
                 Your browser doesn&apos;t support this video format.{' '}
-                <a href={VIDEO_URL} className="gsp-link">Download it instead.</a>
+                <a href={VIDEO_URL_MP4} className="gsp-link">Download it instead.</a>
               </p>
             </video>
           </div>
@@ -339,6 +340,8 @@ const GSP_LANDING_CSS = `
 
 .gsp-lp .gsp-wrap { max-width: 720px; margin: 0 auto; }
 .gsp-lp .gsp-center { text-align: center; }
+.gsp-lp .gsp-center .gsp-lede,
+.gsp-lp .gsp-center .gsp-fineprint { margin-left: auto; margin-right: auto; }
 
 .gsp-lp .gsp-hero { padding-top: 96px; padding-bottom: 96px; }
 
