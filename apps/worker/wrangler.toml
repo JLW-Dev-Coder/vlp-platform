@@ -261,6 +261,13 @@ GSVLP_SHEET_ID = "1r9lkdOKj3Dcfh_tppN2NfORH0jTQBLYCXuElYnn2m7w"
 GSVLP_SHEET_RANGE = "results-20260403-183749!A:I"
 GSVLP_BATCH_SIZE = "50"
 
+# Google Calendar (JLW) — availability + auto-created consult events
+GSVLP_CALENDAR_ID = "jamie.williams@virtuallaunch.pro"
+GSVLP_BIZ_HOURS_START = "09:00"
+GSVLP_BIZ_HOURS_END = "18:00"
+GSVLP_SLOT_DURATION_MIN = "30"
+GSVLP_TIMEZONE = "America/Los_Angeles"
+
 # =================================================
 # Secrets
 # =================================================

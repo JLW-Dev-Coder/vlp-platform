@@ -247,11 +247,12 @@ function _pemToArrayBuffer(pem) {
 
 // Sign a JWT with RS256 using the service account private key. Returns the
 // access token string from oauth2.googleapis.com. Caches in ENRICHMENT_KV
-// under "gsvlp:google_sheets_access_token" for token validity period.
+// under "gsvlp:google_access_token" for token validity period.
+// Scopes: Sheets (readonly) + Calendar (full) — single token used for both.
 async function getGoogleSheetsAccessToken(env) {
   if (env.ENRICHMENT_KV) {
     try {
-      const cached = await env.ENRICHMENT_KV.get('gsvlp:google_sheets_access_token');
+      const cached = await env.ENRICHMENT_KV.get('gsvlp:google_access_token');
       if (cached) {
         const rec = JSON.parse(cached);
         if (rec.access_token && rec.expires_at && Date.now() + 60_000 < rec.expires_at) {
@@ -271,7 +272,7 @@ async function getGoogleSheetsAccessToken(env) {
   const header = { alg: 'RS256', typ: 'JWT' };
   const claim = {
     iss: sa.client_email,
-    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
+    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/calendar',
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
     exp: now + 3600,
@@ -307,7 +308,7 @@ async function getGoogleSheetsAccessToken(env) {
   if (env.ENRICHMENT_KV) {
     try {
       await env.ENRICHMENT_KV.put(
-        'gsvlp:google_sheets_access_token',
+        'gsvlp:google_access_token',
         JSON.stringify({
           access_token: tok.access_token,
           expires_at: Date.now() + ((tok.expires_in ?? 3600) * 1000),
@@ -438,6 +439,192 @@ function gsvlpSummarizeAppointments(appointments) {
   const showRelevant = showed + closed + no_show;
   const show_rate = showRelevant > 0 ? Math.round(((showed + closed) / showRelevant) * 100) : 0;
   return { total, upcoming, showed, closed, no_show, total_earned, pending, show_rate };
+}
+
+// =================================================
+// GSVLP — Google Calendar availability + event creation
+// =================================================
+
+// Get Pacific-time offset string (e.g. "-07:00" PDT, "-08:00" PST) for a given
+// date. Workers don't have full Intl tz arithmetic; derive offset by comparing
+// the Pacific wall-clock to UTC for the supplied instant.
+function gsvlpPacificOffset(date) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(date).filter(p => p.type !== 'literal').map(p => [p.type, p.value]));
+  const ptMs = Date.UTC(
+    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
+    Number(parts.hour === '24' ? '00' : parts.hour), Number(parts.minute), Number(parts.second)
+  );
+  const diffMin = Math.round((ptMs - date.getTime()) / 60000);
+  const sign = diffMin >= 0 ? '+' : '-';
+  const abs = Math.abs(diffMin);
+  const hh = String(Math.floor(abs / 60)).padStart(2, '0');
+  const mm = String(abs % 60).padStart(2, '0');
+  return `${sign}${hh}:${mm}`;
+}
+
+// Returns a date-only "YYYY-MM-DD" representing the Pacific calendar date for
+// the given instant. Used so "today" means today in Pacific, not UTC.
+function gsvlpPacificDateString(date) {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit',
+  });
+  return fmt.format(date);
+}
+
+function gsvlpAddDays(yyyymmdd, n) {
+  const [y, m, d] = yyyymmdd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+}
+
+function gsvlpDayOfWeek(yyyymmdd) {
+  const [y, m, d] = yyyymmdd.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0=Sun..6=Sat
+}
+
+const GSVLP_DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// Build an ISO 8601 with Pacific offset for "YYYY-MM-DD" + "HH:MM" local time
+function gsvlpPacificIso(dateStr, timeStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const [h, min] = timeStr.split(':').map(Number);
+  const probe = new Date(Date.UTC(y, m - 1, d, h, min));
+  const offset = gsvlpPacificOffset(probe);
+  return `${dateStr}T${timeStr.padStart(5, '0')}:00${offset}`;
+}
+
+// Get the absolute instant (ms since epoch) for a Pacific wall-clock time.
+function gsvlpPacificInstant(dateStr, timeStr) {
+  return Date.parse(gsvlpPacificIso(dateStr, timeStr));
+}
+
+async function gsvlpFetchAvailability(env, daysAhead) {
+  const token = await getGoogleSheetsAccessToken(env);
+  const calendarId = env.GSVLP_CALENDAR_ID || 'jamie.williams@virtuallaunch.pro';
+  const bizStart = env.GSVLP_BIZ_HOURS_START || '09:00';
+  const bizEnd = env.GSVLP_BIZ_HOURS_END || '18:00';
+  const slotMin = parseInt(env.GSVLP_SLOT_DURATION_MIN || '30', 10);
+  const tz = env.GSVLP_TIMEZONE || 'America/Los_Angeles';
+
+  const now = new Date();
+  const todayPt = gsvlpPacificDateString(now);
+
+  // Collect up to daysAhead business days (Mon–Fri) starting from today
+  const businessDays = [];
+  let cursor = todayPt;
+  while (businessDays.length < daysAhead) {
+    const dow = gsvlpDayOfWeek(cursor);
+    if (dow >= 1 && dow <= 5) businessDays.push(cursor);
+    cursor = gsvlpAddDays(cursor, 1);
+    if (businessDays.length === 0 && cursor === gsvlpAddDays(todayPt, 30)) break; // safety
+  }
+  if (businessDays.length === 0) return { timezone: tz, availability: [] };
+
+  const firstDay = businessDays[0];
+  const lastDay = businessDays[businessDays.length - 1];
+  const timeMin = gsvlpPacificIso(firstDay, bizStart);
+  const timeMax = gsvlpPacificIso(lastDay, bizEnd);
+
+  const fbRes = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      timeMin, timeMax, timeZone: tz,
+      items: [{ id: calendarId }],
+    }),
+  });
+  if (!fbRes.ok) {
+    const txt = await fbRes.text().catch(() => '');
+    throw new Error(`Google FreeBusy failed: ${fbRes.status} ${txt}`);
+  }
+  const fbData = await fbRes.json();
+  const busy = (fbData.calendars?.[calendarId]?.busy || []).map(b => ({
+    start: Date.parse(b.start),
+    end: Date.parse(b.end),
+  }));
+
+  const [sh, sm] = bizStart.split(':').map(Number);
+  const [eh, em] = bizEnd.split(':').map(Number);
+  const startMinutes = sh * 60 + sm;
+  const endMinutes = eh * 60 + em;
+  const nowMs = now.getTime();
+
+  const availability = businessDays.map(date => {
+    const slots = [];
+    for (let mm = startMinutes; mm + slotMin <= endMinutes; mm += slotMin) {
+      const startHm = `${String(Math.floor(mm / 60)).padStart(2, '0')}:${String(mm % 60).padStart(2, '0')}`;
+      const endMm = mm + slotMin;
+      const endHm = `${String(Math.floor(endMm / 60)).padStart(2, '0')}:${String(endMm % 60).padStart(2, '0')}`;
+      const slotStart = gsvlpPacificInstant(date, startHm);
+      const slotEnd = gsvlpPacificInstant(date, endHm);
+      if (slotStart <= nowMs) continue; // skip past slots
+      const overlaps = busy.some(b => slotStart < b.end && slotEnd > b.start);
+      if (overlaps) continue;
+      slots.push({ start: startHm, end: endHm });
+    }
+    return { date, dayOfWeek: GSVLP_DAY_NAMES[gsvlpDayOfWeek(date)], slots };
+  });
+
+  return { timezone: tz, availability };
+}
+
+async function gsvlpCreateCalendarEvent(env, { date, time, taxProName, taxProCredential, taxProPhone, setterEmail, notes }) {
+  const token = await getGoogleSheetsAccessToken(env);
+  const calendarId = env.GSVLP_CALENDAR_ID || 'jamie.williams@virtuallaunch.pro';
+  const slotMin = parseInt(env.GSVLP_SLOT_DURATION_MIN || '30', 10);
+  const tz = env.GSVLP_TIMEZONE || 'America/Los_Angeles';
+
+  const [h, m] = time.split(':').map(Number);
+  const endTotal = h * 60 + m + slotMin;
+  const endTime = `${String(Math.floor(endTotal / 60)).padStart(2, '0')}:${String(endTotal % 60).padStart(2, '0')}`;
+
+  const cred = taxProCredential ? ` (${taxProCredential})` : '';
+  const summary = `GSVLP Consult: ${taxProName}${cred} — booked by ${setterEmail}`;
+  const descLines = [
+    `Tax pro: ${taxProName}`,
+    taxProCredential ? `Credential: ${taxProCredential}` : null,
+    taxProPhone ? `Phone: ${taxProPhone}` : null,
+    '',
+    `Booked by setter: ${setterEmail}`,
+    notes ? `Notes: ${notes}` : null,
+    '',
+    'This appointment was booked via Growth Setter Pro.',
+  ].filter(l => l !== null);
+
+  const body = {
+    summary,
+    description: descLines.join('\n'),
+    start: { dateTime: `${date}T${time.padStart(5, '0')}:00`, timeZone: tz },
+    end:   { dateTime: `${date}T${endTime.padStart(5, '0')}:00`, timeZone: tz },
+    reminders: {
+      useDefault: false,
+      overrides: [
+        { method: 'popup', minutes: 30 },
+        { method: 'email', minutes: 60 },
+      ],
+    },
+  };
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }
+  );
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(`Calendar event create failed: ${res.status} ${txt}`);
+  }
+  const data = await res.json();
+  return data.id;
 }
 
 // Map a D1 profiles row → nested card shape (vlp.profiles.list.v1 contract)
@@ -25682,7 +25869,26 @@ Return a JSON array where each element has:
     },
   },
 
-  // POST /v1/gsvlp/appointments — log a new appointment
+  // GET /v1/gsvlp/availability — JLW's free slots from Google Calendar FreeBusy
+  {
+    method: 'GET', pattern: '/v1/gsvlp/availability',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const url = new URL(request.url);
+        const daysParam = parseInt(url.searchParams.get('days') || '5', 10);
+        const days = Math.max(1, Math.min(10, isFinite(daysParam) ? daysParam : 5));
+        const result = await gsvlpFetchAvailability(env, days);
+        return json({ ok: true, ...result }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/availability error:', e);
+        return json({ ok: false, error: 'AVAILABILITY_FETCH_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/appointments — log a new appointment + create Google Calendar event
   {
     method: 'POST', pattern: '/v1/gsvlp/appointments',
     handler: async (_method, _pattern, _params, request, env) => {
@@ -25707,7 +25913,32 @@ Return a JSON array where each element has:
           status: 'upcoming',
           commission: 0,
           created_at: nowIso,
+          gcal_event_id: null,
+          gcal_synced: false,
         };
+
+        // Look up setter email for the event summary/description
+        let setterEmail = '';
+        try {
+          const acct = await env.DB.prepare('SELECT email FROM accounts WHERE account_id = ?').bind(session.account_id).first();
+          setterEmail = acct?.email || '';
+        } catch {}
+
+        try {
+          const eventId = await gsvlpCreateCalendarEvent(env, {
+            date, time,
+            taxProName: tax_pro_name,
+            taxProCredential: tax_pro_credential || '',
+            taxProPhone: tax_pro_phone || '',
+            setterEmail: setterEmail || `setter_${session.account_id}`,
+            notes: notes || '',
+          });
+          appointment.gcal_event_id = eventId;
+          appointment.gcal_synced = true;
+        } catch (calErr) {
+          console.error('gsvlp calendar event creation failed:', calErr);
+        }
+
         record.account_id = session.account_id;
         record.appointments = Array.isArray(record.appointments) ? record.appointments : [];
         record.appointments.push(appointment);
