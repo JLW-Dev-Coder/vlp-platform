@@ -15,11 +15,10 @@ export const gsvlpConfig: PlatformConfig = {
     {
       title: 'WORKSPACE',
       items: [
-        { label: 'Overview', href: '/dashboard', icon: 'LayoutDashboard' },
-        { label: 'Call Lists', href: '/dashboard/lists', icon: 'PhoneCall' },
+        { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+        { label: 'Call List', href: '/dashboard/calls', icon: 'Phone' },
         { label: 'Appointments', href: '/dashboard/appointments', icon: 'Calendar' },
-        { label: 'Earnings', href: '/dashboard/earnings', icon: 'DollarSign' },
-        { label: 'Settings', href: '/dashboard/settings', icon: 'Settings' },
+        { label: 'Account', href: '/dashboard/account', icon: 'Settings' },
       ],
     },
   ],
