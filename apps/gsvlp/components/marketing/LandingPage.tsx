@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const VIDEO_URL_MP4 = 'https://api.virtuallaunch.pro/r2/gsvlp/videos/demo-call-45s.mp4'
-const VIDEO_URL_MOV = 'https://api.virtuallaunch.pro/r2/gsvlp/videos/demo-call-45s.mov'
+const VIDEO_URL_MP4 = 'https://api.virtuallaunch.pro/v1/gsvlp/videos/demo-call-45s.mp4'
+const VIDEO_URL_MOV = 'https://api.virtuallaunch.pro/v1/gsvlp/videos/demo-call-45s.mov'
 
 export default function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -122,7 +122,6 @@ export default function LandingPage() {
             <video controls playsInline preload="metadata" className="gsp-video">
               <source src={VIDEO_URL_MP4} type="video/mp4" />
               <source src={VIDEO_URL_MOV} type="video/quicktime" />
-              {/* TODO(video-route): Worker R2 serving route not yet created for gsvlp bucket */}
               <p className="gsp-video-fallback">
                 Your browser doesn&apos;t support this video format.{' '}
                 <a href={VIDEO_URL_MP4} className="gsp-link">Download it instead.</a>

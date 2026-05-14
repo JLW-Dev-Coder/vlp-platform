@@ -20371,6 +20371,34 @@ https://virtuallaunch.pro/payouts
     },
   },
 
+  // GET /v1/gsvlp/videos/:filename — serve GSVLP recruitment videos from R2 (public)
+  {
+    method: 'GET', pattern: '/v1/gsvlp/videos/:filename',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { filename } = params;
+      if (!filename || !/^[a-z0-9_-]+\.(mp4|mov|webm)$/i.test(filename)) {
+        return json({ ok: false, error: 'INVALID_FILENAME' }, 400, request);
+      }
+      const obj = await env.R2_VIRTUAL_LAUNCH.get(`gsvlp/videos/${filename}`);
+      if (!obj) {
+        return json({ ok: false, error: 'video_not_found' }, 404, request);
+      }
+      const ext = filename.split('.').pop().toLowerCase();
+      const contentType = ext === 'mp4' ? 'video/mp4'
+        : ext === 'mov' ? 'video/quicktime'
+        : 'video/webm';
+      const corsHeaders = getCorsHeaders(request);
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Accept-Ranges': 'bytes',
+          ...corsHeaders,
+        },
+      });
+    },
+  },
+
   // POST /v1/tttmp/vesperi/intake — Vesperi game-guide email capture (public)
   {
     method: 'POST', pattern: '/v1/tttmp/vesperi/intake',
