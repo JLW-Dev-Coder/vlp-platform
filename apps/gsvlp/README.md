@@ -1,4 +1,4 @@
-# Grow Setter Pro (GSVLP)
+# Growth Setter Pro (GSVLP)
 
 Recruitment and affiliate platform for appointment setters. Free to join, 20% commission on closed deals.
 

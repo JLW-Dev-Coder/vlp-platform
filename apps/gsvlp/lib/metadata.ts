@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 
 export const defaultMetadata: Metadata = {
   title: {
-    default: 'Grow Setter Pro',
-    template: '%s | Grow Setter Pro',
+    default: 'Growth Setter Pro',
+    template: '%s | Growth Setter Pro',
   },
   description: 'Earn 20% commission setting appointments for tax professionals. Free to join.',
   icons: {

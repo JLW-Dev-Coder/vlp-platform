@@ -1,7 +1,7 @@
 import type { PlatformConfig } from '@vlp/member-ui'
 
 export const gsvlpConfig: PlatformConfig = {
-  brandName: 'Grow Setter Pro',
+  brandName: 'Growth Setter Pro',
   brandAbbrev: 'GSP',
   brandColor: '#FF6B00',
   brandSubtitle: 'Book Calls. Earn Commission.',
@@ -46,7 +46,7 @@ export const gsvlpConfig: PlatformConfig = {
   },
   marketing: {
     tagline: 'Book calls. Earn commission. Grow with us.',
-    summary: 'Grow Setter Pro is a free recruitment and affiliate platform for appointment setters. Get scripts, call lists, and 20% commission on closed deals.',
+    summary: 'Growth Setter Pro is a free recruitment and affiliate platform for appointment setters. Get scripts, call lists, and 20% commission on closed deals.',
     ctaLabel: 'Start Now — Free',
     ctaPath: '/sign-in',
     megaMenu: {

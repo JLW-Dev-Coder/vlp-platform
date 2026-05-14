@@ -296,7 +296,7 @@ export default function LandingPage() {
       <section className="gsp-pagefoot">
         <div className="gsp-wrap gsp-center">
           <p className="gsp-fineprint">
-            © 2026 Grow Setter Pro · A{' '}
+            © 2026 Growth Setter Pro · A{' '}
             <a href="https://virtuallaunch.pro" className="gsp-link">Virtual Launch Pro</a>{' '}
             Company
           </p>

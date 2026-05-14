@@ -31,7 +31,7 @@ export default function RootLayout({
       </head>
       <body style={{ fontFamily: 'var(--font-body)' }}>
         <BusinessJsonLd
-          name="Grow Setter Pro"
+          name="Growth Setter Pro"
           description="Recruitment and affiliate platform for appointment setters. Book calls for tax professionals and earn 20% commission on closed deals."
           url="https://setters.virtuallaunch.pro"
           type="ProfessionalService"
