@@ -2,7 +2,7 @@
 
 ## Identity
 - **Platform:** Grow Setter Pro (GSVLP)
-- **Domain:** setters.virtuallaunch.pro
+- **Domain:** growthsetters.virtuallaunch.pro
 - **Adapter:** Static export (Cloudflare Pages)
 - **Brand color:** #22C55E (bright green)
 

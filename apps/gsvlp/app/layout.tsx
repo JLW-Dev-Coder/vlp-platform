@@ -33,7 +33,7 @@ export default function RootLayout({
         <BusinessJsonLd
           name="Growth Setter Pro"
           description="Recruitment and affiliate platform for appointment setters. Book calls for tax professionals and earn 20% commission on closed deals."
-          url="https://setters.virtuallaunch.pro"
+          url="https://growthsetters.virtuallaunch.pro"
           type="ProfessionalService"
           priceRange="Free"
         />

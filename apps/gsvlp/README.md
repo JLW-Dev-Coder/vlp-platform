@@ -2,7 +2,7 @@
 
 Recruitment and affiliate platform for appointment setters. Free to join, 20% commission on closed deals.
 
-- **Domain:** setters.virtuallaunch.pro
+- **Domain:** growthsetters.virtuallaunch.pro
 - **Adapter:** Static export → Cloudflare Pages
 - **Pages project:** `grow-setter-pro`
 - **Brand color:** `#22C55E`
