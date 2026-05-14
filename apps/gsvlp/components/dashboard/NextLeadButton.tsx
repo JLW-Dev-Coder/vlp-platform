@@ -35,9 +35,9 @@ export function NextLeadButton({
   return (
     <Link
       href={`/dashboard/calls/${next.id}`}
-      className="flex w-full items-center justify-center gap-2 rounded-md bg-[#22C55E] px-4 py-4 text-base font-semibold text-white hover:bg-[#16A34A]"
+      className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-md bg-[#22C55E] px-4 text-base font-bold text-white hover:bg-[#16A34A]"
     >
-      Next Lead →
+      Next Call →
     </Link>
   );
 }

@@ -145,7 +145,7 @@ export function BookingFlow({
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-[#22C55E] px-4 py-3 text-base font-semibold text-white hover:bg-[#16A34A] disabled:opacity-50"
+          className="w-full min-h-[56px] rounded-md bg-[#22C55E] px-4 text-base font-bold text-white hover:bg-[#16A34A] disabled:opacity-50"
         >
           {submitting ? 'Booking…' : 'Confirm Appointment'}
         </button>
