@@ -13,11 +13,12 @@ on:
       - 'apps/wlvlp/**'
       - 'apps/tavlp/**'
       - 'apps/taxprep/**'
+      - 'apps/gsvlp/**'
       - 'packages/member-ui/**'
   workflow_dispatch:
     inputs:
       app:
-        description: 'App to deploy (all, vlp, tmp, tttmp, dvlp, gvlp, tcvlp, wlvlp, tavlp, taxprep)'
+        description: 'App to deploy (all, vlp, tmp, tttmp, dvlp, gvlp, tcvlp, wlvlp, tavlp, taxprep, gsvlp)'
         required: true
         default: 'all'
 
@@ -34,6 +35,7 @@ jobs:
       wlvlp: ${{ steps.filter.outputs.wlvlp }}
       tavlp: ${{ steps.filter.outputs.tavlp }}
       taxprep: ${{ steps.filter.outputs.taxprep }}
+      gsvlp: ${{ steps.filter.outputs.gsvlp }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -67,6 +69,9 @@ jobs:
               - 'packages/member-ui/**'
             taxprep:
               - 'apps/taxprep/**'
+              - 'packages/member-ui/**'
+            gsvlp:
+              - 'apps/gsvlp/**'
               - 'packages/member-ui/**'
 
   deploy-vlp:
@@ -243,6 +248,28 @@ jobs:
         run: npx turbo build --filter=tavlp
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy apps/tavlp/out --project-name=tavlp-site --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-gsvlp:
+    needs: changes
+    if: |
+      needs.changes.outputs.gsvlp == 'true' ||
+      github.event.inputs.app == 'gsvlp' ||
+      github.event.inputs.app == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build GSVLP
+        run: npx turbo build --filter=gsvlp
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy apps/gsvlp/out --project-name=grow-setter-pro --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
