@@ -466,12 +466,20 @@ const GSP_LANDING_CSS = `
 .gsp-lp .gsp-prop strong { color: var(--gsp-text); font-size: 14px; font-weight: 600; }
 .gsp-lp .gsp-prop span { color: var(--gsp-text-3); font-size: 13px; line-height: 1.4; }
 
-.gsp-lp .gsp-video-wrap { margin: 0 0 16px; }
+.gsp-lp .gsp-video-wrap {
+  margin: 0 auto 16px;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 9 / 16;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #333;
+  background: #1A1A1A;
+}
 .gsp-lp .gsp-video {
   width: 100%;
-  border-radius: 12px;
-  border: 1px solid var(--gsp-border);
-  background: var(--gsp-surface);
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 .gsp-lp .gsp-video-fallback {
@@ -601,6 +609,7 @@ const GSP_LANDING_CSS = `
   .gsp-lp .gsp-btn-primary, .gsp-lp .gsp-btn-ghost { justify-content: center; }
   .gsp-lp .gsp-script-line { font-size: 15px; }
   .gsp-lp .gsp-step { gap: 14px; }
+  .gsp-lp .gsp-video-wrap { max-width: 280px; }
 }
 
 html { scroll-behavior: smooth; }
