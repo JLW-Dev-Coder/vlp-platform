@@ -254,6 +254,14 @@ AFFILIATE_COMMISSION_RATE = "0.20"
 STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
 
 # =================================================
+# GSVLP (Grow Setter Pro) — Google Sheets call list
+# =================================================
+
+GSVLP_SHEET_ID = "1r9lkdOKj3Dcfh_tppN2NfORH0jTQBLYCXuElYnn2m7w"
+GSVLP_SHEET_RANGE = "Sheet1!A:I"
+GSVLP_BATCH_SIZE = "50"
+
+# =================================================
 # Secrets
 # =================================================
 
@@ -348,6 +356,12 @@ STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
 # META_IG_USER_ID         — Instagram Business Account ID linked to the FB Page (for IG cross-posts)
 # LINKEDIN_ACCESS_TOKEN   — LinkedIn personal profile access token (w_member_social)
 # LINKEDIN_PERSON_URN     — LinkedIn person URN (urn:li:person:XXXXX)
+
+# =================================================
+# GSVLP (Grow Setter Pro)
+# =================================================
+
+# GOOGLE_SERVICE_ACCOUNT_KEY — full JSON key for Google Sheets API access (spreadsheets.readonly scope)
 
 # =================================================
 # Optional / Future Integrations

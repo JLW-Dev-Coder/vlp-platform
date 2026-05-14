@@ -19,6 +19,7 @@ export interface TaxPro {
 
 interface CallListTableProps {
   initialData: TaxPro[];
+  apiBaseUrl?: string;
   onBooked?: (pro: TaxPro, details: { date: string; time: string; notes: string }) => void;
 }
 
@@ -30,7 +31,7 @@ const STATUS_OPTIONS: Array<{ value: 'ALL' | CallStatus; label: string }> = [
   { value: 'booked', label: 'Booked' },
 ];
 
-export function CallListTable({ initialData, onBooked }: CallListTableProps) {
+export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTableProps) {
   const [rows, setRows] = useState<TaxPro[]>(initialData);
   const [stateFilter, setStateFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | CallStatus>('ALL');
@@ -50,6 +51,14 @@ export function CallListTable({ initialData, onBooked }: CallListTableProps) {
     setRows((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: 'called' } : r))
     );
+    if (apiBaseUrl) {
+      fetch(`${apiBaseUrl}/v1/gsvlp/call-list/${id}/status`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'called' }),
+      }).catch(() => {});
+    }
   }
 
   function bookAppointment(
@@ -60,6 +69,22 @@ export function CallListTable({ initialData, onBooked }: CallListTableProps) {
       prev.map((r) => (r.id === pro.id ? { ...r, status: 'booked' } : r))
     );
     setBookingFor(null);
+    if (apiBaseUrl) {
+      fetch(`${apiBaseUrl}/v1/gsvlp/appointments`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tax_pro_name: pro.fullName,
+          tax_pro_credential: pro.profession,
+          tax_pro_phone: pro.phone,
+          date: details.date,
+          time: details.time,
+          notes: details.notes,
+          row_number: Number(pro.id),
+        }),
+      }).catch(() => {});
+    }
     onBooked?.(pro, details);
   }
 

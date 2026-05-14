@@ -219,6 +219,226 @@ async function d1Run(db, sql, params) {
   return db.prepare(sql).bind(...params).run();
 }
 
+// ---------------------------------------------------------------------------
+// GSVLP — Google Sheets call list helpers
+// ---------------------------------------------------------------------------
+
+function _b64urlFromBytes(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function _b64urlFromString(str) {
+  return _b64urlFromBytes(new TextEncoder().encode(str));
+}
+
+function _pemToArrayBuffer(pem) {
+  const b64 = pem
+    .replace(/-----BEGIN [^-]+-----/g, '')
+    .replace(/-----END [^-]+-----/g, '')
+    .replace(/\s+/g, '');
+  const bin = atob(b64);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return buf.buffer;
+}
+
+// Sign a JWT with RS256 using the service account private key. Returns the
+// access token string from oauth2.googleapis.com. Caches in ENRICHMENT_KV
+// under "gsvlp:google_sheets_access_token" for token validity period.
+async function getGoogleSheetsAccessToken(env) {
+  if (env.ENRICHMENT_KV) {
+    try {
+      const cached = await env.ENRICHMENT_KV.get('gsvlp:google_sheets_access_token');
+      if (cached) {
+        const rec = JSON.parse(cached);
+        if (rec.access_token && rec.expires_at && Date.now() + 60_000 < rec.expires_at) {
+          return rec.access_token;
+        }
+      }
+    } catch {}
+  }
+
+  const raw = env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY not configured');
+  let sa;
+  try { sa = JSON.parse(raw); } catch { throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not valid JSON'); }
+  if (!sa.client_email || !sa.private_key) throw new Error('Service account key missing client_email or private_key');
+
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const claim = {
+    iss: sa.client_email,
+    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  };
+  const signingInput = `${_b64urlFromString(JSON.stringify(header))}.${_b64urlFromString(JSON.stringify(claim))}`;
+
+  const keyData = _pemToArrayBuffer(sa.private_key);
+  const key = await crypto.subtle.importKey(
+    'pkcs8', keyData,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false, ['sign']
+  );
+  const sig = new Uint8Array(
+    await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(signingInput))
+  );
+  const jwt = `${signingInput}.${_b64urlFromBytes(sig)}`;
+
+  const tokRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion: jwt,
+    }),
+  });
+  if (!tokRes.ok) {
+    const txt = await tokRes.text().catch(() => '');
+    throw new Error(`Google token exchange failed: ${tokRes.status} ${txt}`);
+  }
+  const tok = await tokRes.json();
+  if (!tok.access_token) throw new Error('No access_token from Google');
+
+  if (env.ENRICHMENT_KV) {
+    try {
+      await env.ENRICHMENT_KV.put(
+        'gsvlp:google_sheets_access_token',
+        JSON.stringify({
+          access_token: tok.access_token,
+          expires_at: Date.now() + ((tok.expires_in ?? 3600) * 1000),
+        }),
+        { expirationTtl: Math.max(60, (tok.expires_in ?? 3600) - 60) }
+      );
+    } catch {}
+  }
+  return tok.access_token;
+}
+
+async function fetchGsvlpSheetRows(env, startRow, endRow) {
+  const token = await getGoogleSheetsAccessToken(env);
+  const sheetId = env.GSVLP_SHEET_ID;
+  const baseRange = env.GSVLP_SHEET_RANGE || 'Sheet1!A:I';
+  const sheetName = baseRange.split('!')[0];
+  const range = `${sheetName}!A${startRow}:I${endRow}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(`Google Sheets fetch failed: ${res.status} ${txt}`);
+  }
+  const data = await res.json();
+  return Array.isArray(data.values) ? data.values : [];
+}
+
+function _normalizeProfession(s) {
+  const v = String(s || '').trim().toUpperCase();
+  if (v === 'CPA' || v === 'EA' || v === 'ATTY') return v;
+  if (v.includes('ATTORNEY')) return 'ATTY';
+  if (v.includes('ENROLLED')) return 'EA';
+  if (v.includes('CPA')) return 'CPA';
+  return 'EA';
+}
+
+function sheetRowToCallListRow(rowArr, sheetRowNumber) {
+  // Columns A..I — never expose J..N enrichment data.
+  const [lastName, firstName, fullName, dba, city, state, _website, phone, profession] = rowArr;
+  return {
+    row_number: sheetRowNumber,
+    full_name: (fullName || `${firstName || ''} ${lastName || ''}`).trim(),
+    dba: dba || '',
+    city: city || '',
+    state: state || '',
+    phone: phone || '',
+    profession: _normalizeProfession(profession),
+    status: 'not_called',
+    called_at: null,
+    booked_at: null,
+  };
+}
+
+async function gsvlpGetBatchIndex(env) {
+  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, 'gsvlp/batch-index.json');
+  if (!raw) return { next_available_row: 2, assignments: [] };
+  try { return JSON.parse(raw); } catch { return { next_available_row: 2, assignments: [] }; }
+}
+
+async function gsvlpGetBatch(env, accountId) {
+  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `gsvlp/batches/${accountId}.json`);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+async function gsvlpGetOrAssignBatch(env, accountId) {
+  const existing = await gsvlpGetBatch(env, accountId);
+  if (existing) return existing;
+
+  const batchSize = parseInt(env.GSVLP_BATCH_SIZE || '50', 10);
+  const index = await gsvlpGetBatchIndex(env);
+  const startRow = index.next_available_row || 2;
+  const endRow = startRow + batchSize - 1;
+
+  const values = await fetchGsvlpSheetRows(env, startRow, endRow);
+  const rows = values.map((v, i) => sheetRowToCallListRow(v, startRow + i))
+    .filter(r => r.full_name || r.phone);
+
+  const assignedAt = new Date().toISOString();
+  const batch = {
+    account_id: accountId,
+    assigned_at: assignedAt,
+    batch_start_row: startRow,
+    batch_end_row: endRow,
+    rows,
+  };
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/batches/${accountId}.json`, batch);
+
+  index.assignments = Array.isArray(index.assignments) ? index.assignments : [];
+  index.assignments.push({ account_id: accountId, start: startRow, end: endRow, assigned_at: assignedAt });
+  index.next_available_row = endRow + 1;
+  await r2Put(env.R2_VIRTUAL_LAUNCH, 'gsvlp/batch-index.json', index);
+
+  return batch;
+}
+
+async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status) {
+  const batch = await gsvlpGetBatch(env, accountId);
+  if (!batch) return null;
+  const target = batch.rows.find(r => r.row_number === Number(rowNumber));
+  if (!target) return null;
+  const nowIso = new Date().toISOString();
+  target.status = status;
+  if (status === 'called' && !target.called_at) target.called_at = nowIso;
+  if (status === 'booked') {
+    target.booked_at = nowIso;
+    if (!target.called_at) target.called_at = nowIso;
+  }
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/batches/${accountId}.json`, batch);
+  return target;
+}
+
+async function gsvlpGetAppointments(env, accountId) {
+  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `gsvlp/appointments/${accountId}.json`);
+  if (!raw) return { account_id: accountId, appointments: [] };
+  try { return JSON.parse(raw); } catch { return { account_id: accountId, appointments: [] }; }
+}
+
+function gsvlpSummarizeAppointments(appointments) {
+  const total = appointments.length;
+  let upcoming = 0, showed = 0, closed = 0, no_show = 0, total_earned = 0, pending = 0;
+  for (const a of appointments) {
+    if (a.status === 'upcoming') upcoming++;
+    else if (a.status === 'showed') { showed++; pending += Number(a.commission || 0); }
+    else if (a.status === 'closed') { closed++; total_earned += Number(a.commission || 0); }
+    else if (a.status === 'no_show') no_show++;
+  }
+  const showRelevant = showed + closed + no_show;
+  const show_rate = showRelevant > 0 ? Math.round(((showed + closed) / showRelevant) * 100) : 0;
+  return { total, upcoming, showed, closed, no_show, total_earned, pending, show_rate };
+}
+
 // Map a D1 profiles row → nested card shape (vlp.profiles.list.v1 contract)
 // Fields not yet in D1 use safe defaults; a D1 migration will backfill them.
 function d1RowToProfileCard(row) {
@@ -25391,6 +25611,158 @@ Return a JSON array where each element has:
       }
       const runLog = await handleWlvlpAuctionSettlementCron(env);
       return json({ ok: true, settlement_log: runLog }, 200, request);
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // GSVLP — Grow Setter Pro (call lists, appointments, dashboard)
+  // -------------------------------------------------------------------------
+
+  // GET /v1/gsvlp/call-list — return setter's assigned batch (assigns if none)
+  {
+    method: 'GET', pattern: '/v1/gsvlp/call-list',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const batch = await gsvlpGetOrAssignBatch(env, session.account_id);
+        const url = new URL(request.url);
+        const statusFilter = url.searchParams.get('status');
+        const stateFilter = url.searchParams.get('state');
+        let rows = batch.rows;
+        if (statusFilter && ['not_called', 'called', 'booked'].includes(statusFilter)) {
+          rows = rows.filter(r => r.status === statusFilter);
+        }
+        if (stateFilter) {
+          rows = rows.filter(r => (r.state || '').toUpperCase() === stateFilter.toUpperCase());
+        }
+        return json({
+          ok: true,
+          batch: {
+            assigned_at: batch.assigned_at,
+            total: batch.rows.length,
+            rows,
+          },
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/call-list error:', e);
+        return json({ ok: false, error: 'CALL_LIST_FETCH_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/call-list/:rowNumber/status — update row status
+  {
+    method: 'POST', pattern: '/v1/gsvlp/call-list/:rowNumber/status',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const body = await parseBody(request);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      const status = body.status;
+      if (!['called', 'booked'].includes(status)) {
+        return json({ ok: false, error: 'INVALID_STATUS', allowed: ['called', 'booked'] }, 400, request);
+      }
+      try {
+        const updated = await gsvlpUpdateCallStatus(env, session.account_id, params.rowNumber, status);
+        if (!updated) return json({ ok: false, error: 'ROW_NOT_FOUND' }, 404, request);
+        return json({ ok: true, row: updated }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/call-list status error:', e);
+        return json({ ok: false, error: 'STATUS_UPDATE_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/appointments — log a new appointment
+  {
+    method: 'POST', pattern: '/v1/gsvlp/appointments',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const body = await parseBody(request);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      const { tax_pro_name, tax_pro_credential, tax_pro_phone, date, time, notes, row_number } = body;
+      if (!tax_pro_name || !date || !time) {
+        return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['tax_pro_name', 'date', 'time'] }, 400, request);
+      }
+      try {
+        const record = await gsvlpGetAppointments(env, session.account_id);
+        const nowIso = new Date().toISOString();
+        const appointment = {
+          id: `appt_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
+          tax_pro_name,
+          tax_pro_credential: tax_pro_credential || '',
+          tax_pro_phone: tax_pro_phone || '',
+          date, time,
+          notes: notes || '',
+          status: 'upcoming',
+          commission: 0,
+          created_at: nowIso,
+        };
+        record.account_id = session.account_id;
+        record.appointments = Array.isArray(record.appointments) ? record.appointments : [];
+        record.appointments.push(appointment);
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/appointments/${session.account_id}.json`, record);
+
+        if (row_number != null) {
+          try { await gsvlpUpdateCallStatus(env, session.account_id, row_number, 'booked'); } catch {}
+        }
+
+        return json({ ok: true, appointment }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/appointments POST error:', e);
+        return json({ ok: false, error: 'APPOINTMENT_LOG_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/gsvlp/appointments — list setter's appointments + summary
+  {
+    method: 'GET', pattern: '/v1/gsvlp/appointments',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const record = await gsvlpGetAppointments(env, session.account_id);
+        const appointments = Array.isArray(record.appointments) ? record.appointments : [];
+        const summary = gsvlpSummarizeAppointments(appointments);
+        return json({ ok: true, appointments, summary }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/appointments GET error:', e);
+        return json({ ok: false, error: 'APPOINTMENTS_FETCH_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/gsvlp/dashboard — setter dashboard stats
+  {
+    method: 'GET', pattern: '/v1/gsvlp/dashboard',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const batch = await gsvlpGetBatch(env, session.account_id);
+        const apptRec = await gsvlpGetAppointments(env, session.account_id);
+        const appointments = Array.isArray(apptRec.appointments) ? apptRec.appointments : [];
+        const summary = gsvlpSummarizeAppointments(appointments);
+        const today = new Date().toISOString().slice(0, 10);
+        const callsToday = batch
+          ? batch.rows.filter(r => r.called_at && r.called_at.slice(0, 10) === today).length
+          : 0;
+        return json({
+          ok: true,
+          stats: {
+            calls_today: callsToday,
+            appointments_booked: summary.upcoming + summary.showed + summary.closed,
+            show_rate: summary.show_rate,
+            pending_earnings: summary.pending,
+          },
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/dashboard error:', e);
+        return json({ ok: false, error: 'DASHBOARD_FETCH_FAILED', message: String(e?.message || e) }, 500, request);
+      }
     },
   },
 

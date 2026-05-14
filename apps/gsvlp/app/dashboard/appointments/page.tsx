@@ -1,17 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useAppShell } from '@vlp/member-ui';
 import { AppointmentCard, type Appointment, type ApptStatus } from '@/components/dashboard/AppointmentCard';
 import { CommissionSummary } from '@/components/dashboard/CommissionSummary';
-
-// MOCK DATA — replace with API call to GET /v1/gsvlp/appointments
-const MOCK_APPOINTMENTS: Appointment[] = [
-  { id: '1', taxProName: 'Robert Chen', credential: 'CPA', date: '2026-05-16', time: '15:00', status: 'upcoming', commission: 0 },
-  { id: '2', taxProName: 'Sarah Williams', credential: 'EA', date: '2026-05-14', time: '09:00', status: 'showed', commission: 0 },
-  { id: '3', taxProName: 'James Park', credential: 'ATTY', date: '2026-05-12', time: '14:00', status: 'closed', commission: 240 },
-  { id: '4', taxProName: 'Lisa Thompson', credential: 'CPA', date: '2026-05-10', time: '10:00', status: 'no_show', commission: 0 },
-  { id: '5', taxProName: 'David Martinez', credential: 'EA', date: '2026-05-09', time: '15:00', status: 'closed', commission: 180 },
-];
 
 const FILTER_OPTIONS: Array<{ value: 'ALL' | ApptStatus; label: string }> = [
   { value: 'ALL', label: 'All' },
@@ -20,13 +12,71 @@ const FILTER_OPTIONS: Array<{ value: 'ALL' | ApptStatus; label: string }> = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
+interface ApiAppt {
+  id: string;
+  tax_pro_name: string;
+  tax_pro_credential: string;
+  date: string;
+  time: string;
+  status: ApptStatus;
+  commission: number;
+}
+
+interface ApiSummary {
+  total: number;
+  upcoming: number;
+  showed: number;
+  closed: number;
+  no_show: number;
+  total_earned: number;
+  pending: number;
+  show_rate: number;
+}
+
 export default function AppointmentsPage() {
-  const [appts, setAppts] = useState<Appointment[]>(MOCK_APPOINTMENTS);
+  const { config } = useAppShell();
+  const [appts, setAppts] = useState<Appointment[] | null>(null);
+  const [summary, setSummary] = useState<ApiSummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'ALL' | ApptStatus>('ALL');
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setError(null);
+    setAppts(null);
+    setSummary(null);
+    fetch(`${config.apiBaseUrl}/v1/gsvlp/appointments`, { credentials: 'include' })
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.ok) throw new Error(d.error || 'Failed to load appointments');
+        return d;
+      })
+      .then((d) => {
+        if (cancelled) return;
+        const cred = (c: string): 'EA' | 'CPA' | 'ATTY' =>
+          c === 'CPA' || c === 'ATTY' ? c : 'EA';
+        const mapped: Appointment[] = (d.appointments ?? []).map((a: ApiAppt) => ({
+          id: a.id,
+          taxProName: a.tax_pro_name,
+          credential: cred(a.tax_pro_credential),
+          date: a.date,
+          time: a.time,
+          status: a.status,
+          commission: a.commission,
+        }));
+        setAppts(mapped);
+        setSummary(d.summary ?? null);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e.message || 'Failed to load appointments');
+      });
+    return () => { cancelled = true; };
+  }, [config.apiBaseUrl, reloadKey]);
 
   const filtered = useMemo(
     () =>
-      appts.filter((a) => {
+      (appts ?? []).filter((a) => {
         if (filter === 'ALL') return true;
         if (filter === 'showed') return a.status === 'showed' || a.status === 'closed' || a.status === 'no_show';
         return a.status === filter;
@@ -36,23 +86,9 @@ export default function AppointmentsPage() {
 
   function cancelAppt(id: string) {
     setAppts((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: 'cancelled' } : a))
+      (prev ?? []).map((a) => (a.id === id ? { ...a, status: 'cancelled' } : a))
     );
   }
-
-  const totalEarned = appts
-    .filter((a) => a.status === 'closed')
-    .reduce((sum, a) => sum + a.commission, 0);
-  const showRelevant = appts.filter(
-    (a) => a.status === 'showed' || a.status === 'closed' || a.status === 'no_show'
-  );
-  const showCount = showRelevant.filter(
-    (a) => a.status === 'showed' || a.status === 'closed'
-  ).length;
-  const showRate =
-    showRelevant.length > 0
-      ? Math.round((showCount / showRelevant.length) * 100)
-      : 0;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -76,28 +112,63 @@ export default function AppointmentsPage() {
         </select>
       </header>
 
-      <CommissionSummary
-        totalEarned={totalEarned}
-        pending={0}
-        appointmentsSet={appts.length}
-        showRate={showRate}
-      />
-
-      <section className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-8 text-center text-sm text-white/50">
-            No appointments match this filter.
+      {error ? (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/[0.06] p-6 text-sm">
+          <div className="font-semibold text-amber-300">Couldn&rsquo;t load appointments</div>
+          <div className="mt-1 text-white/60">{error}</div>
+          <button
+            type="button"
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="mt-3 rounded border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/[0.04] hover:text-white"
+          >
+            Retry
+          </button>
+        </div>
+      ) : appts === null || summary === null ? (
+        <>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-24 animate-pulse rounded-lg border border-white/[0.06] bg-white/[0.02]"
+              />
+            ))}
           </div>
-        ) : (
-          filtered.map((a) => (
-            <AppointmentCard
-              key={a.id}
-              appointment={a}
-              onCancel={cancelAppt}
-            />
-          ))
-        )}
-      </section>
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-32 animate-pulse rounded-lg border border-white/[0.06] bg-white/[0.02]"
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <CommissionSummary
+            totalEarned={summary.total_earned}
+            pending={summary.pending}
+            appointmentsSet={summary.total}
+            showRate={summary.show_rate}
+          />
+
+          <section className="space-y-3">
+            {filtered.length === 0 ? (
+              <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-8 text-center text-sm text-white/50">
+                No appointments match this filter.
+              </div>
+            ) : (
+              filtered.map((a) => (
+                <AppointmentCard
+                  key={a.id}
+                  appointment={a}
+                  onCancel={cancelAppt}
+                />
+              ))
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }
