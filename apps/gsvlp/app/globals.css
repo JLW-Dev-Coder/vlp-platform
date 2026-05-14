@@ -7,15 +7,15 @@
 @layer base {
   :root {
     /* GSVLP brand overrides for member-ui shared tokens */
-    --member-accent: rgba(255, 107, 0, 0.1);
-    --member-accent-strong: rgba(255, 107, 0, 0.2);
-    --member-hero-bg: #2a1500;
-    --member-hero-bg-end: #1a0e00;
+    --member-accent: rgba(34, 197, 94, 0.1);
+    --member-accent-strong: rgba(34, 197, 94, 0.2);
+    --member-hero-bg: #052e16;
+    --member-hero-bg-end: #03200f;
 
     /* Brand glow — used by shared --border-focus + shadow-focus */
-    --brand-glow: rgba(255, 107, 0, 0.25);
+    --brand-glow: rgba(34, 197, 94, 0.25);
 
-    /* Text color on orange brand.primary */
+    /* Text color on brand.primary */
     --brand-text-on-primary: #FFFFFF;
 
     /* GSVLP brand tokens */
@@ -23,10 +23,10 @@
     --color-surface:     #161824;
     --color-surface-2:   #1e2130;
     --color-border:      #2a2d3e;
-    --color-brand:       #FF6B00;
-    --color-brand-light: #FF8533;
-    --color-brand-dark:  #CC5200;
-    --color-brand-muted: rgba(255, 107, 0, 0.12);
+    --color-brand:       #22C55E;
+    --color-brand-light: #4ADE80;
+    --color-brand-dark:  #15803D;
+    --color-brand-muted: rgba(34, 197, 94, 0.12);
     --color-text-1:      #f1f1f4;
     --color-text-2:      #9ca3af;
     --color-text-3:      #6b7280;

@@ -12,14 +12,14 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#FF6B00',
-          light: 'rgba(255, 107, 0, 0.12)',
-          dark: '#CC5200',
-          400: '#FF8533',
-          500: '#FF6B00',
-          primary: '#FF6B00',
-          hover: '#E85D00',
-          glow: 'rgba(255, 107, 0, 0.25)',
+          DEFAULT: '#22C55E',
+          light: 'rgba(34, 197, 94, 0.12)',
+          dark: '#15803D',
+          400: '#4ADE80',
+          500: '#22C55E',
+          primary: '#22C55E',
+          hover: '#16A34A',
+          glow: 'rgba(34, 197, 94, 0.25)',
           'text-on-primary': '#FFFFFF',
           'gradient-to': '#F59E0B',
         },
@@ -33,7 +33,7 @@ const config: Config = {
         display: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(to right, #FF6B00, #F59E0B)',
+        'gradient-brand': 'linear-gradient(to right, #22C55E, #F59E0B)',
       },
     },
   },

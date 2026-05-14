@@ -4,7 +4,7 @@
 - **Platform:** Grow Setter Pro (GSVLP)
 - **Domain:** setters.virtuallaunch.pro
 - **Adapter:** Static export (Cloudflare Pages)
-- **Brand color:** #FF6B00 (electric orange)
+- **Brand color:** #22C55E (bright green)
 
 ## Purpose
 Recruitment and affiliate management platform for appointment setters.

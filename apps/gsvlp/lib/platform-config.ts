@@ -3,7 +3,7 @@ import type { PlatformConfig } from '@vlp/member-ui'
 export const gsvlpConfig: PlatformConfig = {
   brandName: 'Growth Setter Pro',
   brandAbbrev: 'GSP',
-  brandColor: '#FF6B00',
+  brandColor: '#22C55E',
   brandSubtitle: 'Book Calls. Earn Commission.',
   logoText: 'GSP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',

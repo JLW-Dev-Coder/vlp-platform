@@ -5,7 +5,7 @@ Recruitment and affiliate platform for appointment setters. Free to join, 20% co
 - **Domain:** setters.virtuallaunch.pro
 - **Adapter:** Static export → Cloudflare Pages
 - **Pages project:** `grow-setter-pro`
-- **Brand color:** `#FF6B00`
+- **Brand color:** `#22C55E`
 
 ## Build
 

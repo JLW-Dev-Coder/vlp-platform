@@ -69,7 +69,7 @@ export default function LandingPage() {
           </div>
           <div className="gsp-props gsp-reveal">
             <div className="gsp-prop">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" strokeWidth="2" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 6v6l4 2" strokeLinecap="round" />
               </svg>
@@ -79,7 +79,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="gsp-prop">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" strokeWidth="2" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" aria-hidden="true">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div>
@@ -89,7 +89,7 @@ export default function LandingPage() {
             </div>
             <div className="gsp-prop">
               <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="#FF6B00" d="M21.35 11.1H12v3.2h5.35c-.55 2.4-2.55 3.7-5.35 3.7-3.25 0-5.85-2.6-5.85-5.85S8.75 6.3 12 6.3c1.5 0 2.85.55 3.9 1.45L18.3 5.4C16.6 3.85 14.45 3 12 3 7.05 3 3 7.05 3 12s4.05 9 9 9c5.2 0 8.65-3.65 8.65-8.8 0-.6-.1-1.2-.3-1.1z" />
+                <path fill="#22C55E" d="M21.35 11.1H12v3.2h5.35c-.55 2.4-2.55 3.7-5.35 3.7-3.25 0-5.85-2.6-5.85-5.85S8.75 6.3 12 6.3c1.5 0 2.85.55 3.9 1.45L18.3 5.4C16.6 3.85 14.45 3 12 3 7.05 3 3 7.05 3 12s4.05 9 9 9c5.2 0 8.65-3.65 8.65-8.8 0-.6-.1-1.2-.3-1.1z" />
               </svg>
               <div>
                 <strong>Sign up in seconds</strong>
@@ -143,20 +143,27 @@ export default function LandingPage() {
           <div className="gsp-script-card gsp-reveal">
             <p className="gsp-script-line">
               &ldquo;Hi. I&apos;m [your name]. I&apos;m working with JLW at Virtual Launch Pro.
-              She&apos;s a tax pro like you. Can she help clients find you in the next 30 days?&rdquo;
+              She helps tax pros like you get more clients. Can she show you how in 15 minutes?&rdquo;
             </p>
             <p className="gsp-muted">Pause. Let them respond.</p>
             <div className="gsp-pills">
               <span className="gsp-pill gsp-pill-gray">No</span>
-              <span className="gsp-pill gsp-pill-gold">Maybe — you have 20 seconds</span>
+              <span className="gsp-pill gsp-pill-gold">Maybe</span>
               <span className="gsp-pill gsp-pill-green">Yes</span>
             </div>
+            <p className="gsp-aside">
+              If they say no: &ldquo;No problem — have a great day.&rdquo; Then call the next one.
+            </p>
+            <p className="gsp-aside">
+              If they&apos;re unsure: &ldquo;Totally understand. Most tax pros feel the same way.
+              Would 15 minutes hurt to just hear what she has?&rdquo;
+            </p>
             <p className="gsp-script-line">
               &ldquo;She has availability on Friday at 9 AM or after 3 PM. Which works better?&rdquo;
             </p>
             <p className="gsp-script-line">
-              &ldquo;Great. She&apos;ll look forward to speaking with you then. May I follow up
-              Thursday around 9 AM to confirm?&rdquo;
+              &ldquo;Great. She&apos;ll look forward to speaking with you then. Can I send you
+              a quick confirmation text?&rdquo;
             </p>
           </div>
           <p className="gsp-caption gsp-reveal">
@@ -215,7 +222,7 @@ export default function LandingPage() {
           <h2 className="gsp-h2 gsp-reveal">All you need is this.</h2>
           <ul className="gsp-needs">
             <li className="gsp-need gsp-reveal">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" strokeWidth="3" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3" aria-hidden="true">
                 <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div>
@@ -224,7 +231,7 @@ export default function LandingPage() {
               </div>
             </li>
             <li className="gsp-need gsp-reveal">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" strokeWidth="3" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3" aria-hidden="true">
                 <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div>
@@ -233,7 +240,7 @@ export default function LandingPage() {
               </div>
             </li>
             <li className="gsp-need gsp-reveal">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" strokeWidth="3" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3" aria-hidden="true">
                 <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div>
@@ -264,12 +271,12 @@ export default function LandingPage() {
               <span className={nameIsPlaceholder ? 'gsp-name-placeholder' : 'gsp-name-filled'}>
                 {displayName}
               </span>
-              . I&apos;m working with JLW at Virtual Launch Pro. She&apos;s a tax pro like you.
-              Can she help clients find you in the next 30 days?&rdquo;
+              . I&apos;m working with JLW at Virtual Launch Pro. She helps tax pros like you
+              get more clients. Can she show you how in 15 minutes?&rdquo;
             </p>
           </div>
           <p className="gsp-caption gsp-reveal">
-            See? That&apos;s it. Take a deep breath. You just became an appointment setter.
+            You&apos;re ready. Sign up and make your first 5 calls today.
           </p>
         </div>
       </section>
@@ -311,8 +318,8 @@ const GSP_LANDING_CSS = `
   --gsp-alt: #111111;
   --gsp-surface: #1A1A1A;
   --gsp-border: #333333;
-  --gsp-orange: #FF6B00;
-  --gsp-orange-soft: rgba(255, 107, 0, 0.15);
+  --gsp-orange: #22C55E;
+  --gsp-orange-soft: rgba(34, 197, 94, 0.15);
   --gsp-gold: #F59E0B;
   --gsp-green: #10B981;
   --gsp-text: #FFFFFF;
@@ -427,12 +434,12 @@ const GSP_LANDING_CSS = `
   border: none;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-  box-shadow: 0 4px 24px rgba(255, 107, 0, 0.25);
+  box-shadow: 0 4px 24px rgba(34, 197, 94, 0.25);
 }
 .gsp-lp .gsp-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(255, 107, 0, 0.45);
-  background: #FF8533;
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.45);
+  background: #4ADE80;
 }
 .gsp-lp .gsp-btn-large { padding: 18px 32px; font-size: 17px; margin: 24px 0 16px; }
 
@@ -511,6 +518,8 @@ const GSP_LANDING_CSS = `
 }
 .gsp-lp .gsp-script-line:last-child { margin-bottom: 0; }
 .gsp-lp .gsp-muted { color: var(--gsp-text-3); font-size: 14px; margin: 0 0 16px; }
+.gsp-lp .gsp-aside { color: var(--gsp-text-2); font-size: 14px; line-height: 1.55; margin: 0 0 12px; }
+.gsp-lp .gsp-aside:last-of-type { margin-bottom: 20px; }
 
 .gsp-lp .gsp-pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
 .gsp-lp .gsp-pill {
@@ -542,7 +551,7 @@ const GSP_LANDING_CSS = `
 }
 .gsp-lp .gsp-input:focus {
   border-color: var(--gsp-orange);
-  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.25);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
 }
 .gsp-lp .gsp-input::placeholder { color: var(--gsp-text-3); }
 
@@ -569,14 +578,14 @@ const GSP_LANDING_CSS = `
 
 .gsp-lp .gsp-highlight {
   background: var(--gsp-surface);
-  border-left: 4px solid var(--gsp-green);
+  border-left: 4px solid var(--gsp-gold);
   padding: 20px 24px;
   border-radius: 8px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--gsp-text-2);
 }
-.gsp-lp .gsp-highlight strong { color: var(--gsp-green); }
+.gsp-lp .gsp-highlight strong { color: var(--gsp-gold); }
 
 .gsp-lp .gsp-needs { list-style: none; padding: 0; margin: 0; }
 .gsp-lp .gsp-need { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
