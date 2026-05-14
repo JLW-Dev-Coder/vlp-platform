@@ -9,7 +9,8 @@ function SignInRedirect() {
   const redirect = searchParams.get('redirect') ?? '/dashboard';
 
   useEffect(() => {
-    const qs = `?redirect=${encodeURIComponent(redirect)}`;
+    const returnTo = `https://growthsetters.virtuallaunch.pro${redirect.startsWith('/') ? redirect : `/${redirect}`}`;
+    const qs = `?return_to=${encodeURIComponent(returnTo)}`;
     window.location.replace(`${gsvlpConfig.apiBaseUrl}/v1/auth/google/start${qs}`);
   }, [redirect]);
 

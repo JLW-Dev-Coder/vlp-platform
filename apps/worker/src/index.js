@@ -4181,7 +4181,13 @@ const ROUTES = [
     method: 'GET', pattern: '/v1/auth/google/start',
     handler: async (_method, _pattern, _params, request, env) => {
       const reqUrl = new URL(request.url)
-      const returnTo = reqUrl.searchParams.get('return_to') || 'https://virtuallaunch.pro/dashboard'
+      const rawReturnTo = reqUrl.searchParams.get('return_to') || reqUrl.searchParams.get('redirect') || 'https://virtuallaunch.pro/dashboard'
+      // Validate return_to origin against ALLOWED_ORIGINS to prevent open redirect.
+      let returnTo = 'https://virtuallaunch.pro/dashboard'
+      try {
+        const parsed = new URL(rawReturnTo)
+        if (ALLOWED_ORIGINS.includes(parsed.origin)) returnTo = parsed.toString()
+      } catch {}
 
       // Determine OAuth client + redirect URI based on target domain
       const isTaxMonitor = returnTo.includes('taxmonitor.pro')
@@ -4217,11 +4223,12 @@ const ROUTES = [
         return json({ ok: false, error: 'BAD_REQUEST', message: 'code and state required' }, 400, request);
       }
       try {
-        // Decode the return_to URL from state
+        // Decode the return_to URL from state; validate against ALLOWED_ORIGINS.
         let redirectTarget = 'https://virtuallaunch.pro/dashboard'
         try {
           const decoded = decodeURIComponent(state)
-          if (decoded.startsWith('https://')) redirectTarget = decoded
+          const parsed = new URL(decoded)
+          if (ALLOWED_ORIGINS.includes(parsed.origin)) redirectTarget = parsed.toString()
         } catch {}
 
         // Determine OAuth client + redirect URI based on target domain (must match start handler)
