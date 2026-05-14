@@ -269,7 +269,7 @@ jobs:
       - name: Build GSVLP
         run: npx turbo build --filter=gsvlp
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy apps/gsvlp/out --project-name=grow-setter-pro --branch=main
+        run: npx wrangler pages deploy apps/gsvlp/out --project-name=growthsetters-pro --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
