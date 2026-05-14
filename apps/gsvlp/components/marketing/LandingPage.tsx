@@ -8,6 +8,7 @@ const VIDEO_URL_MOV = 'https://api.virtuallaunch.pro/v1/gsvlp/videos/demo-call-4
 export default function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [name, setName] = useState('')
+  const [activeOutcome, setActiveOutcome] = useState<'yes' | 'maybe' | 'no'>('yes')
 
   useEffect(() => {
     const root = rootRef.current
@@ -145,26 +146,9 @@ export default function LandingPage() {
               &ldquo;Hi. I&apos;m [your name]. I&apos;m working with JLW at Virtual Launch Pro.
               She helps tax pros like you get more clients. Can she show you how in 15 minutes?&rdquo;
             </p>
-            <p className="gsp-muted">Pause. Let them respond.</p>
-            <div className="gsp-pills">
-              <span className="gsp-pill gsp-pill-gray">No</span>
-              <span className="gsp-pill gsp-pill-gold">Maybe</span>
-              <span className="gsp-pill gsp-pill-green">Yes</span>
-            </div>
-            <p className="gsp-aside">
-              If they say no: &ldquo;No problem — have a great day.&rdquo; Then call the next one.
-            </p>
-            <p className="gsp-aside">
-              If they&apos;re unsure: &ldquo;Totally understand. Most tax pros feel the same way.
-              Would 15 minutes hurt to just hear what she has?&rdquo;
-            </p>
-            <p className="gsp-script-line">
-              &ldquo;She has availability on Friday at 9 AM or after 3 PM. Which works better?&rdquo;
-            </p>
-            <p className="gsp-script-line">
-              &ldquo;Great. She&apos;ll look forward to speaking with you then. Can I send you
-              a quick confirmation text?&rdquo;
-            </p>
+            <p className="gsp-muted">Pause. Let them respond. The call goes one of three ways:</p>
+            <OutcomeTabs active={activeOutcome} onChange={setActiveOutcome} />
+            <OutcomeContent active={activeOutcome} />
           </div>
           <p className="gsp-caption gsp-reveal">
             That&apos;s it. They hang up. You log the appointment. Done.
@@ -274,6 +258,9 @@ export default function LandingPage() {
               . I&apos;m working with JLW at Virtual Launch Pro. She helps tax pros like you
               get more clients. Can she show you how in 15 minutes?&rdquo;
             </p>
+            <p className="gsp-muted">Pause. Let them respond. The call goes one of three ways:</p>
+            <OutcomeTabs active={activeOutcome} onChange={setActiveOutcome} />
+            <OutcomeContent active={activeOutcome} />
           </div>
           <p className="gsp-caption gsp-reveal">
             You&apos;re ready. Sign up and make your first 5 calls today.
@@ -309,6 +296,64 @@ export default function LandingPage() {
         </div>
       </section>
     </div>
+  )
+}
+
+type Outcome = 'yes' | 'maybe' | 'no'
+
+function OutcomeTabs({ active, onChange }: { active: Outcome; onChange: (o: Outcome) => void }) {
+  const pill = (key: Outcome, label: string, activeClass: string) => (
+    <button
+      type="button"
+      onClick={() => onChange(key)}
+      className={`gsp-pill gsp-pill-btn ${active === key ? activeClass : ''}`}
+      aria-pressed={active === key}
+    >
+      {label}
+    </button>
+  )
+  return (
+    <div className="gsp-pills" role="tablist">
+      {pill('no', 'No', 'gsp-pill-active-gray')}
+      {pill('maybe', 'Maybe', 'gsp-pill-active-gold')}
+      {pill('yes', 'Yes', 'gsp-pill-active-green')}
+    </div>
+  )
+}
+
+function OutcomeContent({ active }: { active: Outcome }) {
+  if (active === 'yes') {
+    return (
+      <>
+        <p className="gsp-script-line">
+          &ldquo;She has availability on Friday at 9 AM or after 3 PM. Which works better?&rdquo;
+        </p>
+        <p className="gsp-script-line">
+          &ldquo;Great. She&apos;ll look forward to speaking with you then. You&apos;ll receive
+          an email confirmation shortly.&rdquo;
+        </p>
+      </>
+    )
+  }
+  if (active === 'maybe') {
+    return (
+      <>
+        <p className="gsp-script-line">
+          &ldquo;Totally understand. Most tax pros feel the same way. Would 15 minutes hurt
+          to just hear what she has?&rdquo;
+        </p>
+        <p className="gsp-aside">
+          <em>If they say yes after this, continue with the booking script above. If still no,
+          thank them and move on.</em>
+        </p>
+      </>
+    )
+  }
+  return (
+    <>
+      <p className="gsp-script-line">&ldquo;No problem — have a great day.&rdquo;</p>
+      <p className="gsp-aside"><em>Call the next one. That&apos;s it.</em></p>
+    </>
   )
 }
 
@@ -530,9 +575,17 @@ const GSP_LANDING_CSS = `
   font-weight: 600;
   border: 1px solid var(--gsp-border);
 }
-.gsp-lp .gsp-pill-gray { color: var(--gsp-text-2); background: transparent; }
-.gsp-lp .gsp-pill-gold { color: var(--gsp-gold); border-color: var(--gsp-gold); background: rgba(245, 158, 11, 0.1); }
-.gsp-lp .gsp-pill-green { color: var(--gsp-green); border-color: var(--gsp-green); background: rgba(16, 185, 129, 0.1); }
+.gsp-lp .gsp-pill-btn {
+  background: var(--gsp-surface);
+  color: var(--gsp-text-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.gsp-lp .gsp-pill-btn:hover { border-color: #555; }
+.gsp-lp .gsp-pill-active-gray { background: #666; border-color: #666; color: #FFFFFF; }
+.gsp-lp .gsp-pill-active-gold { background: var(--gsp-gold); border-color: var(--gsp-gold); color: #FFFFFF; }
+.gsp-lp .gsp-pill-active-green { background: var(--gsp-orange); border-color: var(--gsp-orange); color: #FFFFFF; }
 
 .gsp-lp .gsp-name-placeholder { color: var(--gsp-orange); font-style: italic; }
 .gsp-lp .gsp-name-filled { color: var(--gsp-orange); font-weight: 700; }
