@@ -258,7 +258,7 @@ STRIPE_CONNECT_CLIENT_ID = "ca_UEvTMDrQCV82RNrJ4JIaEye4bimUM0RX"
 # =================================================
 
 GSVLP_SHEET_ID = "1r9lkdOKj3Dcfh_tppN2NfORH0jTQBLYCXuElYnn2m7w"
-GSVLP_SHEET_RANGE = "Sheet1!A:I"
+GSVLP_SHEET_RANGE = "results-20260403-183749!A:I"
 GSVLP_BATCH_SIZE = "50"
 
 # =================================================
