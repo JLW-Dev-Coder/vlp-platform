@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BookingForm } from './BookingForm';
 
 export type CallStatus = 'not_called' | 'called' | 'booked';
@@ -32,6 +33,7 @@ const STATUS_OPTIONS: Array<{ value: 'ALL' | CallStatus; label: string }> = [
 ];
 
 export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTableProps) {
+  const router = useRouter();
   const [rows, setRows] = useState<TaxPro[]>(initialData);
   const [stateFilter, setStateFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | CallStatus>('ALL');
@@ -127,6 +129,7 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Action</th>
+              <th className="px-4 py-3 w-8" />
             </tr>
           </thead>
           <tbody>
@@ -135,6 +138,7 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
                 key={r.id}
                 row={r}
                 booking={bookingFor === r.id}
+                onRowClick={() => router.push(`/dashboard/calls/${r.id}`)}
                 onMarkCalled={() => markCalled(r.id)}
                 onLogClick={() => setBookingFor(r.id)}
                 onBook={(details) => bookAppointment(r, details)}
@@ -150,7 +154,16 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
         {filtered.map((r) => (
           <div
             key={r.id}
-            className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4"
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push(`/dashboard/calls/${r.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                router.push(`/dashboard/calls/${r.id}`);
+              }
+            }}
+            className="cursor-pointer rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04]"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -165,13 +178,14 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
             <div className="mt-3 flex items-center justify-between">
               <a
                 href={`tel:${r.phone.replace(/\D/g, '')}`}
+                onClick={(e) => e.stopPropagation()}
                 className="text-sm text-white/80 hover:text-white"
               >
                 {r.phone}
               </a>
               <StatusPill value={r.status} />
             </div>
-            <div className="mt-3">
+            <div className="mt-3" onClick={(e) => e.stopPropagation()}>
               <ActionButton
                 status={r.status}
                 onMarkCalled={() => markCalled(r.id)}
@@ -183,6 +197,11 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
                   onCancel={() => setBookingFor(null)}
                 />
               )}
+            </div>
+            <div className="mt-3 flex justify-end text-white/30">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </div>
           </div>
         ))}
@@ -205,6 +224,7 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
 function RowGroup({
   row,
   booking,
+  onRowClick,
   onMarkCalled,
   onLogClick,
   onBook,
@@ -212,14 +232,19 @@ function RowGroup({
 }: {
   row: TaxPro;
   booking: boolean;
+  onRowClick: () => void;
   onMarkCalled: () => void;
   onLogClick: () => void;
   onBook: (d: { date: string; time: string; notes: string }) => void;
   onCancelBook: () => void;
 }) {
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
   return (
     <>
-      <tr className="border-b border-white/[0.04]">
+      <tr
+        onClick={onRowClick}
+        className="cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.03]"
+      >
         <td className="px-4 py-3">
           <div className="font-semibold text-white">{row.fullName}</div>
           <div className="text-xs text-white/50">{row.dba}</div>
@@ -233,6 +258,7 @@ function RowGroup({
         <td className="px-4 py-3">
           <a
             href={`tel:${row.phone.replace(/\D/g, '')}`}
+            onClick={stop}
             className="text-white/80 hover:text-white"
           >
             {row.phone}
@@ -241,17 +267,22 @@ function RowGroup({
         <td className="px-4 py-3">
           <StatusPill value={row.status} />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3" onClick={stop}>
           <ActionButton
             status={row.status}
             onMarkCalled={onMarkCalled}
             onLogClick={onLogClick}
           />
         </td>
+        <td className="px-4 py-3 text-white/30">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </td>
       </tr>
       {booking && (
         <tr className="bg-black/20">
-          <td colSpan={6} className="px-4 pb-4">
+          <td colSpan={7} className="px-4 pb-4">
             <BookingForm onSubmit={onBook} onCancel={onCancelBook} />
           </td>
         </tr>
