@@ -175,6 +175,7 @@ async function uploadVideo(youtube, { videoPath, title, description, tags, priva
         status: {
           privacyStatus,
           selfDeclaredMadeForKids: false,
+          embeddable: true,
         },
       },
       media: {

@@ -163,6 +163,8 @@ Public contact email for business inquiries. Default: `outreach@virtuallaunch.pr
 
 **Default visibility: Private.** Videos go up Private, get QA'd, then flipped to Public or Unlisted at the per-video decision point. This is staging-then-flip, not Unlisted-by-default.
 
+**Embedding: Enabled by default on all API uploads.** The upload tool (`tools/youtube-upload/upload.js`) sets `status.embeddable = true` on every `videos.insert` call. SuiteDash LMS and other embedding surfaces require this. Do not toggle off per video unless there's a specific reason.
+
 ### 5.6 Settings.Upload Defaults.Advanced Settings
 
 - Category: Education
@@ -336,6 +338,7 @@ Before declaring a video "uploaded and live":
 | 2026-05-07 | Comments on with moderation (§6.3) | The existing five channels have Channel Guidelines + Content Controls actively configured. Comments-off-by-default would discard the moderation work and would be inconsistent with the established stance that VLP channels are conversational surfaces. |
 | 2026-05-07 | Brand Account ownership mandatory (§1.1) | Personal-Gmail channels are operationally fragile. Brand Accounts allow multi-manager access. |
 | 2026-05-07 | Title pattern extension for course/training channels (§8.1) | TPP's training course needs module/lesson encoding for alphabetical sort in YouTube Studio. The standard `YT###` pattern doesn't carry that information. The extended `M{NN}.L{N}` pattern is documented as a per-channel option, applied via the channel's Upload Task sub-page. |
+| 2026-05-15 | Default `embeddable: true` on all API uploads (§5.5) | SuiteDash LMS embeds require embedding enabled. Previously defaulted to off, requiring manual Studio toggle per video. Codified as standard for all VLP channels. |
 
 Append-only. Do not rewrite prior entries.
 
