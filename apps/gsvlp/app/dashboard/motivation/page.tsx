@@ -94,6 +94,35 @@ export default function MotivationPage() {
         </h2>
       </section>
 
+      {/* Section 1.5 — Webinar Recording */}
+      <section>
+        <h2 className="text-xl font-bold text-white">Watch: How to Get Started with Appointment Setting</h2>
+        <p className="mt-1 text-sm text-white/60">
+          JLW breaks down the opportunity, the script, and how you earn. 1 hour of pure motivation.
+        </p>
+        <div className="mt-4 overflow-hidden rounded-xl border border-white/[0.06] bg-black">
+          <iframe
+            src="https://webinar.zoho.com/meeting/public/videoprv?recordingId=0ae62b8b3e5895c77badc96fc2df8e36eef9e4b7920a546c6560ba44342b557d&x-meeting-org=924178738"
+            title="JLW Appointment Setting Webinar"
+            width="100%"
+            style={{ aspectRatio: '16 / 9', border: 0, display: 'block' }}
+            allow="autoplay; fullscreen"
+            allowFullScreen
+          />
+        </div>
+        <a
+          href="https://webinar.zoho.com/meeting/public/videoprv?recordingId=0ae62b8b3e5895c77badc96fc2df8e36eef9e4b7920a546c6560ba44342b557d&x-meeting-org=924178738"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-2 text-xs text-white/50 hover:text-white"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M14 3h7v7M21 3l-9 9M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
+          </svg>
+          Open in new tab if the player doesn&rsquo;t load
+        </a>
+      </section>
+
       {/* Section 2 — The Numbers That Matter */}
       <section>
         <h2 className="mb-4 text-xl font-bold text-white">The Numbers That Matter</h2>

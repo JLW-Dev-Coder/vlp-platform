@@ -26547,6 +26547,119 @@ Return a JSON array where each element has:
     },
   },
 
+  // POST /v1/gsvlp/follow-ups — create or update a follow-up for a lead
+  {
+    method: 'POST', pattern: '/v1/gsvlp/follow-ups',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const body = await parseBody(request);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      const { row_number, tax_pro_name, tax_pro_phone, credential, disposition, follow_up_date, notes } = body;
+      if (row_number == null || !follow_up_date) {
+        return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['row_number', 'follow_up_date'] }, 400, request);
+      }
+      try {
+        const key = `gsvlp/follow-ups/${session.account_id}.json`;
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
+        let record;
+        try { record = raw ? JSON.parse(raw) : null; } catch { record = null; }
+        if (!record || !Array.isArray(record.follow_ups)) {
+          record = { account_id: session.account_id, follow_ups: [] };
+        }
+        const existing = record.follow_ups.find(f => String(f.row_number) === String(row_number) && f.status === 'pending');
+        let followUp;
+        if (existing) {
+          existing.follow_up_date = follow_up_date;
+          existing.disposition = disposition || existing.disposition;
+          existing.notes = notes || existing.notes || '';
+          followUp = existing;
+        } else {
+          followUp = {
+            id: `fu_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
+            row_number,
+            tax_pro_name: tax_pro_name || '',
+            tax_pro_phone: tax_pro_phone || '',
+            credential: credential || '',
+            disposition: disposition || '',
+            follow_up_date,
+            notes: notes || '',
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            completed_at: null,
+          };
+          record.follow_ups.push(followUp);
+        }
+        await r2Put(env.R2_VIRTUAL_LAUNCH, key, record);
+        return json({ ok: true, follow_up: followUp }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/follow-ups POST error:', e);
+        return json({ ok: false, error: 'FOLLOW_UP_SAVE_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/gsvlp/follow-ups — list follow-ups (filter by status / due)
+  {
+    method: 'GET', pattern: '/v1/gsvlp/follow-ups',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const key = `gsvlp/follow-ups/${session.account_id}.json`;
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
+        let record;
+        try { record = raw ? JSON.parse(raw) : null; } catch { record = null; }
+        const all = Array.isArray(record?.follow_ups) ? record.follow_ups : [];
+        const url = new URL(request.url);
+        const due = url.searchParams.get('due');
+        const statusParam = url.searchParams.get('status') || 'pending';
+        const today = new Date().toISOString().slice(0, 10);
+        let filtered = all;
+        if (statusParam !== 'all') {
+          filtered = filtered.filter(f => f.status === statusParam);
+        }
+        if (due === 'today') {
+          filtered = filtered.filter(f => f.status === 'pending' && f.follow_up_date <= today);
+        }
+        filtered.sort((a, b) => String(a.follow_up_date).localeCompare(String(b.follow_up_date)));
+        const due_today_count = all.filter(f => f.status === 'pending' && f.follow_up_date <= today).length;
+        const total_pending = all.filter(f => f.status === 'pending').length;
+        return json({ ok: true, follow_ups: filtered, due_today_count, total_pending }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/follow-ups GET error:', e);
+        return json({ ok: false, error: 'FOLLOW_UPS_FETCH_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/follow-ups/:id/complete — mark a follow-up completed
+  {
+    method: 'POST', pattern: '/v1/gsvlp/follow-ups/:id/complete',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const key = `gsvlp/follow-ups/${session.account_id}.json`;
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
+        let record;
+        try { record = raw ? JSON.parse(raw) : null; } catch { record = null; }
+        if (!record || !Array.isArray(record.follow_ups)) {
+          return json({ ok: false, error: 'FOLLOW_UP_NOT_FOUND' }, 404, request);
+        }
+        const f = record.follow_ups.find(x => x.id === params.id);
+        if (!f) return json({ ok: false, error: 'FOLLOW_UP_NOT_FOUND' }, 404, request);
+        f.status = 'completed';
+        f.completed_at = new Date().toISOString();
+        await r2Put(env.R2_VIRTUAL_LAUNCH, key, record);
+        return json({ ok: true }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/follow-ups/:id/complete error:', e);
+        return json({ ok: false, error: 'FOLLOW_UP_COMPLETE_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
   // POST /v1/gsvlp/tips/subscribe — capture email, send welcome with PDF link
   {
     method: 'POST', pattern: '/v1/gsvlp/tips/subscribe',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAppShell } from '@vlp/member-ui';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { ScriptCard } from '@/components/dashboard/ScriptCard';
@@ -10,6 +11,108 @@ interface DashboardStats {
   appointments_booked: number;
   show_rate: number;
   pending_earnings: number;
+}
+
+interface FollowUp {
+  id: string;
+  row_number: number;
+  tax_pro_name: string;
+  credential: string;
+  disposition: string;
+  follow_up_date: string;
+  created_at: string;
+  status: 'pending' | 'completed';
+}
+
+const DISPOSITION_LABEL: Record<string, { label: string; color: string }> = {
+  left_message: { label: 'Left Message', color: '#60A5FA' },
+  wants_info: { label: 'Wants More Info', color: '#F59E0B' },
+  voicemail: { label: 'Left Message', color: '#60A5FA' },
+};
+
+function relativeDaysAgo(iso: string): string {
+  const created = new Date(iso);
+  const now = new Date();
+  const ms = now.getTime() - created.getTime();
+  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+  if (days <= 0) return 'Set today';
+  if (days === 1) return 'Set yesterday';
+  return `Set ${days} days ago`;
+}
+
+function FollowUpsDueToday({ apiBaseUrl }: { apiBaseUrl: string }) {
+  const [items, setItems] = useState<FollowUp[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${apiBaseUrl}/v1/gsvlp/follow-ups?due=today`, { credentials: 'include' })
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.ok) throw new Error('fail');
+        if (!cancelled) setItems(d.follow_ups || []);
+      })
+      .catch(() => { if (!cancelled) setItems([]); });
+    return () => { cancelled = true; };
+  }, [apiBaseUrl]);
+
+  if (items === null) {
+    return <div className="h-24 animate-pulse rounded-lg border border-white/[0.06] bg-white/[0.02]" />;
+  }
+
+  if (items.length === 0) {
+    return (
+      <section className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-5 text-sm text-white/70">
+        No follow-ups due today. Keep dialing! 🔥
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className="rounded-lg border-l-4 p-5"
+      style={{
+        borderLeftColor: '#F59E0B',
+        background: 'linear-gradient(90deg, rgba(245,158,11,0.12), rgba(245,158,11,0.02))',
+        boxShadow: '0 0 24px rgba(245,158,11,0.08)',
+      }}
+    >
+      <h2 className="text-base font-bold text-white">
+        You have {items.length} follow-up{items.length === 1 ? '' : 's'} due today
+      </h2>
+      <ul className="mt-4 space-y-3">
+        {items.map((f) => {
+          const disp = DISPOSITION_LABEL[f.disposition] || { label: f.disposition || '—', color: '#9ca3af' };
+          return (
+            <li
+              key={f.id}
+              className="flex flex-col gap-3 rounded-md border border-white/[0.06] bg-black/30 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-white">{f.tax_pro_name}</span>
+                  {f.credential && (
+                    <span className="inline-block rounded-full bg-white/[0.06] px-2 py-0.5 text-xs font-semibold text-white/70">
+                      {f.credential}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span style={{ color: disp.color }} className="font-semibold">{disp.label}</span>
+                  <span className="text-white/40">{relativeDaysAgo(f.created_at)}</span>
+                </div>
+              </div>
+              <Link
+                href={`/dashboard/calls/${f.row_number}`}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#22C55E] px-4 text-sm font-bold text-black hover:bg-[#16A34A]"
+              >
+                Call Now →
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
 }
 
 export default function DashboardHomePage() {
@@ -58,6 +161,8 @@ export default function DashboardHomePage() {
           Your daily stats and the script that books calls.
         </p>
       </header>
+
+      <FollowUpsDueToday apiBaseUrl={config.apiBaseUrl} />
 
       {error ? (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/[0.06] p-6 text-sm">

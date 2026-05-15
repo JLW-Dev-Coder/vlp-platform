@@ -68,17 +68,143 @@ function StatusPill({ value }: { value: LeadStatus }) {
   );
 }
 
+function addDaysIso(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatLongDate(iso: string): string {
+  const [y, m, day] = iso.split('-').map(Number);
+  const d = new Date(y, (m || 1) - 1, day || 1);
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+type PendingFollowUp = {
+  id: string;
+  row_number: number;
+  follow_up_date: string;
+  disposition: string;
+  status: 'pending' | 'completed';
+};
+
+function FollowUpScheduler({
+  apiBaseUrl,
+  lead,
+  rowNumber,
+  disposition,
+  pendingFollowUp,
+  onScheduled,
+}: {
+  apiBaseUrl: string;
+  lead: TaxPro;
+  rowNumber: string;
+  disposition: 'voicemail' | 'wants_info';
+  pendingFollowUp: PendingFollowUp | null;
+  onScheduled: (followUp: PendingFollowUp) => void;
+}) {
+  const [savedDate, setSavedDate] = useState<string | null>(null);
+  const [skipped, setSkipped] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function schedule(days: number) {
+    if (saving) return;
+    setSaving(true);
+    const followUpDate = addDaysIso(days);
+    try {
+      const res = await fetch(`${apiBaseUrl}/v1/gsvlp/follow-ups`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          row_number: Number(rowNumber),
+          tax_pro_name: lead.fullName,
+          tax_pro_phone: lead.phone,
+          credential: lead.profession,
+          disposition: disposition === 'voicemail' ? 'left_message' : 'wants_info',
+          follow_up_date: followUpDate,
+          notes: '',
+        }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok && d.ok) {
+        setSavedDate(followUpDate);
+        setSkipped(false);
+        onScheduled(d.follow_up);
+      }
+    } catch {
+      // Silent fail — user can retry
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (savedDate || (pendingFollowUp && !skipped)) {
+    const dateToShow = savedDate || pendingFollowUp!.follow_up_date;
+    return (
+      <div className="rounded-lg border border-[#22C55E]/30 bg-[#22C55E]/[0.06] p-5">
+        <div className="flex items-center gap-2 text-sm font-semibold text-[#22C55E]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+          Follow-up set for {formatLongDate(dateToShow)}
+        </div>
+      </div>
+    );
+  }
+
+  if (skipped) return null;
+
+  return (
+    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
+      <h2 className="mb-4 text-lg font-semibold text-white">When should you follow up?</h2>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => schedule(1)}
+          className="flex min-h-[48px] items-center justify-center gap-2 rounded-md bg-[#22C55E] px-4 text-sm font-bold text-black hover:bg-[#16A34A] disabled:opacity-50"
+        >
+          <span aria-hidden>🟢</span>
+          Tomorrow
+        </button>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => schedule(2)}
+          className="flex min-h-[48px] items-center justify-center gap-2 rounded-md bg-[#F59E0B] px-4 text-sm font-bold text-black hover:bg-[#D97706] disabled:opacity-50"
+        >
+          <span aria-hidden>🟡</span>
+          In 2 Days
+        </button>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => schedule(7)}
+          className="flex min-h-[48px] items-center justify-center gap-2 rounded-md bg-[#3B82F6] px-4 text-sm font-bold text-white hover:bg-[#2563EB] disabled:opacity-50"
+        >
+          <span aria-hidden>🔵</span>
+          Next Week
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={() => setSkipped(true)}
+        className="mt-4 text-xs text-white/40 hover:text-white/70 underline"
+      >
+        Skip — no follow-up
+      </button>
+    </div>
+  );
+}
+
 export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
   const { config, session } = useAppShell();
   const [batch, setBatch] = useState<TaxPro[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [disposition, setDisposition] = useState<Disposition | null>(null);
   const [showBookingAfterPitch, setShowBookingAfterPitch] = useState(false);
-  const [followUpDate, setFollowUpDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 2);
-    return d.toISOString().slice(0, 10);
-  });
+  const [pendingFollowUp, setPendingFollowUp] = useState<PendingFollowUp | null>(null);
 
   const setterName = firstName(session);
 
@@ -119,10 +245,34 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
     return () => { cancelled = true; };
   }, [config.apiBaseUrl]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${config.apiBaseUrl}/v1/gsvlp/follow-ups?status=pending`, { credentials: 'include' })
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.ok) return;
+        const match = (d.follow_ups || []).find(
+          (f: PendingFollowUp) => String(f.row_number) === String(rowNumber) && f.status === 'pending',
+        );
+        if (!cancelled && match) setPendingFollowUp(match);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [config.apiBaseUrl, rowNumber]);
+
   function selectDisposition(d: Disposition) {
     setDisposition(d);
     setShowBookingAfterPitch(false);
     postStatus(config.apiBaseUrl, rowNumber, DISPOSITION_TO_STATUS[d]);
+    // Auto-complete any pending follow-up — the setter is now acting on this lead.
+    // Don't auto-complete if they're scheduling another follow-up disposition.
+    if (pendingFollowUp && d !== 'voicemail' && d !== 'wants_info') {
+      fetch(`${config.apiBaseUrl}/v1/gsvlp/follow-ups/${pendingFollowUp.id}/complete`, {
+        method: 'POST',
+        credentials: 'include',
+      }).catch(() => {});
+      setPendingFollowUp(null);
+    }
   }
 
   const lead = batch?.find((r) => r.id === rowNumber) ?? null;
@@ -212,6 +362,15 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
                 onStillNo={() => setDisposition('not_fit')}
               />
               <TaxProNurtureFlow lead={lead} apiBaseUrl={config.apiBaseUrl} />
+              <FollowUpScheduler
+                apiBaseUrl={config.apiBaseUrl}
+                lead={lead}
+                rowNumber={rowNumber}
+                disposition="wants_info"
+                pendingFollowUp={pendingFollowUp}
+                onScheduled={setPendingFollowUp}
+              />
+              <NextLeadButton currentRowNumber={rowNumber} batch={batch ?? []} />
             </>
           )}
 
@@ -239,18 +398,15 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
                     you can reach her at virtuallaunch.pro. Have a great day.&rdquo;
                   </p>
                 </div>
-                <label className="mt-5 block">
-                  <span className="mb-1 block text-xs uppercase tracking-widest text-white/40">
-                    Schedule follow-up
-                  </span>
-                  <input
-                    type="date"
-                    value={followUpDate}
-                    onChange={(e) => setFollowUpDate(e.target.value)}
-                    className="w-full rounded border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white sm:w-auto"
-                  />
-                </label>
               </div>
+              <FollowUpScheduler
+                apiBaseUrl={config.apiBaseUrl}
+                lead={lead}
+                rowNumber={rowNumber}
+                disposition="voicemail"
+                pendingFollowUp={pendingFollowUp}
+                onScheduled={setPendingFollowUp}
+              />
               <NextLeadButton currentRowNumber={rowNumber} batch={batch ?? []} />
             </>
           )}
