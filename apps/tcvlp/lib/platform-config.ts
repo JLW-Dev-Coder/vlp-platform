@@ -77,6 +77,7 @@ export const tcvlpConfig: PlatformConfig = {
         { label: 'About', href: '/about', description: 'Why TaxClaim Pro exists' },
         { label: 'Contact', href: '/contact', description: 'Talk to our team or start intake' },
         { label: 'What is Form 843', href: '/what-is-form-843', description: 'Learn what Form 843 is and who qualifies' },
+        { label: 'Current News', href: '/news', description: 'Latest Kwong claim developments and platform updates' },
       ],
       explore: [
         { label: 'Demo', href: '/demo', description: 'See how your clients claim their refund' },
