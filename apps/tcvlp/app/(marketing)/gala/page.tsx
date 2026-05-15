@@ -156,8 +156,11 @@ function useCountdown(targetDate: string) {
   return remaining
 }
 
+type ClaimType = 'paid' | 'unpaid' | 'partial' | 'unsure'
+
 type IntakeData = {
   taxYears: string[]
+  claimType: ClaimType | ''
   penaltyType: string
   amount: string
   description: string
@@ -166,6 +169,20 @@ type IntakeData = {
   phone: string
   contactPref: string
 }
+
+const CLAIM_TYPE_HELPERS: Record<ClaimType, string> = {
+  paid: "You'll be filing a refund claim. We'll determine whether a formal or protective claim is appropriate.",
+  unpaid: "You'll be requesting an abatement — asking the IRS to remove the assessed amount. Different deadline rules may apply.",
+  partial: "We'll help you file both a refund claim for the paid portion and an abatement request for the unpaid portion.",
+  unsure: "No problem — your practitioner will review and determine the correct claim type.",
+}
+
+const CLAIM_TYPE_OPTIONS: { value: ClaimType; label: string }[] = [
+  { value: 'paid', label: 'Yes, I paid them' },
+  { value: 'unpaid', label: "No, they're assessed but I haven't paid" },
+  { value: 'partial', label: 'I paid some but not all' },
+  { value: 'unsure', label: "I'm not sure" },
+]
 
 function IntakeForm({
   onSubmit,
@@ -178,6 +195,7 @@ function IntakeForm({
 }) {
   const [form, setForm] = useState<IntakeData>({
     taxYears: [],
+    claimType: '',
     penaltyType: '',
     amount: '',
     description: '',
@@ -199,6 +217,7 @@ function IntakeForm({
   const validate = () => {
     const e: Record<string, string> = {}
     if (form.taxYears.length === 0) e.taxYears = 'Select at least one tax year'
+    if (!form.claimType) e.claimType = 'Select an option'
     if (!form.penaltyType) e.penaltyType = 'Select a penalty type'
     if (!form.description.trim()) e.description = 'Describe what happened'
     if (!form.name.trim()) e.name = 'Enter your name'
@@ -242,6 +261,37 @@ function IntakeForm({
         <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
           2023 may apply in limited cases — if your 2023 penalties were assessed before July 10, 2023, select 2022 and describe the situation in the details field.
         </p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-zinc-300 mb-2">
+          Have you already paid these penalties or interest? *
+        </label>
+        <div className="space-y-2">
+          {CLAIM_TYPE_OPTIONS.map((opt) => {
+            const selected = form.claimType === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => update('claimType', opt.value)}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all border ${
+                  selected
+                    ? 'bg-yellow-500/10 border-yellow-500 text-white'
+                    : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                }`}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+        {form.claimType && (
+          <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+            {CLAIM_TYPE_HELPERS[form.claimType]}
+          </p>
+        )}
+        {errors.claimType && <p className="text-red-400 text-xs mt-1">{errors.claimType}</p>}
       </div>
 
       <div>
@@ -431,6 +481,7 @@ export default function KwongClaimPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          claim_type: formData.claimType,
           phone: formData.phone ? stripPhone(formData.phone) : '',
         }),
       })

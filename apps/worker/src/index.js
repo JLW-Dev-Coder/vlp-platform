@@ -20868,8 +20868,10 @@ https://virtuallaunch.pro/payouts
       const VALID_YEARS = ['2019', '2020', '2021', '2022'];
       const VALID_PENALTIES = ['failure-to-file', 'failure-to-pay', 'estimated-tax', 'other'];
       const VALID_CONTACT_PREFS = ['email', 'phone', 'text'];
+      const VALID_CLAIM_TYPES = ['paid', 'unpaid', 'partial', 'unsure'];
 
       const { taxYears, penaltyType, amount, description, name, email, phone, contactPref } = body;
+      const claim_type = body.claim_type || body.claimType || null;
 
       if (!Array.isArray(taxYears) || taxYears.length === 0 || !taxYears.every((y) => VALID_YEARS.includes(y))) {
         return json({ error: 'Select at least one valid tax year', field: 'taxYears' }, 400, request);
@@ -20888,6 +20890,9 @@ https://virtuallaunch.pro/payouts
       }
       if (!contactPref || !VALID_CONTACT_PREFS.includes(contactPref)) {
         return json({ error: 'Invalid contact preference', field: 'contactPref' }, 400, request);
+      }
+      if (!claim_type || !VALID_CLAIM_TYPES.includes(claim_type)) {
+        return json({ error: 'Invalid claim type', field: 'claim_type' }, 400, request);
       }
 
       const intake_id = crypto.randomUUID();
@@ -20908,14 +20913,15 @@ https://virtuallaunch.pro/payouts
         email: email.trim(),
         phone: phoneStr,
         contactPref,
+        claim_type,
       };
 
       try {
         await r2Put(env.R2_VIRTUAL_LAUNCH, `gala/intakes/${intake_id}.json`, record);
 
         await env.DB.prepare(
-          `INSERT INTO gala_intakes (intake_id, submitted_at, name, email, phone, contact_pref, penalty_type, tax_years, amount, status)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
+          `INSERT INTO gala_intakes (intake_id, submitted_at, name, email, phone, contact_pref, penalty_type, tax_years, amount, status, claim_type)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
         ).bind(
           intake_id,
           submitted_at,
@@ -20925,7 +20931,8 @@ https://virtuallaunch.pro/payouts
           contactPref,
           penaltyType,
           taxYears.join(','),
-          amountStr || null
+          amountStr || null,
+          claim_type
         ).run();
 
         // Notification email (non-blocking)
