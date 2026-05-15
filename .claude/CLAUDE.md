@@ -39,6 +39,7 @@ Every platform that previously lived in its own repo is migrated here.
 | Tax Avatar Pro | TAVLP | taxavatar.virtuallaunch.pro | `apps/tavlp` | static export | `#ec4899` (hot pink) |
 | Tax Prep Pro | TPP | taxprep.virtuallaunch.pro | `apps/taxprep` | static export | `#E91E63` (rose) |
 | VLP Worker | — | api.virtuallaunch.pro | `apps/worker` | Cloudflare Worker | — |
+| Growth Setter Pro | GSVLP | growthsetters.virtuallaunch.pro | `apps/gsvlp` | static export | `#22C55E` (green) |
 
 **Authoritative source:** each app's `tailwind.config.ts` at `theme.extend.colors.brand.500`. If this table and the Tailwind config diverge, the Tailwind config wins. Update this table whenever a platform's brand color changes.
 
@@ -58,6 +59,7 @@ Every platform that previously lived in its own repo is migrated here.
 | WLVLP | `websitelotto-virtuallaunch-pro` | `npm run build` | `out` | static export |
 | TAVLP | `tavlp-site` | `npm run build` | `out` | static export |
 | TPP | `taxprep-pro` | `npm run build` | `out` | static export |
+| GSVLP | `growthsetters-pro` | `npm run build` | `out` | static export |
 
 **TPP note:** Tax Prep Pro is SD-led — the Next.js site is lead-gen only; members live in SuiteDash. Discovery / Demo bookings use SuiteDash form embeds (no Cal.com), and there are no TPP Worker routes (no `/v1/taxprep/*` endpoints).
 
