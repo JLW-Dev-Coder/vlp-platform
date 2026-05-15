@@ -21811,6 +21811,10 @@ Return a JSON array where each element has:
         { display: 'Knox',    avatar_id: '2633ed30a7c24e42a218f5ef07719c82', voice_id: '158b76b48ed048d381951887e771e412', gender: 'male' },
         { display: 'Denyse',  avatar_id: '530f637281fd43cb9a8dfcaf76514ca9', voice_id: 'ec0ffe0aee23425f80b22632ef3251b2', gender: 'female' },
         { display: 'Griffin', avatar_id: 'a2e213135a8040748efb0e8681dfd46e', voice_id: '1897363f4c6a415b91066035f52105ef', gender: 'male' },
+        // Kennedy is a TAVLP channel-host avatar (used for TAVLP's own YouTube
+        // channel content production via the admin render endpoint), not a
+        // subscriber-facing avatar offered in customer channel onboarding.
+        { display: 'Kennedy', avatar_id: '42568c08ce764a168344ef4179825a60', voice_id: 'dccd34ce74ad42e298cc29033eaf235d', gender: 'female' },
       ];
 
       let listRes;
@@ -22580,6 +22584,222 @@ Return a JSON array where each element has:
         youtube_video_id: record.youtube_video_id || null,
         youtube_url: record.youtube_url || null,
       }, 200, request);
+    },
+  },
+
+  // POST /v1/tavlp/admin/render — admin-only render endpoint that accepts
+  // raw script text (no approved-script dependency). Used to produce TAVLP's
+  // own YouTube channel content with the Kennedy host avatar. Stores a render
+  // record at `tavlp/admin-renders/{video_id}.json`.
+  {
+    method: 'POST', pattern: '/v1/tavlp/admin/render',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const body = await parseBody(request) || {};
+      const { avatar_name, script_text, title, video_id } = body;
+      const auto_upload_youtube = body.auto_upload_youtube === true;
+      if (!video_id || typeof video_id !== 'string') {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'video_id is required' }, 400, request);
+      }
+      if (!avatar_name || typeof avatar_name !== 'string') {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'avatar_name is required' }, 400, request);
+      }
+      if (!script_text || typeof script_text !== 'string' || !script_text.trim()) {
+        return json({ ok: false, error: 'BAD_REQUEST', message: 'script_text must be a non-empty string' }, 400, request);
+      }
+
+      const TARGETS = [
+        { display: 'Annie',   avatar_id: 'e0e84faea390465896db75a83be45085', voice_id: '330290724a1b470fb63153f34d4c0183', gender: 'female' },
+        { display: 'Tariq',   avatar_id: 'bd3a37b07456488e87757da1f9f0673d', voice_id: 'c65bd88dd28f4ae2b6cb6d8676a41c03', gender: 'male' },
+        { display: 'Genesis', avatar_id: '5f090900d27246a284d568bcfe731f72', voice_id: '550779dfa38c4f26a8e69a27975c577f', gender: 'female' },
+        { display: 'Knox',    avatar_id: '2633ed30a7c24e42a218f5ef07719c82', voice_id: '158b76b48ed048d381951887e771e412', gender: 'male' },
+        { display: 'Denyse',  avatar_id: '530f637281fd43cb9a8dfcaf76514ca9', voice_id: 'ec0ffe0aee23425f80b22632ef3251b2', gender: 'female' },
+        { display: 'Griffin', avatar_id: 'a2e213135a8040748efb0e8681dfd46e', voice_id: '1897363f4c6a415b91066035f52105ef', gender: 'male' },
+        { display: 'Kennedy', avatar_id: '42568c08ce764a168344ef4179825a60', voice_id: 'dccd34ce74ad42e298cc29033eaf235d', gender: 'female' },
+      ];
+      const target = TARGETS.find((t) => t.display.toLowerCase() === avatar_name.toLowerCase());
+      if (!target) {
+        return json({ ok: false, error: 'avatar_not_found', message: `Avatar "${avatar_name}" is not in the TAVLP registry` }, 400, request);
+      }
+
+      const apiKey = env.HEYGEN_API_KEY;
+      if (!apiKey) {
+        return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
+      }
+
+      const heygenBody = {
+        video_inputs: [
+          {
+            character: { type: 'avatar', avatar_id: target.avatar_id, avatar_style: 'normal' },
+            voice: { type: 'text', input_text: script_text, voice_id: target.voice_id },
+          },
+        ],
+        dimension: { width: 1920, height: 1080 },
+      };
+
+      let genRes;
+      try {
+        genRes = await fetch('https://api.heygen.com/v2/video/generate', {
+          method: 'POST',
+          headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(heygenBody),
+        });
+      } catch (e) {
+        console.error('TAVLP admin render HeyGen fetch error:', e);
+        return json({ ok: false, error: 'heygen_unreachable', message: 'Failed to reach HeyGen API' }, 502, request);
+      }
+      const genText = await genRes.text().catch(() => '');
+      let genJson = null;
+      try { genJson = JSON.parse(genText); } catch {}
+      if (!genRes.ok) {
+        console.error('TAVLP admin render HeyGen generate error:', genRes.status, genText);
+        return json({ ok: false, error: 'heygen_generate_failed', message: `HeyGen returned ${genRes.status}`, detail: genText.slice(0, 500) }, 502, request);
+      }
+      const heygen_video_id = genJson?.data?.video_id || genJson?.video_id;
+      if (!heygen_video_id) {
+        return json({ ok: false, error: 'heygen_generate_failed', message: 'HeyGen response missing video_id', detail: genText.slice(0, 500) }, 502, request);
+      }
+
+      const created_at = new Date().toISOString();
+      const record = {
+        video_id,
+        title: title || video_id,
+        avatar_name: target.display,
+        heygen_video_id,
+        status: 'pending',
+        r2_key: null,
+        video_url: null,
+        duration: null,
+        auto_upload_youtube,
+        youtube_pending: false,
+        created_at,
+        completed_at: null,
+        error: null,
+      };
+      try {
+        await env.R2_VIRTUAL_LAUNCH.put(
+          `tavlp/admin-renders/${video_id}.json`,
+          JSON.stringify(record),
+          { httpMetadata: { contentType: 'application/json' } }
+        );
+      } catch (e) {
+        console.error('TAVLP admin render record write error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to persist render record' }, 500, request);
+      }
+
+      return json({
+        ok: true,
+        video_id,
+        heygen_video_id,
+        status: 'pending',
+        poll_url: `/v1/tavlp/admin/render/${video_id}/status`,
+      }, 200, request);
+    },
+  },
+
+  // GET /v1/tavlp/admin/render/:video_id/status — admin-only poll for an
+  // admin render. When HeyGen reports completion, downloads the video into
+  // R2 at `tavlp/videos/{video_id}.mp4`.
+  {
+    method: 'GET', pattern: '/v1/tavlp/admin/render/:video_id/status',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+
+      const video_id = params.video_id;
+      const key = `tavlp/admin-renders/${video_id}.json`;
+      let obj;
+      try { obj = await env.R2_VIRTUAL_LAUNCH.get(key); } catch (e) {
+        console.error('TAVLP admin render status read error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to read render record' }, 500, request);
+      }
+      if (!obj) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+
+      let record;
+      try { record = await obj.json(); } catch {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to parse render record' }, 500, request);
+      }
+
+      if (record.status === 'completed' || record.status === 'failed') {
+        return json({ ok: true, ...record }, 200, request);
+      }
+
+      const apiKey = env.HEYGEN_API_KEY;
+      if (!apiKey) {
+        return json({ ok: false, error: 'HEYGEN_NOT_CONFIGURED', message: 'HEYGEN_API_KEY is not set' }, 503, request);
+      }
+
+      let statusRes;
+      try {
+        statusRes = await fetch(`https://api.heygen.com/v1/video_status.get?video_id=${encodeURIComponent(record.heygen_video_id)}`, {
+          method: 'GET',
+          headers: { 'X-Api-Key': apiKey, 'Accept': 'application/json' },
+        });
+      } catch (e) {
+        console.error('TAVLP admin render status HeyGen fetch error:', e);
+        return json({ ok: false, error: 'heygen_unreachable', message: 'Failed to reach HeyGen API' }, 502, request);
+      }
+      const statusText = await statusRes.text().catch(() => '');
+      let statusJson = null;
+      try { statusJson = JSON.parse(statusText); } catch {}
+      if (!statusRes.ok) {
+        console.error('TAVLP admin render status HeyGen error:', statusRes.status, statusText);
+        return json({ ok: false, error: 'heygen_status_failed', message: `HeyGen returned ${statusRes.status}`, detail: statusText.slice(0, 500) }, 502, request);
+      }
+
+      const data = statusJson?.data || statusJson || {};
+      const hgStatus = data.status;
+
+      if (hgStatus === 'completed') {
+        const videoUrl = data.video_url;
+        const r2Key = `tavlp/videos/${video_id}.mp4`;
+        if (videoUrl) {
+          try {
+            const vidRes = await fetch(videoUrl);
+            if (!vidRes.ok) throw new Error(`Video fetch returned ${vidRes.status}`);
+            const buf = await vidRes.arrayBuffer();
+            await env.R2_VIRTUAL_LAUNCH.put(r2Key, buf, { httpMetadata: { contentType: 'video/mp4' } });
+            record.r2_key = r2Key;
+          } catch (e) {
+            console.error('TAVLP admin render video persist error:', e);
+            record.error = `video_persist_failed: ${e?.message || String(e)}`;
+          }
+        }
+        record.status = 'completed';
+        record.video_url = videoUrl || null;
+        record.duration = data.duration || null;
+        record.completed_at = new Date().toISOString();
+        if (record.auto_upload_youtube && record.r2_key) {
+          // YouTube upload from the admin endpoint requires script + channel
+          // records that don't exist for channel-host content. Flag for manual
+          // upload via the SCALE TAVLP tooling.
+          record.youtube_pending = true;
+        }
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
+            httpMetadata: { contentType: 'application/json' },
+          });
+        } catch (e) { console.error('TAVLP admin render record update error:', e); }
+      } else if (hgStatus === 'failed') {
+        record.status = 'failed';
+        record.error = data.error?.message || data.error || 'HeyGen reported failed status';
+        record.completed_at = new Date().toISOString();
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(key, JSON.stringify(record), {
+            httpMetadata: { contentType: 'application/json' },
+          });
+        } catch (e) { console.error('TAVLP admin render record update error:', e); }
+      }
+
+      return json({ ok: true, ...record }, 200, request);
     },
   },
 
