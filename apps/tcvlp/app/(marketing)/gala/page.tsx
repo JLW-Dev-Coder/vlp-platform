@@ -73,7 +73,7 @@ const BRANCHES: Record<string, Branch> = {
     transcript:
       "If you received an IRS notice mentioning penalties, the first question is whether those penalties fall within the Kwong window — January 2020 through July 2023. If they do, the Kwong ruling may provide grounds for abatement or refund. Let's figure out which applies to you.",
     buttons: [
-      { label: 'Penalties are from 2020–2023', next: 'qualify-yes' },
+      { label: 'The notice mentions penalties from 2019–2022', next: 'qualify-yes' },
       { label: 'The notice is about something else', next: 'qualify-no' },
       { label: "I'm not sure what my notice says", next: 'not-sure-notice' },
     ],
@@ -223,7 +223,7 @@ function IntakeForm({
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-2">Tax Year(s) *</label>
         <div className="flex gap-2 flex-wrap">
-          {['2020', '2021', '2022', '2023'].map((y) => (
+          {['2019', '2020', '2021', '2022'].map((y) => (
             <button
               key={y}
               type="button"
@@ -239,6 +239,9 @@ function IntakeForm({
           ))}
         </div>
         {errors.taxYears && <p className="text-red-400 text-xs mt-1">{errors.taxYears}</p>}
+        <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+          2023 may apply in limited cases — if your 2023 penalties were assessed before July 10, 2023, select 2022 and describe the situation in the details field.
+        </p>
       </div>
 
       <div>

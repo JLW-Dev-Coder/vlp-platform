@@ -20865,7 +20865,7 @@ https://virtuallaunch.pro/payouts
         return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
       }
 
-      const VALID_YEARS = ['2020', '2021', '2022', '2023'];
+      const VALID_YEARS = ['2019', '2020', '2021', '2022'];
       const VALID_PENALTIES = ['failure-to-file', 'failure-to-pay', 'estimated-tax', 'other'];
       const VALID_CONTACT_PREFS = ['email', 'phone', 'text'];
 
