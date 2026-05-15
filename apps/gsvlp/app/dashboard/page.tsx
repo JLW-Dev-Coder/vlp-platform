@@ -22,14 +22,24 @@ export default function DashboardHomePage() {
     let cancelled = false;
     setError(null);
     setStats(null);
-    fetch(`${config.apiBaseUrl}/v1/gsvlp/dashboard`, { credentials: 'include' })
-      .then(async (r) => {
+    const fetchJson = (path: string) =>
+      fetch(`${config.apiBaseUrl}${path}`, { credentials: 'include' }).then(async (r) => {
         const d = await r.json().catch(() => ({}));
-        if (!r.ok || !d.ok) throw new Error(d.error || 'Failed to load dashboard');
+        if (!r.ok || !d.ok) throw new Error(d.error || `Failed: ${path}`);
         return d;
-      })
-      .then((d) => {
-        if (!cancelled) setStats(d.stats);
+      });
+    Promise.all([
+      fetchJson('/v1/gsvlp/dashboard'),
+      fetchJson('/v1/gsvlp/commissions').catch(() => null),
+    ])
+      .then(([dash, comm]) => {
+        if (cancelled) return;
+        const base = dash.stats as DashboardStats;
+        const pending =
+          comm && comm.summary && typeof comm.summary.pending === 'number'
+            ? comm.summary.pending
+            : base.pending_earnings;
+        setStats({ ...base, pending_earnings: pending });
       })
       .catch((e) => {
         if (!cancelled) setError(e.message || 'Failed to load dashboard');

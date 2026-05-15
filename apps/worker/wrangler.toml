@@ -268,6 +268,9 @@ GSVLP_BIZ_HOURS_END = "18:00"
 GSVLP_SLOT_DURATION_MIN = "30"
 GSVLP_TIMEZONE = "America/Los_Angeles"
 
+# Commission rate paid to setters when a matched tax pro pays via Stripe.
+GSVLP_COMMISSION_RATE = "0.20"
+
 # =================================================
 # Secrets
 # =================================================
@@ -369,6 +372,8 @@ GSVLP_TIMEZONE = "America/Los_Angeles"
 # =================================================
 
 # GOOGLE_SERVICE_ACCOUNT_KEY — full JSON key for Google Sheets API access (spreadsheets.readonly scope)
+# GSVLP_STRIPE_WEBHOOK_SECRET — Stripe webhook signing secret for /v1/gsvlp/webhooks/stripe.
+#   Set after creating the Stripe Dashboard webhook endpoint pointing to that route.
 
 # =================================================
 # Optional / Future Integrations

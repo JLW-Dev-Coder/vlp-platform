@@ -441,6 +441,238 @@ function gsvlpSummarizeAppointments(appointments) {
   return { total, upcoming, showed, closed, no_show, total_earned, pending, show_rate };
 }
 
+// ---------------------------------------------------------------------------
+// GSVLP — Commission matching, ledger, and Stripe Connect helpers
+// ---------------------------------------------------------------------------
+
+function gsvlpNormalizePhone(phone) {
+  if (!phone) return '';
+  const digits = String(phone).replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('1')) return digits.slice(1);
+  return digits;
+}
+
+// Load FOIA master JSONL (vlp-scale/foia-leads/foia-master.json) parsed to a
+// JSON array, cached in ENRICHMENT_KV under `gsvlp:foia_sheet_cache` with a
+// 1-hour TTL. The master is large (NDJSON), so caching the parsed array avoids
+// repeatedly streaming and parsing it on every webhook hit.
+async function gsvlpGetFoiaRowsCached(env) {
+  const cacheKey = 'gsvlp:foia_sheet_cache';
+  if (env.ENRICHMENT_KV) {
+    try {
+      const cached = await env.ENRICHMENT_KV.get(cacheKey);
+      if (cached) {
+        const arr = JSON.parse(cached);
+        if (Array.isArray(arr)) return arr;
+      }
+    } catch {}
+  }
+  const obj = await env.R2_VIRTUAL_LAUNCH.get('vlp-scale/foia-leads/foia-master.json');
+  if (!obj) return [];
+  const text = await obj.text();
+  const rows = [];
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    try { rows.push(JSON.parse(trimmed)); } catch {}
+  }
+  if (env.ENRICHMENT_KV) {
+    try {
+      await env.ENRICHMENT_KV.put(cacheKey, JSON.stringify(rows), { expirationTtl: 3600 });
+    } catch {}
+  }
+  return rows;
+}
+
+async function gsvlpGetCommissionLedger(env, accountId) {
+  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `gsvlp/commissions/${accountId}.json`);
+  if (!raw) {
+    return {
+      account_id: accountId,
+      total_earned: 0,
+      total_paid: 0,
+      pending: 0,
+      commissions: [],
+    };
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    parsed.commissions = Array.isArray(parsed.commissions) ? parsed.commissions : [];
+    return parsed;
+  } catch {
+    return { account_id: accountId, total_earned: 0, total_paid: 0, pending: 0, commissions: [] };
+  }
+}
+
+function gsvlpRecomputeLedgerTotals(ledger) {
+  let total_earned = 0, total_paid = 0, pending = 0;
+  for (const c of ledger.commissions) {
+    const amt = Number(c.commission_amount || 0);
+    total_earned += amt;
+    if (c.status === 'paid') total_paid += amt;
+    else if (c.status === 'pending') pending += amt;
+  }
+  ledger.total_earned = Math.round(total_earned * 100) / 100;
+  ledger.total_paid = Math.round(total_paid * 100) / 100;
+  ledger.pending = Math.round(pending * 100) / 100;
+  return ledger;
+}
+
+async function gsvlpSaveCommissionLedger(env, accountId, ledger) {
+  ledger.account_id = accountId;
+  gsvlpRecomputeLedgerTotals(ledger);
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/commissions/${accountId}.json`, ledger);
+}
+
+async function gsvlpGetStripeConnect(env, accountId) {
+  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `gsvlp/stripe-connect/${accountId}.json`);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+async function gsvlpSaveStripeConnect(env, accountId, record) {
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/stripe-connect/${accountId}.json`, record);
+}
+
+// Attempt a Stripe Transfer to the setter's Connect account for a pending
+// commission. On success, mutates the commission entry to status=paid and
+// returns true. On failure, leaves the entry pending and returns false.
+async function gsvlpAttemptCommissionTransfer(env, connect, commission) {
+  try {
+    const amountCents = Math.round(Number(commission.commission_amount || 0) * 100);
+    if (amountCents <= 0) return false;
+    const transfer = await stripePost('/transfers', {
+      amount: amountCents,
+      currency: 'usd',
+      destination: connect.stripe_connect_id,
+      transfer_group: commission.id,
+      metadata: {
+        gsvlp_commission_id: commission.id,
+        gsvlp_appointment_id: commission.appointment_id || '',
+        stripe_payment_id: commission.stripe_payment_id || '',
+      },
+    }, env, env.STRIPE_SECRET_KEY);
+    commission.status = 'paid';
+    commission.paid_at = new Date().toISOString();
+    commission.transfer_id = transfer.id;
+    return true;
+  } catch (e) {
+    console.error('[gsvlp-commission] transfer failed:', e?.message || e);
+    return false;
+  }
+}
+
+// Core match chain — invoked from the Stripe webhook for paid events. Returns
+// { matched: boolean, reason?: string, commission?: number }.
+async function gsvlpProcessStripePayment(env, event) {
+  const obj = event.data?.object ?? {};
+  const customerEmail = (obj.customer_details?.email || obj.customer_email || '').toLowerCase().trim();
+  const amountCents = Number(obj.amount_total ?? obj.amount_paid ?? 0);
+  if (!customerEmail) return { matched: false, reason: 'no_customer_email' };
+  if (!amountCents || amountCents <= 0) return { matched: false, reason: 'no_amount' };
+  const amountDollars = amountCents / 100;
+
+  // 1. Find FOIA row by email_found
+  const foiaRows = await gsvlpGetFoiaRowsCached(env);
+  const foiaRow = foiaRows.find(r => (r.email_found || '').toLowerCase().trim() === customerEmail);
+  if (!foiaRow) return { matched: false, reason: 'no_foia_match' };
+
+  const targetPhone = gsvlpNormalizePhone(foiaRow.BUS_PHONE || foiaRow.BUS_PHNE_NBR || '');
+  if (!targetPhone) return { matched: false, reason: 'no_foia_phone' };
+
+  // 2. Walk every setter's appointments looking for a phone match
+  const index = await gsvlpGetBatchIndex(env);
+  const assignments = Array.isArray(index.assignments) ? index.assignments : [];
+  const seenAccountIds = new Set();
+  let bestMatch = null; // { accountId, appointment, idx }
+  for (const a of assignments) {
+    if (!a.account_id || seenAccountIds.has(a.account_id)) continue;
+    seenAccountIds.add(a.account_id);
+    const record = await gsvlpGetAppointments(env, a.account_id);
+    const appts = Array.isArray(record.appointments) ? record.appointments : [];
+    for (let i = 0; i < appts.length; i++) {
+      const ap = appts[i];
+      if (gsvlpNormalizePhone(ap.tax_pro_phone) !== targetPhone) continue;
+      if (!bestMatch || (ap.created_at || '') > (bestMatch.appointment.created_at || '')) {
+        bestMatch = { accountId: a.account_id, appointment: ap, idx: i, record };
+      }
+    }
+  }
+  if (!bestMatch) return { matched: false, reason: 'no_appointment_match' };
+
+  // 3. Compute commission and update appointment + ledger
+  const rate = parseFloat(env.GSVLP_COMMISSION_RATE || '0.20');
+  const commissionAmount = Math.round(amountDollars * rate * 100) / 100;
+  const nowIso = new Date().toISOString();
+  const setterId = bestMatch.accountId;
+
+  bestMatch.appointment.status = 'closed';
+  bestMatch.appointment.commission = commissionAmount;
+  bestMatch.appointment.closed_at = nowIso;
+  bestMatch.appointment.stripe_payment_id = event.id;
+  bestMatch.record.account_id = setterId;
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/appointments/${setterId}.json`, bestMatch.record);
+
+  const ledger = await gsvlpGetCommissionLedger(env, setterId);
+  // Idempotency: skip if this stripe event has already been recorded
+  if (ledger.commissions.some(c => c.stripe_payment_id === event.id)) {
+    return { matched: true, commission: commissionAmount, idempotent: true };
+  }
+  const commission = {
+    id: `comm_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
+    appointment_id: bestMatch.appointment.id,
+    tax_pro_name: bestMatch.appointment.tax_pro_name,
+    tax_pro_phone: targetPhone,
+    amount_paid: amountDollars,
+    commission_amount: commissionAmount,
+    commission_rate: rate,
+    stripe_payment_id: event.id,
+    status: 'pending',
+    created_at: nowIso,
+    paid_at: null,
+    transfer_id: null,
+  };
+  ledger.commissions.push(commission);
+
+  // 4. Auto-transfer if setter has Connect linked
+  const connect = await gsvlpGetStripeConnect(env, setterId);
+  if (connect && connect.onboarding_complete && connect.stripe_connect_id) {
+    await gsvlpAttemptCommissionTransfer(env, connect, commission);
+  }
+
+  await gsvlpSaveCommissionLedger(env, setterId, ledger);
+  return { matched: true, commission: commissionAmount, setter_account_id: setterId };
+}
+
+// Daily cron sweep — find pending commissions for setters who now have a
+// completed Stripe Connect account and create transfers (capped at 20/run).
+async function handleGsvlpCommissionPayoutSweep(env) {
+  const index = await gsvlpGetBatchIndex(env);
+  const assignments = Array.isArray(index.assignments) ? index.assignments : [];
+  const seen = new Set();
+  let transfers_attempted = 0, transfers_succeeded = 0, setters_scanned = 0;
+  const cap = 20;
+  for (const a of assignments) {
+    if (transfers_attempted >= cap) break;
+    if (!a.account_id || seen.has(a.account_id)) continue;
+    seen.add(a.account_id);
+    setters_scanned++;
+    const connect = await gsvlpGetStripeConnect(env, a.account_id);
+    if (!connect || !connect.onboarding_complete || !connect.stripe_connect_id) continue;
+    const ledger = await gsvlpGetCommissionLedger(env, a.account_id);
+    let mutated = false;
+    for (const c of ledger.commissions) {
+      if (transfers_attempted >= cap) break;
+      if (c.status !== 'pending') continue;
+      transfers_attempted++;
+      const ok = await gsvlpAttemptCommissionTransfer(env, connect, c);
+      if (ok) { transfers_succeeded++; mutated = true; }
+    }
+    if (mutated) await gsvlpSaveCommissionLedger(env, a.account_id, ledger);
+  }
+  return { setters_scanned, transfers_attempted, transfers_succeeded };
+}
+
 // =================================================
 // GSVLP — Google Calendar availability + event creation
 // =================================================
@@ -26158,6 +26390,198 @@ Unsubscribe: ${unsubUrl}`;
     },
   },
 
+  // -------------------------------------------------------------------------
+  // GSVLP — Commission matching webhook + Stripe Connect payouts
+  // -------------------------------------------------------------------------
+
+  // POST /v1/gsvlp/webhooks/stripe — Stripe-signed webhook. Matches paid tax
+  // pros back to the setter who booked them (via phone in FOIA master) and
+  // credits 20% commission. Auto-transfers if Connect is linked.
+  // Always returns 200 (Stripe retries on non-200). Logs errors internally.
+  {
+    method: 'POST', pattern: '/v1/gsvlp/webhooks/stripe',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const rawBody = await request.text();
+      const sigHeader = request.headers.get('Stripe-Signature') ?? '';
+
+      const parts = sigHeader.split(',');
+      const tPart = parts.find(p => p.startsWith('t='));
+      const v1Parts = parts.filter(p => p.startsWith('v1='));
+      const timestamp = tPart?.slice(2);
+      const signatures = v1Parts.map(p => p.slice(3));
+      if (!timestamp || signatures.length === 0) {
+        return json({ ok: false, error: 'INVALID_SIGNATURE' }, 400, request);
+      }
+      if (Math.floor(Date.now() / 1000) - parseInt(timestamp) > 300) {
+        return json({ ok: false, error: 'INVALID_SIGNATURE' }, 400, request);
+      }
+      const secret = env.GSVLP_STRIPE_WEBHOOK_SECRET;
+      if (!secret) return json({ ok: false, error: 'INVALID_SIGNATURE' }, 400, request);
+
+      try {
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+          'raw', enc.encode(secret),
+          { name: 'HMAC', hash: 'SHA-256' },
+          false, ['sign']
+        );
+        const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(`${timestamp}.${rawBody}`));
+        const expectedHex = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        if (!signatures.some(s => s === expectedHex)) {
+          return json({ ok: false, error: 'INVALID_SIGNATURE' }, 400, request);
+        }
+      } catch {
+        return json({ ok: false, error: 'INVALID_SIGNATURE' }, 400, request);
+      }
+
+      let event;
+      try { event = JSON.parse(rawBody); }
+      catch { return json({ received: true }, 200, request); }
+
+      try {
+        if (event.type !== 'checkout.session.completed' && event.type !== 'invoice.paid') {
+          return json({ received: true, matched: false, reason: 'event_type_ignored' }, 200, request);
+        }
+        const result = await gsvlpProcessStripePayment(env, event);
+        if (!result.matched) {
+          console.log(`[gsvlp-webhook] no match: ${result.reason} event=${event.id}`);
+        } else {
+          console.log(`[gsvlp-webhook] matched setter=${result.setter_account_id} commission=$${result.commission} event=${event.id}`);
+        }
+        return json({ received: true, ...result }, 200, request);
+      } catch (e) {
+        console.error('[gsvlp-webhook] handler error:', e?.message || e);
+        return json({ received: true, error: 'INTERNAL' }, 200, request);
+      }
+    },
+  },
+
+  // GET /v1/gsvlp/commissions — setter's commission ledger
+  {
+    method: 'GET', pattern: '/v1/gsvlp/commissions',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const ledger = await gsvlpGetCommissionLedger(env, session.account_id);
+        gsvlpRecomputeLedgerTotals(ledger);
+        const commissions = [...ledger.commissions].sort((a, b) =>
+          (b.created_at || '').localeCompare(a.created_at || '')
+        );
+        return json({
+          ok: true,
+          summary: {
+            total_earned: ledger.total_earned,
+            total_paid: ledger.total_paid,
+            pending: ledger.pending,
+            commission_count: commissions.length,
+          },
+          commissions,
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/commissions error:', e);
+        return json({ ok: false, error: 'COMMISSIONS_FETCH_FAILED' }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/stripe-connect/onboard — create Connect Express account + onboarding link
+  {
+    method: 'POST', pattern: '/v1/gsvlp/stripe-connect/onboard',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!env.STRIPE_SECRET_KEY) {
+        return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED' }, 503, request);
+      }
+      try {
+        let connect = await gsvlpGetStripeConnect(env, session.account_id);
+        let stripeAccountId = connect?.stripe_connect_id;
+
+        if (!stripeAccountId) {
+          const acct = await stripePost('/accounts', {
+            type: 'express',
+            country: 'US',
+            capabilities: { transfers: { requested: 'true' } },
+            metadata: { gsvlp_account_id: session.account_id },
+          }, env, env.STRIPE_SECRET_KEY);
+          stripeAccountId = acct.id;
+          connect = {
+            account_id: session.account_id,
+            stripe_connect_id: stripeAccountId,
+            onboarding_complete: false,
+            created_at: new Date().toISOString(),
+          };
+          await gsvlpSaveStripeConnect(env, session.account_id, connect);
+        }
+
+        const link = await stripePost('/account_links', {
+          account: stripeAccountId,
+          refresh_url: 'https://growthsetters.virtuallaunch.pro/dashboard/appointments',
+          return_url: 'https://growthsetters.virtuallaunch.pro/dashboard/appointments?connect=success',
+          type: 'account_onboarding',
+        }, env, env.STRIPE_SECRET_KEY);
+
+        return json({ ok: true, onboarding_url: link.url }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/stripe-connect/onboard error:', e);
+        return json({ ok: false, error: 'CONNECT_ONBOARD_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/gsvlp/stripe-connect/status — check connect status (refresh from Stripe)
+  {
+    method: 'GET', pattern: '/v1/gsvlp/stripe-connect/status',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const connect = await gsvlpGetStripeConnect(env, session.account_id);
+        if (!connect || !connect.stripe_connect_id) {
+          return json({ ok: true, connected: false }, 200, request);
+        }
+        let onboardingComplete = !!connect.onboarding_complete;
+        if (env.STRIPE_SECRET_KEY) {
+          try {
+            const acct = await stripeGet(`/accounts/${connect.stripe_connect_id}`, env, env.STRIPE_SECRET_KEY);
+            const live = !!acct.charges_enabled || !!acct.payouts_enabled;
+            if (live !== onboardingComplete) {
+              connect.onboarding_complete = live;
+              onboardingComplete = live;
+              await gsvlpSaveStripeConnect(env, session.account_id, connect);
+            }
+          } catch (e) {
+            console.error('stripe-connect status refresh failed:', e?.message || e);
+          }
+        }
+        return json({
+          ok: true,
+          connected: true,
+          stripe_connect_id: connect.stripe_connect_id,
+          onboarding_complete: onboardingComplete,
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/stripe-connect/status error:', e);
+        return json({ ok: false, error: 'CONNECT_STATUS_FAILED' }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/commissions/payout-pending — cron-driven sweep of pending commissions
+  {
+    method: 'POST', pattern: '/v1/gsvlp/commissions/payout-pending',
+    handler: async (_method, _pattern, _params, request, env) => {
+      try {
+        const result = await handleGsvlpCommissionPayoutSweep(env);
+        return json({ ok: true, ...result }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/commissions/payout-pending error:', e);
+        return json({ ok: false, error: 'PAYOUT_SWEEP_FAILED' }, 500, request);
+      }
+    },
+  },
+
   // POST /v1/scale/cron/backfill-asset-pages — One-shot backfill for TTMP + VLP asset pages
   {
     method: 'POST', pattern: '/v1/scale/cron/backfill-asset-pages',
@@ -35989,6 +36413,12 @@ export default {
         console.log('GSVLP tips drip cron:', JSON.stringify(gsvlpTipsStats));
       } catch (e) {
         console.error('GSVLP tips drip cron failed:', e);
+      }
+      try {
+        const payoutStats = await handleGsvlpCommissionPayoutSweep(env);
+        console.log('GSVLP commission payout sweep:', JSON.stringify(payoutStats));
+      } catch (e) {
+        console.error('GSVLP commission payout sweep failed:', e);
       }
       return;
     }
