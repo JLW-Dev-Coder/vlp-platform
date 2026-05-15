@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookingForm } from './BookingForm';
+import Link from 'next/link';
 
 export type CallStatus = 'not_called' | 'called' | 'booked';
 export type Credential = 'EA' | 'CPA' | 'ATTY';
@@ -21,7 +21,6 @@ export interface TaxPro {
 interface CallListTableProps {
   initialData: TaxPro[];
   apiBaseUrl?: string;
-  onBooked?: (pro: TaxPro, details: { date: string; time: string; notes: string }) => void;
 }
 
 const STATE_OPTIONS = ['ALL', 'CA', 'TX', 'NY', 'FL'];
@@ -32,12 +31,11 @@ const STATUS_OPTIONS: Array<{ value: 'ALL' | CallStatus; label: string }> = [
   { value: 'booked', label: 'Booked' },
 ];
 
-export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTableProps) {
+export function CallListTable({ initialData }: CallListTableProps) {
   const router = useRouter();
-  const [rows, setRows] = useState<TaxPro[]>(initialData);
+  const [rows] = useState<TaxPro[]>(initialData);
   const [stateFilter, setStateFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | CallStatus>('ALL');
-  const [bookingFor, setBookingFor] = useState<string | null>(null);
 
   const filtered = useMemo(
     () =>
@@ -48,47 +46,6 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
       }),
     [rows, stateFilter, statusFilter]
   );
-
-  function markCalled(id: string) {
-    setRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: 'called' } : r))
-    );
-    if (apiBaseUrl) {
-      fetch(`${apiBaseUrl}/v1/gsvlp/call-list/${id}/status`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'called' }),
-      }).catch(() => {});
-    }
-  }
-
-  function bookAppointment(
-    pro: TaxPro,
-    details: { date: string; time: string; notes: string }
-  ) {
-    setRows((prev) =>
-      prev.map((r) => (r.id === pro.id ? { ...r, status: 'booked' } : r))
-    );
-    setBookingFor(null);
-    if (apiBaseUrl) {
-      fetch(`${apiBaseUrl}/v1/gsvlp/appointments`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tax_pro_name: pro.fullName,
-          tax_pro_credential: pro.profession,
-          tax_pro_phone: pro.phone,
-          date: details.date,
-          time: details.time,
-          notes: details.notes,
-          row_number: Number(pro.id),
-        }),
-      }).catch(() => {});
-    }
-    onBooked?.(pro, details);
-  }
 
   return (
     <div>
@@ -134,16 +91,42 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
           </thead>
           <tbody>
             {filtered.map((r) => (
-              <RowGroup
+              <tr
                 key={r.id}
-                row={r}
-                booking={bookingFor === r.id}
-                onRowClick={() => router.push(`/dashboard/calls/${r.id}`)}
-                onMarkCalled={() => markCalled(r.id)}
-                onLogClick={() => setBookingFor(r.id)}
-                onBook={(details) => bookAppointment(r, details)}
-                onCancelBook={() => setBookingFor(null)}
-              />
+                onClick={() => router.push(`/dashboard/calls/${r.id}`)}
+                className="cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.03]"
+              >
+                <td className="px-4 py-3">
+                  <div className="font-semibold text-white">{r.fullName}</div>
+                  <div className="text-xs text-white/50">{r.dba}</div>
+                </td>
+                <td className="px-4 py-3 text-white/70">
+                  {r.city}, {r.state}
+                </td>
+                <td className="px-4 py-3">
+                  <CredentialBadge value={r.profession} />
+                </td>
+                <td className="px-4 py-3">
+                  <a
+                    href={`tel:${r.phone.replace(/\D/g, '')}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-white/80 hover:text-white"
+                  >
+                    {r.phone}
+                  </a>
+                </td>
+                <td className="px-4 py-3">
+                  <StatusPill value={r.status} />
+                </td>
+                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                  <ActionCell rowNumber={r.id} status={r.status} />
+                </td>
+                <td className="px-4 py-3 text-white/30">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
@@ -186,22 +169,7 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
               <StatusPill value={r.status} />
             </div>
             <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-              <ActionButton
-                status={r.status}
-                onMarkCalled={() => markCalled(r.id)}
-                onLogClick={() => setBookingFor(r.id)}
-              />
-              {bookingFor === r.id && (
-                <BookingForm
-                  onSubmit={(d) => bookAppointment(r, d)}
-                  onCancel={() => setBookingFor(null)}
-                />
-              )}
-            </div>
-            <div className="mt-3 flex justify-end text-white/30">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
+              <ActionCell rowNumber={r.id} status={r.status} mobile />
             </div>
           </div>
         ))}
@@ -221,73 +189,32 @@ export function CallListTable({ initialData, apiBaseUrl, onBooked }: CallListTab
   );
 }
 
-function RowGroup({
-  row,
-  booking,
-  onRowClick,
-  onMarkCalled,
-  onLogClick,
-  onBook,
-  onCancelBook,
+function ActionCell({
+  rowNumber,
+  status,
+  mobile,
 }: {
-  row: TaxPro;
-  booking: boolean;
-  onRowClick: () => void;
-  onMarkCalled: () => void;
-  onLogClick: () => void;
-  onBook: (d: { date: string; time: string; notes: string }) => void;
-  onCancelBook: () => void;
+  rowNumber: string;
+  status: CallStatus;
+  mobile?: boolean;
 }) {
-  const stop = (e: React.MouseEvent) => e.stopPropagation();
-  return (
-    <>
-      <tr
-        onClick={onRowClick}
-        className="cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.03]"
+  if (status === 'booked') {
+    return (
+      <span
+        className="inline-block rounded-full px-3 py-1 text-xs font-semibold"
+        style={{ background: '#22C55E', color: '#0A0A0A' }}
       >
-        <td className="px-4 py-3">
-          <div className="font-semibold text-white">{row.fullName}</div>
-          <div className="text-xs text-white/50">{row.dba}</div>
-        </td>
-        <td className="px-4 py-3 text-white/70">
-          {row.city}, {row.state}
-        </td>
-        <td className="px-4 py-3">
-          <CredentialBadge value={row.profession} />
-        </td>
-        <td className="px-4 py-3">
-          <a
-            href={`tel:${row.phone.replace(/\D/g, '')}`}
-            onClick={stop}
-            className="text-white/80 hover:text-white"
-          >
-            {row.phone}
-          </a>
-        </td>
-        <td className="px-4 py-3">
-          <StatusPill value={row.status} />
-        </td>
-        <td className="px-4 py-3" onClick={stop}>
-          <ActionButton
-            status={row.status}
-            onMarkCalled={onMarkCalled}
-            onLogClick={onLogClick}
-          />
-        </td>
-        <td className="px-4 py-3 text-white/30">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </td>
-      </tr>
-      {booking && (
-        <tr className="bg-black/20">
-          <td colSpan={7} className="px-4 pb-4">
-            <BookingForm onSubmit={onBook} onCancel={onCancelBook} />
-          </td>
-        </tr>
-      )}
-    </>
+        Booked ✓
+      </span>
+    );
+  }
+  return (
+    <Link
+      href={`/dashboard/calls/${rowNumber}`}
+      className={`inline-flex items-center justify-center rounded border border-[#22C55E] px-3 py-1.5 text-xs font-semibold text-[#22C55E] hover:bg-[#22C55E]/10 ${mobile ? 'w-full' : ''}`}
+    >
+      View Lead {mobile ? '→' : ''}
+    </Link>
   );
 }
 
@@ -323,38 +250,4 @@ function StatusPill({ value }: { value: CallStatus }) {
       {c.label}
     </span>
   );
-}
-
-function ActionButton({
-  status,
-  onMarkCalled,
-  onLogClick,
-}: {
-  status: CallStatus;
-  onMarkCalled: () => void;
-  onLogClick: () => void;
-}) {
-  if (status === 'not_called') {
-    return (
-      <button
-        type="button"
-        onClick={onMarkCalled}
-        className="rounded border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/[0.04] hover:text-white"
-      >
-        Mark Called
-      </button>
-    );
-  }
-  if (status === 'called') {
-    return (
-      <button
-        type="button"
-        onClick={onLogClick}
-        className="rounded bg-[#22C55E] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#16A34A]"
-      >
-        Log Appointment
-      </button>
-    );
-  }
-  return <span className="text-xs text-white/40">—</span>;
 }

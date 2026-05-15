@@ -10,6 +10,7 @@ import { DispositionButtons, type Disposition } from '@/components/dashboard/Dis
 import { ProductPitchTabs } from '@/components/dashboard/ProductPitchTabs';
 import { BookingFlow } from '@/components/dashboard/BookingFlow';
 import { NextLeadButton } from '@/components/dashboard/NextLeadButton';
+import { TaxProNurtureFlow } from '@/components/dashboard/TaxProNurtureFlow';
 
 function firstName(session: { email: string | null }): string {
   if (!session.email) return 'there';
@@ -182,10 +183,13 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
           )}
 
           {disposition === 'wants_info' && !showBookingAfterPitch && (
-            <ProductPitchTabs
-              onBookIt={() => setShowBookingAfterPitch(true)}
-              onStillNo={() => setDisposition('not_fit')}
-            />
+            <>
+              <ProductPitchTabs
+                onBookIt={() => setShowBookingAfterPitch(true)}
+                onStillNo={() => setDisposition('not_fit')}
+              />
+              <TaxProNurtureFlow lead={lead} apiBaseUrl={config.apiBaseUrl} />
+            </>
           )}
 
           {disposition === 'wants_info' && showBookingAfterPitch && (

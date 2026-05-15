@@ -26699,6 +26699,136 @@ Unsubscribe: ${unsubUrl}`;
     },
   },
 
+  // POST /v1/gsvlp/nurture/subscribe — start tax pro nurture drip (auth required)
+  {
+    method: 'POST', pattern: '/v1/gsvlp/nurture/subscribe',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const body = await parseBody(request);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const rawEmail = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+      const firstName = typeof body.first_name === 'string' ? body.first_name.trim() : '';
+      const lastName = typeof body.last_name === 'string' ? body.last_name.trim() : '';
+      if (!rawEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+        return json({ ok: false, error: 'Valid email is required', field: 'email' }, 400, request);
+      }
+      if (!firstName) return json({ ok: false, error: 'first_name is required' }, 400, request);
+      if (!lastName) return json({ ok: false, error: 'last_name is required' }, 400, request);
+
+      const credential = typeof body.credential === 'string' ? body.credential : '';
+      const phone = typeof body.phone === 'string' ? body.phone.replace(/\D/g, '') : '';
+      const source = typeof body.source === 'string' ? body.source : 'wants_more_info';
+
+      const emailHash = await sha256Hex(rawEmail);
+      const recordKey = `gsvlp/nurture-subscribers/${emailHash}.json`;
+      const indexKey = `gsvlp/nurture-subscriber-index.json`;
+
+      const existing = await r2Get(env.R2_VIRTUAL_LAUNCH, recordKey);
+      if (existing) {
+        return json({ ok: true, already_subscribed: true }, 200, request);
+      }
+
+      const nowIso = new Date().toISOString();
+      const record = {
+        email: rawEmail,
+        first_name: firstName,
+        last_name: lastName,
+        credential,
+        phone,
+        setter_account_id: session.account_id,
+        subscribed_at: nowIso,
+        source,
+        drip_email_1_sent_at: null,
+        drip_email_2_sent_at: null,
+        drip_email_3_sent_at: null,
+        drip_email_4_sent_at: null,
+        drip_email_5_sent_at: null,
+        unsubscribed: false,
+      };
+      await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, record);
+
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, indexKey);
+        const arr = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(arr) && !arr.some(e => e.email_hash === emailHash)) {
+          arr.push({ email_hash: emailHash, email: rawEmail, first_name: firstName, subscribed_at: nowIso });
+          await r2Put(env.R2_VIRTUAL_LAUNCH, indexKey, arr);
+        }
+      } catch (e) {
+        console.error('[gsvlp-nurture] index update failed:', e?.message || e);
+      }
+
+      try {
+        const unsubUrl = await gsvlpNurtureUnsubscribeUrl(env, rawEmail);
+        const subject = `${firstName}, a quick intro from JLW`;
+        const text = `Hi ${firstName},
+
+I'm Jamie — JLW for short. I'm an Enrolled Agent, but these days I focus on building tools that help tax pros like you grow.
+
+One of my setters mentioned you might be interested in learning more about what we offer. Rather than a hard sell, I wanted to share a few things over the next couple of weeks that I think you'll find useful.
+
+Here's the short version: I've built platforms for transcript analysis, penalty abatement, AI-powered YouTube content, tax games for client education, and a directory that connects taxpayers with practitioners.
+
+I'll break each one down in separate emails — short, no fluff, just what it does and why it matters for your practice.
+
+If at any point you want to skip ahead and see everything:
+https://virtuallaunch.pro
+
+Talk soon,
+Jamie Williams (JLW)
+Enrolled Agent | Founder, Virtual Launch Pro
+
+Unsubscribe: ${unsubUrl}`;
+        await sendGsvlpNurtureEmail(env, rawEmail, subject, text);
+      } catch (e) {
+        console.error('[gsvlp-nurture] welcome email failed:', e?.message || e);
+      }
+
+      return json({ ok: true }, 200, request);
+    },
+  },
+
+  // GET /v1/gsvlp/nurture/unsubscribe — HMAC-validated unsubscribe
+  {
+    method: 'GET', pattern: '/v1/gsvlp/nurture/unsubscribe',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const url = new URL(request.url);
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+      const token = (url.searchParams.get('token') || '').trim();
+      const htmlHeaders = { 'Content-Type': 'text/html;charset=UTF-8', ...getCorsHeaders(request) };
+      const page = (title, body) => `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:80px auto;padding:32px;text-align:center;color:#0A0A0A;"><div style="border-top:4px solid #3B82F6;padding-top:24px;">${body}</div></body></html>`;
+
+      if (!email || !token) {
+        return new Response(page('Unsubscribe', '<h2>Missing email or token.</h2>'), { status: 400, headers: htmlHeaders });
+      }
+      const valid = await verifyGsvlpNurtureUnsubToken(env, email, token);
+      if (!valid) {
+        return new Response(page('Unsubscribe', '<h2>Invalid unsubscribe link.</h2>'), { status: 400, headers: htmlHeaders });
+      }
+
+      try {
+        const emailHash = await sha256Hex(email);
+        const recordKey = `gsvlp/nurture-subscribers/${emailHash}.json`;
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, recordKey);
+        if (raw) {
+          const rec = JSON.parse(raw);
+          rec.unsubscribed = true;
+          rec.unsubscribed_at = new Date().toISOString();
+          await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, rec);
+        }
+      } catch (e) {
+        console.error('[gsvlp-nurture] unsubscribe failed:', e?.message || e);
+      }
+
+      return new Response(
+        page('Unsubscribed', `<h2 style="margin:0 0 12px;">You've been unsubscribed</h2><p style="color:#4b5563;">You won't receive any more emails from Virtual Launch Pro.</p>`),
+        { status: 200, headers: htmlHeaders }
+      );
+    },
+  },
+
   // -------------------------------------------------------------------------
   // GSVLP — Commission matching webhook + Stripe Connect payouts
   // -------------------------------------------------------------------------
@@ -35849,6 +35979,249 @@ Unsubscribe: ${unsubUrl}`;
   return summary;
 }
 
+// ---------------------------------------------------------------------------
+// GSVLP — Tax pro nurture drip (5-email campaign)
+// ---------------------------------------------------------------------------
+const GSVLP_NURTURE_FROM = 'Jamie Williams <jamie@virtuallaunch.pro>';
+const GSVLP_NURTURE_REPLY_TO = 'jamie@virtuallaunch.pro';
+const GSVLP_NURTURE_UNSUB_FALLBACK = 'gsvlp-nurture-unsub-v1';
+
+async function gsvlpNurtureUnsubToken(env, email) {
+  const secret = env.SESSION_SECRET || GSVLP_NURTURE_UNSUB_FALLBACK;
+  const data = new TextEncoder().encode(`gsvlp-nurture:${String(email || '').toLowerCase()}`);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, data);
+  const bytes = new Uint8Array(sig);
+  let hex = '';
+  for (let i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+  return hex.slice(0, 32);
+}
+
+async function gsvlpNurtureUnsubscribeUrl(env, email) {
+  const token = await gsvlpNurtureUnsubToken(env, email);
+  return `https://api.virtuallaunch.pro/v1/gsvlp/nurture/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+}
+
+async function verifyGsvlpNurtureUnsubToken(env, email, token) {
+  if (!email || !token) return false;
+  const expected = await gsvlpNurtureUnsubToken(env, email);
+  return expected === token;
+}
+
+async function sendGsvlpNurtureEmail(env, to, subject, text) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: GSVLP_NURTURE_FROM,
+      to: [to],
+      reply_to: GSVLP_NURTURE_REPLY_TO,
+      subject,
+      text,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    const e = new Error(`resend_${res.status}: ${err.slice(0, 200)}`);
+    e.status = res.status;
+    throw e;
+  }
+  const data = await res.json().catch(() => ({}));
+  return data.id || null;
+}
+
+const GSVLP_NURTURE_DRIP = [
+  {
+    field: 'drip_email_1_sent_at',
+    delayDays: 2,
+    subject: (fn) => `${fn}, IRS penalties before July 2023? There's a deadline.`,
+    body: (fn, unsubUrl) => `Hi ${fn},
+
+Quick one — if any of your clients received IRS penalties between January 2020 and July 2023, there's a federal court ruling (Kwong v. US) that may entitle them to penalty abatement.
+
+The deadline to file is July 10, 2026. That's coming up fast.
+
+I built a tool called TaxClaim Pro that automates the Form 843 for this exact situation. Your client enters their info, the tool does the math, and you get a ready-to-file form.
+
+Here's how it works: https://taxclaim.virtuallaunch.pro
+
+If you want a 15-minute walkthrough, just reply to this email or book directly:
+https://virtuallaunch.pro
+
+— Jamie (JLW)
+
+Unsubscribe: ${unsubUrl}`,
+  },
+  {
+    field: 'drip_email_2_sent_at',
+    delayDays: 5,
+    subject: (fn) => `${fn}, your clients can find you while you sleep`,
+    body: (fn, unsubUrl) => `Hi ${fn},
+
+Do you have a YouTube channel for your practice? Most tax pros don't — it takes too much time.
+
+I built Tax Avatar Pro to solve that. We create an AI-powered presenter — it looks and sounds like a real person — and publish tax content on YouTube every week under your firm's name.
+
+Your clients and prospects find you through search. The videos drive them to your intake page. You never record a single thing.
+
+See a sample: https://taxavatar.virtuallaunch.pro
+
+Want me to set one up for you? Reply or book a call:
+https://virtuallaunch.pro
+
+— Jamie (JLW)
+
+Unsubscribe: ${unsubUrl}`,
+  },
+  {
+    field: 'drip_email_3_sent_at',
+    delayDays: 8,
+    subject: (fn) => `${fn}, transcripts shouldn't take 20 minutes to read`,
+    body: (fn, unsubUrl) => `Hi ${fn},
+
+How long does it take you to read an IRS transcript? 15 minutes? 20?
+
+Transcript Tax Monitor Pro does it in seconds. Upload the PDF, and you get a plain-English analysis — every transaction code explained, every hold flagged, every date interpreted.
+
+It costs one token per transcript. No subscription — buy 10 for $19, use them when you need them.
+
+Try it here: https://transcript.taxmonitor.pro
+
+— Jamie (JLW)
+
+Unsubscribe: ${unsubUrl}`,
+  },
+  {
+    field: 'drip_email_4_sent_at',
+    delayDays: 12,
+    subject: (fn) => `${fn}, tax education that doesn't put clients to sleep`,
+    body: (fn, unsubUrl) => `Hi ${fn},
+
+Ever tried explaining estimated tax penalties to a client? Or walking someone through Form 2848?
+
+I built Tax Tools Arcade — interactive games where your clients learn tax concepts by playing through them. Filing requirement quizzes, penalty calculators, authorization walkthroughs.
+
+Share a link, they play through it, and they show up to your next appointment actually understanding what's going on.
+
+Check it out: https://taxtools.taxmonitor.pro
+
+— Jamie (JLW)
+
+Unsubscribe: ${unsubUrl}`,
+  },
+  {
+    field: 'drip_email_5_sent_at',
+    delayDays: 16,
+    subject: (fn) => `${fn}, are taxpayers in your area looking for you?`,
+    body: (fn, unsubUrl) => `Hi ${fn},
+
+Last one from me — I promise.
+
+Virtual Launch Pro is a directory where taxpayers search for tax professionals by city, credential, and service type. You set up a profile, toggle it on, and start getting matched with people in your area who need your help.
+
+It also includes a client pool — pre-qualified cases that show up in your dashboard. You claim the ones that fit your practice.
+
+Set up your profile: https://virtuallaunch.pro
+
+If you want a walkthrough of everything I've shared over the past two weeks, book 15 minutes:
+https://virtuallaunch.pro
+
+It's been great sharing these with you, ${fn}. Hope something here helps your practice.
+
+— Jamie (JLW)
+Enrolled Agent | Founder, Virtual Launch Pro
+
+Unsubscribe: ${unsubUrl}`,
+  },
+];
+
+async function handleGsvlpNurtureDripCron(env) {
+  const startedAt = new Date();
+  const stats = { checked: 0, sent: 0, skipped_not_due: 0, skipped_unsub: 0, skipped_complete: 0, errors: [], rate_limited: false };
+  const MAX_SENDS = 50;
+
+  const indexRaw = await r2Get(env.R2_VIRTUAL_LAUNCH, 'gsvlp/nurture-subscriber-index.json');
+  const index = indexRaw ? (JSON.parse(indexRaw) || []) : [];
+  if (!Array.isArray(index) || index.length === 0) {
+    console.log('GSVLP nurture drip: no subscribers');
+    return { ...stats, started_at: startedAt.toISOString(), ended_at: new Date().toISOString() };
+  }
+
+  const nowMs = Date.now();
+
+  for (const entry of index) {
+    if (stats.sent >= MAX_SENDS) break;
+    stats.checked++;
+
+    try {
+      const recordKey = `gsvlp/nurture-subscribers/${entry.email_hash}.json`;
+      const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, recordKey);
+      if (!raw) continue;
+      const rec = JSON.parse(raw);
+      if (rec.unsubscribed) { stats.skipped_unsub++; continue; }
+
+      const subscribedMs = Date.parse(rec.subscribed_at);
+      if (!Number.isFinite(subscribedMs)) continue;
+
+      let nextIdx = -1;
+      for (let i = 0; i < GSVLP_NURTURE_DRIP.length; i++) {
+        if (!rec[GSVLP_NURTURE_DRIP[i].field]) { nextIdx = i; break; }
+      }
+      if (nextIdx === -1) { stats.skipped_complete++; continue; }
+      if (nextIdx > 0 && !rec[GSVLP_NURTURE_DRIP[nextIdx - 1].field]) {
+        stats.skipped_not_due++;
+        continue;
+      }
+      const due = GSVLP_NURTURE_DRIP[nextIdx];
+      const dueMs = subscribedMs + due.delayDays * 86400000;
+      if (nowMs < dueMs) { stats.skipped_not_due++; continue; }
+
+      const firstName = rec.first_name || 'there';
+      const unsubUrl = await gsvlpNurtureUnsubscribeUrl(env, rec.email);
+      const subject = due.subject(firstName);
+      const text = due.body(firstName, unsubUrl);
+
+      try {
+        await sendGsvlpNurtureEmail(env, rec.email, subject, text);
+        rec[due.field] = new Date().toISOString();
+        await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, rec);
+        stats.sent++;
+      } catch (e) {
+        if (e?.status === 429) {
+          stats.rate_limited = true;
+          stats.errors.push({ email: rec.email, error: 'rate_limited' });
+          break;
+        }
+        if (e?.status === 422) {
+          rec.unsubscribed = true;
+          rec.unsubscribed_reason = 'bounced';
+          rec.unsubscribed_at = new Date().toISOString();
+          await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, rec);
+          stats.errors.push({ email: rec.email, error: 'bounced_422' });
+          continue;
+        }
+        stats.errors.push({ email: rec.email, error: e?.message || String(e) });
+      }
+    } catch (e) {
+      stats.errors.push({ email_hash: entry.email_hash, error: e?.message || String(e) });
+    }
+  }
+
+  const endedAt = new Date();
+  const summary = { ...stats, started_at: startedAt.toISOString(), ended_at: endedAt.toISOString(), duration_ms: endedAt - startedAt };
+  console.log('GSVLP nurture drip cron:', JSON.stringify(summary));
+  return summary;
+}
+
 
 // ---------------------------------------------------------------------------
 // Fetch handler
@@ -36722,6 +37095,12 @@ export default {
         console.log('GSVLP tips drip cron:', JSON.stringify(gsvlpTipsStats));
       } catch (e) {
         console.error('GSVLP tips drip cron failed:', e);
+      }
+      try {
+        const gsvlpNurtureStats = await handleGsvlpNurtureDripCron(env);
+        console.log('GSVLP nurture drip cron:', JSON.stringify(gsvlpNurtureStats));
+      } catch (e) {
+        console.error('GSVLP nurture drip cron failed:', e);
       }
       try {
         const payoutStats = await handleGsvlpCommissionPayoutSweep(env);
