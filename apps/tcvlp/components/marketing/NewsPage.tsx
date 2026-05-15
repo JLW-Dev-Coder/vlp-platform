@@ -204,8 +204,57 @@ export default function NewsPage() {
         </div>
       </section>
 
-      {/* Section 7: Video Breakdown */}
+      {/* Section 7: Live Webinar */}
       <section className="py-16 md:py-20 bg-surface-card">
+        <div className="max-w-4xl mx-auto px-4">
+          <span className="inline-flex items-center gap-2 bg-brand-primary/15 text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-4 border border-brand-primary/20">
+            Live Today
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
+            Free Live Webinar — Today at 2 PM PT
+          </h2>
+          <p className="text-lg text-text-muted leading-relaxed mb-6">
+            We&apos;re walking through everything the NTA confirmed — the three claim types, the deadline math, common mistakes, and how to lock in your protective claim step by step.
+          </p>
+
+          <div className="rounded-2xl border-l-4 border-brand-primary bg-surface-elevated p-6 md:p-8 mb-8 space-y-4 text-lg text-text-muted leading-relaxed">
+            <p>
+              Bring yourself, friends, family — even your dog. Everyone who paid IRS penalties between 2019 and 2022 can benefit from what the Advocate shared last week and updated on Thursday. No guarantees — but with the Advocate&apos;s support, we want to make sure you know your options before time runs out.
+            </p>
+            <p>
+              <span className="font-semibold text-text-primary">Bonus:</span> a free PDF showing you exactly how to file your protective claim and get it filed before the deadline only weeks away.
+            </p>
+          </div>
+
+          <div className="flex justify-center mb-6">
+            <div className="rounded-lg border border-brand-primary/30 bg-surface-elevated p-3 shadow-lg">
+              <iframe
+                width="360"
+                height="240"
+                src="https://webinar.zoho.com/meeting/register/embed?sessionId=1099786497"
+                frameBorder="0"
+                title="Webinar Registration"
+                className="rounded-md block"
+              />
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-text-muted">
+            Can&apos;t see the registration form?{' '}
+            <a
+              href="https://live.zoho.com/eoia-ouo-lua"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-primary font-semibold underline hover:text-brand-hover"
+            >
+              Register directly here
+            </a>
+          </p>
+        </div>
+      </section>
+
+      {/* Section 8: Video Breakdown */}
+      <section className="py-16 md:py-20 bg-gradient-to-b from-surface-bg to-surface-card">
         <div className="max-w-4xl mx-auto px-4">
           <div className="rounded-3xl border-2 border-brand-primary bg-gradient-to-br from-brand-primary/15 via-surface-card to-brand-gradient-to/10 p-8 md:p-12 shadow-xl">
             <div className="flex items-center gap-2 mb-4">
@@ -217,6 +266,9 @@ export default function NewsPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
               Coming Monday, May 19
             </h2>
+            <p className="text-lg text-text-muted leading-relaxed mb-4">
+              Can&apos;t make the live session? We&apos;re also releasing a full video breakdown on the TaxClaim Pro YouTube channel Monday, May 19. Subscribe so you don&apos;t miss it.
+            </p>
             <p className="text-lg text-text-muted leading-relaxed mb-8">
               We&apos;re breaking down every detail of the NTA&apos;s Part III blog in a new video dropping Monday, May 19. Subscribe to the TaxClaim Pro channel so you don&apos;t miss it.
             </p>
