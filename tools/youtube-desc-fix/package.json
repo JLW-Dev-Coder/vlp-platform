@@ -1,0 +1,7 @@
+{
+  "name": "youtube-desc-fix",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Batch update YouTube video descriptions from manifest",
+  "type": "module"
+}
