@@ -33862,12 +33862,24 @@ async function handleValidateEmailsCron(env, opts = {}) {
 // ---------------------------------------------------------------------------
 
 const REDDIT_SUBREDDITS = [
+  // Original
   'tax',
   'taxpros',
   'IRS',
   'accounting',
   'taxPros',
   'personalfinance',
+  // Tier 1 — high-volume taxpayer questions
+  'taxrefund',
+  // Tier 2 — specific audiences
+  'tax_professionals',
+  'smallbusiness',
+  'selfemployed',
+  // Tier 3 — frustrated software users + adjacent
+  'hrblock',
+  'turbotax',
+  'freelance',
+  'legaladvice',
 ];
 
 const REDDIT_KEYWORDS = [

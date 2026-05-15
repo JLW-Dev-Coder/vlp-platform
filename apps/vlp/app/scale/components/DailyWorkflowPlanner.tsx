@@ -39,12 +39,25 @@ const FB_GROUPS = [
 ]
 
 const REDDIT_SUBS = [
+  // Original
   'r/tax',
   'r/taxpros',
   'r/Accounting',
   'r/IRS',
   'r/taxpreparer',
   'r/CPA',
+  // Tier 1 — high-volume taxpayer questions
+  'r/personalfinance',
+  'r/taxrefund',
+  // Tier 2 — specific audiences
+  'r/tax_professionals',
+  'r/smallbusiness',
+  'r/selfemployed',
+  // Tier 3 — frustrated software users + adjacent
+  'r/hrblock',
+  'r/turbotax',
+  'r/freelance',
+  'r/legaladvice',
 ]
 
 const KWONG_DEADLINE = new Date('2026-07-01T00:00:00')
