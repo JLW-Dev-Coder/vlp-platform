@@ -4,7 +4,15 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export type CallStatus = 'not_called' | 'called' | 'booked';
+export type CallStatus =
+  | 'not_called'
+  | 'called'
+  | 'interested'
+  | 'wants_info'
+  | 'left_message'
+  | 'not_a_fit'
+  | 'disconnected'
+  | 'booked';
 export type Credential = 'EA' | 'CPA' | 'ATTY';
 
 export interface TaxPro {
@@ -21,55 +29,50 @@ export interface TaxPro {
 interface CallListTableProps {
   initialData: TaxPro[];
   apiBaseUrl?: string;
+  stateFilter?: string;
+  statusFilter?: 'ALL' | CallStatus;
+  onStateFilterChange?: (s: string) => void;
 }
 
 const STATE_OPTIONS = ['ALL', 'CA', 'TX', 'NY', 'FL'];
-const STATUS_OPTIONS: Array<{ value: 'ALL' | CallStatus; label: string }> = [
-  { value: 'ALL', label: 'All' },
-  { value: 'not_called', label: 'Not Called' },
-  { value: 'called', label: 'Called' },
-  { value: 'booked', label: 'Booked' },
-];
 
-export function CallListTable({ initialData }: CallListTableProps) {
+export function CallListTable({
+  initialData,
+  stateFilter = 'ALL',
+  statusFilter = 'ALL',
+  onStateFilterChange,
+}: CallListTableProps) {
   const router = useRouter();
   const [rows] = useState<TaxPro[]>(initialData);
-  const [stateFilter, setStateFilter] = useState<string>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | CallStatus>('ALL');
+  const [localState, setLocalState] = useState<string>(stateFilter);
+  const activeState = onStateFilterChange ? stateFilter : localState;
 
   const filtered = useMemo(
     () =>
       rows.filter((r) => {
-        if (stateFilter !== 'ALL' && r.state !== stateFilter) return false;
+        if (activeState !== 'ALL' && r.state !== activeState) return false;
         if (statusFilter !== 'ALL' && r.status !== statusFilter) return false;
         return true;
       }),
-    [rows, stateFilter, statusFilter]
+    [rows, activeState, statusFilter]
   );
 
   return (
     <div>
-      {/* Filters */}
+      {/* State filter */}
       <div className="mb-4 flex flex-wrap gap-3">
         <select
-          value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
+          value={activeState}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (onStateFilterChange) onStateFilterChange(v);
+            else setLocalState(v);
+          }}
           className="rounded border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white"
         >
           {STATE_OPTIONS.map((s) => (
             <option key={s} value={s}>
               {s === 'ALL' ? 'All States' : s}
-            </option>
-          ))}
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as 'ALL' | CallStatus)}
-          className="rounded border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white"
-        >
-          {STATUS_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
             </option>
           ))}
         </select>
@@ -239,7 +242,12 @@ function StatusPill({ value }: { value: CallStatus }) {
   const map: Record<CallStatus, { label: string; bg: string; text: string }> = {
     not_called: { label: 'Not Called', bg: 'rgba(255,255,255,0.06)', text: '#9ca3af' },
     called: { label: 'Called', bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
-    booked: { label: 'Booked', bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
+    interested: { label: 'Interested', bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
+    wants_info: { label: 'Wants Info', bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
+    left_message: { label: 'Left Message', bg: 'rgba(59,130,246,0.15)', text: '#60A5FA' },
+    not_a_fit: { label: 'Not a Fit', bg: 'rgba(255,255,255,0.06)', text: '#9ca3af' },
+    disconnected: { label: 'Disconnected', bg: 'rgba(255,255,255,0.04)', text: '#71717a' },
+    booked: { label: 'Booked ✓', bg: '#22C55E', text: '#0A0A0A' },
   };
   const c = map[value];
   return (

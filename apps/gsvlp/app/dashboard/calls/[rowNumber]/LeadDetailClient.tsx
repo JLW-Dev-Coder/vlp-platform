@@ -19,7 +19,17 @@ function firstName(session: { email: string | null }): string {
   return first ? first.charAt(0).toUpperCase() + first.slice(1) : 'there';
 }
 
-function postStatus(apiBaseUrl: string, rowNumber: string, status: 'called' | 'booked') {
+type LeadStatus =
+  | 'not_called'
+  | 'called'
+  | 'interested'
+  | 'wants_info'
+  | 'left_message'
+  | 'not_a_fit'
+  | 'disconnected'
+  | 'booked';
+
+function postStatus(apiBaseUrl: string, rowNumber: string, status: LeadStatus) {
   return fetch(`${apiBaseUrl}/v1/gsvlp/call-list/${rowNumber}/status`, {
     method: 'POST',
     credentials: 'include',
@@ -28,12 +38,25 @@ function postStatus(apiBaseUrl: string, rowNumber: string, status: 'called' | 'b
   }).catch(() => {});
 }
 
-function StatusPill({ value }: { value: TaxPro['status'] }) {
-  const map = {
+const DISPOSITION_TO_STATUS: Record<Disposition, LeadStatus> = {
+  interested: 'interested',
+  wants_info: 'wants_info',
+  voicemail: 'left_message',
+  not_fit: 'not_a_fit',
+  disconnected: 'disconnected',
+};
+
+function StatusPill({ value }: { value: LeadStatus }) {
+  const map: Record<LeadStatus, { label: string; bg: string; text: string }> = {
     not_called: { label: 'Not Called', bg: 'rgba(255,255,255,0.06)', text: '#9ca3af' },
     called: { label: 'Called', bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
+    interested: { label: 'Interested', bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
+    wants_info: { label: 'Wants Info', bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
+    left_message: { label: 'Left Message', bg: 'rgba(59,130,246,0.15)', text: '#60A5FA' },
+    not_a_fit: { label: 'Not a Fit', bg: 'rgba(255,255,255,0.06)', text: '#9ca3af' },
+    disconnected: { label: 'Disconnected', bg: 'rgba(255,255,255,0.04)', text: '#71717a' },
     booked: { label: 'Booked', bg: 'rgba(34,197,94,0.15)', text: '#22C55E' },
-  } as const;
+  };
   const c = map[value];
   return (
     <span
@@ -99,13 +122,13 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
   function selectDisposition(d: Disposition) {
     setDisposition(d);
     setShowBookingAfterPitch(false);
-    postStatus(config.apiBaseUrl, rowNumber, 'called');
+    postStatus(config.apiBaseUrl, rowNumber, DISPOSITION_TO_STATUS[d]);
   }
 
   const lead = batch?.find((r) => r.id === rowNumber) ?? null;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       {/* Top bar */}
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link

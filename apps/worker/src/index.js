@@ -412,10 +412,10 @@ async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status) {
   if (!target) return null;
   const nowIso = new Date().toISOString();
   target.status = status;
-  if (status === 'called' && !target.called_at) target.called_at = nowIso;
+  const CALLED_STATUSES = ['called', 'interested', 'wants_info', 'left_message', 'not_a_fit', 'disconnected', 'booked'];
+  if (CALLED_STATUSES.includes(status) && !target.called_at) target.called_at = nowIso;
   if (status === 'booked') {
     target.booked_at = nowIso;
-    if (!target.called_at) target.called_at = nowIso;
   }
   await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/batches/${accountId}.json`, batch);
   return target;
@@ -26396,8 +26396,9 @@ Return a JSON array where each element has:
       const body = await parseBody(request);
       if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
       const status = body.status;
-      if (!['called', 'booked'].includes(status)) {
-        return json({ ok: false, error: 'INVALID_STATUS', allowed: ['called', 'booked'] }, 400, request);
+      const ALLOWED = ['not_called', 'called', 'interested', 'wants_info', 'left_message', 'not_a_fit', 'disconnected', 'booked'];
+      if (!ALLOWED.includes(status)) {
+        return json({ ok: false, error: 'INVALID_STATUS', allowed: ALLOWED }, 400, request);
       }
       try {
         const updated = await gsvlpUpdateCallStatus(env, session.account_id, params.rowNumber, status);
