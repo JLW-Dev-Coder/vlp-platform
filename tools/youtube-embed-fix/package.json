@@ -1,0 +1,16 @@
+{
+  "name": "vlp-youtube-embed-fix",
+  "version": "1.0.0",
+  "description": "Batch-flips embeddable=true on all videos for a given YouTube channel via the Data API v3, using the same Worker token broker as tools/youtube-upload.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "fix": "node fix-embedding.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
