@@ -21005,6 +21005,70 @@ https://virtuallaunch.pro/payouts
     },
   },
 
+  // POST /v1/tcvlp/guide/download — Protective Claim Filing Guide lead magnet (public)
+  {
+    method: 'POST', pattern: '/v1/tcvlp/guide/download',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const body = await parseBody(request);
+      if (!body || typeof body !== 'object') {
+        return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+      }
+      const name = typeof body.name === 'string' ? body.name.trim().slice(0, 200) : '';
+      const email = typeof body.email === 'string' ? body.email.trim().toLowerCase().slice(0, 320) : '';
+      if (!name) {
+        return json({ ok: false, error: 'INVALID_NAME', field: 'name', message: 'Name is required' }, 400, request);
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({ ok: false, error: 'INVALID_EMAIL', field: 'email', message: 'Valid email is required' }, 400, request);
+      }
+
+      const id = crypto.randomUUID();
+      const created_at = new Date().toISOString();
+      const ip = request.headers.get('cf-connecting-ip') || '';
+      let ip_hash = '';
+      try {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
+        ip_hash = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+      } catch (_e) {
+        ip_hash = '';
+      }
+
+      const record = { id, name, email, created_at, ip_hash, source: 'guide_landing' };
+
+      try {
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tcvlp/guide/leads/${id}.json`, record);
+        await env.DB.prepare(
+          `INSERT INTO tcvlp_guide_leads (id, name, email, created_at, ip_hash) VALUES (?, ?, ?, ?, ?)`
+        ).bind(id, name, email, created_at, ip_hash || null).run();
+      } catch (e) {
+        console.error('[TCVLP Guide] Lead capture error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to save lead' }, 500, request);
+      }
+
+      return json({ success: true, download_url: '/v1/tcvlp/guide/pdf' }, 201, request);
+    },
+  },
+
+  // GET /v1/tcvlp/guide/pdf — serve the Protective Claim Filing Guide PDF from R2 (public)
+  {
+    method: 'GET', pattern: '/v1/tcvlp/guide/pdf',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const obj = await env.R2_VIRTUAL_LAUNCH.get('tcvlp/guide/kwong-protective-claim-guide.pdf');
+      if (!obj) {
+        return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+      }
+      const corsHeaders = getCorsHeaders(request);
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'attachment; filename="Kwong-Protective-Claim-Guide.pdf"',
+          'Cache-Control': 'public, max-age=3600',
+          ...corsHeaders,
+        },
+      });
+    },
+  },
+
   // GET /v1/tcvlp/videos/kennedy/:clipId — serve Kennedy sales-video clips from R2 (public)
   {
     method: 'GET', pattern: '/v1/tcvlp/videos/kennedy/:clipId',

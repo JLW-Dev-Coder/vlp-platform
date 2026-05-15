@@ -8,6 +8,7 @@ export default function sitemap() {
     { path: '/gala', changeFrequency: 'weekly', priority: 0.95 },
     { path: '/kennedy', changeFrequency: 'weekly', priority: 0.95 },
     { path: '/demo', changeFrequency: 'monthly', priority: 0.9 },
+    { path: '/guide', changeFrequency: 'monthly', priority: 0.9 },
     { path: '/what-is-form-843', changeFrequency: 'monthly', priority: 0.8 },
     { path: '/news', changeFrequency: 'weekly', priority: 0.8 },
     { path: '/onboarding', changeFrequency: 'monthly', priority: 0.8 },

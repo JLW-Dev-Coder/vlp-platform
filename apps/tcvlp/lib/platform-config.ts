@@ -88,13 +88,14 @@ export const tcvlpConfig: PlatformConfig = {
       toolsExtras: [
         { label: 'Talk to Kennedy', href: '/kennedy' },
         { label: 'Gala — Claim Guide', href: '/gala' },
+        { label: 'Free Claim Guide', href: '/guide' },
         { label: 'Onboarding', href: '/onboarding' },
         { label: 'Affiliate Program', href: '/dashboard/affiliate' },
         { label: 'Book a Call', href: '/help' },
       ],
       ctaText: "The Kwong window closes July 10, 2026. Don't let your clients miss their refund.",
-      ctaMagnetLabel: 'See the Demo',
-      ctaMagnetPath: '/demo',
+      ctaMagnetLabel: 'Free Claim Guide',
+      ctaMagnetPath: '/guide',
     },
     footerTagline: 'Kwong v. US refund window',
     footerResources: [
