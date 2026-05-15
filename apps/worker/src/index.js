@@ -21814,7 +21814,20 @@ Return a JSON array where each element has:
         // Kennedy is a TAVLP channel-host avatar (used for TAVLP's own YouTube
         // channel content production via the admin render endpoint), not a
         // subscriber-facing avatar offered in customer channel onboarding.
-        { display: 'Kennedy', avatar_id: '42568c08ce764a168344ef4179825a60', voice_id: 'dccd34ce74ad42e298cc29033eaf235d', gender: 'female' },
+        // Kennedy look IDs (avatar group: 42568c08ce764a168344ef4179825a60):
+        //   1: fbfe2be2f499473e8913f854e37cbacb  (outdoor, casual)
+        //   2: e13e822a59b24d00bc5444fb858d376c  (outdoor, gesturing)
+        //   3: cdda2780a30b4054ab22ad768336ad53  (indoor, warm)
+        //   4: a6ba1dd160fd49ef81619eb455aada2b  (desk with laptop)
+        //   5: a4087cbe8ec34e0686204f97cf3a4646  (standing, neutral)
+        //   6: 96d231ecdce84859a10cc48795a020b8  (dark bg, serious)
+        //   7: 8e0f5d617a754472a615731a073b1486  (office, professional) ← default
+        //   8: 8bda6bc721d64f7aa9c8f7751194b88c  (desk, alt angle)
+        //   9: 7e0944d0344b4d30af6f013879d8232c  (neon/pink bg)
+        //  10: 6a5e37c585214e59825d386745f665ee  (dark, braids)
+        //  11: 57ce06a589e34aef928106af0f5f1ee8  (dark, braids alt)
+        //  12: 36d9cbba4300494186b22976cc9f96cf  (outdoor, casual alt)
+        { display: 'Kennedy', avatar_id: '8e0f5d617a754472a615731a073b1486', voice_id: 'dccd34ce74ad42e298cc29033eaf235d', gender: 'female' },
       ];
 
       let listRes;
@@ -22601,7 +22614,7 @@ Return a JSON array where each element has:
       }
 
       const body = await parseBody(request) || {};
-      const { avatar_name, script_text, title, video_id } = body;
+      const { avatar_name, script_text, title, video_id, look_id } = body;
       const auto_upload_youtube = body.auto_upload_youtube === true;
       if (!video_id || typeof video_id !== 'string') {
         return json({ ok: false, error: 'BAD_REQUEST', message: 'video_id is required' }, 400, request);
@@ -22620,12 +22633,13 @@ Return a JSON array where each element has:
         { display: 'Knox',    avatar_id: '2633ed30a7c24e42a218f5ef07719c82', voice_id: '158b76b48ed048d381951887e771e412', gender: 'male' },
         { display: 'Denyse',  avatar_id: '530f637281fd43cb9a8dfcaf76514ca9', voice_id: 'ec0ffe0aee23425f80b22632ef3251b2', gender: 'female' },
         { display: 'Griffin', avatar_id: 'a2e213135a8040748efb0e8681dfd46e', voice_id: '1897363f4c6a415b91066035f52105ef', gender: 'male' },
-        { display: 'Kennedy', avatar_id: '42568c08ce764a168344ef4179825a60', voice_id: 'dccd34ce74ad42e298cc29033eaf235d', gender: 'female' },
+        { display: 'Kennedy', avatar_id: '8e0f5d617a754472a615731a073b1486', voice_id: 'dccd34ce74ad42e298cc29033eaf235d', gender: 'female' },
       ];
       const target = TARGETS.find((t) => t.display.toLowerCase() === avatar_name.toLowerCase());
       if (!target) {
         return json({ ok: false, error: 'avatar_not_found', message: `Avatar "${avatar_name}" is not in the TAVLP registry` }, 400, request);
       }
+      const effectiveAvatarId = (typeof look_id === 'string' && look_id.trim()) ? look_id.trim() : target.avatar_id;
 
       const apiKey = env.HEYGEN_API_KEY;
       if (!apiKey) {
@@ -22635,7 +22649,7 @@ Return a JSON array where each element has:
       const heygenBody = {
         video_inputs: [
           {
-            character: { type: 'avatar', avatar_id: target.avatar_id, avatar_style: 'normal' },
+            character: { type: 'avatar', avatar_id: effectiveAvatarId, avatar_style: 'normal' },
             voice: { type: 'text', input_text: script_text, voice_id: target.voice_id },
           },
         ],
