@@ -20872,6 +20872,8 @@ https://virtuallaunch.pro/payouts
 
       const { taxYears, penaltyType, amount, description, name, email, phone, contactPref } = body;
       const claim_type = body.claim_type || body.claimType || null;
+      const paymentDateRaw = body.payment_date ?? body.paymentDate ?? null;
+      const payment_date = (typeof paymentDateRaw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(paymentDateRaw)) ? paymentDateRaw : null;
 
       if (!Array.isArray(taxYears) || taxYears.length === 0 || !taxYears.every((y) => VALID_YEARS.includes(y))) {
         return json({ error: 'Select at least one valid tax year', field: 'taxYears' }, 400, request);
@@ -20914,14 +20916,15 @@ https://virtuallaunch.pro/payouts
         phone: phoneStr,
         contactPref,
         claim_type,
+        payment_date,
       };
 
       try {
         await r2Put(env.R2_VIRTUAL_LAUNCH, `gala/intakes/${intake_id}.json`, record);
 
         await env.DB.prepare(
-          `INSERT INTO gala_intakes (intake_id, submitted_at, name, email, phone, contact_pref, penalty_type, tax_years, amount, status, claim_type)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
+          `INSERT INTO gala_intakes (intake_id, submitted_at, name, email, phone, contact_pref, penalty_type, tax_years, amount, status, claim_type, payment_date)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`
         ).bind(
           intake_id,
           submitted_at,
@@ -20932,7 +20935,8 @@ https://virtuallaunch.pro/payouts
           penaltyType,
           taxYears.join(','),
           amountStr || null,
-          claim_type
+          claim_type,
+          payment_date
         ).run();
 
         // Notification email (non-blocking)

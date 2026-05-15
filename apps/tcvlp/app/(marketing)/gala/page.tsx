@@ -161,6 +161,7 @@ type ClaimType = 'paid' | 'unpaid' | 'partial' | 'unsure'
 type IntakeData = {
   taxYears: string[]
   claimType: ClaimType | ''
+  paymentDate: string
   penaltyType: string
   amount: string
   description: string
@@ -184,6 +185,24 @@ const CLAIM_TYPE_OPTIONS: { value: ClaimType; label: string }[] = [
   { value: 'unsure', label: "I'm not sure" },
 ]
 
+const THREE_YEAR_DEADLINE_ISO = '2026-07-10'
+const THREE_YEAR_DEADLINE_LABEL = 'July 10, 2026'
+
+function addYears(iso: string, years: number): string {
+  if (!iso) return ''
+  const d = new Date(`${iso}T00:00:00Z`)
+  if (isNaN(d.getTime())) return ''
+  d.setUTCFullYear(d.getUTCFullYear() + years)
+  return d.toISOString().slice(0, 10)
+}
+
+function formatDateLong(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(`${iso}T00:00:00Z`)
+  if (isNaN(d.getTime())) return iso
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+}
+
 function IntakeForm({
   onSubmit,
   submitting,
@@ -196,6 +215,7 @@ function IntakeForm({
   const [form, setForm] = useState<IntakeData>({
     taxYears: [],
     claimType: '',
+    paymentDate: '',
     penaltyType: '',
     amount: '',
     description: '',
@@ -293,6 +313,60 @@ function IntakeForm({
         )}
         {errors.claimType && <p className="text-red-400 text-xs mt-1">{errors.claimType}</p>}
       </div>
+
+      {(form.claimType === 'paid' || form.claimType === 'partial') && (
+        <div>
+          <label className="block text-sm font-medium text-zinc-300 mb-2">
+            When did you pay the penalties or interest?
+          </label>
+          <input
+            type="date"
+            value={form.paymentDate}
+            onChange={(e) => update('paymentDate', e.target.value)}
+            className={inputClass('paymentDate')}
+          />
+          <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+            If you know the payment date, enter it here. This helps determine your exact filing deadline.
+          </p>
+
+          {(() => {
+            const twoYearIso = form.paymentDate ? addYears(form.paymentDate, 2) : ''
+            const twoYearLabel = twoYearIso ? formatDateLong(twoYearIso) : ''
+            let message
+            if (!form.paymentDate || !twoYearIso) {
+              message = (
+                <>Based on the standard 3-year rule, your filing deadline is{' '}
+                <span className="font-bold text-yellow-500">{THREE_YEAR_DEADLINE_LABEL}</span>.</>
+              )
+            } else if (twoYearIso <= THREE_YEAR_DEADLINE_ISO) {
+              message = (
+                <>Your filing deadline is{' '}
+                <span className="font-bold text-yellow-500">{THREE_YEAR_DEADLINE_LABEL}</span>{' '}
+                (the 3-year rule applies — it&apos;s later than your 2-year payment deadline of {twoYearLabel}).</>
+              )
+            } else {
+              message = (
+                <>Your filing deadline may extend to{' '}
+                <span className="font-bold text-yellow-500">{twoYearLabel}</span>{' '}
+                based on the 2-year payment rule. This is later than the standard {THREE_YEAR_DEADLINE_LABEL} deadline. Verify with your practitioner.</>
+              )
+            }
+
+            return (
+              <div className="mt-4 p-4 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
+                <p className="text-sm text-zinc-200 leading-relaxed">{message}</p>
+                <p className="text-xs text-zinc-500 mt-2 flex items-start gap-1.5">
+                  <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" />
+                  </svg>
+                  <span>This is an estimate based on the reasoning in Kwong v. US. Consult a tax professional for your specific situation.</span>
+                </p>
+              </div>
+            )
+          })()}
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-2">Penalty Type *</label>
@@ -482,6 +556,7 @@ export default function KwongClaimPage() {
         body: JSON.stringify({
           ...formData,
           claim_type: formData.claimType,
+          payment_date: formData.paymentDate || null,
           phone: formData.phone ? stripPhone(formData.phone) : '',
         }),
       })
