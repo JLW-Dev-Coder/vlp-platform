@@ -58,6 +58,7 @@ export const gsvlpConfig: PlatformConfig = {
         { label: 'Help Center', href: '/help' },
       ],
       toolsExtras: [
+        { label: 'Free Guide', href: '/tips' },
         { label: 'Virtual Launch Pro', href: 'https://virtuallaunch.pro' },
         { label: 'Tax Avatar Pro', href: 'https://taxavatar.virtuallaunch.pro' },
       ],
@@ -67,6 +68,7 @@ export const gsvlpConfig: PlatformConfig = {
     },
     footerTagline: 'Book calls. Earn commission. Grow with us.',
     footerResources: [
+      { label: 'Free Guide', href: '/tips' },
       { label: 'Help Center', href: '/help' },
       { label: 'Virtual Launch Pro', href: 'https://virtuallaunch.pro', external: true },
       { label: 'Affiliate Program', href: 'https://virtuallaunch.pro/affiliate', external: true },

@@ -26005,6 +26005,159 @@ Return a JSON array where each element has:
     },
   },
 
+  // POST /v1/gsvlp/tips/subscribe — capture email, send welcome with PDF link
+  {
+    method: 'POST', pattern: '/v1/gsvlp/tips/subscribe',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const body = await parseBody(request);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const rawEmail = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+      if (!rawEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+        return json({ ok: false, error: 'Valid email is required', field: 'email' }, 400, request);
+      }
+
+      // Simple per-IP rate limit (5/hour) via KV
+      try {
+        const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+        const rlKey = `gsvlp:tips:rl:${ip}`;
+        const current = parseInt((await env.ENRICHMENT_KV.get(rlKey)) || '0', 10);
+        if (current >= 5) {
+          return json({ ok: false, error: 'RATE_LIMITED' }, 429, request);
+        }
+        await env.ENRICHMENT_KV.put(rlKey, String(current + 1), { expirationTtl: 3600 });
+      } catch (_e) { /* non-fatal */ }
+
+      const emailHash = await sha256Hex(rawEmail);
+      const recordKey = `gsvlp/tips-subscribers/${emailHash}.json`;
+      const indexKey = `gsvlp/tips-subscriber-index.json`;
+
+      // Idempotency: existing subscriber → return success without re-sending
+      const existing = await r2Get(env.R2_VIRTUAL_LAUNCH, recordKey);
+      if (existing) {
+        return json({ ok: true, already_subscribed: true }, 200, request);
+      }
+
+      const nowIso = new Date().toISOString();
+      const record = {
+        email: rawEmail,
+        subscribed_at: nowIso,
+        drip_email_1_sent_at: null,
+        drip_email_2_sent_at: null,
+        drip_email_3_sent_at: null,
+        drip_email_4_sent_at: null,
+        drip_email_5_sent_at: null,
+        drip_email_6_sent_at: null,
+        unsubscribed: false,
+        source: 'tips_page',
+      };
+      await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, record);
+
+      // Append to subscriber index (last-write-wins is acceptable at this scale)
+      try {
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, indexKey);
+        const arr = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(arr) && !arr.some(e => e.email_hash === emailHash)) {
+          arr.push({ email_hash: emailHash, email: rawEmail, subscribed_at: nowIso });
+          await r2Put(env.R2_VIRTUAL_LAUNCH, indexKey, arr);
+        }
+      } catch (e) {
+        console.error('[gsvlp-tips] index update failed:', e?.message || e);
+      }
+
+      // Send welcome email with PDF download link
+      try {
+        const unsubUrl = await gsvlpTipsUnsubscribeUrl(env, rawEmail);
+        const subject = 'Your 5 Hot Tips PDF is here';
+        const text = `Hi,
+
+Here's your free guide: 5 Hot Tips No Sales Trainer Will Tell You.
+
+Download the PDF:
+https://api.virtuallaunch.pro/v1/gsvlp/tips/download
+
+These tips are real — the pen trick, the 3-second pause, standing up on your first calls. They work because they're what actual setters use, not what sales trainers talk about in theory.
+
+Over the next 3 weeks, I'll send you a few more tips and show you how Growth Setter Pro works. No pressure — just useful stuff.
+
+If you're ready to start earning right now:
+https://growthsetters.virtuallaunch.pro
+
+— Jamie (JLW)
+Growth Setter Pro | Powered by Virtual Launch Pro
+Lenore, Inc. · 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020
+
+Unsubscribe: ${unsubUrl}`;
+
+        await sendGsvlpTipsEmail(env, rawEmail, subject, text);
+      } catch (e) {
+        console.error('[gsvlp-tips] welcome email failed:', e?.message || e);
+        // Still return ok so user sees success; cron will not re-attempt the welcome
+      }
+
+      return json({ ok: true }, 200, request);
+    },
+  },
+
+  // GET /v1/gsvlp/tips/download — serve the PDF from R2 (public)
+  {
+    method: 'GET', pattern: '/v1/gsvlp/tips/download',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const obj = await env.R2_VIRTUAL_LAUNCH.get('gsvlp/tips/5-hot-tips-appointment-setting.pdf');
+      if (!obj) {
+        return json({ ok: false, error: 'pdf_not_found' }, 404, request);
+      }
+      const corsHeaders = getCorsHeaders(request);
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'attachment; filename="5-hot-tips-appointment-setting.pdf"',
+          'Cache-Control': 'public, max-age=86400',
+          ...corsHeaders,
+        },
+      });
+    },
+  },
+
+  // GET /v1/gsvlp/tips/unsubscribe — HMAC-validated unsubscribe
+  {
+    method: 'GET', pattern: '/v1/gsvlp/tips/unsubscribe',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const url = new URL(request.url);
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+      const token = (url.searchParams.get('token') || '').trim();
+      const htmlHeaders = { 'Content-Type': 'text/html;charset=UTF-8', ...getCorsHeaders(request) };
+      const page = (title, body) => `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:80px auto;padding:32px;text-align:center;color:#0A0A0A;"><div style="border-top:4px solid #22C55E;padding-top:24px;">${body}</div></body></html>`;
+
+      if (!email || !token) {
+        return new Response(page('Unsubscribe', '<h2>Missing email or token.</h2>'), { status: 400, headers: htmlHeaders });
+      }
+      const valid = await verifyGsvlpTipsUnsubToken(env, email, token);
+      if (!valid) {
+        return new Response(page('Unsubscribe', '<h2>Invalid unsubscribe link.</h2>'), { status: 400, headers: htmlHeaders });
+      }
+
+      try {
+        const emailHash = await sha256Hex(email);
+        const recordKey = `gsvlp/tips-subscribers/${emailHash}.json`;
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, recordKey);
+        if (raw) {
+          const rec = JSON.parse(raw);
+          rec.unsubscribed = true;
+          rec.unsubscribed_at = new Date().toISOString();
+          await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, rec);
+        }
+      } catch (e) {
+        console.error('[gsvlp-tips] unsubscribe failed:', e?.message || e);
+      }
+
+      return new Response(
+        page('Unsubscribed', `<h2 style="margin:0 0 12px;">You've been unsubscribed</h2><p style="color:#4b5563;">You won't receive any more emails from Growth Setter Pro.</p>`),
+        { status: 200, headers: htmlHeaders }
+      );
+    },
+  },
+
   // POST /v1/scale/cron/backfill-asset-pages — One-shot backfill for TTMP + VLP asset pages
   {
     method: 'POST', pattern: '/v1/scale/cron/backfill-asset-pages',
@@ -34697,6 +34850,272 @@ async function handleTavlpMonthlyScriptGeneration(env) {
   return log;
 }
 
+// ---------------------------------------------------------------------------
+// GSVLP — Tips PDF gated download + 6-email drip campaign
+// ---------------------------------------------------------------------------
+const GSVLP_TIPS_FROM = 'Growth Setter Pro <noreply@virtuallaunch.pro>';
+const GSVLP_TIPS_REPLY_TO = 'outreach@virtuallaunch.pro';
+const GSVLP_TIPS_FOOTER_ADDR = 'Lenore, Inc. · 1175 Avocado Avenue, Suite 101 PMB 1010, El Cajon, CA 92020';
+const GSVLP_TIPS_UNSUB_FALLBACK = 'gsvlp-tips-unsub-v1';
+
+async function sha256Hex(input) {
+  const data = new TextEncoder().encode(String(input));
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  const bytes = new Uint8Array(buf);
+  let hex = '';
+  for (let i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+  return hex;
+}
+
+async function gsvlpTipsUnsubToken(env, email) {
+  const secret = env.SESSION_SECRET || GSVLP_TIPS_UNSUB_FALLBACK;
+  const data = new TextEncoder().encode(`gsvlp-tips:${String(email || '').toLowerCase()}`);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, data);
+  const bytes = new Uint8Array(sig);
+  let hex = '';
+  for (let i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+  return hex.slice(0, 32);
+}
+
+async function gsvlpTipsUnsubscribeUrl(env, email) {
+  const token = await gsvlpTipsUnsubToken(env, email);
+  return `https://api.virtuallaunch.pro/v1/gsvlp/tips/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+}
+
+async function verifyGsvlpTipsUnsubToken(env, email, token) {
+  if (!email || !token) return false;
+  const expected = await gsvlpTipsUnsubToken(env, email);
+  return expected === token;
+}
+
+async function sendGsvlpTipsEmail(env, to, subject, text) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: GSVLP_TIPS_FROM,
+      to: [to],
+      reply_to: GSVLP_TIPS_REPLY_TO,
+      subject,
+      text,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    const e = new Error(`resend_${res.status}: ${err.slice(0, 200)}`);
+    e.status = res.status;
+    throw e;
+  }
+  const data = await res.json().catch(() => ({}));
+  return data.id || null;
+}
+
+const GSVLP_TIPS_DRIP = [
+  {
+    field: 'drip_email_1_sent_at',
+    delayDays: 1,
+    subject: 'Your phone list is ready',
+    body: `You downloaded the 5 Hot Tips. Good.
+
+Now here's the thing — the call list is sitting there waiting for you.
+
+Growth Setter Pro gives you a batch of 50 tax professionals with their published phone numbers. You read the 28-second script. They book with JLW. You earn 20% commission.
+
+No selling. No closing. Just booking.
+
+Sign up free: https://growthsetters.virtuallaunch.pro
+
+The phone list is ready when you are.
+
+— Jamie (JLW)`,
+  },
+  {
+    field: 'drip_email_2_sent_at',
+    delayDays: 4,
+    subject: 'Each "no" is worth $11',
+    body: `Remember Tip 04 from the PDF? "No" is a gift — collect them fast.
+
+Here's the actual math:
+
+If 1 in 10 calls books an appointment, and the average commission is $100, then each "no" is worth about $11. Nine "no"s and one "yes" = $100 in your pocket.
+
+But here's what nobody tells you: most setters quit after 3 "no"s. They never get to the $100.
+
+The ones who keep going? They're the ones earning.
+
+Your call list is waiting: https://growthsetters.virtuallaunch.pro
+
+— Jamie (JLW)`,
+  },
+  {
+    field: 'drip_email_3_sent_at',
+    delayDays: 7,
+    subject: '28 seconds changed everything',
+    body: `True story.
+
+A setter signed up last week. Never made a cold call in her life. She read the script — word for word — to her first tax pro.
+
+The tax pro said: "Sure, Friday at 3 works."
+
+28 seconds. First call. First appointment.
+
+She didn't wing it. She didn't improvise. She just read the words on the screen and paused.
+
+That's the whole job.
+
+Ready to make your first call? https://growthsetters.virtuallaunch.pro
+
+— Jamie (JLW)`,
+  },
+  {
+    field: 'drip_email_4_sent_at',
+    delayDays: 11,
+    subject: 'Tax pros in your state are waiting',
+    body: `Did you know that thousands of tax professionals publish their business phone numbers?
+
+They're CPAs, Enrolled Agents, and tax attorneys who need more clients but don't have time to market themselves. That's the gap you fill.
+
+You call. You book. JLW closes. You earn 20%.
+
+Your batch of 50 tax pros is assigned the moment you sign up. No waiting. No approval process. Just a Google account.
+
+Start today: https://growthsetters.virtuallaunch.pro
+
+— Jamie (JLW)`,
+  },
+  {
+    field: 'drip_email_5_sent_at',
+    delayDays: 14,
+    subject: 'Did you try the pen trick?',
+    body: `Tip 01 from the PDF: hold a pen sideways between your teeth for 5 seconds before you dial.
+
+It sounds ridiculous. The setters who actually do it say it's the one thing that makes the biggest difference. Your voice comes out warmer. The tax pro hears confidence instead of nervousness.
+
+You've had the tips for two weeks. The pen trick takes 5 seconds. The script takes 28 seconds. The sign-up takes 30 seconds.
+
+That's less than a minute to start a new income stream.
+
+https://growthsetters.virtuallaunch.pro
+
+— Jamie (JLW)`,
+  },
+  {
+    field: 'drip_email_6_sent_at',
+    delayDays: 18,
+    subject: 'Last call — your spot is waiting',
+    body: `This is my last email about Growth Setter Pro.
+
+Here's what's waiting for you:
+- A batch of 50 tax pros to call (phone numbers included)
+- The exact script on your screen (their name auto-populated)
+- A guided dashboard that tells you what to say at every step
+- 20% commission on every deal JLW closes
+
+Free to join. No experience needed. Just a Google account.
+
+The road to earning is yours. Your call list is ready when you are.
+
+https://growthsetters.virtuallaunch.pro
+
+— Jamie (JLW)
+
+P.S. If appointment setting isn't for you, no hard feelings. But if you've been thinking about it for 18 days... maybe it's time to just try 5 calls and see what happens.`,
+  },
+];
+
+async function handleGsvlpTipsDripCron(env) {
+  const startedAt = new Date();
+  const stats = { checked: 0, sent: 0, skipped_not_due: 0, skipped_unsub: 0, skipped_complete: 0, errors: [], rate_limited: false };
+  const MAX_SENDS = 50;
+
+  const indexRaw = await r2Get(env.R2_VIRTUAL_LAUNCH, 'gsvlp/tips-subscriber-index.json');
+  const index = indexRaw ? (JSON.parse(indexRaw) || []) : [];
+  if (!Array.isArray(index) || index.length === 0) {
+    console.log('GSVLP tips drip: no subscribers');
+    return { ...stats, started_at: startedAt.toISOString(), ended_at: new Date().toISOString() };
+  }
+
+  const nowMs = Date.now();
+
+  for (const entry of index) {
+    if (stats.sent >= MAX_SENDS) break;
+    stats.checked++;
+
+    try {
+      const recordKey = `gsvlp/tips-subscribers/${entry.email_hash}.json`;
+      const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, recordKey);
+      if (!raw) continue;
+      const rec = JSON.parse(raw);
+      if (rec.unsubscribed) { stats.skipped_unsub++; continue; }
+
+      const subscribedMs = Date.parse(rec.subscribed_at);
+      if (!Number.isFinite(subscribedMs)) continue;
+
+      // Find next due email — in-order, only send next if previous was sent
+      let nextIdx = -1;
+      for (let i = 0; i < GSVLP_TIPS_DRIP.length; i++) {
+        if (!rec[GSVLP_TIPS_DRIP[i].field]) { nextIdx = i; break; }
+      }
+      if (nextIdx === -1) { stats.skipped_complete++; continue; }
+      // Require previous email to be sent (skip gaps)
+      if (nextIdx > 0 && !rec[GSVLP_TIPS_DRIP[nextIdx - 1].field]) {
+        stats.skipped_not_due++;
+        continue;
+      }
+      const due = GSVLP_TIPS_DRIP[nextIdx];
+      const dueMs = subscribedMs + due.delayDays * 86400000;
+      if (nowMs < dueMs) { stats.skipped_not_due++; continue; }
+
+      const unsubUrl = await gsvlpTipsUnsubscribeUrl(env, rec.email);
+      const text = `${due.body}
+
+—
+Growth Setter Pro | https://growthsetters.virtuallaunch.pro
+${GSVLP_TIPS_FOOTER_ADDR}
+Unsubscribe: ${unsubUrl}`;
+
+      try {
+        await sendGsvlpTipsEmail(env, rec.email, due.subject, text);
+        rec[due.field] = new Date().toISOString();
+        await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, rec);
+        stats.sent++;
+      } catch (e) {
+        if (e?.status === 429) {
+          stats.rate_limited = true;
+          stats.errors.push({ email: rec.email, error: 'rate_limited' });
+          break;
+        }
+        if (e?.status === 422) {
+          rec.unsubscribed = true;
+          rec.unsubscribed_reason = 'bounced';
+          rec.unsubscribed_at = new Date().toISOString();
+          await r2Put(env.R2_VIRTUAL_LAUNCH, recordKey, rec);
+          stats.errors.push({ email: rec.email, error: 'bounced_422' });
+          continue;
+        }
+        stats.errors.push({ email: rec.email, error: e?.message || String(e) });
+      }
+    } catch (e) {
+      stats.errors.push({ email_hash: entry.email_hash, error: e?.message || String(e) });
+    }
+  }
+
+  const endedAt = new Date();
+  const summary = { ...stats, started_at: startedAt.toISOString(), ended_at: endedAt.toISOString(), duration_ms: endedAt - startedAt };
+  console.log('GSVLP tips drip cron:', JSON.stringify(summary));
+  return summary;
+}
+
 
 // ---------------------------------------------------------------------------
 // Fetch handler
@@ -35564,6 +35983,12 @@ export default {
         console.log('Freebie drip cron:', JSON.stringify(freebieStats));
       } catch (e) {
         console.error('Freebie drip cron failed:', e);
+      }
+      try {
+        const gsvlpTipsStats = await handleGsvlpTipsDripCron(env);
+        console.log('GSVLP tips drip cron:', JSON.stringify(gsvlpTipsStats));
+      } catch (e) {
+        console.error('GSVLP tips drip cron failed:', e);
       }
       return;
     }
