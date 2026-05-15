@@ -4,7 +4,7 @@ Recruitment and affiliate platform for appointment setters. Free to join, 20% co
 
 - **Domain:** growthsetters.virtuallaunch.pro
 - **Adapter:** Static export → Cloudflare Pages
-- **Pages project:** `grow-setter-pro`
+- **Pages project:** `growthsetters-pro`
 - **Brand color:** `#22C55E`
 
 ## Build
@@ -23,4 +23,4 @@ npx turbo dev --filter=gsvlp
 
 ## Deploy
 
-Auto-deploys from `main` via Cloudflare Pages (project `grow-setter-pro`).
+Auto-deploys from `main` via Cloudflare Pages (project `growthsetters-pro`).
