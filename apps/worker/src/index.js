@@ -37209,6 +37209,90 @@ export default {
     const method = request.method;
     const pathname = url.pathname;
 
+    // POST /v1/internal/reddit-save — Chrome extension hook that turns the
+    // current Reddit comment into a ClickUp task. Owner-authorized personal tool;
+    // CORS is wildcard because the caller origin is `chrome-extension://...`,
+    // which can't be enumerated in ALLOWED_ORIGINS.
+    if (pathname === '/v1/internal/reddit-save') {
+      const redditCors = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Reddit-Saver-Key',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      };
+      if (method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: redditCors });
+      }
+      if (method !== 'POST') {
+        return new Response(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }), {
+          status: 405,
+          headers: { 'Content-Type': 'application/json', ...redditCors },
+        });
+      }
+      const providedKey = request.headers.get('X-Reddit-Saver-Key') || '';
+      if (!env.REDDIT_SAVER_KEY || providedKey !== env.REDDIT_SAVER_KEY) {
+        return new Response(JSON.stringify({ ok: false, error: 'UNAUTHORIZED' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json', ...redditCors },
+        });
+      }
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response(JSON.stringify({ ok: false, error: 'INVALID_JSON' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...redditCors },
+        });
+      }
+      const responseText = typeof body?.response_text === 'string' ? body.response_text : '';
+      const redditUrl = typeof body?.reddit_url === 'string' ? body.reddit_url : '';
+      if (!responseText || !redditUrl) {
+        return new Response(JSON.stringify({ ok: false, error: 'MISSING_REQUIRED_FIELDS' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...redditCors },
+        });
+      }
+      const subreddit = (typeof body?.subreddit === 'string' && body.subreddit.trim()) ? body.subreddit.trim() : 'unknown';
+      const threadTitle = (typeof body?.thread_title === 'string' && body.thread_title.trim()) ? body.thread_title.trim() : 'Reddit Comment';
+      const timestamp = typeof body?.timestamp === 'string' ? body.timestamp : new Date().toISOString();
+      const rawName = `[r/${subreddit}] ${threadTitle}`;
+      const taskName = rawName.length > 200 ? rawName.slice(0, 200) : rawName;
+      const cuRes = await fetch('https://api.clickup.com/api/v2/list/901712952968/task', {
+        method: 'POST',
+        headers: {
+          'Authorization': env.CLICKUP_API_TOKEN,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: taskName,
+          description: `${responseText}\n\n---\nReddit URL: ${redditUrl}\nPosted: ${timestamp}`,
+          tags: ['reddit', `r/${subreddit}`],
+          status: 'to do',
+        }),
+      });
+      if (!cuRes.ok) {
+        const detailText = await cuRes.text().catch(() => '');
+        return new Response(JSON.stringify({
+          ok: false,
+          error: 'CLICKUP_API_ERROR',
+          detail: `${cuRes.status} ${detailText}`.slice(0, 500),
+        }), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json', ...redditCors },
+        });
+      }
+      const cuData = await cuRes.json();
+      const taskId = cuData?.id;
+      return new Response(JSON.stringify({
+        ok: true,
+        clickup_url: `https://app.clickup.com/t/${taskId}`,
+        task_id: taskId,
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...redditCors },
+      });
+    }
+
     // Handle CORS preflight.
     if (method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: getCorsHeaders(request) });
