@@ -20968,6 +20968,102 @@ https://virtuallaunch.pro/payouts
           }
         }
 
+        // Send taxpayer confirmation email (non-blocking)
+        const taxpayerEmail = (notify_email || (submission && submission.taxpayer_email) || '').trim();
+        if (taxpayerEmail && submission && env.RESEND_API_KEY) {
+          try {
+            let proName = '';
+            let proFirm = '';
+            let proPhone = '';
+            try {
+              const proRow = await env.DB.prepare(
+                'SELECT firm_name, display_name, firm_phone FROM tcvlp_pros WHERE pro_id = ?'
+              ).bind(submission.pro_id).first();
+              if (proRow) {
+                proName = proRow.display_name || proRow.firm_name || '';
+                proFirm = proRow.firm_name || '';
+                proPhone = proRow.firm_phone || '';
+              }
+            } catch (_) {}
+
+            const totalAmt = parseFloat(submission.penalty_amount) || 0;
+            const receiptUrl = `https://taxclaim.virtuallaunch.pro/claim/receipt?id=${submission_id}`;
+            const safeName = submission.taxpayer_name || 'there';
+            const penaltyTypeLabel = submission.penalty_type || 'Penalty';
+
+            const taxpayerHtml = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a2e;">
+  <div style="background: #eab308; padding: 20px 24px; border-radius: 8px 8px 0 0;">
+    <h1 style="margin: 0; font-size: 18px; color: #1a1a2e;">Your Form 843 Submission</h1>
+  </div>
+  <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <p style="margin: 0 0 16px; font-size: 15px; color: #374151;">Hi ${safeName},</p>
+    <p style="margin: 0 0 16px; font-size: 15px; color: #374151;">
+      Your Form 843 has been submitted through TaxClaim Pro. Here are your submission details:
+    </p>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Submission ID</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${submission_id}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Tax Year</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${submission.tax_year}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Penalty Type</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px;">${penaltyTypeLabel}</td></tr>
+      <tr><td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Amount Claimed</td><td style="padding: 8px 0; font-weight: 600; font-size: 14px; color: #059669;">$${totalAmt.toFixed(2)}</td></tr>
+    </table>
+    <p style="margin: 0 0 8px; font-size: 14px; color: #374151;">You can view your submission anytime here:</p>
+    <p style="margin: 0 0 20px;">
+      <a href="${receiptUrl}" style="display: inline-block; padding: 10px 24px; background: #eab308; color: #1a1a2e; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">View Your Submission</a>
+    </p>
+    <p style="margin: 0 0 12px; font-size: 14px; color: #374151;">
+      Your tax professional${proName ? `, <strong>${proName}</strong>` : ''}${proFirm ? ` at <strong>${proFirm}</strong>` : ''}, will review your claim and may reach out to you.
+    </p>
+    ${proPhone ? `<p style="margin: 0 0 16px; font-size: 14px; color: #374151;">If you have questions, you can contact them directly at <strong>${proPhone}</strong>.</p>` : ''}
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0 12px;" />
+    <p style="margin: 0; font-size: 12px; color: #9ca3af;">TaxClaim Pro — taxclaim.virtuallaunch.pro</p>
+  </div>
+</div>`;
+
+            const taxpayerText = [
+              `Hi ${safeName},`,
+              '',
+              'Your Form 843 has been submitted through TaxClaim Pro. Here are your submission details:',
+              '',
+              `Submission ID: ${submission_id}`,
+              `Tax Year: ${submission.tax_year}`,
+              `Penalty Type: ${penaltyTypeLabel}`,
+              `Amount Claimed: $${totalAmt.toFixed(2)}`,
+              '',
+              `You can view your submission anytime at:`,
+              receiptUrl,
+              '',
+              `Your tax professional${proName ? `, ${proName}` : ''}${proFirm ? ` at ${proFirm}` : ''}, will review your claim and may reach out to you.`,
+              proPhone ? `If you have questions, you can contact them directly at ${proPhone}.` : '',
+              '',
+              '— TaxClaim Pro',
+              'taxclaim.virtuallaunch.pro',
+            ].filter(Boolean).join('\n');
+
+            const res = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: 'TaxClaim Pro <noreply@virtuallaunch.pro>',
+                to: [taxpayerEmail],
+                subject: 'Your Form 843 Submission — TaxClaim Pro',
+                html: taxpayerHtml,
+                text: taxpayerText,
+              }),
+            });
+            if (!res.ok) {
+              const errBody = await res.json().catch(() => ({}));
+              console.error(`[TCVLP] Taxpayer email Resend error: ${res.status}`, JSON.stringify(errBody));
+            }
+          } catch (emailErr) {
+            console.error('[TCVLP] Taxpayer confirmation email failed:', emailErr?.message || emailErr);
+            // Non-blocking — submission still succeeds
+          }
+        }
+
         return json({
           ok: true,
           submission_id,
@@ -21386,6 +21482,61 @@ https://virtuallaunch.pro/payouts
         ),
         { status: 200, headers: htmlHeaders }
       );
+    },
+  },
+
+  // GET /v1/tcvlp/forms/843/:submission_id/receipt — public taxpayer receipt
+  {
+    method: 'GET', pattern: '/v1/tcvlp/forms/843/:submission_id/receipt',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { submission_id } = params;
+      if (!submission_id) {
+        return json({ ok: false, error: 'MISSING_SUBMISSION_ID' }, 400, request);
+      }
+
+      try {
+        const submission = await env.DB.prepare(
+          `SELECT submission_id, pro_id, taxpayer_name, tax_year, penalty_type, penalty_amount, status, created_at
+           FROM tcvlp_form843_submissions WHERE submission_id = ?`
+        ).bind(submission_id).first();
+
+        if (!submission) {
+          return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+        }
+
+        let proName = '';
+        let proFirm = '';
+        let proPhone = '';
+        try {
+          const proRow = await env.DB.prepare(
+            'SELECT firm_name, display_name, firm_phone FROM tcvlp_pros WHERE pro_id = ?'
+          ).bind(submission.pro_id).first();
+          if (proRow) {
+            proName = proRow.display_name || proRow.firm_name || '';
+            proFirm = proRow.firm_name || '';
+            proPhone = proRow.firm_phone || '';
+          }
+        } catch (_) {}
+
+        return json({
+          ok: true,
+          receipt: {
+            submission_id: submission.submission_id,
+            created_at: submission.created_at,
+            taxpayer_name: submission.taxpayer_name,
+            tax_year: submission.tax_year,
+            penalty_type: submission.penalty_type,
+            penalty_amount: parseFloat(submission.penalty_amount) || 0,
+            status: submission.status,
+            pro_name: proName,
+            pro_firm: proFirm,
+            pro_phone: proPhone,
+          },
+        });
+      } catch (e) {
+        console.error('[TCVLP] Receipt lookup error:', e?.message || e);
+        return json({ ok: false, error: 'INTERNAL_ERROR' }, 500, request);
+      }
     },
   },
 

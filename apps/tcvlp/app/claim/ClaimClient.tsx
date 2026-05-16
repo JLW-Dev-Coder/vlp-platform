@@ -1241,7 +1241,7 @@ export default function ClaimClient({ pro, slug }: Props) {
               </div>
 
               <div className={styles.btnRow}>
-                <Link href="/dashboard/submissions" className={styles.primaryBtn}>
+                <Link href={`/claim/receipt?id=${submittedSubmissionId ?? ''}`} className={styles.primaryBtn}>
                   View Your Submission
                 </Link>
                 <button
