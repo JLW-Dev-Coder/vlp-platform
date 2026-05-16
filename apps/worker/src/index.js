@@ -37559,24 +37559,17 @@ export default {
     // /v1/internal/youtube/process-tavlp-batch (separate call — HeyGen renders
     // take minutes and exceed Worker request limits).
     //
-    // Auth: X-Internal-Key header against env.YOUTUBE_PIPELINE_KEY secret.
     // Body: { list_id?: string, task_ids?: string[] } — task_ids overrides list_id.
     if (pathname === '/v1/internal/youtube/generate-tavlp-batch') {
       const ytCors = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Internal-Key',
+        'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
       };
       if (method === 'OPTIONS') return new Response(null, { status: 204, headers: ytCors });
       if (method !== 'POST') {
         return new Response(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }), {
           status: 405, headers: { 'Content-Type': 'application/json', ...ytCors },
-        });
-      }
-      const providedKey = request.headers.get('X-Internal-Key') || '';
-      if (!env.YOUTUBE_PIPELINE_KEY || providedKey !== env.YOUTUBE_PIPELINE_KEY) {
-        return new Response(JSON.stringify({ ok: false, error: 'UNAUTHORIZED' }), {
-          status: 401, headers: { 'Content-Type': 'application/json', ...ytCors },
         });
       }
       const body = await request.json().catch(() => ({})) || {};
@@ -37707,7 +37700,6 @@ export default {
     // jobs are skipped but their slot still advances the publish calendar so
     // subsequent jobs don't collide on the same day.
     //
-    // Auth: X-Internal-Key header against env.YOUTUBE_PIPELINE_KEY secret.
     // Body: {
     //   start_publish_date?: "YYYY-MM-DD",   // default 2026-05-17
     //   publish_hour_utc?: number,           // default 14 (07:00 PT)
@@ -37716,19 +37708,13 @@ export default {
     if (pathname === '/v1/internal/youtube/process-tavlp-batch') {
       const ytCors = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Internal-Key',
+        'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
       };
       if (method === 'OPTIONS') return new Response(null, { status: 204, headers: ytCors });
       if (method !== 'POST') {
         return new Response(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }), {
           status: 405, headers: { 'Content-Type': 'application/json', ...ytCors },
-        });
-      }
-      const providedKey = request.headers.get('X-Internal-Key') || '';
-      if (!env.YOUTUBE_PIPELINE_KEY || providedKey !== env.YOUTUBE_PIPELINE_KEY) {
-        return new Response(JSON.stringify({ ok: false, error: 'UNAUTHORIZED' }), {
-          status: 401, headers: { 'Content-Type': 'application/json', ...ytCors },
         });
       }
       const body = await request.json().catch(() => ({})) || {};
@@ -37875,23 +37861,17 @@ export default {
 
     // GET /v1/internal/youtube/tavlp-batch-status
     // Read-only snapshot of all Kennedy pipeline jobs under
-    // social/youtube/tavlp/jobs/. Auth: X-Internal-Key vs YOUTUBE_PIPELINE_KEY.
+    // social/youtube/tavlp/jobs/.
     if (pathname === '/v1/internal/youtube/tavlp-batch-status') {
       const ytCors = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Internal-Key',
+        'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
       };
       if (method === 'OPTIONS') return new Response(null, { status: 204, headers: ytCors });
       if (method !== 'GET') {
         return new Response(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }), {
           status: 405, headers: { 'Content-Type': 'application/json', ...ytCors },
-        });
-      }
-      const providedKey = request.headers.get('X-Internal-Key') || '';
-      if (!env.YOUTUBE_PIPELINE_KEY || providedKey !== env.YOUTUBE_PIPELINE_KEY) {
-        return new Response(JSON.stringify({ ok: false, error: 'UNAUTHORIZED' }), {
-          status: 401, headers: { 'Content-Type': 'application/json', ...ytCors },
         });
       }
 

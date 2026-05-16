@@ -36,8 +36,8 @@ invocation_logs = true
 # TAVLP Kennedy YouTube pipeline (owner-triggered batch endpoints):
 # - POST /v1/internal/youtube/generate-tavlp-batch
 # - POST /v1/internal/youtube/process-tavlp-batch
-# Auth header: X-Internal-Key
-# Required secret: YOUTUBE_PIPELINE_KEY  (set via `wrangler secret put YOUTUBE_PIPELINE_KEY`)
+# - GET  /v1/internal/youtube/tavlp-batch-status
+# No auth (internal-only path prefix is sufficient access control).
 # Optional var: TAVLP_KENNEDY_LIST_ID — default ClickUp list to scan when caller
 # omits list_id/task_ids in the request body.
 
