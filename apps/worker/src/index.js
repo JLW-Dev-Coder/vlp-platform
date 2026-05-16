@@ -35397,8 +35397,7 @@ async function postViaBuffer(env, channelId, text, options = {}) {
       text: ${JSON.stringify(text)},
       channelId: "${channelId}",
       schedulingType: automatic,
-      mode: ${mode},
-      postType: post
+      mode: ${mode}
       ${options.dueAt ? `, dueAt: "${options.dueAt}"` : ''}
     }) {
       ... on PostActionSuccess {
@@ -35683,6 +35682,9 @@ async function scheduleWeekForPage(env, page, mondayStr) {
           await updateClickUpTaskStatus(env, cuTaskId, null, `https://facebook.com/${result.postId}`);
         }
         out.fb.push({ date: day.date, time: fbPost.time, cuTaskId, ...result });
+        if (!result.ok) {
+          out.errors.push({ platform: 'fb', date: day.date, cuTaskId, error: String(result.error || 'unknown').slice(0, 200) });
+        }
       } catch (err) {
         out.errors.push({ platform: 'fb', date: day.date, error: String(err && err.message || err).slice(0, 200) });
       }
@@ -35693,14 +35695,28 @@ async function scheduleWeekForPage(env, page, mondayStr) {
       try {
         const result = await postToInstagram(env, igCaption, undefined, page.instagram_user_id, token);
         out.ig.push({ date: day.date, ...result });
+        if (!result.ok) {
+          out.errors.push({ platform: 'ig', date: day.date, error: String(result.error || 'unknown').slice(0, 200) });
+        }
       } catch (err) {
         out.errors.push({ platform: 'ig', date: day.date, error: String(err && err.message || err).slice(0, 200) });
       }
       await new Promise(r => setTimeout(r, 1000));
     }
   }
-  out.fb_ok = out.fb.filter(r => r.ok).length;
-  out.ig_ok = out.ig.filter(r => r.ok).length;
+  out.fb_ok = out.fb.filter(r => r.ok === true).length;
+  out.fb_failed = out.fb.filter(r => r.ok !== true).length;
+  out.ig_ok = out.ig.filter(r => r.ok === true).length;
+  out.ig_failed = out.ig.filter(r => r.ok !== true).length;
+  const totalOk = out.fb_ok + out.ig_ok;
+  const totalFailed = out.fb_failed + out.ig_failed;
+  if (totalFailed === 0) {
+    out.status = 'OK';
+  } else if (totalOk === 0) {
+    out.status = 'FAILED';
+  } else {
+    out.status = 'PARTIAL';
+  }
   return out;
 }
 
