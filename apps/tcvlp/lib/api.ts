@@ -55,6 +55,12 @@ export interface TaxPro {
   firm_telegram?: string;
   subscription_status?: string;
   submission_count?: number;
+  claim_page?: {
+    page_id: string;
+    slug: string;
+    title: string | null;
+    description: string | null;
+  } | null;
 }
 
 export async function getProBySlug(slug: string): Promise<TaxPro | null> {

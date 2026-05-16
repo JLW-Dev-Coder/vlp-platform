@@ -510,10 +510,14 @@ export default function ClaimClient({ pro, slug }: Props) {
           </div>
         )}
 
-        {/* Page title */}
+        {/* Page title — custom title/description on additional claim pages */}
         <div className={styles.pageTitleWrap}>
-          <h1 className={styles.pageTitle}>How to Claim Your Kwong Relief</h1>
-          <p className={styles.pageSubtitle}>Complete Form 843 in 5 steps</p>
+          <h1 className={styles.pageTitle}>
+            {pro.claim_page?.title || 'How to Claim Your Kwong Relief'}
+          </h1>
+          <p className={styles.pageSubtitle}>
+            {pro.claim_page?.description || 'Complete Form 843 in 5 steps'}
+          </p>
         </div>
 
         {/* Progress bar */}
