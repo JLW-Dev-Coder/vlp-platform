@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Bell, HelpCircle, LogOut, Settings, UserCircle } from 'lucide-react'
+import { Bell, HelpCircle, LogOut, Menu, Settings, UserCircle } from 'lucide-react'
 import type { PlatformConfig } from '../types/config'
 import { useAppShell } from './AppShell'
 
@@ -12,6 +12,8 @@ interface MemberTopbarProps {
   onSignOut: () => void
   /** Optional override — when not provided, the topbar self-fetches from the Worker. */
   unreadNotifications?: number
+  /** Opens the mobile drawer on the shared sidebar. Hamburger only renders when provided. */
+  onOpenDrawer?: () => void
 }
 
 interface NotificationRow {
@@ -39,7 +41,7 @@ function formatRelative(iso: string): string {
   return new Date(then).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-export function MemberTopbar({ config, session, onSignOut, unreadNotifications }: MemberTopbarProps) {
+export function MemberTopbar({ config, session, onSignOut, unreadNotifications, onOpenDrawer }: MemberTopbarProps) {
   const shell = useAppShell()
   const accountId = shell.session.account_id
   const apiBaseUrl = config.apiBaseUrl
@@ -146,7 +148,19 @@ export function MemberTopbar({ config, session, onSignOut, unreadNotifications }
 
   return (
     <header className="flex h-20 shrink-0 items-center justify-between border-b border-white/[0.08] bg-[var(--member-bg)]/80 px-6 backdrop-blur">
-      <div />
+      <div className="flex items-center">
+        {onOpenDrawer && (
+          <button
+            type="button"
+            onClick={onOpenDrawer}
+            className="rounded-md p-2 text-white/40 transition hover:bg-white/[0.04] hover:text-white md:hidden"
+            aria-label="Open menu"
+            aria-expanded={false}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+        )}
+      </div>
 
       <div className="flex items-center gap-1">
         {/* Bell with dropdown */}

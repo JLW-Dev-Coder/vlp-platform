@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import type { PlatformConfig } from '../types/config'
 import { MemberSidebar } from './MemberSidebar'
 import { MemberTopbar } from './MemberTopbar'
@@ -41,6 +41,10 @@ interface AppShellProps {
 
 export function AppShell({ config, children }: AppShellProps) {
   const [session, setSession] = useState<SessionData>({ email: null, avatar: null, account_id: null, role: null })
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const openDrawer = useCallback(() => setDrawerOpen(true), [])
+  const closeDrawer = useCallback(() => setDrawerOpen(false), [])
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/v1/auth/session`, { credentials: 'include' })
@@ -67,9 +71,19 @@ export function AppShell({ config, children }: AppShellProps) {
   return (
     <AppShellContext.Provider value={{ config, session, signOut }}>
       <div className="flex h-screen overflow-hidden bg-[var(--member-bg)]">
-        <MemberSidebar config={config} onSignOut={signOut} />
+        <MemberSidebar
+          config={config}
+          onSignOut={signOut}
+          drawerOpen={drawerOpen}
+          onCloseDrawer={closeDrawer}
+        />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <MemberTopbar config={config} session={session} onSignOut={signOut} />
+          <MemberTopbar
+            config={config}
+            session={session}
+            onSignOut={signOut}
+            onOpenDrawer={openDrawer}
+          />
           <main className="flex-1 overflow-y-auto px-8 py-8 sidebar-scroll">
             {children}
           </main>
