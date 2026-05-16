@@ -366,6 +366,7 @@ GSVLP_COMMISSION_RATE = "0.20"
 # META_IG_USER_ID         — Instagram Business Account ID linked to the FB Page (for IG cross-posts)
 # LINKEDIN_ACCESS_TOKEN   — LinkedIn personal profile access token (w_member_social)
 # LINKEDIN_PERSON_URN     — LinkedIn person URN (urn:li:person:XXXXX)
+# BUFFER_API_KEY          — Buffer GraphQL API personal access token (api.buffer.com)
 
 # =================================================
 # GSVLP (Grow Setter Pro)

@@ -29114,7 +29114,20 @@ ${postSections}`;
       }
       const apiVersion = env.META_GRAPH_API_VERSION || 'v22.0';
       const registry = await loadSocialPagesRegistry(env);
-      const out = { ok: true, pages: [], threads: null, linkedin: null };
+      const out = {
+        ok: true,
+        pages: [],
+        threads: null,
+        linkedin: null,
+        buffer: {
+          configured: !!env.BUFFER_API_KEY,
+          channels: {
+            taxclaimpro: '6a088694090476fb9928790c',
+            irstaxclaimpro: '6a088694090476fb9928790e',
+            taxavatarpro: '6a088694090476fb9928790f',
+          },
+        },
+      };
 
       // LinkedIn diagnostics: token validity (/me), latest stored post lookup,
       // and organization ACL (so we can tell whether the token has
@@ -35367,7 +35380,84 @@ async function sweepPageAutoComments(env, page, todayPT) {
   return out;
 }
 
-async function scheduleFacebookPost(env, message, scheduledDateTimeISO, pageId, token) {
+// Post via Buffer GraphQL API (api.buffer.com). Buffer manages per-channel
+// token refresh internally, so we don't have to rotate Meta Page Access Tokens
+// every 60 days. options.dueAt is an ISO 8601 timestamp; omit it to drop the
+// post into Buffer's queue at the next available slot.
+async function postViaBuffer(env, channelId, text, options = {}) {
+  const apiKey = env.BUFFER_API_KEY;
+  if (!apiKey) {
+    console.error('[Buffer] BUFFER_API_KEY not set');
+    return { ok: false, error: 'BUFFER_API_KEY not configured' };
+  }
+
+  const mode = options.dueAt ? 'customScheduled' : 'addToQueue';
+  const mutation = `mutation CreatePost {
+    createPost(input: {
+      text: ${JSON.stringify(text)},
+      channelId: "${channelId}",
+      schedulingType: automatic,
+      mode: ${mode}
+      ${options.dueAt ? `, dueAt: "${options.dueAt}"` : ''}
+    }) {
+      ... on PostActionSuccess {
+        post {
+          id
+          text
+          dueAt
+        }
+      }
+      ... on MutationError {
+        message
+      }
+    }
+  }`;
+
+  try {
+    const resp = await fetch('https://api.buffer.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ query: mutation }),
+    });
+
+    const data = await resp.json();
+
+    if (data.errors) {
+      console.error('[Buffer] GraphQL errors:', JSON.stringify(data.errors));
+      return { ok: false, error: data.errors[0]?.message || 'GraphQL error' };
+    }
+
+    const result = data.data?.createPost;
+    if (result?.post) {
+      console.log(`[Buffer] Post created: ${result.post.id} for channel ${channelId}, dueAt: ${result.post.dueAt}`);
+      return { ok: true, postId: result.post.id, dueAt: result.post.dueAt };
+    } else if (result?.message) {
+      console.error(`[Buffer] MutationError: ${result.message}`);
+      return { ok: false, error: result.message };
+    }
+
+    return { ok: false, error: 'Unexpected response shape' };
+  } catch (err) {
+    console.error('[Buffer] Network error:', err.message);
+    return { ok: false, error: err.message };
+  }
+}
+
+async function scheduleFacebookPost(env, message, scheduledDateTimeISO, pageId, token, pageConfig = {}) {
+  // Buffer-first: if this page has a Buffer channel mapping and the API key
+  // is configured, route through Buffer. Buffer handles Page token refresh.
+  if (pageConfig && pageConfig.buffer_channel_id && env.BUFFER_API_KEY) {
+    const dueAt = scheduledDateTimeISO ? new Date(scheduledDateTimeISO).toISOString() : undefined;
+    const result = await postViaBuffer(env, pageConfig.buffer_channel_id, message, { dueAt });
+    if (result.ok) {
+      return { ok: true, provider: 'buffer', postId: result.postId, dueAt: result.dueAt };
+    }
+    console.warn(`[Buffer] Failed for channel ${pageConfig.buffer_channel_id}, falling back to Meta Graph: ${result.error}`);
+  }
+
   pageId = pageId || env.META_PAGE_ID;
   token = token || env.META_PAGE_ACCESS_TOKEN;
   if (!token || !pageId) {
@@ -35395,6 +35485,9 @@ async function scheduleFacebookPost(env, message, scheduledDateTimeISO, pageId, 
   return { ok: true, postId: data.id };
 }
 
+// TODO: When Instagram accounts are connected in Buffer, route IG posts
+// through postViaBuffer() using the IG channel's buffer_channel_id.
+// Currently instagram_user_id is null in the pages registry — IG not active.
 async function postToInstagram(env, caption, imageUrl, igUserId, token) {
   igUserId = igUserId || env.META_IG_USER_ID;
   token = token || env.META_PAGE_ACCESS_TOKEN;
@@ -35571,7 +35664,7 @@ async function scheduleWeekForPage(env, page, mondayStr) {
       const scheduledTime = `${day.date}T${fbPost.time}:00-07:00`;
       const fbMessage = fbPost.copy + (SOCIAL_HASHTAGS[page.id] || '');
       try {
-        const result = await scheduleFacebookPost(env, fbMessage, scheduledTime, page.facebook_page_id, token);
+        const result = await scheduleFacebookPost(env, fbMessage, scheduledTime, page.facebook_page_id, token, page);
         const cuTaskId = await createClickUpSocialTask(env, {
           platform: 'facebook',
           pageName: page.name,
