@@ -71,14 +71,16 @@ export function MarketingHeader({ config }: MarketingHeaderProps) {
   const closeMobile = useCallback(() => setMobileOpen(false), [])
 
   const isLight = config.themeMode === 'light'
+  // backdrop-filter is gated behind `md:` because a non-`none` backdrop-filter
+  // on <header> creates a containing block for `position: fixed` descendants
+  // (the mobile drawer rendered inside <header>), clipping it to the 64px
+  // header band. Drawer is `md:hidden`, so blur is only ever visible at ≥768px.
   const headerClass = isLight
-    ? 'sticky top-0 z-sticky'
-    : 'sticky top-0 z-sticky bg-surface-bg/80 backdrop-blur border-b border-subtle'
+    ? 'sticky top-0 z-sticky md:backdrop-blur-[12px] md:backdrop-saturate-[140%]'
+    : 'sticky top-0 z-sticky bg-surface-bg/80 md:backdrop-blur border-b border-subtle'
   const headerStyle = isLight
     ? {
         background: 'color-mix(in oklab, var(--surface-bg) 85%, transparent)',
-        backdropFilter: 'saturate(140%) blur(12px)',
-        WebkitBackdropFilter: 'saturate(140%) blur(12px)',
         borderBottom: '1px solid var(--border-subtle)',
       }
     : undefined
