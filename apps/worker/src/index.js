@@ -3136,6 +3136,111 @@ function formatLetterDate(d = new Date()) {
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
+async function renderChecklistPage(pdfDoc, fonts) {
+  const PAGE_WIDTH = 612;
+  const PAGE_HEIGHT = 792;
+  const MARGIN_LEFT = 72;
+  const MARGIN_RIGHT = 72;
+  const MARGIN_TOP = 72;
+  const MARGIN_BOTTOM = 72;
+  const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
+
+  const FONT_BODY = 11;
+  const FONT_TITLE = 18;
+  const FONT_SUBTITLE = 11;
+  const LINE_HEIGHT_BODY = 14;
+
+  const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  let y = PAGE_HEIGHT - MARGIN_TOP;
+
+  page.drawText('Before You Mail — Filing Checklist', {
+    x: MARGIN_LEFT, y, size: FONT_TITLE, font: fonts.bold, color: rgb(0, 0, 0),
+  });
+  y -= 24;
+  page.drawText('Complete this checklist before mailing your Form 843 to the IRS.', {
+    x: MARGIN_LEFT, y, size: FONT_SUBTITLE, font: fonts.regular, color: rgb(0.3, 0.3, 0.3),
+  });
+  y -= 28;
+
+  const wrapText = (text, font, size, maxWidth) => {
+    const words = text.split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      const trial = line ? line + ' ' + word : word;
+      if (font.widthOfTextAtSize(trial, size) > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = trial;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  };
+
+  const items = [
+    {
+      title: 'File one Form 843 per tax year, per penalty type.',
+      body: 'Do not combine multiple years or different penalty types on a single form.',
+    },
+    {
+      title: 'Write "Protective Refund Claim Pursuant to Kwong Case" across the top',
+      body: 'if you are filing a protective claim (i.e., the exact refund amount depends on how courts resolve Kwong).',
+    },
+    {
+      title: 'Include supporting documents:',
+      body: 'a copy of your tax account transcript (with relevant penalty entries highlighted), an explanation connecting the penalties to the COVID-19 disaster relief period, and copies of any IRS notices.',
+    },
+    {
+      title: 'Mail via certified mail with return receipt requested.',
+      body: 'Keep a complete copy of everything you submit — the form, attachments, and the certified mail receipt.',
+    },
+    {
+      title: 'Send to the correct IRS service center.',
+      body: 'Mail to the IRS service center where you would file a current-year Form 1040. Check irs.gov/filing/where-to-file-paper-tax-returns for your state\'s address.',
+    },
+    {
+      title: 'Keep your records.',
+      body: 'Retain copies of everything for at least 3 years after filing the claim.',
+    },
+  ];
+
+  const CHECKBOX_SIZE = 12;
+  const CHECKBOX_GAP = 10;
+  const TEXT_X = MARGIN_LEFT + CHECKBOX_SIZE + CHECKBOX_GAP;
+  const TEXT_WIDTH = CONTENT_WIDTH - CHECKBOX_SIZE - CHECKBOX_GAP;
+
+  for (const item of items) {
+    page.drawRectangle({
+      x: MARGIN_LEFT, y: y - CHECKBOX_SIZE + 2,
+      width: CHECKBOX_SIZE, height: CHECKBOX_SIZE,
+      borderColor: rgb(0, 0, 0), borderWidth: 0.75,
+    });
+
+    const titleLines = wrapText(item.title, fonts.bold, FONT_BODY, TEXT_WIDTH);
+    for (let i = 0; i < titleLines.length; i++) {
+      page.drawText(titleLines[i], {
+        x: TEXT_X, y: y - (i * LINE_HEIGHT_BODY),
+        size: FONT_BODY, font: fonts.bold, color: rgb(0, 0, 0),
+      });
+    }
+    y -= titleLines.length * LINE_HEIGHT_BODY;
+
+    const bodyLines = wrapText(item.body, fonts.regular, FONT_BODY, TEXT_WIDTH);
+    for (const line of bodyLines) {
+      page.drawText(line, {
+        x: TEXT_X, y,
+        size: FONT_BODY, font: fonts.regular, color: rgb(0, 0, 0),
+      });
+      y -= LINE_HEIGHT_BODY;
+    }
+    y -= 10;
+
+    if (y < MARGIN_BOTTOM + LINE_HEIGHT_BODY * 4) break;
+  }
+}
+
 async function renderLetterPages(pdfDoc, letterData, fonts) {
   const PAGE_WIDTH = 612;
   const PAGE_HEIGHT = 792;
@@ -20467,6 +20572,8 @@ https://virtuallaunch.pro/payouts
 
             const letterHelvetica = await officialDoc.embedFont(StandardFonts.Helvetica);
             const letterHelveticaBold = await officialDoc.embedFont(StandardFonts.HelveticaBold);
+
+            await renderChecklistPage(officialDoc, { regular: letterHelvetica, bold: letterHelveticaBold });
 
             await renderLetterPages(officialDoc, {
               taxpayerName: taxpayer_name,
