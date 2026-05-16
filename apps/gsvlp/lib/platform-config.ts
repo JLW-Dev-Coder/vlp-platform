@@ -7,10 +7,10 @@ export const gsvlpConfig: PlatformConfig = {
   brandSubtitle: 'Book Calls. Earn Commission.',
   logoText: 'GSP',
   apiBaseUrl: 'https://api.virtuallaunch.pro',
-  calBookingNamespace: 'virtual-launch-pro',
-  calBookingSlug: 'tax-monitor-pro/virtual-launch-pro',
-  calIntroNamespace: 'virtual-launch-pro',
-  calIntroSlug: 'tax-monitor-pro/virtual-launch-pro',
+  calBookingNamespace: 'gsvlp-support',
+  calBookingSlug: 'tax-monitor-pro/gsvlp-support',
+  calIntroNamespace: 'gsvlp-intro',
+  calIntroSlug: 'tax-monitor-pro/gsvlp-intro',
   navSections: [
     {
       title: 'WORKSPACE',
@@ -19,7 +19,13 @@ export const gsvlpConfig: PlatformConfig = {
         { label: 'Call List', href: '/dashboard/calls', icon: 'Phone' },
         { label: 'Appointments', href: '/dashboard/appointments', icon: 'Calendar' },
         { label: 'Motivation', href: '/dashboard/motivation', icon: 'Flame' },
+      ],
+    },
+    {
+      title: 'SETTINGS',
+      items: [
         { label: 'Account', href: '/dashboard/account', icon: 'Settings' },
+        { label: 'Support', href: '/dashboard/support', icon: 'HelpCircle' },
       ],
     },
   ],
