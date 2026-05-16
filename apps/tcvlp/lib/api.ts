@@ -308,6 +308,63 @@ export async function getSubscriptionStatusByAccount(
   return getSubscriptionStatus();
 }
 
+// ── Claim Pages (Unlimited Claim Pages — Pro/Firm tier) ──────────────────────
+
+export interface ClaimPage {
+  page_id: string | null;
+  slug: string;
+  title: string | null;
+  description: string | null;
+  primary: boolean;
+  active: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function listClaimPages(): Promise<{ pages: ClaimPage[]; plan: string | null }> {
+  const res = await apiFetch<{ ok: boolean; pages: ClaimPage[]; plan: string | null }>(
+    '/v1/tcvlp/claim-pages'
+  );
+  return { pages: res.pages ?? [], plan: res.plan ?? null };
+}
+
+export async function createClaimPage(input: {
+  slug: string;
+  title?: string;
+  description?: string;
+}): Promise<{ ok: boolean; page?: ClaimPage; error?: string; message?: string }> {
+  const res = await fetch(`${API_BASE}/v1/tcvlp/claim-pages`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return res.json();
+}
+
+export async function updateClaimPage(
+  page_id: string,
+  input: { title?: string | null; description?: string | null; active?: boolean }
+): Promise<{ ok: boolean; page?: ClaimPage; error?: string; message?: string }> {
+  const res = await fetch(`${API_BASE}/v1/tcvlp/claim-pages/${encodeURIComponent(page_id)}`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return res.json();
+}
+
+export async function deleteClaimPage(
+  page_id: string
+): Promise<{ ok: boolean; error?: string; message?: string }> {
+  const res = await fetch(`${API_BASE}/v1/tcvlp/claim-pages/${encodeURIComponent(page_id)}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 // ── Checkout ──────────────────────────────────────────────────────────────────
 
 export interface CheckoutSession {
