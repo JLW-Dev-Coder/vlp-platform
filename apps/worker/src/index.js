@@ -37873,6 +37873,70 @@ export default {
       }), { status: 200, headers: { 'Content-Type': 'application/json', ...ytCors } });
     }
 
+    // GET /v1/internal/youtube/tavlp-batch-status
+    // Read-only snapshot of all Kennedy pipeline jobs under
+    // social/youtube/tavlp/jobs/. Auth: X-Internal-Key vs YOUTUBE_PIPELINE_KEY.
+    if (pathname === '/v1/internal/youtube/tavlp-batch-status') {
+      const ytCors = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Internal-Key',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      };
+      if (method === 'OPTIONS') return new Response(null, { status: 204, headers: ytCors });
+      if (method !== 'GET') {
+        return new Response(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }), {
+          status: 405, headers: { 'Content-Type': 'application/json', ...ytCors },
+        });
+      }
+      const providedKey = request.headers.get('X-Internal-Key') || '';
+      if (!env.YOUTUBE_PIPELINE_KEY || providedKey !== env.YOUTUBE_PIPELINE_KEY) {
+        return new Response(JSON.stringify({ ok: false, error: 'UNAUTHORIZED' }), {
+          status: 401, headers: { 'Content-Type': 'application/json', ...ytCors },
+        });
+      }
+
+      const prefix = 'social/youtube/tavlp/jobs/';
+      const listing = await env.R2_VIRTUAL_LAUNCH.list({ prefix });
+      const videos = [];
+      const byStatus = {};
+      for (const obj of listing.objects || []) {
+        try {
+          const r = await env.R2_VIRTUAL_LAUNCH.get(obj.key);
+          if (!r) continue;
+          const j = await r.json();
+          const status = j?.status || 'unknown';
+          byStatus[status] = (byStatus[status] || 0) + 1;
+          videos.push({
+            task_id: j.task_id || null,
+            title: j.title || null,
+            status,
+            look_num: j.look_num || null,
+            is_short: !!j.is_short,
+            heygen_video_id: j.heygen_video_id || null,
+            r2_video_key: j.r2_video_key || null,
+            youtube_video_id: j.youtube_video_id || null,
+            youtube_url: j.youtube_url || null,
+            published_at: j.published_at || null,
+            submitted_at: j.submitted_at || null,
+            completed_at: j.completed_at || null,
+            uploaded_at: j.uploaded_at || null,
+            duration: j.duration || null,
+            error: j.error || null,
+          });
+        } catch (e) {
+          console.error('tavlp-batch-status: job read error', obj.key, e?.message || e);
+        }
+      }
+      videos.sort((a, b) => String(a.title || '').toLowerCase().localeCompare(String(b.title || '').toLowerCase()));
+
+      return new Response(JSON.stringify({
+        ok: true,
+        total: videos.length,
+        by_status: byStatus,
+        videos,
+      }), { status: 200, headers: { 'Content-Type': 'application/json', ...ytCors } });
+    }
+
     // Handle CORS preflight.
     if (method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: getCorsHeaders(request) });
