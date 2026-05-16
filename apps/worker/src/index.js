@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { extractText, getDocumentProxy } from 'unpdf';
+import { zipSync, strToU8 } from 'fflate';
 import { FORM_843_BASE64 } from './form843-template.js';
 
 /**
@@ -21946,6 +21947,101 @@ https://virtuallaunch.pro/payouts
           headers: {
             'Content-Type': 'text/csv; charset=utf-8',
             'Content-Disposition': `attachment; filename="tcvlp-submissions-${today}.csv"`,
+            'Cache-Control': 'private, no-cache',
+            ...corsHeaders,
+          },
+        });
+      } catch (err) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: err.message }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/tcvlp/submissions/bulk-export
+  // ZIP download of all generated Form 843 PDFs (Professional/Firm tier only).
+  // Optional query params: from, to (ISO date strings on created_at).
+  {
+    method: 'GET', pattern: '/v1/tcvlp/submissions/bulk-export',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const session = await getSessionFromRequest(request, env);
+      if (!session) {
+        return json({ ok: false, error: 'UNAUTHORIZED' }, 401, request);
+      }
+
+      try {
+        const pro = await env.DB.prepare(
+          'SELECT pro_id, plan FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+
+        if (!pro) {
+          return json({ ok: false, error: 'NOT_FOUND', message: 'No professional profile for this account.' }, 404, request);
+        }
+
+        if (pro.plan !== 'tcvlp_professional' && pro.plan !== 'tcvlp_firm') {
+          return json({
+            ok: false,
+            error: 'UPGRADE_REQUIRED',
+            message: 'Bulk PDF export requires Professional or Firm tier.',
+          }, 403, request);
+        }
+
+        const url = new URL(request.url);
+        const fromParam = url.searchParams.get('from');
+        const toParam = url.searchParams.get('to');
+
+        let sql = `SELECT submission_id, taxpayer_name, tax_year, created_at
+                   FROM tcvlp_form843_submissions
+                   WHERE pro_id = ?`;
+        const binds = [pro.pro_id];
+        if (fromParam) { sql += ' AND created_at >= ?'; binds.push(fromParam); }
+        if (toParam)   { sql += ' AND created_at <= ?'; binds.push(toParam); }
+        sql += ' ORDER BY created_at DESC LIMIT 100';
+
+        const result = await env.DB.prepare(sql).bind(...binds).all();
+        const rows = result.results || [];
+
+        const zipFiles = {};
+        const skipped = [];
+        const usedNames = new Set();
+
+        for (const row of rows) {
+          const obj = await env.R2_VIRTUAL_LAUNCH.get(`tcvlp/forms/843/${row.submission_id}.pdf`);
+          if (!obj) {
+            skipped.push(`${row.submission_id} — ${row.taxpayer_name || '(no name)'} — PDF not found in R2`);
+            continue;
+          }
+          const safeName = String(row.taxpayer_name || 'taxpayer').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'taxpayer';
+          const shortId = String(row.submission_id).slice(0, 8);
+          let filename = `Form843_${safeName}_${row.tax_year || 'unknown'}_${shortId}.pdf`;
+          let suffix = 1;
+          while (usedNames.has(filename)) {
+            filename = `Form843_${safeName}_${row.tax_year || 'unknown'}_${shortId}_${suffix}.pdf`;
+            suffix += 1;
+          }
+          usedNames.add(filename);
+          const bytes = new Uint8Array(await obj.arrayBuffer());
+          zipFiles[filename] = bytes;
+        }
+
+        if (Object.keys(zipFiles).length === 0) {
+          zipFiles['README.txt'] = strToU8('No submissions found for the selected date range.');
+        }
+        if (skipped.length > 0) {
+          zipFiles['_skipped.txt'] = strToU8(
+            'The following submissions were skipped because their PDFs were unavailable:\n\n' +
+            skipped.join('\n') + '\n'
+          );
+        }
+
+        const zipBytes = zipSync(zipFiles, { level: 0 });
+        const today = new Date().toISOString().slice(0, 10);
+        const corsHeaders = getCorsHeaders(request);
+
+        return new Response(zipBytes, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/zip',
+            'Content-Disposition': `attachment; filename="tcvlp-bulk-export-${today}.zip"`,
             'Cache-Control': 'private, no-cache',
             ...corsHeaders,
           },
