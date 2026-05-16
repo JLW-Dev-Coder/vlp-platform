@@ -32,6 +32,14 @@ invocation_logs = true
 # - YOUTUBE_OAUTH_CLIENT_SECRET
 # Required KV record (seeded by /v1/scale/youtube-oauth/callback):
 # - ENRICHMENT_KV key: youtube:oauth:tokens
+#
+# TAVLP Kennedy YouTube pipeline (owner-triggered batch endpoints):
+# - POST /v1/internal/youtube/generate-tavlp-batch
+# - POST /v1/internal/youtube/process-tavlp-batch
+# Auth header: X-Internal-Key
+# Required secret: YOUTUBE_PIPELINE_KEY  (set via `wrangler secret put YOUTUBE_PIPELINE_KEY`)
+# Optional var: TAVLP_KENNEDY_LIST_ID — default ClickUp list to scan when caller
+# omits list_id/task_ids in the request body.
 
 # ---------------------------------------
 # Bindings

@@ -37200,6 +37200,265 @@ async function handleGsvlpNurtureDripCron(env) {
 
 
 // ---------------------------------------------------------------------------
+// TAVLP Kennedy YouTube pipeline — helpers shared by the two internal
+// /v1/internal/youtube/* endpoints below. Reads scripts from ClickUp tasks,
+// renders Kennedy avatar videos via HeyGen, uploads to YouTube via the existing
+// SCALE YouTube OAuth integration. Owner-triggered batch tool; not a cron.
+// ---------------------------------------------------------------------------
+
+const TAVLP_KENNEDY_AVATAR_ID = '8e0f5d617a754472a615731a073b1486';
+const TAVLP_KENNEDY_VOICE_ID = 'dccd34ce74ad42e298cc29033eaf235d';
+// Kennedy look IDs 1-12 (avatar group 42568c08ce764a168344ef4179825a60).
+// Kept in sync with the registry at /v1/tavlp/avatars (Kennedy comment block).
+const TAVLP_KENNEDY_LOOKS = {
+  1: 'fbfe2be2f499473e8913f854e37cbacb',
+  2: 'e13e822a59b24d00bc5444fb858d376c',
+  3: 'cdda2780a30b4054ab22ad768336ad53',
+  4: 'a6ba1dd160fd49ef81619eb455aada2b',
+  5: 'a4087cbe8ec34e0686204f97cf3a4646',
+  6: '96d231ecdce84859a10cc48795a020b8',
+  7: '8e0f5d617a754472a615731a073b1486',
+  8: '8bda6bc721d64f7aa9c8f7751194b88c',
+  9: '7e0944d0344b4d30af6f013879d8232c',
+  10: '6a5e37c585214e59825d386745f665ee',
+  11: '57ce06a589e34aef928106af0f5f1ee8',
+  12: '36d9cbba4300494186b22976cc9f96cf',
+};
+
+function parseTavlpKennedyScriptFromTask(task) {
+  const name = task?.name || '';
+  const description = task?.markdown_description || task?.description || task?.text_content || '';
+  const tagNames = Array.isArray(task?.tags)
+    ? task.tags.map((t) => (typeof t === 'string' ? t : (t?.name || ''))).filter(Boolean)
+    : [];
+
+  function section(label) {
+    const re = new RegExp(`(?:^|\\n)\\s*#{1,6}\\s*${label}\\s*:?\\s*\\n([\\s\\S]*?)(?=\\n\\s*#{1,6}\\s|$)`, 'i');
+    const m = description.match(re);
+    return m ? m[1].trim() : '';
+  }
+
+  let script = section('Script') || section('Body');
+  if (!script) {
+    // Fallback: strip lines that look like metadata so the remainder is usable script body.
+    script = description
+      .split('\n')
+      .filter((l) => !/^\s*(look|format|duration|tags?|description|youtube)\s*[:#]/i.test(l))
+      .join('\n')
+      .trim();
+  }
+
+  const lookText = section('Look') || section('Kennedy Look');
+  let lookNum = 7; // default look #7 = professional office
+  const lookSearch = lookText || description;
+  const lookMatch = lookSearch.match(/(?:Kennedy\s*)?(?:Look\s*[:#]?\s*|#)(\d{1,2})\b/i);
+  if (lookMatch) {
+    const n = parseInt(lookMatch[1], 10);
+    if (n >= 1 && n <= 12) lookNum = n;
+  }
+  const lookId = TAVLP_KENNEDY_LOOKS[lookNum] || TAVLP_KENNEDY_AVATAR_ID;
+
+  const youtubeDescription = section('YouTube Description') || section('Description') || '';
+  const tagSection = section('Tags') || section('YouTube Tags') || '';
+  const sectionTags = tagSection
+    ? tagSection.split(/[,\n]/).map((s) => s.replace(/^#/, '').trim()).filter(Boolean)
+    : [];
+  const mergedTags = Array.from(new Set([...sectionTags, ...tagNames])).slice(0, 30);
+
+  const isShort = /short/i.test(name)
+    || /short/i.test(tagNames.join(' '))
+    || /\bformat\s*[:#]\s*short/i.test(description)
+    || /\b(under|≤|<=)\s*60\s*sec/i.test(description);
+
+  return {
+    title: name,
+    script,
+    look_num: lookNum,
+    look_id: lookId,
+    youtube_description: youtubeDescription,
+    tags: mergedTags,
+    is_short: isShort,
+  };
+}
+
+async function listClickUpListTasks(env, listId) {
+  if (!env.CLICKUP_API_TOKEN) return { ok: false, error: 'CLICKUP_NOT_CONFIGURED' };
+  const url = `https://api.clickup.com/api/v2/list/${encodeURIComponent(listId)}/task?subtasks=true&include_closed=true`;
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Authorization': env.CLICKUP_API_TOKEN, 'Accept': 'application/json' },
+    });
+  } catch (e) {
+    return { ok: false, error: 'clickup_unreachable', detail: e?.message };
+  }
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    return { ok: false, error: `clickup_list_failed_${res.status}`, detail: txt.slice(0, 500) };
+  }
+  const j = await res.json().catch(() => ({}));
+  return { ok: true, tasks: Array.isArray(j?.tasks) ? j.tasks : [] };
+}
+
+async function fetchClickUpTaskById(env, taskId) {
+  if (!env.CLICKUP_API_TOKEN) return { ok: false, error: 'CLICKUP_NOT_CONFIGURED' };
+  let res;
+  try {
+    res = await fetch(`https://api.clickup.com/api/v2/task/${encodeURIComponent(taskId)}`, {
+      method: 'GET',
+      headers: { 'Authorization': env.CLICKUP_API_TOKEN, 'Accept': 'application/json' },
+    });
+  } catch (e) {
+    return { ok: false, error: 'clickup_unreachable', detail: e?.message };
+  }
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    return { ok: false, error: `clickup_task_failed_${res.status}`, detail: txt.slice(0, 500) };
+  }
+  return { ok: true, task: await res.json().catch(() => null) };
+}
+
+async function submitKennedyHeyGenRender(env, { script, lookId, title, isShort }) {
+  if (!env.HEYGEN_API_KEY) return { ok: false, error: 'HEYGEN_NOT_CONFIGURED' };
+  const dimension = isShort ? { width: 1080, height: 1920 } : { width: 1920, height: 1080 };
+  const heygenBody = {
+    title: title || undefined,
+    video_inputs: [{
+      character: { type: 'avatar', avatar_id: lookId, avatar_style: 'normal' },
+      voice: { type: 'text', input_text: script, voice_id: TAVLP_KENNEDY_VOICE_ID },
+    }],
+    dimension,
+  };
+  let res;
+  try {
+    res = await fetch('https://api.heygen.com/v2/video/generate', {
+      method: 'POST',
+      headers: { 'X-Api-Key': env.HEYGEN_API_KEY, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(heygenBody),
+    });
+  } catch (e) {
+    return { ok: false, error: 'heygen_unreachable', detail: e?.message };
+  }
+  const txt = await res.text().catch(() => '');
+  let parsed = null;
+  try { parsed = JSON.parse(txt); } catch {}
+  if (!res.ok) {
+    return { ok: false, error: `heygen_generate_failed_${res.status}`, detail: txt.slice(0, 500) };
+  }
+  const videoId = parsed?.data?.video_id || parsed?.video_id;
+  if (!videoId) return { ok: false, error: 'heygen_generate_failed', detail: 'no video_id in response' };
+  return { ok: true, heygen_video_id: videoId };
+}
+
+async function pollKennedyHeyGenStatus(env, heygenVideoId) {
+  if (!env.HEYGEN_API_KEY) return { ok: false, error: 'HEYGEN_NOT_CONFIGURED' };
+  let res;
+  try {
+    res = await fetch(`https://api.heygen.com/v1/video_status.get?video_id=${encodeURIComponent(heygenVideoId)}`, {
+      method: 'GET',
+      headers: { 'X-Api-Key': env.HEYGEN_API_KEY, 'Accept': 'application/json' },
+    });
+  } catch (e) {
+    return { ok: false, error: 'heygen_unreachable', detail: e?.message };
+  }
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    return { ok: false, error: `heygen_status_failed_${res.status}`, detail: txt.slice(0, 500) };
+  }
+  const j = await res.json().catch(() => ({}));
+  const data = j?.data || j || {};
+  return {
+    ok: true,
+    status: data.status || 'unknown',
+    video_url: data.video_url || null,
+    duration: data.duration || null,
+    error: data.error || null,
+  };
+}
+
+async function uploadKennedyVideoToYouTube(env, { r2VideoKey, title, description, tags, publishAt, isShort }) {
+  const tokenState = await getFreshYouTubeOAuthToken(env);
+  if (!tokenState.connected || tokenState.error || !tokenState.record?.access_token) {
+    return { ok: false, error: 'youtube_auth_failed', detail: tokenState.error || 'not_connected' };
+  }
+  const videoObj = await env.R2_VIRTUAL_LAUNCH.get(r2VideoKey);
+  if (!videoObj) return { ok: false, error: 'video_not_found', detail: r2VideoKey };
+  let videoBytes;
+  try { videoBytes = await videoObj.arrayBuffer(); } catch (e) {
+    return { ok: false, error: 'video_read_failed', detail: e?.message };
+  }
+  const videoSize = videoBytes.byteLength;
+
+  const tagsArr = Array.isArray(tags) ? tags.slice(0, 30) : [];
+  if (isShort && !tagsArr.some((t) => /^shorts?$/i.test(t))) tagsArr.push('Shorts');
+
+  const snippet = {
+    title: (title || 'Untitled').slice(0, 100),
+    description: (description || '').slice(0, 5000),
+    tags: tagsArr,
+    categoryId: '27', // Education
+  };
+  const status = { selfDeclaredMadeForKids: false };
+  if (publishAt) {
+    status.privacyStatus = 'private';
+    status.publishAt = publishAt;
+  } else {
+    status.privacyStatus = 'public';
+  }
+  const metadata = { snippet, status };
+
+  let initRes;
+  try {
+    initRes = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${tokenState.record.access_token}`,
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Upload-Content-Type': 'video/mp4',
+        'X-Upload-Content-Length': String(videoSize),
+      },
+      body: JSON.stringify(metadata),
+    });
+  } catch (e) {
+    return { ok: false, error: 'youtube_init_failed', detail: e?.message };
+  }
+  if (!initRes.ok) {
+    const txt = await initRes.text().catch(() => '');
+    return { ok: false, error: `youtube_init_failed_${initRes.status}`, detail: txt.slice(0, 500) };
+  }
+  const uploadUri = initRes.headers.get('Location') || initRes.headers.get('location');
+  if (!uploadUri) return { ok: false, error: 'youtube_init_no_uri' };
+
+  let uploadRes;
+  try {
+    uploadRes = await fetch(uploadUri, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'video/mp4', 'Content-Length': String(videoSize) },
+      body: videoBytes,
+    });
+  } catch (e) {
+    return { ok: false, error: 'youtube_upload_failed', detail: e?.message };
+  }
+  if (!uploadRes.ok) {
+    const txt = await uploadRes.text().catch(() => '');
+    return { ok: false, error: `youtube_upload_failed_${uploadRes.status}`, detail: txt.slice(0, 500) };
+  }
+  let uploaded;
+  try { uploaded = await uploadRes.json(); } catch {
+    return { ok: false, error: 'youtube_upload_parse_failed' };
+  }
+  const youtubeVideoId = uploaded?.id;
+  if (!youtubeVideoId) return { ok: false, error: 'youtube_upload_no_id' };
+  return {
+    ok: true,
+    youtube_video_id: youtubeVideoId,
+    youtube_url: `https://www.youtube.com/watch?v=${youtubeVideoId}`,
+  };
+}
+
+
+// ---------------------------------------------------------------------------
 // Fetch handler
 // ---------------------------------------------------------------------------
 
@@ -37291,6 +37550,327 @@ export default {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...redditCors },
       });
+    }
+
+    // POST /v1/internal/youtube/generate-tavlp-batch
+    // Owner-triggered batch: read TAVLP Kennedy YouTube scripts from a ClickUp
+    // list, submit each to HeyGen for avatar render, persist a job per task at
+    // social/youtube/tavlp/jobs/{task_id}.json. Polling + upload happens in
+    // /v1/internal/youtube/process-tavlp-batch (separate call — HeyGen renders
+    // take minutes and exceed Worker request limits).
+    //
+    // Auth: X-Internal-Key header against env.YOUTUBE_PIPELINE_KEY secret.
+    // Body: { list_id?: string, task_ids?: string[] } — task_ids overrides list_id.
+    if (pathname === '/v1/internal/youtube/generate-tavlp-batch') {
+      const ytCors = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Internal-Key',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      };
+      if (method === 'OPTIONS') return new Response(null, { status: 204, headers: ytCors });
+      if (method !== 'POST') {
+        return new Response(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }), {
+          status: 405, headers: { 'Content-Type': 'application/json', ...ytCors },
+        });
+      }
+      const providedKey = request.headers.get('X-Internal-Key') || '';
+      if (!env.YOUTUBE_PIPELINE_KEY || providedKey !== env.YOUTUBE_PIPELINE_KEY) {
+        return new Response(JSON.stringify({ ok: false, error: 'UNAUTHORIZED' }), {
+          status: 401, headers: { 'Content-Type': 'application/json', ...ytCors },
+        });
+      }
+      const body = await request.json().catch(() => ({})) || {};
+      const listId = body.list_id || env.TAVLP_KENNEDY_LIST_ID || null;
+      const explicitTaskIds = Array.isArray(body.task_ids) ? body.task_ids.filter((s) => typeof s === 'string') : null;
+      if (!listId && (!explicitTaskIds || explicitTaskIds.length === 0)) {
+        return new Response(JSON.stringify({
+          ok: false, error: 'BAD_REQUEST',
+          message: 'Provide either list_id (ClickUp list to scan) or task_ids[] (explicit task IDs)',
+        }), { status: 400, headers: { 'Content-Type': 'application/json', ...ytCors } });
+      }
+
+      let tasks = [];
+      if (explicitTaskIds && explicitTaskIds.length > 0) {
+        for (const tid of explicitTaskIds) {
+          const r = await fetchClickUpTaskById(env, tid);
+          if (r.ok && r.task) tasks.push(r.task);
+        }
+      } else {
+        const r = await listClickUpListTasks(env, listId);
+        if (!r.ok) {
+          return new Response(JSON.stringify({ ok: false, ...r, list_id: listId }), {
+            status: 502, headers: { 'Content-Type': 'application/json', ...ytCors },
+          });
+        }
+        tasks = r.tasks;
+      }
+
+      const results = [];
+      let submitted = 0;
+      let failed = 0;
+      let skipped = 0;
+      for (const task of tasks) {
+        const taskId = task?.id;
+        if (!taskId) continue;
+        const parsed = parseTavlpKennedyScriptFromTask(task);
+        if (!parsed.script || parsed.script.length < 10) {
+          failed++;
+          results.push({ task_id: taskId, name: task?.name, status: 'failed', error: 'no_script_body' });
+          continue;
+        }
+
+        const jobKey = `social/youtube/tavlp/jobs/${taskId}.json`;
+        try {
+          const existing = await env.R2_VIRTUAL_LAUNCH.get(jobKey);
+          if (existing) {
+            const rec = await existing.json();
+            if (rec?.status && rec.status !== 'failed') {
+              skipped++;
+              results.push({ task_id: taskId, name: task?.name, status: 'already_submitted', heygen_video_id: rec.heygen_video_id });
+              continue;
+            }
+          }
+        } catch {}
+
+        const gen = await submitKennedyHeyGenRender(env, {
+          script: parsed.script,
+          lookId: parsed.look_id,
+          title: parsed.title,
+          isShort: parsed.is_short,
+        });
+        if (!gen.ok) {
+          failed++;
+          results.push({ task_id: taskId, name: task?.name, status: 'failed', error: gen.error, detail: gen.detail });
+          continue;
+        }
+
+        const now = new Date().toISOString();
+        const record = {
+          task_id: taskId,
+          title: parsed.title,
+          heygen_video_id: gen.heygen_video_id,
+          look_num: parsed.look_num,
+          look_id: parsed.look_id,
+          is_short: parsed.is_short,
+          youtube_description: parsed.youtube_description,
+          tags: parsed.tags,
+          status: 'submitted',
+          r2_video_key: null,
+          youtube_video_id: null,
+          youtube_url: null,
+          published_at: null,
+          submitted_at: now,
+          completed_at: null,
+          uploaded_at: null,
+          duration: null,
+          error: null,
+        };
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(jobKey, JSON.stringify(record), {
+            httpMetadata: { contentType: 'application/json' },
+          });
+        } catch (e) {
+          results.push({
+            task_id: taskId, name: task?.name, status: 'submitted',
+            heygen_video_id: gen.heygen_video_id,
+            warning: `r2_write_failed: ${e?.message || e}`,
+          });
+          submitted++;
+          continue;
+        }
+        submitted++;
+        results.push({
+          task_id: taskId, name: task?.name, status: 'submitted',
+          heygen_video_id: gen.heygen_video_id,
+          look_num: parsed.look_num,
+          is_short: parsed.is_short,
+        });
+      }
+
+      return new Response(JSON.stringify({
+        ok: true,
+        list_id: listId,
+        total: tasks.length,
+        submitted,
+        skipped,
+        failed,
+        job_ids: results.filter((r) => r.status === 'submitted').map((r) => r.task_id),
+        results,
+      }), { status: 200, headers: { 'Content-Type': 'application/json', ...ytCors } });
+    }
+
+    // POST /v1/internal/youtube/process-tavlp-batch
+    // Owner-triggered batch: poll all pending Kennedy jobs in R2 under
+    // social/youtube/tavlp/jobs/. For each completed render, download to R2 and
+    // upload to YouTube with a scheduled publish date (one video per day,
+    // ordered by job title — V001, V002, ...). Idempotent: already-uploaded
+    // jobs are skipped but their slot still advances the publish calendar so
+    // subsequent jobs don't collide on the same day.
+    //
+    // Auth: X-Internal-Key header against env.YOUTUBE_PIPELINE_KEY secret.
+    // Body: {
+    //   start_publish_date?: "YYYY-MM-DD",   // default 2026-05-17
+    //   publish_hour_utc?: number,           // default 14 (07:00 PT)
+    //   max_uploads?: number,                // safety cap, default 5
+    // }
+    if (pathname === '/v1/internal/youtube/process-tavlp-batch') {
+      const ytCors = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Internal-Key',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      };
+      if (method === 'OPTIONS') return new Response(null, { status: 204, headers: ytCors });
+      if (method !== 'POST') {
+        return new Response(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }), {
+          status: 405, headers: { 'Content-Type': 'application/json', ...ytCors },
+        });
+      }
+      const providedKey = request.headers.get('X-Internal-Key') || '';
+      if (!env.YOUTUBE_PIPELINE_KEY || providedKey !== env.YOUTUBE_PIPELINE_KEY) {
+        return new Response(JSON.stringify({ ok: false, error: 'UNAUTHORIZED' }), {
+          status: 401, headers: { 'Content-Type': 'application/json', ...ytCors },
+        });
+      }
+      const body = await request.json().catch(() => ({})) || {};
+      const startDate = typeof body.start_publish_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.start_publish_date)
+        ? body.start_publish_date
+        : '2026-05-17';
+      const publishHourUtc = Number.isFinite(body.publish_hour_utc) ? Math.max(0, Math.min(23, body.publish_hour_utc | 0)) : 14;
+      const maxUploads = Number.isFinite(body.max_uploads) ? Math.max(1, Math.min(50, body.max_uploads | 0)) : 5;
+
+      const prefix = 'social/youtube/tavlp/jobs/';
+      const listing = await env.R2_VIRTUAL_LAUNCH.list({ prefix });
+      const jobs = [];
+      for (const obj of listing.objects || []) {
+        try {
+          const r = await env.R2_VIRTUAL_LAUNCH.get(obj.key);
+          if (!r) continue;
+          const j = await r.json();
+          j._r2_key = obj.key;
+          jobs.push(j);
+        } catch (e) {
+          console.error('process-tavlp-batch: job read error', obj.key, e?.message || e);
+        }
+      }
+      jobs.sort((a, b) => String(a.title || '').toLowerCase().localeCompare(String(b.title || '').toLowerCase()));
+
+      function publishAtIso(offset) {
+        const d = new Date(`${startDate}T${String(publishHourUtc).padStart(2, '0')}:00:00Z`);
+        d.setUTCDate(d.getUTCDate() + offset);
+        return d.toISOString();
+      }
+
+      let dayOffset = 0;
+      let uploaded = 0;
+      let stillProcessing = 0;
+      let failed = 0;
+      let alreadyUploaded = 0;
+      const results = [];
+
+      for (const job of jobs) {
+        if (job.status === 'uploaded' && job.youtube_video_id) {
+          alreadyUploaded++;
+          dayOffset++;
+          results.push({ task_id: job.task_id, status: 'already_uploaded', youtube_url: job.youtube_url, publish_at: job.published_at });
+          continue;
+        }
+        if (job.status === 'failed' || job.status === 'upload_failed') {
+          results.push({ task_id: job.task_id, status: job.status, error: job.error });
+          continue;
+        }
+
+        if (job.status !== 'downloaded') {
+          const poll = await pollKennedyHeyGenStatus(env, job.heygen_video_id);
+          if (!poll.ok) {
+            results.push({ task_id: job.task_id, status: 'poll_error', error: poll.error, detail: poll.detail });
+            continue;
+          }
+          if (poll.status === 'failed') {
+            job.status = 'failed';
+            job.error = (poll.error && (poll.error.message || poll.error)) || 'heygen_reported_failed';
+            job.completed_at = new Date().toISOString();
+            try {
+              await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
+            } catch {}
+            failed++;
+            results.push({ task_id: job.task_id, status: 'failed', error: job.error });
+            continue;
+          }
+          if (poll.status !== 'completed') {
+            stillProcessing++;
+            results.push({ task_id: job.task_id, status: 'still_processing', heygen_status: poll.status });
+            continue;
+          }
+          if (!job.r2_video_key && poll.video_url) {
+            try {
+              const vRes = await fetch(poll.video_url);
+              if (!vRes.ok) throw new Error(`video fetch ${vRes.status}`);
+              const buf = await vRes.arrayBuffer();
+              const r2Key = `social/youtube/tavlp/videos/${job.task_id}.mp4`;
+              await env.R2_VIRTUAL_LAUNCH.put(r2Key, buf, { httpMetadata: { contentType: 'video/mp4' } });
+              job.r2_video_key = r2Key;
+              job.completed_at = new Date().toISOString();
+              job.duration = poll.duration || null;
+              job.status = 'downloaded';
+              try {
+                await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
+              } catch {}
+            } catch (e) {
+              results.push({ task_id: job.task_id, status: 'download_error', error: e?.message || String(e) });
+              continue;
+            }
+          }
+        }
+
+        if (uploaded >= maxUploads) {
+          results.push({ task_id: job.task_id, status: 'downloaded_upload_deferred', reason: 'max_uploads_reached' });
+          continue;
+        }
+
+        const scheduledAt = publishAtIso(dayOffset);
+        const up = await uploadKennedyVideoToYouTube(env, {
+          r2VideoKey: job.r2_video_key,
+          title: job.title,
+          description: job.youtube_description,
+          tags: job.tags,
+          publishAt: scheduledAt,
+          isShort: job.is_short,
+        });
+        if (!up.ok) {
+          job.status = 'upload_failed';
+          job.error = `${up.error}${up.detail ? ': ' + up.detail : ''}`.slice(0, 500);
+          try {
+            await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
+          } catch {}
+          failed++;
+          results.push({ task_id: job.task_id, status: 'upload_failed', error: job.error });
+          continue;
+        }
+        job.status = 'uploaded';
+        job.youtube_video_id = up.youtube_video_id;
+        job.youtube_url = up.youtube_url;
+        job.published_at = scheduledAt;
+        job.uploaded_at = new Date().toISOString();
+        try {
+          await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
+        } catch {}
+        uploaded++;
+        dayOffset++;
+        results.push({ task_id: job.task_id, status: 'uploaded', youtube_url: up.youtube_url, publish_at: scheduledAt });
+      }
+
+      return new Response(JSON.stringify({
+        ok: true,
+        total_jobs: jobs.length,
+        already_uploaded: alreadyUploaded,
+        uploaded,
+        still_processing: stillProcessing,
+        failed,
+        start_publish_date: startDate,
+        publish_hour_utc: publishHourUtc,
+        max_uploads: maxUploads,
+        results,
+      }), { status: 200, headers: { 'Content-Type': 'application/json', ...ytCors } });
     }
 
     // Handle CORS preflight.
