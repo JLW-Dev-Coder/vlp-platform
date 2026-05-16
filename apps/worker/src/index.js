@@ -19973,15 +19973,36 @@ https://virtuallaunch.pro/payouts
   },
 
   // GET /v1/tcvlp/pro/by-slug/:slug — public, no auth required
+  // Resolves slugs from both tcvlp_pros (primary) and tcvlp_claim_pages (additional).
   {
     method: 'GET', pattern: '/v1/tcvlp/pro/by-slug/:slug',
     handler: async (_method, _pattern, params, request, env) => {
       const { slug } = params;
 
       try {
-        const pro = await env.DB.prepare(
+        let claim_page = null;
+        let pro = await env.DB.prepare(
           "SELECT firm_name, display_name, welcome_message, logo_url, slug, pro_id, firm_phone, firm_email, firm_website, firm_linkedin, firm_telegram FROM tcvlp_pros WHERE slug = ?"
         ).bind(slug).first();
+
+        if (!pro) {
+          const cp = await env.DB.prepare(
+            "SELECT page_id, pro_id, slug, title, description FROM tcvlp_claim_pages WHERE slug = ? AND active = 1"
+          ).bind(slug).first();
+          if (cp) {
+            pro = await env.DB.prepare(
+              "SELECT firm_name, display_name, welcome_message, logo_url, slug, pro_id, firm_phone, firm_email, firm_website, firm_linkedin, firm_telegram FROM tcvlp_pros WHERE pro_id = ?"
+            ).bind(cp.pro_id).first();
+            if (pro) {
+              claim_page = {
+                page_id: cp.page_id,
+                slug: cp.slug,
+                title: cp.title,
+                description: cp.description,
+              };
+            }
+          }
+        }
 
         if (!pro) {
           return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
@@ -20001,11 +20022,258 @@ https://virtuallaunch.pro/payouts
             firm_website: pro.firm_website,
             firm_linkedin: pro.firm_linkedin,
             firm_telegram: pro.firm_telegram,
+            claim_page,
           },
+          claim_page,
         }, 200, request);
       } catch (e) {
         console.error('TCVLP get pro by slug error:', e);
         return json({ ok: false, error: 'INTERNAL_ERROR', message: 'Failed to fetch professional profile' }, 500, request);
+      }
+    },
+  },
+
+  // ── TCVLP Claim Pages (Unlimited Claim Pages — Professional/Firm tier) ────
+  //
+  // CRUD for additional branded /claim?slug=... pages owned by a tax pro.
+  // The primary slug remains on tcvlp_pros.slug and is not managed here.
+
+  // POST /v1/tcvlp/claim-pages — create a new claim page (Pro/Firm only)
+  {
+    method: 'POST', pattern: '/v1/tcvlp/claim-pages',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const body = await parseBody(request);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      const slug = String(body.slug || '').trim().toLowerCase();
+      const title = body.title ? String(body.title).trim() : null;
+      const description = body.description ? String(body.description).trim() : null;
+
+      if (!/^[a-z0-9](?:[a-z0-9-]{1,48}[a-z0-9])$/.test(slug)) {
+        return json({
+          ok: false,
+          error: 'INVALID_SLUG',
+          message: 'Slug must be 3-50 lowercase letters, numbers, or hyphens (no leading/trailing hyphens).',
+        }, 400, request);
+      }
+
+      try {
+        const pro = await env.DB.prepare(
+          'SELECT pro_id, plan FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+
+        if (!pro) {
+          return json({ ok: false, error: 'NOT_FOUND', message: 'No professional profile for this account.' }, 404, request);
+        }
+
+        if (pro.plan !== 'tcvlp_professional' && pro.plan !== 'tcvlp_firm') {
+          return json({
+            ok: false,
+            error: 'UPGRADE_REQUIRED',
+            message: 'Unlimited Claim Pages requires Professional or Firm tier.',
+          }, 403, request);
+        }
+
+        // Uniqueness — check across BOTH tables
+        const existingPro = await env.DB.prepare('SELECT 1 FROM tcvlp_pros WHERE slug = ?').bind(slug).first();
+        if (existingPro) {
+          return json({ ok: false, error: 'SLUG_TAKEN', message: 'That slug is already in use.' }, 409, request);
+        }
+        const existingPage = await env.DB.prepare('SELECT 1 FROM tcvlp_claim_pages WHERE slug = ?').bind(slug).first();
+        if (existingPage) {
+          return json({ ok: false, error: 'SLUG_TAKEN', message: 'That slug is already in use.' }, 409, request);
+        }
+
+        const page_id = `TCP_${crypto.randomUUID()}`;
+        const timestamp = new Date().toISOString();
+
+        const canonical = {
+          page_id,
+          pro_id: pro.pro_id,
+          account_id: session.account_id,
+          slug,
+          title,
+          description,
+          active: 1,
+          created_at: timestamp,
+          updated_at: timestamp,
+        };
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tcvlp/claim-pages/${page_id}.json`, canonical);
+
+        await d1Run(env.DB,
+          `INSERT INTO tcvlp_claim_pages (page_id, pro_id, slug, title, description, created_at, updated_at, active)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
+          [page_id, pro.pro_id, slug, title, description, timestamp, timestamp]
+        );
+
+        return json({
+          ok: true,
+          page: { page_id, slug, title, description, active: 1, created_at: timestamp, updated_at: timestamp },
+        }, 200, request);
+      } catch (e) {
+        console.error('TCVLP create claim page error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/tcvlp/claim-pages — list pages for the authenticated pro
+  {
+    method: 'GET', pattern: '/v1/tcvlp/claim-pages',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      try {
+        const pro = await env.DB.prepare(
+          'SELECT pro_id, slug, firm_name, plan FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+
+        if (!pro) {
+          return json({ ok: false, error: 'NOT_FOUND', message: 'No professional profile for this account.' }, 404, request);
+        }
+
+        const additional = await env.DB.prepare(
+          'SELECT page_id, slug, title, description, active, created_at, updated_at FROM tcvlp_claim_pages WHERE pro_id = ? ORDER BY created_at ASC'
+        ).bind(pro.pro_id).all();
+
+        const pages = [
+          {
+            page_id: null,
+            slug: pro.slug,
+            title: pro.firm_name,
+            description: null,
+            primary: true,
+            active: 1,
+          },
+          ...((additional.results || []).map((r) => ({
+            page_id: r.page_id,
+            slug: r.slug,
+            title: r.title,
+            description: r.description,
+            primary: false,
+            active: r.active,
+            created_at: r.created_at,
+            updated_at: r.updated_at,
+          }))),
+        ];
+
+        return json({ ok: true, pages, plan: pro.plan ?? null }, 200, request);
+      } catch (e) {
+        console.error('TCVLP list claim pages error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 500, request);
+      }
+    },
+  },
+
+  // PATCH /v1/tcvlp/claim-pages/:page_id — update title/description/active
+  {
+    method: 'PATCH', pattern: '/v1/tcvlp/claim-pages/:page_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const { page_id } = params;
+      const body = await parseBody(request);
+      if (!body) return json({ ok: false, error: 'INVALID_JSON' }, 400, request);
+
+      try {
+        const pro = await env.DB.prepare(
+          'SELECT pro_id FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+        if (!pro) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+
+        const page = await env.DB.prepare(
+          'SELECT page_id, pro_id, slug, title, description, active, created_at FROM tcvlp_claim_pages WHERE page_id = ?'
+        ).bind(page_id).first();
+        if (!page) return json({ ok: false, error: 'NOT_FOUND', message: 'Claim page not found.' }, 404, request);
+        if (page.pro_id !== pro.pro_id) {
+          return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+        }
+
+        const title = body.title !== undefined ? (body.title ? String(body.title).trim() : null) : page.title;
+        const description = body.description !== undefined ? (body.description ? String(body.description).trim() : null) : page.description;
+        const active = body.active !== undefined ? (body.active ? 1 : 0) : page.active;
+        const timestamp = new Date().toISOString();
+
+        await d1Run(env.DB,
+          'UPDATE tcvlp_claim_pages SET title = ?, description = ?, active = ?, updated_at = ? WHERE page_id = ?',
+          [title, description, active, timestamp, page_id]
+        );
+
+        const canonical = {
+          page_id,
+          pro_id: pro.pro_id,
+          account_id: session.account_id,
+          slug: page.slug,
+          title,
+          description,
+          active,
+          created_at: page.created_at,
+          updated_at: timestamp,
+        };
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tcvlp/claim-pages/${page_id}.json`, canonical);
+
+        return json({
+          ok: true,
+          page: { page_id, slug: page.slug, title, description, active, updated_at: timestamp },
+        }, 200, request);
+      } catch (e) {
+        console.error('TCVLP update claim page error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 500, request);
+      }
+    },
+  },
+
+  // DELETE /v1/tcvlp/claim-pages/:page_id — soft delete (active = 0)
+  {
+    method: 'DELETE', pattern: '/v1/tcvlp/claim-pages/:page_id',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+
+      const { page_id } = params;
+
+      try {
+        const pro = await env.DB.prepare(
+          'SELECT pro_id FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+        if (!pro) return json({ ok: false, error: 'NOT_FOUND' }, 404, request);
+
+        const page = await env.DB.prepare(
+          'SELECT page_id, pro_id, slug, title, description, created_at FROM tcvlp_claim_pages WHERE page_id = ?'
+        ).bind(page_id).first();
+        if (!page) return json({ ok: false, error: 'NOT_FOUND', message: 'Claim page not found.' }, 404, request);
+        if (page.pro_id !== pro.pro_id) {
+          return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+        }
+
+        const timestamp = new Date().toISOString();
+        await d1Run(env.DB,
+          'UPDATE tcvlp_claim_pages SET active = 0, updated_at = ? WHERE page_id = ?',
+          [timestamp, page_id]
+        );
+
+        const canonical = {
+          page_id,
+          pro_id: pro.pro_id,
+          account_id: session.account_id,
+          slug: page.slug,
+          title: page.title,
+          description: page.description,
+          active: 0,
+          created_at: page.created_at,
+          updated_at: timestamp,
+        };
+        await r2Put(env.R2_VIRTUAL_LAUNCH, `tcvlp/claim-pages/${page_id}.json`, canonical);
+
+        return json({ ok: true, page_id, active: 0 }, 200, request);
+      } catch (e) {
+        console.error('TCVLP delete claim page error:', e);
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: e.message }, 500, request);
       }
     },
   },
