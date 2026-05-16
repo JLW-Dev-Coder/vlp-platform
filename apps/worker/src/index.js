@@ -3316,9 +3316,26 @@ async function renderLetterPages(pdfDoc, letterData, fonts) {
   blankLines(2);
 
   drawLine('Re: Form 843 Claim for Refund and Request for Abatement', { bold: true });
-  drawLine(`     Taxpayer: ${letterData.taxpayerName}`);
-  drawLine(`     Tax Year(s): ${letterData.taxYearsStr}`);
-  drawLine(`     Total Claimed: ${formatCurrency(letterData.totalClaimed)}`);
+  blankLines(1);
+
+  const RE_INDENT = MARGIN_LEFT + 24;
+  const RE_LABEL_WIDTH = Math.max(
+    fonts.bold.widthOfTextAtSize('Taxpayer:', FONT_BODY),
+    fonts.bold.widthOfTextAtSize('Tax Year(s):', FONT_BODY),
+    fonts.bold.widthOfTextAtSize('Total Claimed:', FONT_BODY),
+  );
+  const RE_VALUE_X = RE_INDENT + RE_LABEL_WIDTH + 12;
+
+  const drawReRow = (label, value) => {
+    ensureRoom(LINE_HEIGHT_BODY);
+    y -= LINE_HEIGHT_BODY;
+    page.drawText(label, { x: RE_INDENT, y, size: FONT_BODY, font: fonts.bold, color: rgb(0, 0, 0) });
+    page.drawText(value, { x: RE_VALUE_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0, 0, 0) });
+  };
+
+  drawReRow('Taxpayer:', letterData.taxpayerName);
+  drawReRow('Tax Year(s):', letterData.taxYearsStr);
+  drawReRow('Total Claimed:', formatCurrency(letterData.totalClaimed));
   blankLines(2);
 
   drawLine('To Whom It May Concern:');
