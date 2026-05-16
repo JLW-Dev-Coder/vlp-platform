@@ -35397,7 +35397,9 @@ async function postViaBuffer(env, channelId, text, options = {}) {
       text: ${JSON.stringify(text)},
       channelId: "${channelId}",
       schedulingType: automatic,
-      mode: ${mode}
+      mode: ${mode},
+      assets: [],
+      metadata: { facebook: { type: post } }
       ${options.dueAt ? `, dueAt: "${options.dueAt}"` : ''}
     }) {
       ... on PostActionSuccess {
