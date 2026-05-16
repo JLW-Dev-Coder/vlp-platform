@@ -38,10 +38,31 @@ export default function Submissions() {
     );
   };
 
+  const exportUrl = `${API_BASE}/v1/tcvlp/submissions/export`;
+
   return (
     <div>
-      <h1 className={styles.pageTitle}>Submissions</h1>
-      <p className={styles.pageDesc}>Track Form 843 preparation guide submissions from your clients.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div>
+          <h1 className={styles.pageTitle}>Submissions</h1>
+          <p className={styles.pageDesc}>Track Form 843 preparation guide submissions from your clients.</p>
+        </div>
+        {submissions.length > 0 ? (
+          <a
+            href={exportUrl}
+            className={styles.copyBtn}
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.375rem',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span aria-hidden>⬇</span> Export CSV
+          </a>
+        ) : null}
+      </div>
 
       {loading ? (
         <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>Loading submissions…</div>

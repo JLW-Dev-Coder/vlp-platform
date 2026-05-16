@@ -21462,6 +21462,81 @@ https://virtuallaunch.pro/payouts
     },
   },
 
+  // GET /v1/tcvlp/submissions/export
+  // CSV export of all Form 843 submissions for the authenticated pro
+  {
+    method: 'GET', pattern: '/v1/tcvlp/submissions/export',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const session = await getSessionFromRequest(request, env);
+      if (!session) {
+        return json({ ok: false, error: 'UNAUTHORIZED' }, 401, request);
+      }
+
+      try {
+        const pro = await env.DB.prepare(
+          'SELECT pro_id FROM tcvlp_pros WHERE account_id = ?'
+        ).bind(session.account_id).first();
+
+        const columns = [
+          'submission_id',
+          'created_at',
+          'taxpayer_name',
+          'taxpayer_email',
+          'state',
+          'tax_year',
+          'penalty_type',
+          'penalty_amount',
+          'status',
+          'notify_opt_in',
+          'notify_email',
+          'notify_phone',
+          'notify_preference',
+        ];
+
+        const escapeCsv = (v) => {
+          if (v === null || v === undefined) return '';
+          const s = String(v);
+          if (/[",\r\n]/.test(s)) {
+            return '"' + s.replace(/"/g, '""') + '"';
+          }
+          return s;
+        };
+
+        let rows = [];
+        if (pro) {
+          const result = await env.DB.prepare(
+            `SELECT ${columns.join(', ')}
+             FROM tcvlp_form843_submissions
+             WHERE pro_id = ?
+             ORDER BY created_at DESC`
+          ).bind(pro.pro_id).all();
+          rows = result.results || [];
+        }
+
+        const lines = [columns.join(',')];
+        for (const row of rows) {
+          lines.push(columns.map((c) => escapeCsv(row[c])).join(','));
+        }
+        const csv = lines.join('\r\n');
+
+        const today = new Date().toISOString().slice(0, 10);
+        const corsHeaders = getCorsHeaders(request);
+
+        return new Response(csv, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': `attachment; filename="tcvlp-submissions-${today}.csv"`,
+            'Cache-Control': 'private, no-cache',
+            ...corsHeaders,
+          },
+        });
+      } catch (err) {
+        return json({ ok: false, error: 'INTERNAL_ERROR', message: err.message }, 500, request);
+      }
+    },
+  },
+
   // GET /v1/tcvlp/subscription/status
   // Supports two modes:
   //   1. Authenticated (session cookie) — returns full status for the logged-in user
