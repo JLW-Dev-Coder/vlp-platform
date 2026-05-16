@@ -35392,6 +35392,11 @@ async function postViaBuffer(env, channelId, text, options = {}) {
   }
 
   const mode = options.dueAt ? 'customScheduled' : 'addToQueue';
+  // Default metadata routes Facebook posts; callers may override for IG, etc.
+  const metadataLine = options.metadataLiteral
+    || (options.platform === 'instagram'
+      ? 'metadata: { instagram: { type: post } }'
+      : 'metadata: { facebook: { type: post } }');
   const mutation = `mutation CreatePost {
     createPost(input: {
       text: ${JSON.stringify(text)},
@@ -35399,7 +35404,7 @@ async function postViaBuffer(env, channelId, text, options = {}) {
       schedulingType: automatic,
       mode: ${mode},
       assets: [],
-      metadata: { facebook: { type: post } }
+      ${metadataLine}
       ${options.dueAt ? `, dueAt: "${options.dueAt}"` : ''}
     }) {
       ... on PostActionSuccess {
@@ -35692,18 +35697,37 @@ async function scheduleWeekForPage(env, page, mondayStr) {
       }
     }
 
-    if (page.instagram_user_id && day.fbPage && day.fbPage[0]) {
+    // Instagram path. Prefer Buffer (buffer_instagram_channel_id) when present;
+    // fall back to Meta Graph (instagram_user_id) only if Buffer isn't wired.
+    if (day.fbPage && day.fbPage[0]) {
       const igCaption = day.fbPage[0].copy + (SOCIAL_HASHTAGS[page.id] || '');
-      try {
-        const result = await postToInstagram(env, igCaption, undefined, page.instagram_user_id, token);
-        out.ig.push({ date: day.date, ...result });
-        if (!result.ok) {
-          out.errors.push({ platform: 'ig', date: day.date, error: String(result.error || 'unknown').slice(0, 200) });
+      if (page.buffer_instagram_channel_id && env.BUFFER_API_KEY) {
+        const dueAt = new Date(`${day.date}T${day.fbPage[0].time}:00-07:00`).toISOString();
+        try {
+          const result = await postViaBuffer(env, page.buffer_instagram_channel_id, igCaption, {
+            dueAt,
+            platform: 'instagram',
+          });
+          out.ig.push({ date: day.date, time: day.fbPage[0].time, provider: 'buffer', ...result });
+          if (!result.ok) {
+            out.errors.push({ platform: 'ig', date: day.date, error: String(result.error || 'unknown').slice(0, 200) });
+          }
+        } catch (err) {
+          out.errors.push({ platform: 'ig', date: day.date, error: String(err && err.message || err).slice(0, 200) });
         }
-      } catch (err) {
-        out.errors.push({ platform: 'ig', date: day.date, error: String(err && err.message || err).slice(0, 200) });
+        await new Promise(r => setTimeout(r, 1000));
+      } else if (page.instagram_user_id) {
+        try {
+          const result = await postToInstagram(env, igCaption, undefined, page.instagram_user_id, token);
+          out.ig.push({ date: day.date, ...result });
+          if (!result.ok) {
+            out.errors.push({ platform: 'ig', date: day.date, error: String(result.error || 'unknown').slice(0, 200) });
+          }
+        } catch (err) {
+          out.errors.push({ platform: 'ig', date: day.date, error: String(err && err.message || err).slice(0, 200) });
+        }
+        await new Promise(r => setTimeout(r, 1000));
       }
-      await new Promise(r => setTimeout(r, 1000));
     }
   }
   out.fb_ok = out.fb.filter(r => r.ok === true).length;
