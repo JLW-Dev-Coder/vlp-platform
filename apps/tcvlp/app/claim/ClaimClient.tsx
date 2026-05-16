@@ -1222,13 +1222,13 @@ export default function ClaimClient({ pro, slug }: Props) {
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
                 <span className={styles.stepBadge} style={{ background: '#22c55e' }}>Submitted</span>
-                <h2 className={styles.stepTitle}>Submission saved successfully</h2>
+                <h2 className={styles.stepTitle}>You're All Set!</h2>
               </div>
               <div className={styles.stepHeaderIcon}><CheckCircle size={36} /></div>
             </div>
             <div className={styles.stepBody}>
               <p className={styles.stepDesc}>
-                Your Form 843 submission has been saved. A confirmation has been logged for your records.
+                Great work — your Form 843 has been submitted. Keep track of your submission details below. If you provided consent to be contacted, your tax professional will review your claim and reach out to you shortly.
               </p>
 
               <div className={styles.infoBoxGreen}>
@@ -1242,7 +1242,7 @@ export default function ClaimClient({ pro, slug }: Props) {
 
               <div className={styles.btnRow}>
                 <Link href="/dashboard/submissions" className={styles.primaryBtn}>
-                  View in Dashboard
+                  View Your Submission
                 </Link>
                 <button
                   type="button"
