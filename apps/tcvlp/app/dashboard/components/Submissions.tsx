@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { Submission, getSubmissions, API_BASE } from '@/lib/api';
+import { useSubscriptionStatus } from '@/lib/account-context';
 import styles from './shared.module.css';
 
 export default function Submissions() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: sub } = useSubscriptionStatus();
+  const isPaidTier = sub?.plan === 'tcvlp_professional' || sub?.plan === 'tcvlp_firm';
 
   useEffect(() => {
     getSubmissions().then((s) => {
@@ -39,6 +42,7 @@ export default function Submissions() {
   };
 
   const exportUrl = `${API_BASE}/v1/tcvlp/submissions/export`;
+  const bulkExportUrl = `${API_BASE}/v1/tcvlp/submissions/bulk-export`;
 
   return (
     <div>
@@ -48,19 +52,51 @@ export default function Submissions() {
           <p className={styles.pageDesc}>Track Form 843 preparation guide submissions from your clients.</p>
         </div>
         {submissions.length > 0 ? (
-          <a
-            href={exportUrl}
-            className={styles.copyBtn}
-            style={{
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.375rem',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <span aria-hidden>⬇</span> Export CSV
-          </a>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <a
+              href={exportUrl}
+              className={styles.copyBtn}
+              style={{
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span aria-hidden>⬇</span> Export CSV
+            </a>
+            {isPaidTier ? (
+              <a
+                href={bulkExportUrl}
+                className={styles.copyBtn}
+                style={{
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span aria-hidden>🗜</span> Export All PDFs
+              </a>
+            ) : (
+              <span
+                title="Upgrade to Professional to bulk export PDFs"
+                className={styles.copyBtn}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                  whiteSpace: 'nowrap',
+                  opacity: 0.55,
+                  cursor: 'not-allowed',
+                }}
+              >
+                <span aria-hidden>🗜</span> Export All PDFs · Upgrade to Professional
+              </span>
+            )}
+          </div>
         ) : null}
       </div>
 
