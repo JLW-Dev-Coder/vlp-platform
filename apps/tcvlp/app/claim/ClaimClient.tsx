@@ -226,6 +226,11 @@ export default function ClaimClient({ pro, slug }: Props) {
   const [downloadError, setDownloadError] = useState('');
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [submittedConfirmation, setSubmittedConfirmation] = useState<{
+    submissionId: string;
+    taxpayerName: string;
+    totalClaimed: number;
+  } | null>(null);
 
   /* Notification opt-in (Step 4) */
   const [notifyOptIn, setNotifyOptIn] = useState(false);
@@ -447,7 +452,11 @@ export default function ClaimClient({ pro, slug }: Props) {
         notify_preference: notifyOptIn ? notifyPreference : undefined,
       };
       await submitForm843(submitData);
-      setStep(5);
+      setSubmittedConfirmation({
+        submissionId: form843Result.submission_id,
+        taxpayerName: fullName,
+        totalClaimed: totalAmount,
+      });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
     } finally {
@@ -519,9 +528,67 @@ export default function ClaimClient({ pro, slug }: Props) {
         </div>
 
         {/* ────────────────────────────────────────────────────────────────── */}
+        {/* Submission Confirmation (replaces step content when submitted)    */}
+        {/* ────────────────────────────────────────────────────────────────── */}
+        {submittedConfirmation && (
+          <div className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepHeaderLeft}>
+                <span className={styles.stepBadge} style={{ background: '#22c55e' }}>Submitted</span>
+                <h2 className={styles.stepTitle}>Submission saved successfully</h2>
+              </div>
+              <div className={styles.stepHeaderIcon}><CheckCircle size={36} /></div>
+            </div>
+            <div className={styles.stepBody}>
+              <p className={styles.stepDesc}>
+                Your Form 843 submission has been saved. A confirmation has been logged for your records.
+              </p>
+
+              <div className={styles.infoBoxGreen}>
+                <div className={styles.infoBoxTitle}>Submission Details</div>
+                <p style={{ marginTop: '0.25rem' }}>
+                  <strong>Submission ID:</strong> {submittedConfirmation.submissionId}<br />
+                  <strong>Taxpayer:</strong> {submittedConfirmation.taxpayerName}<br />
+                  <strong>Total Claimed:</strong> ${submittedConfirmation.totalClaimed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+
+              <div className={styles.btnRow}>
+                <Link href="/dashboard/submissions" className={styles.primaryBtn}>
+                  View in Dashboard
+                </Link>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={() => {
+                    setSubmittedConfirmation(null);
+                    setForm843Result(null);
+                    setParsedTranscripts([]);
+                    setFullName('');
+                    setState('');
+                    setMailingAddress(null);
+                    setFailureToFile('');
+                    setFailureToPay('');
+                    setInterestOnPenalties('');
+                    setDisclaimerChecked(false);
+                    setNoEligibleDates([]);
+                    setNotifyOptIn(false);
+                    setNotifyEmail('');
+                    setNotifyPhone('');
+                    setStep(1);
+                  }}
+                >
+                  Submit Another Claim
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 1: Pull Your IRS Transcript (informational)                  */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {step === 1 && (
+        {!submittedConfirmation && step === 1 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -576,7 +643,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 2: Verify Your Penalties Are Eligible (informational)        */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {step === 2 && (
+        {!submittedConfirmation && step === 2 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -649,7 +716,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 3: Generate Your Form 843 (action step)                      */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {step === 3 && (
+        {!submittedConfirmation && step === 3 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -906,7 +973,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 4: Print & Mail to the IRS                                   */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {step === 4 && (
+        {!submittedConfirmation && step === 4 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -1198,7 +1265,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 5: Need Professional Help?                                   */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {step === 5 && (
+        {!submittedConfirmation && step === 5 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
