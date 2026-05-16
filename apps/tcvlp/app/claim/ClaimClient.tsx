@@ -230,6 +230,7 @@ export default function ClaimClient({ pro, slug }: Props) {
     submissionId: string;
     taxpayerName: string;
     totalClaimed: number;
+    source: 'mail' | 'getInTouch';
   } | null>(null);
 
   /* Notification opt-in (Step 4) */
@@ -435,7 +436,7 @@ export default function ClaimClient({ pro, slug }: Props) {
     }
   };
 
-  const handleMarkSubmitted = async () => {
+  const handleMarkSubmitted = async (source: 'mail' | 'getInTouch' = 'mail') => {
     if (!form843Result) {
       setSubmitError('No generated Form 843 found. Please complete Step 3 first.');
       return;
@@ -456,6 +457,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         submissionId: form843Result.submission_id,
         taxpayerName: fullName,
         totalClaimed: totalAmount,
+        source,
       });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
@@ -530,7 +532,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         {/* ────────────────────────────────────────────────────────────────── */}
         {/* Submission Confirmation (replaces step content when submitted)    */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {submittedConfirmation && (
+        {submittedConfirmation && submittedConfirmation.source === 'mail' && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -580,6 +582,78 @@ export default function ClaimClient({ pro, slug }: Props) {
                 >
                   Submit Another Claim
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {submittedConfirmation && submittedConfirmation.source === 'getInTouch' && (
+          <div className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepHeaderLeft}>
+                <span className={styles.stepBadge} style={{ background: '#22c55e' }}>Submitted</span>
+                <h2 className={styles.stepTitle}>Thank You for Reaching Out</h2>
+              </div>
+              <div className={styles.stepHeaderIcon}><CheckCircle size={36} /></div>
+            </div>
+            <div className={styles.stepBody}>
+              <p className={styles.stepDesc}>
+                We&apos;ve received your claim details and will review your Form 843 submission. We&apos;ll contact you shortly using your preferred contact method.
+              </p>
+              <p className={styles.stepDesc}>
+                In the meantime, feel free to reach us directly at the contact information provided below.
+              </p>
+
+              {(pro.display_name || pro.firm_name) && (
+                <div className={styles.contactCard}>
+                  {pro.display_name && <div className={styles.contactName}>{pro.display_name}</div>}
+                  <div className={styles.contactFirm}>{pro.firm_name}</div>
+                  {(pro.firm_phone || pro.firm_email || pro.firm_website) && (
+                    <div className={styles.contactDetails}>
+                      {pro.firm_phone && (
+                        <div className={styles.contactDetailRow}>
+                          <PhoneIcon />
+                          <a href={`tel:${stripPhone(pro.firm_phone)}`} className={styles.contactPhone}>{formatPhone(pro.firm_phone)}</a>
+                        </div>
+                      )}
+                      {pro.firm_email && (
+                        <div className={styles.contactDetailRow}>
+                          <EmailIcon16 />
+                          <a href={`mailto:${pro.firm_email}`}>{pro.firm_email}</a>
+                        </div>
+                      )}
+                      {pro.firm_website && (
+                        <div className={styles.contactDetailRow}>
+                          <GlobeIcon />
+                          <a href={pro.firm_website.startsWith('http') ? pro.firm_website : `https://${pro.firm_website}`} target="_blank" rel="noopener noreferrer">
+                            {pro.firm_website}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className={styles.downloadBtns}>
+                <a
+                  href="https://www.irs.gov/pub/irs-pdf/f843.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.primaryBtn}
+                >
+                  <DownloadIcon /> Download Official Form 843
+                </a>
+                {form843Result && (
+                  <button
+                    type="button"
+                    className={styles.downloadBtn}
+                    onClick={handleDownloadPdf}
+                    disabled={downloading}
+                  >
+                    <DownloadIcon /> {downloading ? 'Downloading...' : 'Download Pre-Filled Form & Cover Letter'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1156,7 +1230,7 @@ export default function ClaimClient({ pro, slug }: Props) {
               <button
                 type="button"
                 className={styles.primaryBtn}
-                onClick={handleMarkSubmitted}
+                onClick={() => handleMarkSubmitted('mail')}
                 disabled={submittingForm || !form843Result}
               >
                 {submittingForm ? 'Submitting…' : 'Form submitted'}
@@ -1275,25 +1349,16 @@ export default function ClaimClient({ pro, slug }: Props) {
                 </p>
               </div>
 
-              {/* Get in Touch button */}
-              {pro.firm_phone ? (
-                <a href={`tel:${stripPhone(pro.firm_phone)}`} className={styles.primaryBtn}>
-                  Get in Touch
-                </a>
-              ) : pro.firm_email ? (
-                <a href={`mailto:${pro.firm_email}`} className={styles.primaryBtn}>
-                  Get in Touch
-                </a>
-              ) : pro.firm_website ? (
-                <a
-                  href={pro.firm_website.startsWith('http') ? pro.firm_website : `https://${pro.firm_website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.primaryBtn}
-                >
-                  Get in Touch
-                </a>
-              ) : null}
+              {/* Get in Touch — submits the form, shows in-page confirmation */}
+              {submitError && <div className={styles.errorMsg}>{submitError}</div>}
+              <button
+                type="button"
+                className={styles.primaryBtn}
+                onClick={() => handleMarkSubmitted('getInTouch')}
+                disabled={submittingForm || !form843Result}
+              >
+                {submittingForm ? 'Submitting…' : 'Get in Touch'}
+              </button>
 
               <button className={styles.goBackBtn} onClick={() => setStep(4)}>
                 Go Back
