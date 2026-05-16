@@ -36844,7 +36844,16 @@ export default {
       return notFound(pathname, request);
     }
 
-    const response = await result.handler(method, result.pattern, result.params, request, env, ctx);
+    let response;
+    try {
+      response = await result.handler(method, result.pattern, result.params, request, env, ctx);
+    } catch (e) {
+      console.error(`Handler exception for ${method} ${pathname}:`, e && e.stack || e);
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+      });
+    }
 
     // CORS safety net: if the handler forgot to pass `request` to json(),
     // getCorsHeaders() defaults to virtuallaunch.pro. Overwrite with the
