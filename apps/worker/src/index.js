@@ -35397,7 +35397,8 @@ async function postViaBuffer(env, channelId, text, options = {}) {
       text: ${JSON.stringify(text)},
       channelId: "${channelId}",
       schedulingType: automatic,
-      mode: ${mode}
+      mode: ${mode},
+      postType: post
       ${options.dueAt ? `, dueAt: "${options.dueAt}"` : ''}
     }) {
       ... on PostActionSuccess {
