@@ -224,6 +224,8 @@ export default function ClaimClient({ pro, slug }: Props) {
   /* Download / submit (Step 4 → 5) */
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
+  const [submittingForm, setSubmittingForm] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   /* Notification opt-in (Step 4) */
   const [notifyOptIn, setNotifyOptIn] = useState(false);
@@ -429,22 +431,28 @@ export default function ClaimClient({ pro, slug }: Props) {
   };
 
   const handleMarkSubmitted = async () => {
-    if (form843Result) {
-      try {
-        const submitData: SubmitForm843Data = {
-          submission_id: form843Result.submission_id,
-          confirmed: true,
-          notify_opt_in: notifyOptIn,
-          notify_email: notifyEmail || undefined,
-          notify_phone: notifyPhone || undefined,
-          notify_preference: notifyOptIn ? notifyPreference : undefined,
-        };
-        await submitForm843(submitData);
-      } catch {
-        /* still advance — they may have already filed */
-      }
+    if (!form843Result) {
+      setSubmitError('No generated Form 843 found. Please complete Step 3 first.');
+      return;
     }
-    setStep(5);
+    setSubmittingForm(true);
+    setSubmitError('');
+    try {
+      const submitData: SubmitForm843Data = {
+        submission_id: form843Result.submission_id,
+        confirmed: true,
+        notify_opt_in: notifyOptIn,
+        notify_email: notifyEmail || undefined,
+        notify_phone: notifyPhone || undefined,
+        notify_preference: notifyOptIn ? notifyPreference : undefined,
+      };
+      await submitForm843(submitData);
+      setStep(5);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
+    } finally {
+      setSubmittingForm(false);
+    }
   };
 
   const progressPct = (step / 5) * 100;
@@ -1169,8 +1177,15 @@ export default function ClaimClient({ pro, slug }: Props) {
                 </ul>
               </div>
 
-              <button className={styles.secondaryBtn} onClick={handleMarkSubmitted}>
-                Form submitted
+              {submitError && <div className={styles.errorMsg}>{submitError}</div>}
+
+              <button
+                type="button"
+                className={styles.primaryBtn}
+                onClick={handleMarkSubmitted}
+                disabled={submittingForm || !form843Result}
+              >
+                {submittingForm ? 'Submitting…' : 'Form submitted'}
               </button>
 
               <button className={styles.goBackBtn} onClick={() => setStep(3)}>
