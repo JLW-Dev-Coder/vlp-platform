@@ -37267,7 +37267,7 @@ export default {
           name: taskName,
           description: `${responseText}\n\n---\nReddit URL: ${redditUrl}\nPosted: ${timestamp}`,
           tags: ['reddit', `r/${subreddit}`],
-          status: 'to do',
+          status: 'active',
         }),
       });
       if (!cuRes.ok) {
