@@ -226,12 +226,9 @@ export default function ClaimClient({ pro, slug }: Props) {
   const [downloadError, setDownloadError] = useState('');
   const [submittingForm, setSubmittingForm] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [submittedConfirmation, setSubmittedConfirmation] = useState<{
-    submissionId: string;
-    taxpayerName: string;
-    totalClaimed: number;
-    source: 'mail' | 'getInTouch';
-  } | null>(null);
+  const [submittedSubmissionId, setSubmittedSubmissionId] = useState<string | null>(null);
+  const [submittedTaxpayerName, setSubmittedTaxpayerName] = useState('');
+  const [submittedTotalClaimed, setSubmittedTotalClaimed] = useState(0);
 
   /* Notification opt-in (Step 4) */
   const [notifyOptIn, setNotifyOptIn] = useState(false);
@@ -436,7 +433,7 @@ export default function ClaimClient({ pro, slug }: Props) {
     }
   };
 
-  const handleMarkSubmitted = async (source: 'mail' | 'getInTouch' = 'mail') => {
+  const handleMarkSubmitted = async () => {
     if (!form843Result) {
       setSubmitError('No generated Form 843 found. Please complete Step 3 first.');
       return;
@@ -453,12 +450,10 @@ export default function ClaimClient({ pro, slug }: Props) {
         notify_preference: notifyOptIn ? notifyPreference : undefined,
       };
       await submitForm843(submitData);
-      setSubmittedConfirmation({
-        submissionId: form843Result.submission_id,
-        taxpayerName: fullName,
-        totalClaimed: totalAmount,
-        source,
-      });
+      setSubmittedSubmissionId(form843Result.submission_id);
+      setSubmittedTaxpayerName(fullName);
+      setSubmittedTotalClaimed(totalAmount);
+      setStep(5);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
     } finally {
@@ -530,139 +525,9 @@ export default function ClaimClient({ pro, slug }: Props) {
         </div>
 
         {/* ────────────────────────────────────────────────────────────────── */}
-        {/* Submission Confirmation (replaces step content when submitted)    */}
-        {/* ────────────────────────────────────────────────────────────────── */}
-        {submittedConfirmation && submittedConfirmation.source === 'mail' && (
-          <div className={styles.stepCard}>
-            <div className={styles.stepHeader}>
-              <div className={styles.stepHeaderLeft}>
-                <span className={styles.stepBadge} style={{ background: '#22c55e' }}>Submitted</span>
-                <h2 className={styles.stepTitle}>Submission saved successfully</h2>
-              </div>
-              <div className={styles.stepHeaderIcon}><CheckCircle size={36} /></div>
-            </div>
-            <div className={styles.stepBody}>
-              <p className={styles.stepDesc}>
-                Your Form 843 submission has been saved. A confirmation has been logged for your records.
-              </p>
-
-              <div className={styles.infoBoxGreen}>
-                <div className={styles.infoBoxTitle}>Submission Details</div>
-                <p style={{ marginTop: '0.25rem' }}>
-                  <strong>Submission ID:</strong> {submittedConfirmation.submissionId}<br />
-                  <strong>Taxpayer:</strong> {submittedConfirmation.taxpayerName}<br />
-                  <strong>Total Claimed:</strong> ${submittedConfirmation.totalClaimed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-              </div>
-
-              <div className={styles.btnRow}>
-                <Link href="/dashboard/submissions" className={styles.primaryBtn}>
-                  View in Dashboard
-                </Link>
-                <button
-                  type="button"
-                  className={styles.secondaryBtn}
-                  onClick={() => {
-                    setSubmittedConfirmation(null);
-                    setForm843Result(null);
-                    setParsedTranscripts([]);
-                    setFullName('');
-                    setState('');
-                    setMailingAddress(null);
-                    setFailureToFile('');
-                    setFailureToPay('');
-                    setInterestOnPenalties('');
-                    setDisclaimerChecked(false);
-                    setNoEligibleDates([]);
-                    setNotifyOptIn(false);
-                    setNotifyEmail('');
-                    setNotifyPhone('');
-                    setStep(1);
-                  }}
-                >
-                  Submit Another Claim
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {submittedConfirmation && submittedConfirmation.source === 'getInTouch' && (
-          <div className={styles.stepCard}>
-            <div className={styles.stepHeader}>
-              <div className={styles.stepHeaderLeft}>
-                <span className={styles.stepBadge} style={{ background: '#22c55e' }}>Submitted</span>
-                <h2 className={styles.stepTitle}>Thank You for Reaching Out</h2>
-              </div>
-              <div className={styles.stepHeaderIcon}><CheckCircle size={36} /></div>
-            </div>
-            <div className={styles.stepBody}>
-              <p className={styles.stepDesc}>
-                We&apos;ve received your claim details and will review your Form 843 submission. We&apos;ll contact you shortly using your preferred contact method.
-              </p>
-              <p className={styles.stepDesc}>
-                In the meantime, feel free to reach us directly at the contact information provided below.
-              </p>
-
-              {(pro.display_name || pro.firm_name) && (
-                <div className={styles.contactCard}>
-                  {pro.display_name && <div className={styles.contactName}>{pro.display_name}</div>}
-                  <div className={styles.contactFirm}>{pro.firm_name}</div>
-                  {(pro.firm_phone || pro.firm_email || pro.firm_website) && (
-                    <div className={styles.contactDetails}>
-                      {pro.firm_phone && (
-                        <div className={styles.contactDetailRow}>
-                          <PhoneIcon />
-                          <a href={`tel:${stripPhone(pro.firm_phone)}`} className={styles.contactPhone}>{formatPhone(pro.firm_phone)}</a>
-                        </div>
-                      )}
-                      {pro.firm_email && (
-                        <div className={styles.contactDetailRow}>
-                          <EmailIcon16 />
-                          <a href={`mailto:${pro.firm_email}`}>{pro.firm_email}</a>
-                        </div>
-                      )}
-                      {pro.firm_website && (
-                        <div className={styles.contactDetailRow}>
-                          <GlobeIcon />
-                          <a href={pro.firm_website.startsWith('http') ? pro.firm_website : `https://${pro.firm_website}`} target="_blank" rel="noopener noreferrer">
-                            {pro.firm_website}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className={styles.downloadBtns}>
-                <a
-                  href="https://www.irs.gov/pub/irs-pdf/f843.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.primaryBtn}
-                >
-                  <DownloadIcon /> Download Official Form 843
-                </a>
-                {form843Result && (
-                  <button
-                    type="button"
-                    className={styles.downloadBtn}
-                    onClick={handleDownloadPdf}
-                    disabled={downloading}
-                  >
-                    <DownloadIcon /> {downloading ? 'Downloading...' : 'Download Pre-Filled Form & Cover Letter'}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 1: Pull Your IRS Transcript (informational)                  */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {!submittedConfirmation && step === 1 && (
+        {step === 1 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -717,7 +582,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 2: Verify Your Penalties Are Eligible (informational)        */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {!submittedConfirmation && step === 2 && (
+        {step === 2 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -790,7 +655,7 @@ export default function ClaimClient({ pro, slug }: Props) {
         {/* ────────────────────────────────────────────────────────────────── */}
         {/* Step 3: Generate Your Form 843 (action step)                      */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {!submittedConfirmation && step === 3 && (
+        {step === 3 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
@@ -1045,20 +910,20 @@ export default function ClaimClient({ pro, slug }: Props) {
         )}
 
         {/* ────────────────────────────────────────────────────────────────── */}
-        {/* Step 4: Print & Mail to the IRS                                   */}
+        {/* Step 4: Print & Mail / Need Professional Help                     */}
         {/* ────────────────────────────────────────────────────────────────── */}
-        {!submittedConfirmation && step === 4 && (
+        {step === 4 && (
           <div className={styles.stepCard}>
             <div className={styles.stepHeader}>
               <div className={styles.stepHeaderLeft}>
                 <span className={styles.stepBadge}>Step 4</span>
-                <h2 className={styles.stepTitle}>Print &amp; Mail to the IRS</h2>
+                <h2 className={styles.stepTitle}>Print &amp; Mail &mdash; or Get Professional Help</h2>
               </div>
               <div className={styles.stepHeaderIcon}><MailIcon /></div>
             </div>
             <div className={styles.stepBody}>
               <p className={styles.stepDesc}>
-                Your preparation guide has been generated. Download it, fill out the official Form 843, and mail it to the IRS.
+                Your preparation guide has been generated. Download it and mail it to the IRS yourself, or reach out to your tax professional for personalized assistance.
               </p>
 
               {/* Filing deadline */}
@@ -1230,37 +1095,23 @@ export default function ClaimClient({ pro, slug }: Props) {
               <button
                 type="button"
                 className={styles.primaryBtn}
-                onClick={() => handleMarkSubmitted('mail')}
+                onClick={() => handleMarkSubmitted()}
                 disabled={submittingForm || !form843Result}
               >
                 {submittingForm ? 'Submitting…' : 'Form submitted'}
               </button>
 
-              <button className={styles.goBackBtn} onClick={() => setStep(3)}>
-                Go Back
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ────────────────────────────────────────────────────────────────── */}
-        {/* Step 5: Need Professional Help?                                   */}
-        {/* ────────────────────────────────────────────────────────────────── */}
-        {!submittedConfirmation && step === 5 && (
-          <div className={styles.stepCard}>
-            <div className={styles.stepHeader}>
-              <div className={styles.stepHeaderLeft}>
-                <span className={styles.stepBadge}>Step 5</span>
-                <h2 className={styles.stepTitle}>Need Professional Help?</h2>
+              {/* Need Professional Help section */}
+              <div className={styles.stepHeader} style={{ marginTop: '2rem' }}>
+                <div className={styles.stepHeaderLeft}>
+                  <h3 className={styles.stepTitle} style={{ fontSize: '1.25rem' }}>Need Professional Help?</h3>
+                </div>
+                <div className={styles.stepHeaderIcon}><UsersIcon /></div>
               </div>
-              <div className={styles.stepHeaderIcon}><UsersIcon /></div>
-            </div>
-            <div className={styles.stepBody}>
               <p className={styles.stepDesc}>
                 If you need assistance completing your claim or have questions about the process, your tax professional is here to help.
               </p>
 
-              {/* Contact card */}
               {(pro.display_name || pro.firm_name) ? (
                 <div className={styles.contactCard}>
                   {pro.display_name && <div className={styles.contactName}>{pro.display_name}</div>}
@@ -1317,7 +1168,6 @@ export default function ClaimClient({ pro, slug }: Props) {
                 </div>
               )}
 
-              {/* When to reach out */}
               <div className={styles.reachOutTitle}>When to reach out</div>
               <div className={styles.reachOutCard}>
                 <div className={styles.reachOutList}>
@@ -1340,7 +1190,6 @@ export default function ClaimClient({ pro, slug }: Props) {
                 </div>
               </div>
 
-              {/* Professional fee note */}
               <div className={styles.infoBoxBlue}>
                 <div className={styles.infoBoxTitle}>About Our Professional Services</div>
                 <p>
@@ -1349,20 +1198,78 @@ export default function ClaimClient({ pro, slug }: Props) {
                 </p>
               </div>
 
-              {/* Get in Touch — submits the form, shows in-page confirmation */}
-              {submitError && <div className={styles.errorMsg}>{submitError}</div>}
               <button
                 type="button"
                 className={styles.primaryBtn}
-                onClick={() => handleMarkSubmitted('getInTouch')}
+                onClick={() => handleMarkSubmitted()}
                 disabled={submittingForm || !form843Result}
               >
                 {submittingForm ? 'Submitting…' : 'Get in Touch'}
               </button>
 
-              <button className={styles.goBackBtn} onClick={() => setStep(4)}>
+              <button className={styles.goBackBtn} onClick={() => setStep(3)}>
                 Go Back
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* ────────────────────────────────────────────────────────────────── */}
+        {/* Step 5: Submission Confirmation                                   */}
+        {/* ────────────────────────────────────────────────────────────────── */}
+        {step === 5 && (
+          <div className={styles.stepCard}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepHeaderLeft}>
+                <span className={styles.stepBadge} style={{ background: '#22c55e' }}>Submitted</span>
+                <h2 className={styles.stepTitle}>Submission saved successfully</h2>
+              </div>
+              <div className={styles.stepHeaderIcon}><CheckCircle size={36} /></div>
+            </div>
+            <div className={styles.stepBody}>
+              <p className={styles.stepDesc}>
+                Your Form 843 submission has been saved. A confirmation has been logged for your records.
+              </p>
+
+              <div className={styles.infoBoxGreen}>
+                <div className={styles.infoBoxTitle}>Submission Details</div>
+                <p style={{ marginTop: '0.25rem' }}>
+                  <strong>Submission ID:</strong> {submittedSubmissionId}<br />
+                  <strong>Taxpayer:</strong> {submittedTaxpayerName}<br />
+                  <strong>Total Claimed:</strong> ${submittedTotalClaimed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+
+              <div className={styles.btnRow}>
+                <Link href="/dashboard/submissions" className={styles.primaryBtn}>
+                  View in Dashboard
+                </Link>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={() => {
+                    setSubmittedSubmissionId(null);
+                    setSubmittedTaxpayerName('');
+                    setSubmittedTotalClaimed(0);
+                    setForm843Result(null);
+                    setParsedTranscripts([]);
+                    setFullName('');
+                    setState('');
+                    setMailingAddress(null);
+                    setFailureToFile('');
+                    setFailureToPay('');
+                    setInterestOnPenalties('');
+                    setDisclaimerChecked(false);
+                    setNoEligibleDates([]);
+                    setNotifyOptIn(false);
+                    setNotifyEmail('');
+                    setNotifyPhone('');
+                    setStep(1);
+                  }}
+                >
+                  Submit Another Claim
+                </button>
+              </div>
             </div>
           </div>
         )}
