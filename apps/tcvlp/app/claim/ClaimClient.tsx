@@ -1069,7 +1069,7 @@ export default function ClaimClient({ pro, slug }: Props) {
                     onClick={handleDownloadPdf}
                     disabled={downloading}
                   >
-                    <DownloadIcon /> {downloading ? 'Downloading...' : 'Download Preparation Guide'}
+                    <DownloadIcon /> {downloading ? 'Downloading...' : 'Download Pre-Filled Form & Cover Letter'}
                   </button>
                 )}
               </div>

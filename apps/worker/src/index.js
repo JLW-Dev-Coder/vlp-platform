@@ -21307,7 +21307,7 @@ https://virtuallaunch.pro/payouts
   {
     method: 'GET', pattern: '/v1/tcvlp/submissions',
     handler: async (_method, _pattern, _params, request, env) => {
-      const session = await getSession(request, env);
+      const session = await getSessionFromRequest(request, env);
       if (!session) {
         return json({ ok: false, error: 'UNAUTHORIZED' }, 401, request);
       }
