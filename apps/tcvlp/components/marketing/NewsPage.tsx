@@ -264,13 +264,13 @@ export default function NewsPage() {
               <span className="text-sm font-bold uppercase tracking-wide text-brand-primary">Video Breakdown</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-              Coming Monday, May 19
+              Watch Now on YouTube
             </h2>
             <p className="text-lg text-text-muted leading-relaxed mb-4">
-              Can&apos;t make the live session? We&apos;re also releasing a full video breakdown on the TaxClaim Pro YouTube channel Monday, May 19. Subscribe so you don&apos;t miss it.
+              We&apos;ve published 12 videos breaking down everything you need to know about the Kwong claim — from the ruling itself to step-by-step Form 843 walkthroughs, IRS transcript signals, and what CPAs need to do before the July 2026 deadline.
             </p>
             <p className="text-lg text-text-muted leading-relaxed mb-8">
-              We&apos;re breaking down every detail of the NTA&apos;s Part III blog in a new video dropping Monday, May 19. Subscribe to the TaxClaim Pro channel so you don&apos;t miss it.
+              Browse by topic: Kwong Claim Basics, Form 843 Step-by-Step, IRS Transcripts, Deadline Strategy, Case Walkthroughs, and TaxClaim Pro Product Workflow.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
@@ -282,15 +282,13 @@ export default function NewsPage() {
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                 </svg>
-                Subscribe on YouTube
+                Watch on YouTube
               </a>
               <a
-                href="https://www.taxpayeradvocate.irs.gov/news/nta-blog-protect-your-potential-covid-19-disaster-relief-refunds-by-filing-formal-or-protective-claims-for-refund-part-iii/"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/gala"
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-subtle bg-surface-card px-8 py-4 text-lg font-semibold text-text-primary transition-all duration-200 hover:bg-surface-elevated"
               >
-                Read the full NTA blog →
+                Talk to Gala →
               </a>
             </div>
           </div>
