@@ -204,22 +204,25 @@ export default function NewsPage() {
         </div>
       </section>
 
-      {/* Section 7: Live Webinar */}
+      {/* Section 7: Recorded Webinar */}
       <section className="py-16 md:py-20 bg-surface-card">
         <div className="max-w-4xl mx-auto px-4">
           <span className="inline-flex items-center gap-2 bg-brand-primary/15 text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-4 border border-brand-primary/20">
-            Live Today
+            Recording
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Free Live Webinar — Today at 2 PM PT
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-3">
+            Watch the Recording
           </h2>
+          <p className="text-xl md:text-2xl font-semibold text-text-primary mb-6">
+            Kwong v. US: What the NTA Just Confirmed &amp; How to File Your Claim Before July 10
+          </p>
           <p className="text-lg text-text-muted leading-relaxed mb-6">
-            We&apos;re walking through everything the NTA confirmed — the three claim types, the deadline math, common mistakes, and how to lock in your protective claim step by step.
+            We walk through everything the NTA confirmed — the three claim types, the deadline math, common mistakes, and how to lock in your protective claim step by step.
           </p>
 
           <div className="rounded-2xl border-l-4 border-brand-primary bg-surface-elevated p-6 md:p-8 mb-8 space-y-4 text-lg text-text-muted leading-relaxed">
             <p>
-              Bring yourself, friends, family — even your dog. Everyone who paid IRS penalties between 2019 and 2022 can benefit from what the Advocate shared last week and updated on Thursday. No guarantees — but with the Advocate&apos;s support, we want to make sure you know your options before time runs out.
+              Share it with friends and family. Everyone who paid IRS penalties between 2019 and 2022 can benefit from what the Advocate shared and updated. No guarantees — but with the Advocate&apos;s support, we want to make sure you know your options before time runs out.
             </p>
             <p>
               <span className="font-semibold text-text-primary">Bonus:</span> a free PDF showing you exactly how to file your protective claim and get it filed before the deadline only weeks away.
@@ -231,25 +234,14 @@ export default function NewsPage() {
               <iframe
                 width="360"
                 height="240"
-                src="https://webinar.zoho.com/meeting/register/embed?sessionId=1099786497"
+                src="https://webinar.zoho.com/meeting/public/videoprv?recordingId=0ae62b8b3e5895c77badc96fc2df8e36cb4a86d5134a48397f0313d2f98bdb97&x-meeting-org=924178738"
                 frameBorder="0"
-                title="Webinar Registration"
+                title="Kwong v. US Webinar Recording"
                 className="rounded-md block"
+                allowFullScreen
               />
             </div>
           </div>
-
-          <p className="text-center text-sm text-text-muted">
-            Can&apos;t see the registration form?{' '}
-            <a
-              href="https://live.zoho.com/eoia-ouo-lua"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand-primary font-semibold underline hover:text-brand-hover"
-            >
-              Register directly here
-            </a>
-          </p>
         </div>
       </section>
 
