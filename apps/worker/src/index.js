@@ -37208,6 +37208,19 @@ async function handleGsvlpNurtureDripCron(env) {
 
 const TAVLP_KENNEDY_AVATAR_ID = '8e0f5d617a754472a615731a073b1486';
 const TAVLP_KENNEDY_VOICE_ID = 'dccd34ce74ad42e298cc29033eaf235d';
+const TAVLP_KENNEDY_SCRIPTS_KEY = 'social/youtube/tavlp/kennedy-scripts.json';
+
+async function readTavlpKennedyScripts(env) {
+  const obj = await env.R2_VIRTUAL_LAUNCH.get(TAVLP_KENNEDY_SCRIPTS_KEY);
+  if (!obj) return null;
+  try { return await obj.json(); } catch { return null; }
+}
+
+async function writeTavlpKennedyScripts(env, data) {
+  await env.R2_VIRTUAL_LAUNCH.put(TAVLP_KENNEDY_SCRIPTS_KEY, JSON.stringify(data, null, 2), {
+    httpMetadata: { contentType: 'application/json' },
+  });
+}
 // Kennedy look IDs 1-12 (avatar group 42568c08ce764a168344ef4179825a60).
 // Kept in sync with the registry at /v1/tavlp/avatars (Kennedy comment block).
 const TAVLP_KENNEDY_LOOKS = {
@@ -37553,13 +37566,13 @@ export default {
     }
 
     // POST /v1/internal/youtube/generate-tavlp-batch
-    // Owner-triggered batch: read TAVLP Kennedy YouTube scripts from a ClickUp
-    // list, submit each to HeyGen for avatar render, persist a job per task at
-    // social/youtube/tavlp/jobs/{task_id}.json. Polling + upload happens in
-    // /v1/internal/youtube/process-tavlp-batch (separate call — HeyGen renders
-    // take minutes and exceed Worker request limits).
+    // Owner-triggered batch: read TAVLP Kennedy YouTube scripts from R2
+    // (social/youtube/tavlp/kennedy-scripts.json), submit each video with
+    // status === 'ready' to HeyGen for avatar render, then update the same R2
+    // file in place with heygen_job_id and status === 'submitted'. Polling +
+    // upload happens in /v1/internal/youtube/process-tavlp-batch.
     //
-    // Body: { list_id?: string, task_ids?: string[] } — task_ids overrides list_id.
+    // Body: { video_ids?: string[] } — optional filter to specific video_ids.
     if (pathname === '/v1/internal/youtube/generate-tavlp-batch') {
       const ytCors = {
         'Access-Control-Allow-Origin': '*',
@@ -37573,132 +37586,98 @@ export default {
         });
       }
       const body = await request.json().catch(() => ({})) || {};
-      const listId = body.list_id || env.TAVLP_KENNEDY_LIST_ID || null;
-      const explicitTaskIds = Array.isArray(body.task_ids) ? body.task_ids.filter((s) => typeof s === 'string') : null;
-      if (!listId && (!explicitTaskIds || explicitTaskIds.length === 0)) {
+      const onlyIds = Array.isArray(body.video_ids)
+        ? new Set(body.video_ids.filter((s) => typeof s === 'string'))
+        : null;
+
+      const data = await readTavlpKennedyScripts(env);
+      if (!data || !Array.isArray(data.videos)) {
         return new Response(JSON.stringify({
-          ok: false, error: 'BAD_REQUEST',
-          message: 'Provide either list_id (ClickUp list to scan) or task_ids[] (explicit task IDs)',
-        }), { status: 400, headers: { 'Content-Type': 'application/json', ...ytCors } });
+          ok: false, error: 'SCRIPTS_NOT_FOUND',
+          message: `R2 key ${TAVLP_KENNEDY_SCRIPTS_KEY} missing or invalid`,
+        }), { status: 404, headers: { 'Content-Type': 'application/json', ...ytCors } });
       }
 
-      let tasks = [];
-      if (explicitTaskIds && explicitTaskIds.length > 0) {
-        for (const tid of explicitTaskIds) {
-          const r = await fetchClickUpTaskById(env, tid);
-          if (r.ok && r.task) tasks.push(r.task);
-        }
-      } else {
-        const r = await listClickUpListTasks(env, listId);
-        if (!r.ok) {
-          return new Response(JSON.stringify({ ok: false, ...r, list_id: listId }), {
-            status: 502, headers: { 'Content-Type': 'application/json', ...ytCors },
-          });
-        }
-        tasks = r.tasks;
-      }
-
+      const fallbackAvatarId = data.avatar_id || TAVLP_KENNEDY_AVATAR_ID;
       const results = [];
       let submitted = 0;
       let failed = 0;
       let skipped = 0;
-      for (const task of tasks) {
-        const taskId = task?.id;
-        if (!taskId) continue;
-        const parsed = parseTavlpKennedyScriptFromTask(task);
-        if (!parsed.script || parsed.script.length < 10) {
+
+      for (const video of data.videos) {
+        const vid = video?.video_id;
+        if (!vid) continue;
+        if (onlyIds && !onlyIds.has(vid)) continue;
+        if (video.status !== 'ready') {
+          skipped++;
+          results.push({ video_id: vid, title: video.title, status: 'skipped', current_status: video.status });
+          continue;
+        }
+        if (!video.script || video.script.length < 10) {
           failed++;
-          results.push({ task_id: taskId, name: task?.name, status: 'failed', error: 'no_script_body' });
+          video.status = 'failed';
+          video.error = 'no_script_body';
+          results.push({ video_id: vid, title: video.title, status: 'failed', error: 'no_script_body' });
           continue;
         }
 
-        const jobKey = `social/youtube/tavlp/jobs/${taskId}.json`;
-        try {
-          const existing = await env.R2_VIRTUAL_LAUNCH.get(jobKey);
-          if (existing) {
-            const rec = await existing.json();
-            if (rec?.status && rec.status !== 'failed') {
-              skipped++;
-              results.push({ task_id: taskId, name: task?.name, status: 'already_submitted', heygen_video_id: rec.heygen_video_id });
-              continue;
-            }
-          }
-        } catch {}
-
+        const lookId = video.kennedy_look_avatar_id || fallbackAvatarId;
+        const isShort = video.content_type !== 'long_form';
         const gen = await submitKennedyHeyGenRender(env, {
-          script: parsed.script,
-          lookId: parsed.look_id,
-          title: parsed.title,
-          isShort: parsed.is_short,
+          script: video.script,
+          lookId,
+          title: video.title,
+          isShort,
         });
         if (!gen.ok) {
           failed++;
-          results.push({ task_id: taskId, name: task?.name, status: 'failed', error: gen.error, detail: gen.detail });
+          video.status = 'failed';
+          video.error = `${gen.error}${gen.detail ? ': ' + gen.detail : ''}`.slice(0, 500);
+          results.push({ video_id: vid, title: video.title, status: 'failed', error: gen.error, detail: gen.detail });
           continue;
         }
 
-        const now = new Date().toISOString();
-        const record = {
-          task_id: taskId,
-          title: parsed.title,
-          heygen_video_id: gen.heygen_video_id,
-          look_num: parsed.look_num,
-          look_id: parsed.look_id,
-          is_short: parsed.is_short,
-          youtube_description: parsed.youtube_description,
-          tags: parsed.tags,
-          status: 'submitted',
-          r2_video_key: null,
-          youtube_video_id: null,
-          youtube_url: null,
-          published_at: null,
-          submitted_at: now,
-          completed_at: null,
-          uploaded_at: null,
-          duration: null,
-          error: null,
-        };
-        try {
-          await env.R2_VIRTUAL_LAUNCH.put(jobKey, JSON.stringify(record), {
-            httpMetadata: { contentType: 'application/json' },
-          });
-        } catch (e) {
-          results.push({
-            task_id: taskId, name: task?.name, status: 'submitted',
-            heygen_video_id: gen.heygen_video_id,
-            warning: `r2_write_failed: ${e?.message || e}`,
-          });
-          submitted++;
-          continue;
-        }
+        video.status = 'submitted';
+        video.heygen_job_id = gen.heygen_video_id;
+        video.heygen_video_url = null;
+        video.submitted_at = new Date().toISOString();
+        video.error = null;
         submitted++;
         results.push({
-          task_id: taskId, name: task?.name, status: 'submitted',
-          heygen_video_id: gen.heygen_video_id,
-          look_num: parsed.look_num,
-          is_short: parsed.is_short,
+          video_id: vid, title: video.title, status: 'submitted',
+          heygen_job_id: gen.heygen_video_id,
+          kennedy_look: video.kennedy_look,
+          is_short: isShort,
         });
+      }
+
+      try {
+        await writeTavlpKennedyScripts(env, data);
+      } catch (e) {
+        return new Response(JSON.stringify({
+          ok: false, error: 'r2_write_failed', detail: e?.message || String(e),
+          submitted, skipped, failed, results,
+        }), { status: 500, headers: { 'Content-Type': 'application/json', ...ytCors } });
       }
 
       return new Response(JSON.stringify({
         ok: true,
-        list_id: listId,
-        total: tasks.length,
+        scripts_key: TAVLP_KENNEDY_SCRIPTS_KEY,
+        total: data.videos.length,
         submitted,
         skipped,
         failed,
-        job_ids: results.filter((r) => r.status === 'submitted').map((r) => r.task_id),
         results,
       }), { status: 200, headers: { 'Content-Type': 'application/json', ...ytCors } });
     }
 
     // POST /v1/internal/youtube/process-tavlp-batch
-    // Owner-triggered batch: poll all pending Kennedy jobs in R2 under
-    // social/youtube/tavlp/jobs/. For each completed render, download to R2 and
-    // upload to YouTube with a scheduled publish date (one video per day,
-    // ordered by job title — V001, V002, ...). Idempotent: already-uploaded
-    // jobs are skipped but their slot still advances the publish calendar so
-    // subsequent jobs don't collide on the same day.
+    // Owner-triggered batch: read TAVLP Kennedy scripts from R2
+    // (social/youtube/tavlp/kennedy-scripts.json). For each video with status
+    // === 'submitted', poll HeyGen; if completed, download mp4 to R2. For each
+    // video with status === 'downloaded', upload to YouTube with a scheduled
+    // publish date (one per day, ordered by video_id). Idempotent: already
+    // uploaded videos advance the publish calendar.
     //
     // Body: {
     //   start_publish_date?: "YYYY-MM-DD",   // default 2026-05-17
@@ -37724,21 +37703,17 @@ export default {
       const publishHourUtc = Number.isFinite(body.publish_hour_utc) ? Math.max(0, Math.min(23, body.publish_hour_utc | 0)) : 14;
       const maxUploads = Number.isFinite(body.max_uploads) ? Math.max(1, Math.min(50, body.max_uploads | 0)) : 5;
 
-      const prefix = 'social/youtube/tavlp/jobs/';
-      const listing = await env.R2_VIRTUAL_LAUNCH.list({ prefix });
-      const jobs = [];
-      for (const obj of listing.objects || []) {
-        try {
-          const r = await env.R2_VIRTUAL_LAUNCH.get(obj.key);
-          if (!r) continue;
-          const j = await r.json();
-          j._r2_key = obj.key;
-          jobs.push(j);
-        } catch (e) {
-          console.error('process-tavlp-batch: job read error', obj.key, e?.message || e);
-        }
+      const data = await readTavlpKennedyScripts(env);
+      if (!data || !Array.isArray(data.videos)) {
+        return new Response(JSON.stringify({
+          ok: false, error: 'SCRIPTS_NOT_FOUND',
+          message: `R2 key ${TAVLP_KENNEDY_SCRIPTS_KEY} missing or invalid`,
+        }), { status: 404, headers: { 'Content-Type': 'application/json', ...ytCors } });
       }
-      jobs.sort((a, b) => String(a.title || '').toLowerCase().localeCompare(String(b.title || '').toLowerCase()));
+
+      const videos = [...data.videos].sort((a, b) =>
+        String(a.video_id || '').localeCompare(String(b.video_id || ''))
+      );
 
       function publishAtIso(offset) {
         const d = new Date(`${startDate}T${String(publishHourUtc).padStart(2, '0')}:00:00Z`);
@@ -37753,101 +37728,108 @@ export default {
       let alreadyUploaded = 0;
       const results = [];
 
-      for (const job of jobs) {
-        if (job.status === 'uploaded' && job.youtube_video_id) {
+      for (const video of videos) {
+        const vid = video.video_id;
+        if (video.status === 'uploaded' && video.youtube_video_id) {
           alreadyUploaded++;
           dayOffset++;
-          results.push({ task_id: job.task_id, status: 'already_uploaded', youtube_url: job.youtube_url, publish_at: job.published_at });
+          results.push({ video_id: vid, status: 'already_uploaded', youtube_video_id: video.youtube_video_id, publish_at: video.youtube_publish_at });
           continue;
         }
-        if (job.status === 'failed' || job.status === 'upload_failed') {
-          results.push({ task_id: job.task_id, status: job.status, error: job.error });
+        if (video.status === 'failed' || video.status === 'upload_failed') {
+          results.push({ video_id: vid, status: video.status, error: video.error });
+          continue;
+        }
+        if (video.status === 'ready') {
+          results.push({ video_id: vid, status: 'not_submitted', message: 'run generate-tavlp-batch first' });
           continue;
         }
 
-        if (job.status !== 'downloaded') {
-          const poll = await pollKennedyHeyGenStatus(env, job.heygen_video_id);
+        if (video.status === 'submitted') {
+          const poll = await pollKennedyHeyGenStatus(env, video.heygen_job_id);
           if (!poll.ok) {
-            results.push({ task_id: job.task_id, status: 'poll_error', error: poll.error, detail: poll.detail });
+            results.push({ video_id: vid, status: 'poll_error', error: poll.error, detail: poll.detail });
             continue;
           }
           if (poll.status === 'failed') {
-            job.status = 'failed';
-            job.error = (poll.error && (poll.error.message || poll.error)) || 'heygen_reported_failed';
-            job.completed_at = new Date().toISOString();
-            try {
-              await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
-            } catch {}
+            video.status = 'failed';
+            video.error = (poll.error && (poll.error.message || poll.error)) || 'heygen_reported_failed';
             failed++;
-            results.push({ task_id: job.task_id, status: 'failed', error: job.error });
+            results.push({ video_id: vid, status: 'failed', error: video.error });
             continue;
           }
           if (poll.status !== 'completed') {
             stillProcessing++;
-            results.push({ task_id: job.task_id, status: 'still_processing', heygen_status: poll.status });
+            results.push({ video_id: vid, status: 'still_processing', heygen_status: poll.status });
             continue;
           }
-          if (!job.r2_video_key && poll.video_url) {
+          if (!video.r2_video_key && poll.video_url) {
             try {
               const vRes = await fetch(poll.video_url);
               if (!vRes.ok) throw new Error(`video fetch ${vRes.status}`);
               const buf = await vRes.arrayBuffer();
-              const r2Key = `social/youtube/tavlp/videos/${job.task_id}.mp4`;
+              const r2Key = `social/youtube/tavlp/videos/${vid}.mp4`;
               await env.R2_VIRTUAL_LAUNCH.put(r2Key, buf, { httpMetadata: { contentType: 'video/mp4' } });
-              job.r2_video_key = r2Key;
-              job.completed_at = new Date().toISOString();
-              job.duration = poll.duration || null;
-              job.status = 'downloaded';
-              try {
-                await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
-              } catch {}
+              video.r2_video_key = r2Key;
+              video.heygen_video_url = poll.video_url;
+              video.duration = poll.duration || null;
+              video.status = 'downloaded';
             } catch (e) {
-              results.push({ task_id: job.task_id, status: 'download_error', error: e?.message || String(e) });
+              results.push({ video_id: vid, status: 'download_error', error: e?.message || String(e) });
               continue;
             }
           }
         }
 
+        if (video.status !== 'downloaded') {
+          results.push({ video_id: vid, status: video.status || 'unknown' });
+          continue;
+        }
+
         if (uploaded >= maxUploads) {
-          results.push({ task_id: job.task_id, status: 'downloaded_upload_deferred', reason: 'max_uploads_reached' });
+          results.push({ video_id: vid, status: 'downloaded_upload_deferred', reason: 'max_uploads_reached' });
           continue;
         }
 
         const scheduledAt = publishAtIso(dayOffset);
+        const isShort = video.content_type !== 'long_form';
         const up = await uploadKennedyVideoToYouTube(env, {
-          r2VideoKey: job.r2_video_key,
-          title: job.title,
-          description: job.youtube_description,
-          tags: job.tags,
+          r2VideoKey: video.r2_video_key,
+          title: video.title,
+          description: video.youtube_description,
+          tags: video.tags,
           publishAt: scheduledAt,
-          isShort: job.is_short,
+          isShort,
         });
         if (!up.ok) {
-          job.status = 'upload_failed';
-          job.error = `${up.error}${up.detail ? ': ' + up.detail : ''}`.slice(0, 500);
-          try {
-            await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
-          } catch {}
+          video.status = 'upload_failed';
+          video.error = `${up.error}${up.detail ? ': ' + up.detail : ''}`.slice(0, 500);
           failed++;
-          results.push({ task_id: job.task_id, status: 'upload_failed', error: job.error });
+          results.push({ video_id: vid, status: 'upload_failed', error: video.error });
           continue;
         }
-        job.status = 'uploaded';
-        job.youtube_video_id = up.youtube_video_id;
-        job.youtube_url = up.youtube_url;
-        job.published_at = scheduledAt;
-        job.uploaded_at = new Date().toISOString();
-        try {
-          await env.R2_VIRTUAL_LAUNCH.put(job._r2_key, JSON.stringify(job), { httpMetadata: { contentType: 'application/json' } });
-        } catch {}
+        video.status = 'uploaded';
+        video.youtube_video_id = up.youtube_video_id;
+        video.youtube_url = up.youtube_url;
+        video.youtube_publish_at = scheduledAt;
         uploaded++;
         dayOffset++;
-        results.push({ task_id: job.task_id, status: 'uploaded', youtube_url: up.youtube_url, publish_at: scheduledAt });
+        results.push({ video_id: vid, status: 'uploaded', youtube_video_id: up.youtube_video_id, youtube_url: up.youtube_url, publish_at: scheduledAt });
+      }
+
+      try {
+        await writeTavlpKennedyScripts(env, data);
+      } catch (e) {
+        return new Response(JSON.stringify({
+          ok: false, error: 'r2_write_failed', detail: e?.message || String(e),
+          uploaded, still_processing: stillProcessing, failed, results,
+        }), { status: 500, headers: { 'Content-Type': 'application/json', ...ytCors } });
       }
 
       return new Response(JSON.stringify({
         ok: true,
-        total_jobs: jobs.length,
+        scripts_key: TAVLP_KENNEDY_SCRIPTS_KEY,
+        total_videos: videos.length,
         already_uploaded: alreadyUploaded,
         uploaded,
         still_processing: stillProcessing,
@@ -37860,8 +37842,8 @@ export default {
     }
 
     // GET /v1/internal/youtube/tavlp-batch-status
-    // Read-only snapshot of all Kennedy pipeline jobs under
-    // social/youtube/tavlp/jobs/.
+    // Read-only snapshot of all Kennedy pipeline videos from R2
+    // (social/youtube/tavlp/kennedy-scripts.json).
     if (pathname === '/v1/internal/youtube/tavlp-batch-status') {
       const ytCors = {
         'Access-Control-Allow-Origin': '*',
@@ -37875,42 +37857,44 @@ export default {
         });
       }
 
-      const prefix = 'social/youtube/tavlp/jobs/';
-      const listing = await env.R2_VIRTUAL_LAUNCH.list({ prefix });
+      const data = await readTavlpKennedyScripts(env);
+      if (!data || !Array.isArray(data.videos)) {
+        return new Response(JSON.stringify({
+          ok: false, error: 'SCRIPTS_NOT_FOUND',
+          message: `R2 key ${TAVLP_KENNEDY_SCRIPTS_KEY} missing or invalid`,
+        }), { status: 404, headers: { 'Content-Type': 'application/json', ...ytCors } });
+      }
+
       const videos = [];
       const byStatus = {};
-      for (const obj of listing.objects || []) {
-        try {
-          const r = await env.R2_VIRTUAL_LAUNCH.get(obj.key);
-          if (!r) continue;
-          const j = await r.json();
-          const status = j?.status || 'unknown';
-          byStatus[status] = (byStatus[status] || 0) + 1;
-          videos.push({
-            task_id: j.task_id || null,
-            title: j.title || null,
-            status,
-            look_num: j.look_num || null,
-            is_short: !!j.is_short,
-            heygen_video_id: j.heygen_video_id || null,
-            r2_video_key: j.r2_video_key || null,
-            youtube_video_id: j.youtube_video_id || null,
-            youtube_url: j.youtube_url || null,
-            published_at: j.published_at || null,
-            submitted_at: j.submitted_at || null,
-            completed_at: j.completed_at || null,
-            uploaded_at: j.uploaded_at || null,
-            duration: j.duration || null,
-            error: j.error || null,
-          });
-        } catch (e) {
-          console.error('tavlp-batch-status: job read error', obj.key, e?.message || e);
-        }
+      for (const v of data.videos) {
+        const status = v?.status || 'unknown';
+        byStatus[status] = (byStatus[status] || 0) + 1;
+        videos.push({
+          video_id: v.video_id || null,
+          title: v.title || null,
+          status,
+          kennedy_look: v.kennedy_look || null,
+          kennedy_look_avatar_id: v.kennedy_look_avatar_id || null,
+          content_type: v.content_type || null,
+          heygen_job_id: v.heygen_job_id || null,
+          heygen_video_url: v.heygen_video_url || null,
+          r2_video_key: v.r2_video_key || null,
+          youtube_video_id: v.youtube_video_id || null,
+          youtube_url: v.youtube_url || null,
+          youtube_publish_at: v.youtube_publish_at || null,
+          submitted_at: v.submitted_at || null,
+          duration: v.duration || null,
+          error: v.error || null,
+        });
       }
-      videos.sort((a, b) => String(a.title || '').toLowerCase().localeCompare(String(b.title || '').toLowerCase()));
+      videos.sort((a, b) => String(a.video_id || '').localeCompare(String(b.video_id || '')));
 
       return new Response(JSON.stringify({
         ok: true,
+        scripts_key: TAVLP_KENNEDY_SCRIPTS_KEY,
+        channel: data.channel || null,
+        youtube_channel_id: data.youtube_channel_id || null,
         total: videos.length,
         by_status: byStatus,
         videos,
