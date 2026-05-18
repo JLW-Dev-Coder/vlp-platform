@@ -27612,9 +27612,12 @@ Return a JSON array where each element has:
         let record;
         try { record = raw ? JSON.parse(raw) : null; } catch { record = null; }
         const all = Array.isArray(record?.follow_ups) ? record.follow_ups : [];
-        // Self-heal: auto-complete any pending follow-up whose lead has been
-        // called/dispositioned after the follow-up was created. Acts as a
-        // safety net if the disposition POST's clearing code didn't run.
+        // Self-heal: auto-complete any pending follow-up that is stale. A
+        // follow-up is stale if the lead has been worked since the follow-up
+        // was created (newer activity entry) OR the follow-up date has passed
+        // and the lead has been called at all. Safety net if the disposition
+        // POST's clearing code didn't run, or for records created before that
+        // clearing code shipped.
         try {
           const batch = await gsvlpGetBatch(env, session.account_id);
           const rowMap = new Map();
@@ -27623,11 +27626,18 @@ Return a JSON array where each element has:
           }
           let healed = false;
           const healIso = new Date().toISOString();
+          const todayStr = healIso.slice(0, 10);
           for (const f of all) {
             if (f.status !== 'pending') continue;
             const lead = rowMap.get(Number(f.row_number));
-            if (!lead || !lead.called_at) continue;
-            if (String(lead.called_at) > String(f.created_at || '')) {
+            if (!lead) continue;
+            const leadCalled = lead.status && lead.status !== 'not_called';
+            if (!leadCalled) continue;
+            const fuCreated = String(f.created_at || '');
+            const activityAfter = Array.isArray(lead.activity) && lead.activity.some(a => String(a?.timestamp || '') > fuCreated);
+            const calledAfter = lead.called_at && String(lead.called_at) > fuCreated;
+            const pastDue = String(f.follow_up_date || '') < todayStr;
+            if (activityAfter || calledAfter || pastDue) {
               f.status = 'completed';
               f.completed_at = healIso;
               healed = true;
@@ -27682,6 +27692,51 @@ Return a JSON array where each element has:
       } catch (e) {
         console.error('/v1/gsvlp/follow-ups/:id/complete error:', e);
         return json({ ok: false, error: 'FOLLOW_UP_COMPLETE_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // TODO: remove after stale follow-up cleanup
+  // GET /v1/gsvlp/admin/clear-stale-followups?account_id={id} — admin force-clear
+  {
+    method: 'GET', pattern: '/v1/gsvlp/admin/clear-stale-followups',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      try {
+        const url = new URL(request.url);
+        const accountId = url.searchParams.get('account_id') || session.account_id;
+        const key = `gsvlp/follow-ups/${accountId}.json`;
+        const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, key);
+        let record;
+        try { record = raw ? JSON.parse(raw) : null; } catch { record = null; }
+        if (!record || !Array.isArray(record.follow_ups)) {
+          return json({ ok: true, cleared: 0, records: [], note: 'no follow-ups file' }, 200, request);
+        }
+        const snapshot = record.follow_ups.map(f => ({
+          id: f.id,
+          row_number: f.row_number,
+          status: f.status,
+          follow_up_date: f.follow_up_date,
+          created_at: f.created_at,
+        }));
+        const nowIso = new Date().toISOString();
+        let cleared = 0;
+        for (const f of record.follow_ups) {
+          if (f.status === 'pending') {
+            f.status = 'completed';
+            f.completed_at = nowIso;
+            cleared++;
+          }
+        }
+        await r2Put(env.R2_VIRTUAL_LAUNCH, key, record);
+        return json({ ok: true, account_id: accountId, cleared, records: snapshot }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/admin/clear-stale-followups error:', e);
+        return json({ ok: false, error: 'CLEAR_FAILED', message: String(e?.message || e) }, 500, request);
       }
     },
   },
