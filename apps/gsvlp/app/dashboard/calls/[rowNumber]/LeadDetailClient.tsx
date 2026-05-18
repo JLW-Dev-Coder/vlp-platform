@@ -7,6 +7,7 @@ import type { TaxPro } from '@/components/dashboard/CallListTable';
 import { LeadDetailCard } from '@/components/dashboard/LeadDetailCard';
 import { CallScript } from '@/components/dashboard/CallScript';
 import { DispositionButtons, type Disposition } from '@/components/dashboard/DispositionButtons';
+import { ActivityLog, type ActivityEntry } from '@/components/dashboard/ActivityLog';
 import { ProductPitchTabs } from '@/components/dashboard/ProductPitchTabs';
 import { BookingFlow } from '@/components/dashboard/BookingFlow';
 import { NextLeadButton } from '@/components/dashboard/NextLeadButton';
@@ -29,13 +30,24 @@ type LeadStatus =
   | 'disconnected'
   | 'booked';
 
-function postStatus(apiBaseUrl: string, rowNumber: string, status: LeadStatus) {
-  return fetch(`${apiBaseUrl}/v1/gsvlp/call-list/${rowNumber}/status`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
-  }).catch(() => {});
+async function postStatus(
+  apiBaseUrl: string,
+  rowNumber: string,
+  status: LeadStatus,
+): Promise<{ activity?: ActivityEntry[] } | null> {
+  try {
+    const res = await fetch(`${apiBaseUrl}/v1/gsvlp/call-list/${rowNumber}/status`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok && d.ok && d.row) return d.row;
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 const DISPOSITION_TO_STATUS: Record<Disposition, LeadStatus> = {
@@ -205,11 +217,13 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
   const [disposition, setDisposition] = useState<Disposition | null>(null);
   const [showBookingAfterPitch, setShowBookingAfterPitch] = useState(false);
   const [pendingFollowUp, setPendingFollowUp] = useState<PendingFollowUp | null>(null);
+  const [activity, setActivity] = useState<ActivityEntry[]>([]);
 
   const setterName = firstName(session);
 
   useEffect(() => {
     let cancelled = false;
+    if (!rowNumber) return;
     fetch(`${config.apiBaseUrl}/v1/gsvlp/call-list`, { credentials: 'include' })
       .then(async (r) => {
         const d = await r.json().catch(() => ({}));
@@ -218,7 +232,8 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
       })
       .then((d) => {
         if (cancelled) return;
-        const mapped: TaxPro[] = (d.batch?.rows ?? []).map((r: {
+        const rows = d.batch?.rows ?? [];
+        const mapped: TaxPro[] = rows.map((r: {
           row_number: number;
           full_name: string;
           dba: string;
@@ -238,12 +253,19 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
           status: r.status,
         }));
         setBatch(mapped);
+        const current = rows.find(
+          (r: { row_number: number; activity?: ActivityEntry[] }) =>
+            String(r.row_number) === String(rowNumber),
+        );
+        if (current && Array.isArray(current.activity)) {
+          setActivity(current.activity);
+        }
       })
       .catch((e) => {
         if (!cancelled) setError(e.message || 'Failed to load');
       });
     return () => { cancelled = true; };
-  }, [config.apiBaseUrl]);
+  }, [config.apiBaseUrl, rowNumber]);
 
   useEffect(() => {
     let cancelled = false;
@@ -264,12 +286,17 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
     if (disposition === d) {
       setDisposition(null);
       setShowBookingAfterPitch(false);
-      postStatus(config.apiBaseUrl, rowNumber, 'not_called');
+      void postStatus(config.apiBaseUrl, rowNumber, 'not_called');
       return;
     }
     setDisposition(d);
     setShowBookingAfterPitch(false);
-    postStatus(config.apiBaseUrl, rowNumber, DISPOSITION_TO_STATUS[d]);
+    const status = DISPOSITION_TO_STATUS[d];
+    void postStatus(config.apiBaseUrl, rowNumber, status).then((row) => {
+      if (row && Array.isArray(row.activity)) {
+        setActivity(row.activity);
+      }
+    });
     // Auto-complete any pending follow-up — the setter is now acting on this lead.
     // Don't auto-complete if they're scheduling another follow-up disposition.
     if (pendingFollowUp && d !== 'voicemail' && d !== 'wants_info') {
@@ -349,6 +376,8 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             activeDisposition={disposition}
             onSelect={selectDisposition}
           />
+
+          <ActivityLog entries={activity} />
 
           {disposition === 'interested' && (
             <>

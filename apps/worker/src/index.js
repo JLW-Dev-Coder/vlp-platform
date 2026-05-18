@@ -406,7 +406,24 @@ async function gsvlpGetOrAssignBatch(env, accountId) {
   return batch;
 }
 
-async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status) {
+const GSVLP_DISPOSITION_META = {
+  interested: { label: 'Interested — Book It', description: 'They want to talk to JLW' },
+  wants_info: { label: 'Wants More Info', description: 'Tell them about our products' },
+  left_message: { label: 'Left Message', description: 'Got voicemail or asked to call back' },
+  not_a_fit: { label: 'Not a Good Fit', description: 'Not interested right now' },
+  disconnected: { label: 'Call Disconnected', description: 'Wrong number, no answer, hung up' },
+};
+
+function gsvlpSetterFirstName(session) {
+  const email = session?.email || '';
+  if (!email) return 'Setter';
+  const local = email.split('@')[0] || '';
+  const first = local.split(/[._-]/)[0];
+  if (!first) return 'Setter';
+  return first.charAt(0).toUpperCase() + first.slice(1);
+}
+
+async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status, session) {
   const batch = await gsvlpGetBatch(env, accountId);
   if (!batch) return null;
   const target = batch.rows.find(r => r.row_number === Number(rowNumber));
@@ -417,6 +434,20 @@ async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status) {
   if (CALLED_STATUSES.includes(status) && !target.called_at) target.called_at = nowIso;
   if (status === 'booked') {
     target.booked_at = nowIso;
+  }
+  const meta = GSVLP_DISPOSITION_META[status];
+  if (meta) {
+    target.activity = Array.isArray(target.activity) ? target.activity : [];
+    target.activity.push({
+      disposition: status,
+      label: meta.label,
+      description: meta.description,
+      timestamp: nowIso,
+      setter_name: gsvlpSetterFirstName(session),
+    });
+    if (target.activity.length > 100) {
+      target.activity = target.activity.slice(-100);
+    }
   }
   await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/batches/${accountId}.json`, batch);
   return target;
@@ -27336,7 +27367,7 @@ Return a JSON array where each element has:
         return json({ ok: false, error: 'INVALID_STATUS', allowed: ALLOWED }, 400, request);
       }
       try {
-        const updated = await gsvlpUpdateCallStatus(env, session.account_id, params.rowNumber, status);
+        const updated = await gsvlpUpdateCallStatus(env, session.account_id, params.rowNumber, status, session);
         if (!updated) return json({ ok: false, error: 'ROW_NOT_FOUND' }, 404, request);
         return json({ ok: true, row: updated }, 200, request);
       } catch (e) {
@@ -27422,7 +27453,7 @@ Return a JSON array where each element has:
         await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/appointments/${session.account_id}.json`, record);
 
         if (row_number != null) {
-          try { await gsvlpUpdateCallStatus(env, session.account_id, row_number, 'booked'); } catch {}
+          try { await gsvlpUpdateCallStatus(env, session.account_id, row_number, 'booked', session); } catch {}
         }
 
         return json({ ok: true, appointment }, 200, request);
