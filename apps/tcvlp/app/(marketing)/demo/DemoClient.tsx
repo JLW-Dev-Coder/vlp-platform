@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import styles from './page.module.css';
 
 const API_BASE = 'https://api.virtuallaunch.pro';
@@ -67,6 +67,64 @@ function fmtMoney(v: number): string {
 function fmtDate(iso: string): string {
   const [y, m, d] = iso.split('-');
   return `${m}/${d}/${y}`;
+}
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+function fmtLetterDate(d: Date = new Date()): string {
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+const CHECKLIST_ITEMS: Array<{ title: string; detail: string }> = [
+  {
+    title: 'Verify form selection',
+    detail: 'Use Form 843 for penalty and interest abatement only. For income-tax overpayment, file Form 1040-X instead (26 C.F.R. § 301.6402-3(a)(2)).',
+  },
+  {
+    title: 'One form per year, per penalty type',
+    detail: 'Do not combine multiple tax years or distinct penalty types on a single Form 843 — file a separate form for each year and penalty type.',
+  },
+  {
+    title: 'Label protective claims',
+    detail: 'Write "Protective Refund Claim Pursuant to Kwong v. United States" across the top of each Form 843 in bold ink.',
+  },
+  {
+    title: 'Include supporting documents',
+    detail: 'Attach the IRS Account Transcript, the Item 8 explanation, and copies of any IRS notices referencing the assessed penalties.',
+  },
+  {
+    title: 'Consider § 6751(b) challenge',
+    detail: 'For exam-assessed penalties (TC 240 / TC 300), evaluate a separate § 6751(b) supervisory-approval challenge in addition to the Kwong claim.',
+  },
+  {
+    title: 'Mail certified with return receipt',
+    detail: 'Send via USPS Certified Mail with return receipt requested to the IRS service center for the taxpayer’s state of residence.',
+  },
+  {
+    title: 'Verify both deadlines',
+    detail: 'Confirm filing before July 10, 2026 (the three-year Kwong deadline) and within two years of payment for each individual penalty entry, whichever is later.',
+  },
+  {
+    title: 'Keep records 3+ years',
+    detail: 'Retain a complete copy of everything mailed — Form 843, attachments, cover letter, certified-mail receipt — for at least three years after filing.',
+  },
+];
+
+function renderItem8(text: string): ReactNode {
+  const HEADERS = ['LEGAL AUTHORITY', 'COMPUTATION', 'ALTERNATIVE THEORY', 'FACTS', 'PROTECTIVE CLAIM NOTICE'];
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    const trimmed = line.trim();
+    if (trimmed && HEADERS.includes(trimmed)) {
+      return (
+        <span key={i} className={styles.item8Header}>{line}{'\n'}</span>
+      );
+    }
+    return <span key={i}>{line}{i < lines.length - 1 ? '\n' : ''}</span>;
+  });
 }
 
 type Phase = 'idle' | 'uploading' | 'parsed' | 'generating' | 'preview' | 'error';
@@ -274,34 +332,128 @@ export default function DemoClient() {
             </dl>
           </div>
 
-          <div className={styles.demoCard}>
-            <h3 className={styles.previewTitle}>Form 843 — Item 8 (Explanation)</h3>
-            <pre className={styles.docBox}>{preview.item8_text}</pre>
+          <div className={styles.docLabel}>Form 843 — Item 8 (Explanation)</div>
+          <div className={styles.documentPage}>
+            <pre className={styles.item8Body}>{renderItem8(preview.item8_text)}</pre>
           </div>
 
-          <div className={styles.demoCard}>
-            <h3 className={styles.previewTitle}>Cover Letter</h3>
-            <div className={styles.letter}>
-              <p>{preview.cover_letter.intro}</p>
-              <h4 className={styles.letterHeader}>LEGAL AUTHORITY</h4>
-              <p>{preview.cover_letter.legal_authority}</p>
-              <h4 className={styles.letterHeader}>FACTS</h4>
-              <p>{preview.cover_letter.facts_intro}</p>
-              <h4 className={styles.letterHeader}>COMPUTATION</h4>
-              <p>{preview.cover_letter.computation}</p>
-              <h4 className={styles.letterHeader}>ALTERNATIVE THEORY</h4>
-              <p>{preview.cover_letter.alternative_theory}</p>
-              <h4 className={styles.letterHeader}>PROTECTIVE CLAIM NOTICE</h4>
-              <p>{preview.cover_letter.protective_claim_notice}</p>
-              <p>{preview.cover_letter.closing}</p>
+          <div className={styles.docLabel}>
+            Cover Letter Preview — as it would appear in the mailed Form 843 package
+          </div>
+          <div className={styles.documentPage}>
+            <div className={styles.letterDate}>{fmtLetterDate()}</div>
+            <div className={styles.letterAddress}>
+              Internal Revenue Service<br />
+              {preview.summary.mailing_address.street}<br />
+              {preview.summary.mailing_address.city}, {preview.summary.mailing_address.state} {preview.summary.mailing_address.zip}
+            </div>
+
+            <p className={styles.letterRe}>
+              <strong>Re: Form 843 Claim for Refund and Request for Abatement</strong>
+            </p>
+            <dl className={styles.letterReList}>
+              <div>
+                <dt>Taxpayer:</dt>
+                <dd>{preview.summary.taxpayer_name}</dd>
+              </div>
+              <div>
+                <dt>Tax Year(s):</dt>
+                <dd>{preview.summary.tax_years.join(', ')}</dd>
+              </div>
+              <div>
+                <dt>Total Claimed:</dt>
+                <dd>{fmtMoney(preview.summary.total)}</dd>
+              </div>
+            </dl>
+
+            <p className={styles.letterSalutation}>To Whom It May Concern:</p>
+
+            <p className={styles.letterPara}>{preview.cover_letter.intro}</p>
+
+            <h4 className={styles.letterSectionHead}>Legal Authority</h4>
+            <p className={styles.letterPara}>{preview.cover_letter.legal_authority}</p>
+
+            <h4 className={styles.letterSectionHead}>Facts</h4>
+            <p className={styles.letterPara}>{preview.cover_letter.facts_intro}</p>
+
+            {parsed && parsed.transactions.length > 0 && (
+              <div className={styles.letterTableWrap}>
+                <table className={styles.letterTable}>
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Date</th>
+                      <th>Description</th>
+                      <th className={styles.alignRight}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {parsed.transactions.map((tx, i) => (
+                      <tr key={`letter-${tx.code}-${tx.date}-${i}`}>
+                        <td>{tx.code}</td>
+                        <td>{fmtDate(tx.date)}</td>
+                        <td>{tx.description}</td>
+                        <td className={styles.alignRight}>{fmtMoney(Math.abs(tx.amount))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <h4 className={styles.letterSubHead}>Summary Totals (All Years)</h4>
+            <dl className={styles.letterTotals}>
+              <div>
+                <dt>Failure-to-File Penalty:</dt>
+                <dd>{fmtMoney(preview.summary.ftf_amount)}</dd>
+              </div>
+              <div>
+                <dt>Failure-to-Pay Penalty:</dt>
+                <dd>{fmtMoney(preview.summary.ftp_amount)}</dd>
+              </div>
+              <div>
+                <dt>Interest on Penalties:</dt>
+                <dd>{fmtMoney(preview.summary.interest_amount)}</dd>
+              </div>
+              <div className={styles.letterTotalsRow}>
+                <dt>Total Refund Requested:</dt>
+                <dd>{fmtMoney(preview.summary.total)}</dd>
+              </div>
+            </dl>
+
+            <h4 className={styles.letterSectionHead}>Computation</h4>
+            <p className={styles.letterPara}>{preview.cover_letter.computation}</p>
+
+            <h4 className={styles.letterSectionHead}>Alternative Theory</h4>
+            <p className={styles.letterPara}>{preview.cover_letter.alternative_theory}</p>
+
+            <h4 className={styles.letterSectionHead}>Protective Claim Notice</h4>
+            <p className={styles.letterPara}>{preview.cover_letter.protective_claim_notice}</p>
+
+            <p className={styles.letterPara}>{preview.cover_letter.closing}</p>
+
+            <p className={styles.letterSignoff}>Sincerely,</p>
+            <div className={styles.letterSigBlock}>
+              <div className={styles.sigLine} />
+              <div className={styles.sigCaption}>{preview.summary.taxpayer_name}</div>
+            </div>
+            <div className={styles.letterSigBlock}>
+              <div className={styles.sigLine} />
+              <div className={styles.sigCaption}>Date</div>
             </div>
           </div>
 
-          <div className={styles.demoCard}>
-            <h3 className={styles.previewTitle}>Before You Mail — Filing Checklist</h3>
-            <ol className={styles.checklist}>
-              {preview.checklist_items.map((item, i) => (
-                <li key={i}>{item}</li>
+          <div className={styles.docLabel}>
+            Filing Checklist — included with every generated Form 843
+          </div>
+          <div className={styles.documentPage}>
+            <h4 className={styles.checklistTitle}>Before You Mail</h4>
+            <ol className={styles.checklistList}>
+              {CHECKLIST_ITEMS.map((item, i) => (
+                <li key={i} className={styles.checklistItem}>
+                  <div className={styles.checklistItemTitle}>{item.title}</div>
+                  <div className={styles.checklistItemDetail}>{item.detail}</div>
+                </li>
               ))}
             </ol>
           </div>
