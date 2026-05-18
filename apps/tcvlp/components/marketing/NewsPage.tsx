@@ -230,16 +230,16 @@ export default function NewsPage() {
           </div>
 
           <div className="flex justify-center mb-6">
-            <div className="rounded-lg border border-brand-primary/30 bg-surface-elevated p-3 shadow-lg">
-              <iframe
-                width="360"
-                height="240"
-                src="https://webinar.zoho.com/meeting/public/videoprv?recordingId=0ae62b8b3e5895c77badc96fc2df8e36cb4a86d5134a48397f0313d2f98bdb97&x-meeting-org=924178738"
-                frameBorder="0"
-                title="Kwong v. US Webinar Recording"
-                className="rounded-md block"
-                allowFullScreen
-              />
+            <div className="w-full max-w-3xl rounded-lg border border-brand-primary/30 bg-surface-elevated p-3 shadow-lg">
+              <div className="relative w-full aspect-[16/11] min-h-[420px]">
+                <iframe
+                  src="https://webinar.zoho.com/meeting/public/videoprv?recordingId=0ae62b8b3e5895c77badc96fc2df8e36cb4a86d5134a48397f0313d2f98bdb97&x-meeting-org=924178738"
+                  frameBorder="0"
+                  title="Kwong v. US Webinar Recording"
+                  className="absolute inset-0 w-full h-full rounded-md"
+                  allowFullScreen
+                />
+              </div>
             </div>
           </div>
         </div>
