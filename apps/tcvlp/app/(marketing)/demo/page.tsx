@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import styles from './page.module.css';
+import DemoClient from './DemoClient';
 
 export const metadata: Metadata = {
   title: 'Demo — How Your Clients Claim Their Refund | TaxClaim Pro',
@@ -157,6 +158,8 @@ export default function DemoPage() {
             </div>
           ))}
         </div>
+
+        <DemoClient />
 
         <div className={styles.ctaBlock}>
           <div className={styles.ctaCard}>
