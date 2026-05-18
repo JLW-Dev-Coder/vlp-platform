@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useAppShell } from '@vlp/member-ui';
-import { Phone, MessageCircle, Linkedin, Facebook } from 'lucide-react';
+import { Phone, MessageCircle, Linkedin, Facebook, Calendar } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -16,18 +16,19 @@ declare global {
 
 export default function SupportPage() {
   const { config } = useAppShell();
-  const brandColor = config.brandColor || '#22C55E';
+  const calNamespace = config.calIntroNamespace;
+  const calSlug = config.calIntroSlug;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const initCal = () => {
       if (!window.Cal) return;
-      window.Cal('init', 'gsvlp-support', { origin: 'https://app.cal.com' });
-      window.Cal.ns['gsvlp-support']('ui', {
+      window.Cal('init', calNamespace, { origin: 'https://app.cal.com' });
+      window.Cal.ns[calNamespace]('ui', {
         cssVarsPerTheme: {
           light: { 'cal-brand': '#292929' },
-          dark: { 'cal-brand': brandColor },
+          dark: { 'cal-brand': '#f97316' },
         },
         hideEventTypeDetails: false,
         layout: 'month_view',
@@ -44,7 +45,7 @@ export default function SupportPage() {
     script.async = true;
     script.onload = initCal;
     document.head.appendChild(script);
-  }, [brandColor]);
+  }, [calNamespace]);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -119,18 +120,19 @@ export default function SupportPage() {
       </section>
 
       <section className="rounded-lg border border-white/10 bg-white/[0.03] p-6">
-        <h2 className="text-lg font-semibold text-white mb-1">Book a Support Call</h2>
+        <h2 className="text-lg font-semibold text-white mb-1">Need help?</h2>
         <p className="text-sm text-white/55 mb-4">
-          Schedule a call with JLW to discuss any questions or issues.
+          Book a 15-minute call with JLW.
         </p>
         <button
           type="button"
-          data-cal-link="tax-monitor-pro/gsvlp-support"
-          data-cal-namespace="gsvlp-support"
-          data-cal-config='{"layout":"month_view"}'
-          className="rounded-md bg-green-500 px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-green-400"
+          data-cal-link={calSlug}
+          data-cal-namespace={calNamespace}
+          data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#f97316] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#ea6c0a] sm:w-auto"
         >
-          Book a Call
+          <Calendar className="h-4 w-4" />
+          Book a Call with JLW
         </button>
       </section>
     </div>
