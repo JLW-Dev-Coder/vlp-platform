@@ -27381,6 +27381,29 @@ Return a JSON array where each element has:
       try {
         const updated = await gsvlpUpdateCallStatus(env, session.account_id, params.rowNumber, status, session, note);
         if (!updated) return json({ ok: false, error: 'ROW_NOT_FOUND' }, 404, request);
+        // Resolve any pending follow-up for this lead — submitting a disposition
+        // means the setter has acted on it. A new follow-up (if any) is created
+        // separately by the FollowUpScheduler POST.
+        try {
+          const fuKey = `gsvlp/follow-ups/${session.account_id}.json`;
+          const fuRaw = await r2Get(env.R2_VIRTUAL_LAUNCH, fuKey);
+          let fuRecord = null;
+          try { fuRecord = fuRaw ? JSON.parse(fuRaw) : null; } catch { fuRecord = null; }
+          if (fuRecord && Array.isArray(fuRecord.follow_ups)) {
+            let changed = false;
+            const nowIso = new Date().toISOString();
+            for (const f of fuRecord.follow_ups) {
+              if (String(f.row_number) === String(params.rowNumber) && f.status === 'pending') {
+                f.status = 'completed';
+                f.completed_at = nowIso;
+                changed = true;
+              }
+            }
+            if (changed) await r2Put(env.R2_VIRTUAL_LAUNCH, fuKey, fuRecord);
+          }
+        } catch (fuErr) {
+          console.error('/v1/gsvlp/call-list status follow-up clear error:', fuErr);
+        }
         return json({ ok: true, row: updated }, 200, request);
       } catch (e) {
         console.error('/v1/gsvlp/call-list status error:', e);

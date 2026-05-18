@@ -310,15 +310,10 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
       const status = DISPOSITION_TO_STATUS[disposition];
       const row = await postStatus(config.apiBaseUrl, rowNumber, status, dispositionNote);
       if (row && Array.isArray(row.activity)) setActivity(row.activity);
-      // Auto-complete any pending follow-up — the setter is now acting on this lead.
-      // Don't auto-complete if they're scheduling another follow-up disposition.
-      if (pendingFollowUp && disposition !== 'voicemail' && disposition !== 'wants_info') {
-        fetch(`${config.apiBaseUrl}/v1/gsvlp/follow-ups/${pendingFollowUp.id}/complete`, {
-          method: 'POST',
-          credentials: 'include',
-        }).catch(() => {});
-        setPendingFollowUp(null);
-      }
+      // Backend resolves any pending follow-up on disposition submit. Clear local
+      // state so FollowUpScheduler offers fresh date buttons (voicemail/wants_info)
+      // instead of the stale "Follow-up set for..." panel.
+      if (pendingFollowUp) setPendingFollowUp(null);
       setNotePending(false);
     } finally {
       setDispositionSubmitting(false);
