@@ -45,11 +45,32 @@ function FollowUpsDueToday({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${apiBaseUrl}/v1/gsvlp/follow-ups?due=today`, { credentials: 'include' })
-      .then(async (r) => {
-        const d = await r.json().catch(() => ({}));
-        if (!r.ok || !d.ok) throw new Error('fail');
-        if (!cancelled) setItems(d.follow_ups || []);
+    Promise.all([
+      fetch(`${apiBaseUrl}/v1/gsvlp/follow-ups?due=today`, { credentials: 'include' })
+        .then((r) => r.json())
+        .catch(() => ({} as Record<string, unknown>)),
+      fetch(`${apiBaseUrl}/v1/gsvlp/call-list`, { credentials: 'include' })
+        .then((r) => r.json())
+        .catch(() => ({} as Record<string, unknown>)),
+    ])
+      .then(([followsRes, callListRes]) => {
+        if (cancelled) return;
+        const follows: FollowUp[] =
+          followsRes && followsRes.ok ? followsRes.follow_ups || [] : [];
+        const rows: Array<{ row_number: number; status: string }> =
+          callListRes && callListRes.ok ? callListRes.batch?.rows || [] : [];
+        const statusByRow = new Map<number, string>();
+        for (const r of rows) statusByRow.set(r.row_number, r.status);
+        // A follow-up is resolved once the setter dispositions the lead.
+        // Only keep follow-ups where the lead is still not_called, or where the
+        // lead is left_message (scheduled callback re-surfaces on its due date).
+        // Unknown leads (not in current batch) are kept defensively.
+        const filtered = follows.filter((f) => {
+          const s = statusByRow.get(f.row_number);
+          if (s === undefined) return true;
+          return s === 'not_called' || s === 'left_message';
+        });
+        setItems(filtered);
       })
       .catch(() => { if (!cancelled) setItems([]); });
     return () => { cancelled = true; };
@@ -61,8 +82,21 @@ function FollowUpsDueToday({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   if (items.length === 0) {
     return (
-      <section className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-5 text-sm text-white/70">
-        No follow-ups due today. Keep dialing! 🔥
+      <section className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-white/[0.02] p-5 text-sm text-white/70">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#22C55E"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M5 13l4 4L19 7" />
+        </svg>
+        All caught up — no follow-ups due today.
       </section>
     );
   }
