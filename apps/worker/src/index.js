@@ -3352,40 +3352,45 @@ async function renderLetterPages(pdfDoc, letterData, fonts) {
   drawParagraph('The penalties and interest for which I request abatement are itemized below, drawn directly from my IRS Account Transcript.');
   blankLines(1);
 
-  drawLine('Itemized Transactions:', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
-  blankLines(1);
+  if (letterData.hasTranscript && letterData.transactions && letterData.transactions.length > 0) {
+    drawLine('Itemized Transactions:', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+    blankLines(1);
 
-  const COL_CODE_X = MARGIN_LEFT;
-  const COL_DESC_X = MARGIN_LEFT + 50;
-  const COL_DATE_X = MARGIN_LEFT + 320;
-  const COL_AMT_RIGHT = PAGE_WIDTH - MARGIN_RIGHT;
+    const COL_CODE_X = MARGIN_LEFT;
+    const COL_DESC_X = MARGIN_LEFT + 50;
+    const COL_DATE_X = MARGIN_LEFT + 320;
+    const COL_AMT_RIGHT = PAGE_WIDTH - MARGIN_RIGHT;
 
-  ensureRoom(LINE_HEIGHT_BODY);
-  y -= LINE_HEIGHT_BODY;
-  page.drawText('Code', { x: COL_CODE_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
-  page.drawText('Description', { x: COL_DESC_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
-  page.drawText('Date', { x: COL_DATE_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
-  const amtHeader = 'Amount';
-  const amtHeaderWidth = fonts.bold.widthOfTextAtSize(amtHeader, FONT_BODY);
-  page.drawText(amtHeader, { x: COL_AMT_RIGHT - amtHeaderWidth, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
-
-  for (const tx of letterData.transactions) {
     ensureRoom(LINE_HEIGHT_BODY);
     y -= LINE_HEIGHT_BODY;
-    page.drawText(tx.code, { x: COL_CODE_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
-    let desc = tx.description || '';
-    const maxDescWidth = COL_DATE_X - COL_DESC_X - 10;
-    while (fonts.regular.widthOfTextAtSize(desc, FONT_BODY) > maxDescWidth && desc.length > 4) {
-      desc = desc.slice(0, -2);
+    page.drawText('Code', { x: COL_CODE_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+    page.drawText('Description', { x: COL_DESC_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+    page.drawText('Date', { x: COL_DATE_X, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+    const amtHeader = 'Amount';
+    const amtHeaderWidth = fonts.bold.widthOfTextAtSize(amtHeader, FONT_BODY);
+    page.drawText(amtHeader, { x: COL_AMT_RIGHT - amtHeaderWidth, y, size: FONT_BODY, font: fonts.bold, color: rgb(0,0,0) });
+
+    for (const tx of letterData.transactions) {
+      ensureRoom(LINE_HEIGHT_BODY);
+      y -= LINE_HEIGHT_BODY;
+      page.drawText(tx.code, { x: COL_CODE_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+      let desc = tx.description || '';
+      const maxDescWidth = COL_DATE_X - COL_DESC_X - 10;
+      while (fonts.regular.widthOfTextAtSize(desc, FONT_BODY) > maxDescWidth && desc.length > 4) {
+        desc = desc.slice(0, -2);
+      }
+      if (desc !== (tx.description || '')) desc = desc.slice(0, -1) + '…';
+      page.drawText(desc, { x: COL_DESC_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+      page.drawText(formatDateMDY(tx.date), { x: COL_DATE_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+      const amtStr = formatCurrency(tx.amount);
+      const amtWidth = fonts.regular.widthOfTextAtSize(amtStr, FONT_BODY);
+      page.drawText(amtStr, { x: COL_AMT_RIGHT - amtWidth, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
     }
-    if (desc !== (tx.description || '')) desc = desc.slice(0, -1) + '…';
-    page.drawText(desc, { x: COL_DESC_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
-    page.drawText(formatDateMDY(tx.date), { x: COL_DATE_X, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
-    const amtStr = formatCurrency(tx.amount);
-    const amtWidth = fonts.regular.widthOfTextAtSize(amtStr, FONT_BODY);
-    page.drawText(amtStr, { x: COL_AMT_RIGHT - amtWidth, y, size: FONT_BODY, font: fonts.regular, color: rgb(0,0,0) });
+    blankLines(2);
+  } else {
+    drawParagraph('Itemized transaction data was not available from a parsed IRS transcript. The penalty amounts below are as reported by the taxpayer or practitioner.');
+    blankLines(2);
   }
-  blankLines(2);
 
   drawLine('Year-by-Year Breakdown:', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
   blankLines(1);
@@ -20629,6 +20634,11 @@ https://virtuallaunch.pro/payouts
       const resolvedTotal = total_amount ? parseFloat(total_amount) : (ftf + ftp + ioa) || parseFloat(penalty_amount) || 0;
       const resolvedPenaltyType = penalty_type || [ftf && 'Failure to File', ftp && 'Failure to Pay'].filter(Boolean).join(' and ') || 'Penalty';
 
+      // At least one of FTF / FTP / Interest must be > 0 to file a Form 843 abatement claim.
+      if (ftf <= 0 && ftp <= 0 && ioa <= 0) {
+        return json({ ok: false, error: 'NO_AMOUNTS_PROVIDED', message: 'At least one of failure_to_file, failure_to_pay, or interest_amount must be greater than zero.' }, 400, request);
+      }
+
       // Validate state (accepts full name or abbreviation)
       const stateAbbrev = resolveStateAbbrev(state);
       if (!stateAbbrev || !IRS_843_MAILING_ADDRESSES[stateAbbrev]) {
@@ -20758,9 +20768,9 @@ https://virtuallaunch.pro/payouts
             try { form.getCheckBox(name).check(); } catch (e) { /* field not found */ }
           };
 
-          // Reason for filing — Penalty + Interest
-          checkBox('topmostSubform[0].Page1[0].c1_1[6]');   // Penalty abatement (reasonable cause)
-          checkBox('topmostSubform[0].Page1[0].c1_1[11]');  // Interest abatement (IRS error/delay §6404(e)(1))
+          // Reason for filing — dynamic based on which amounts are non-zero
+          if (ftf > 0 || ftp > 0) checkBox('topmostSubform[0].Page1[0].c1_1[6]');   // Penalty abatement (reasonable cause)
+          if (ioa > 0) checkBox('topmostSubform[0].Page1[0].c1_1[11]');             // Interest abatement (IRS error/delay §6404(e)(1))
 
           // Taxpayer information
           setField('topmostSubform[0].Page1[0].f1_2[0]', taxpayer_name);
@@ -20799,6 +20809,11 @@ https://virtuallaunch.pro/payouts
             });
           }
 
+          // Item 4 = Income, Item 5 = 1040 — correct for individual income tax
+          // penalty + interest claims filed on Form 843. Per Nicholson v. United
+          // States (N.D. Fla. 2025) and 26 C.F.R. § 301.6402-3(a)(2), income-tax
+          // OVERPAYMENT claims require Form 1040-X, not Form 843. TCVLP generates
+          // Form 843 for penalty/interest abatement only.
           // Item 4e: Income
           checkBox('topmostSubform[0].Page1[0].c1_6[0]');
 
@@ -20807,31 +20822,44 @@ https://virtuallaunch.pro/payouts
           // Item 5i: 1040
           checkBox('topmostSubform[0].Page2[0].c2_9[0]');
 
-          // Item 6: IRC section
-          setField('topmostSubform[0].Page2[0].f2_2[0]', '6651(a)(1), 6651(a)(2), 6601');
+          // Item 6: IRC section — dynamic based on which amounts are non-zero
+          const ircSections = [
+            ftf > 0 && '6651(a)(1)',
+            ftp > 0 && '6651(a)(2)',
+            ioa > 0 && '6601',
+          ].filter(Boolean).join(', ');
+          setField('topmostSubform[0].Page2[0].f2_2[0]', ircSections);
 
           // Item 7a: Interest assessed as result of IRS errors or delays
           checkBox('topmostSubform[0].Page2[0].c2_15[0]');
           // Item 7c: Reasonable cause (for penalty portion)
           checkBox('topmostSubform[0].Page2[0].c2_15[2]');
 
-          // Item 8: Explanation
-          const willAppendLetter = Array.isArray(transactions) && transactions.length > 0
-                                && Array.isArray(per_year) && per_year.length > 0;
+          // Item 8: Explanation — checklist + cover letter ship with every
+          // generated Form 843, regardless of whether transcript-level
+          // transactions[] / per_year[] were provided.
+          const hasTranscript = Array.isArray(transactions) && transactions.length > 0;
+          const txList = hasTranscript ? transactions : [];
+          const pyList = (Array.isArray(per_year) && per_year.length > 0)
+            ? per_year
+            : [{
+                tax_year: String(tax_year),
+                failure_to_file: ftf,
+                failure_to_pay: ftp,
+                interest: ioa,
+              }];
 
-          let explanationText = `Claim for refund of penalties and interest assessed for tax year(s) ${taxYearRange}.\n\n`
+          const explanationText = `Claim for refund of penalties and interest assessed for tax year(s) ${taxYearRange}.\n\n`
             + penaltyLines.join('\n') + '\n\n'
-            + kwongText;
-          if (willAppendLetter) {
-            explanationText += '\n\nSee attached statement for itemized transaction-level computation.';
-          }
+            + kwongText
+            + '\n\nSee attached statement for itemized detail.';
 
           const item8Field = form.getTextField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]');
           item8Field.setText(explanationText);
           item8Field.setFontSize(10);
 
-          // Append taxpayer letter pages if per-row + per-year data was sent
-          if (willAppendLetter) {
+          // Append checklist + taxpayer letter pages (always)
+          {
             const stateUpper = (state || '').trim().toUpperCase();
             const addrEntry = IRS_843_MAILING_ADDRESSES[stateAbbrev] || IRS_843_MAILING_ADDRESSES[stateUpper];
             let mailingAddressLines;
@@ -20846,14 +20874,14 @@ https://virtuallaunch.pro/payouts
               ];
             }
 
-            const summary = per_year.reduce((acc, py) => ({
+            const summary = pyList.reduce((acc, py) => ({
               failureToFile: acc.failureToFile + (py.failure_to_file || 0),
               failureToPay: acc.failureToPay + (py.failure_to_pay || 0),
               interest: acc.interest + (py.interest || 0),
             }), { failureToFile: 0, failureToPay: 0, interest: 0 });
             summary.total = summary.failureToFile + summary.failureToPay + summary.interest;
 
-            const taxYearsArr = [...new Set(per_year.map(py => py.tax_year))].sort();
+            const taxYearsArr = [...new Set(pyList.map(py => String(py.tax_year)))].sort();
             const taxYearsStr = taxYearsArr.join(', ');
 
             const letterHelvetica = await officialDoc.embedFont(StandardFonts.Helvetica);
@@ -20866,9 +20894,10 @@ https://virtuallaunch.pro/payouts
               taxYearsStr,
               totalClaimed: summary.total,
               mailingAddressLines,
-              transactions,
-              perYear: per_year,
+              transactions: txList,
+              perYear: pyList,
               summary,
+              hasTranscript,
             }, { regular: letterHelvetica, bold: letterHelveticaBold });
           }
 
