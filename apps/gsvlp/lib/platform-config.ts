@@ -18,6 +18,7 @@ export const gsvlpConfig: PlatformConfig = {
         { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
         { label: 'Call List', href: '/dashboard/calls', icon: 'Phone' },
         { label: 'Appointments', href: '/dashboard/appointments', icon: 'Calendar' },
+        { label: 'Payouts', href: '/dashboard/payouts', icon: 'DollarSign' },
         { label: 'Motivation', href: '/dashboard/motivation', icon: 'Flame' },
       ],
     },
