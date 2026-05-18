@@ -35,3 +35,8 @@ tools/youtube-upload/client_secret.json
 tools/youtube-upload/token.json
 **/client_secret*.json
 **/credentials*.json
+
+# Local scratch / debug
+tmp-*.json
+tmp-wrangler-dev*.log
+.claude/settings.local.json
