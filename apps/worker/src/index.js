@@ -3182,28 +3182,36 @@ async function renderChecklistPage(pdfDoc, fonts) {
 
   const items = [
     {
+      title: 'Verify form selection.',
+      body: 'Form 843 is correct for penalty and interest abatement claims. If your claim involves an income-tax overpayment (not just penalties/interest), file Form 1040-X instead — per Nicholson v. United States (N.D. Fla. 2025) and 26 C.F.R. § 301.6402-3(a)(2), using the wrong form can result in dismissal.',
+    },
+    {
       title: 'File one Form 843 per tax year, per penalty type.',
       body: 'Do not combine multiple years or different penalty types on a single form.',
     },
     {
-      title: 'Write "Protective Refund Claim Pursuant to Kwong Case" across the top',
-      body: 'if you are filing a protective claim (i.e., the exact refund amount depends on how courts resolve Kwong).',
+      title: 'Write "Protective Refund Claim Pursuant to Kwong v. United States" across the top of the Form 843',
+      body: 'if the exact refund amount depends on how courts resolve Kwong. This preserves your grounds under the variance doctrine.',
     },
     {
       title: 'Include supporting documents:',
-      body: 'a copy of your tax account transcript (with relevant penalty entries highlighted), an explanation connecting the penalties to the COVID-19 disaster relief period, and copies of any IRS notices.',
+      body: 'a copy of your IRS account transcript (with relevant penalty entries highlighted), an explanation connecting the penalties to the COVID-19 disaster relief period (January 20, 2020 through July 10, 2023), and copies of any IRS notices.',
     },
     {
-      title: 'Mail via certified mail with return receipt requested.',
-      body: 'Keep a complete copy of everything you submit — the form, attachments, and the certified mail receipt.',
+      title: 'For exam-assessed penalties (TC 240 / TC 300 on transcript):',
+      body: 'consider a parallel challenge under § 6751(b) — request the IRS administrative file to verify supervisory approval was obtained before the initial determination of the penalty. This is a separate ground for abatement independent of the Kwong theory.',
     },
     {
-      title: 'Send to the correct IRS service center.',
-      body: 'Mail to the IRS service center where you would file a current-year Form 1040. Check irs.gov/filing/where-to-file-paper-tax-returns for your state\'s address.',
+      title: 'Mail via certified mail with return receipt requested',
+      body: 'to the IRS service center where you would file a current-year Form 1040. Check irs.gov/filing/where-to-file-paper-tax-returns for your state\'s address. Keep a complete copy of everything you submit — the form, attachments, and the certified mail receipt.',
     },
     {
-      title: 'Keep your records.',
-      body: 'Retain copies of everything for at least 3 years after filing the claim.',
+      title: 'Deadline: July 10, 2026 for three-year refund claims.',
+      body: 'Each payment also has its own two-year-from-payment deadline (IRC § 6511(a)). Verify both deadlines for each penalty entry.',
+    },
+    {
+      title: 'Keep your records',
+      body: 'for at least 3 years after filing the claim.',
     },
   ];
 
