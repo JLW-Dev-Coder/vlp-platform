@@ -261,6 +261,12 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
   }, [config.apiBaseUrl, rowNumber]);
 
   function selectDisposition(d: Disposition) {
+    if (disposition === d) {
+      setDisposition(null);
+      setShowBookingAfterPitch(false);
+      postStatus(config.apiBaseUrl, rowNumber, 'not_called');
+      return;
+    }
     setDisposition(d);
     setShowBookingAfterPitch(false);
     postStatus(config.apiBaseUrl, rowNumber, DISPOSITION_TO_STATUS[d]);

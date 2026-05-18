@@ -125,12 +125,12 @@ export function DispositionButtons({
               key={o.key}
               type="button"
               onClick={() => onSelect(o.key)}
-              disabled={dim}
-              className="flex w-full min-h-[64px] items-center gap-4 rounded-lg border p-4 text-left transition disabled:opacity-30"
+              className="flex w-full min-h-[64px] items-center gap-4 rounded-lg border p-4 text-left transition"
               style={{
                 borderColor: isActive ? o.color : o.border,
                 background: isActive ? o.bg : 'transparent',
                 color: o.color,
+                opacity: dim ? 0.3 : 1,
               }}
             >
               <span className="shrink-0">{o.icon}</span>
