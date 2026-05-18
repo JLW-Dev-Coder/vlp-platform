@@ -27612,6 +27612,31 @@ Return a JSON array where each element has:
         let record;
         try { record = raw ? JSON.parse(raw) : null; } catch { record = null; }
         const all = Array.isArray(record?.follow_ups) ? record.follow_ups : [];
+        // Self-heal: auto-complete any pending follow-up whose lead has been
+        // called/dispositioned after the follow-up was created. Acts as a
+        // safety net if the disposition POST's clearing code didn't run.
+        try {
+          const batch = await gsvlpGetBatch(env, session.account_id);
+          const rowMap = new Map();
+          if (batch && Array.isArray(batch.rows)) {
+            for (const r of batch.rows) rowMap.set(Number(r.row_number), r);
+          }
+          let healed = false;
+          const healIso = new Date().toISOString();
+          for (const f of all) {
+            if (f.status !== 'pending') continue;
+            const lead = rowMap.get(Number(f.row_number));
+            if (!lead || !lead.called_at) continue;
+            if (String(lead.called_at) > String(f.created_at || '')) {
+              f.status = 'completed';
+              f.completed_at = healIso;
+              healed = true;
+            }
+          }
+          if (healed && record) await r2Put(env.R2_VIRTUAL_LAUNCH, key, record);
+        } catch (healErr) {
+          console.error('/v1/gsvlp/follow-ups GET self-heal error:', healErr);
+        }
         const url = new URL(request.url);
         const due = url.searchParams.get('due');
         const statusParam = url.searchParams.get('status') || 'pending';
