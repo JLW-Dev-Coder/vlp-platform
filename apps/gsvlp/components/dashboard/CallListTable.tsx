@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -35,6 +35,7 @@ interface CallListTableProps {
 }
 
 const STATE_OPTIONS = ['ALL', 'CA', 'TX', 'NY', 'FL'];
+const PAGE_SIZE = 25;
 
 export function CallListTable({
   initialData,
@@ -46,6 +47,7 @@ export function CallListTable({
   const [rows] = useState<TaxPro[]>(initialData);
   const [localState, setLocalState] = useState<string>(stateFilter);
   const activeState = onStateFilterChange ? stateFilter : localState;
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
 
   const filtered = useMemo(
     () =>
@@ -56,6 +58,13 @@ export function CallListTable({
       }),
     [rows, activeState, statusFilter]
   );
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [activeState, statusFilter]);
+
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visible.length < filtered.length;
 
   return (
     <div>
@@ -93,7 +102,7 @@ export function CallListTable({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
+            {visible.map((r) => (
               <tr
                 key={r.id}
                 onClick={() => router.push(`/dashboard/calls/${r.id}`)}
@@ -137,7 +146,7 @@ export function CallListTable({
 
       {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
-        {filtered.map((r) => (
+        {visible.map((r) => (
           <div
             key={r.id}
             role="button"
@@ -178,15 +187,29 @@ export function CallListTable({
         ))}
       </div>
 
+      {/* Empty state */}
+      {filtered.length === 0 ? (
+        <div className="mt-6 rounded-lg border border-white/[0.06] bg-white/[0.02] p-8 text-center text-sm text-white/50">
+          No leads match this filter.
+        </div>
+      ) : null}
+
       {/* Pagination */}
       <div className="mt-4 flex items-center justify-between text-sm text-white/50">
-        <span>Showing 1–{filtered.length} of {rows.length}</span>
-        <button
-          type="button"
-          className="rounded border border-white/10 px-3 py-1.5 text-white/70 hover:text-white"
-        >
-          Load More
-        </button>
+        <span>
+          {filtered.length === 0
+            ? `0 of ${rows.length}`
+            : `Showing 1–${visible.length} of ${filtered.length}`}
+        </span>
+        {hasMore ? (
+          <button
+            type="button"
+            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            className="rounded border border-white/10 px-3 py-1.5 text-white/70 hover:text-white"
+          >
+            Load More
+          </button>
+        ) : null}
       </div>
     </div>
   );
