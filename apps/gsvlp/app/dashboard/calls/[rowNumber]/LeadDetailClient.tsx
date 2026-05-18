@@ -34,13 +34,16 @@ async function postStatus(
   apiBaseUrl: string,
   rowNumber: string,
   status: LeadStatus,
+  note?: string,
 ): Promise<{ activity?: ActivityEntry[] } | null> {
   try {
+    const body: { status: LeadStatus; note?: string } = { status };
+    if (note && note.trim()) body.note = note.trim().slice(0, 280);
     const res = await fetch(`${apiBaseUrl}/v1/gsvlp/call-list/${rowNumber}/status`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(body),
     });
     const d = await res.json().catch(() => ({}));
     if (res.ok && d.ok && d.row) return d.row;
@@ -218,6 +221,9 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
   const [showBookingAfterPitch, setShowBookingAfterPitch] = useState(false);
   const [pendingFollowUp, setPendingFollowUp] = useState<PendingFollowUp | null>(null);
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
+  const [notFitNote, setNotFitNote] = useState('');
+  const [notFitPending, setNotFitPending] = useState(false);
+  const [notFitSubmitting, setNotFitSubmitting] = useState(false);
 
   const setterName = firstName(session);
 
@@ -286,11 +292,20 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
     if (disposition === d) {
       setDisposition(null);
       setShowBookingAfterPitch(false);
+      setNotFitPending(false);
+      setNotFitNote('');
       void postStatus(config.apiBaseUrl, rowNumber, 'not_called');
       return;
     }
     setDisposition(d);
     setShowBookingAfterPitch(false);
+    if (d === 'not_fit') {
+      setNotFitPending(true);
+      setNotFitNote('');
+      return;
+    }
+    setNotFitPending(false);
+    setNotFitNote('');
     const status = DISPOSITION_TO_STATUS[d];
     void postStatus(config.apiBaseUrl, rowNumber, status).then((row) => {
       if (row && Array.isArray(row.activity)) {
@@ -305,6 +320,25 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
         credentials: 'include',
       }).catch(() => {});
       setPendingFollowUp(null);
+    }
+  }
+
+  async function submitNotFit() {
+    if (notFitSubmitting) return;
+    setNotFitSubmitting(true);
+    try {
+      const row = await postStatus(config.apiBaseUrl, rowNumber, 'not_a_fit', notFitNote);
+      if (row && Array.isArray(row.activity)) setActivity(row.activity);
+      if (pendingFollowUp) {
+        fetch(`${config.apiBaseUrl}/v1/gsvlp/follow-ups/${pendingFollowUp.id}/complete`, {
+          method: 'POST',
+          credentials: 'include',
+        }).catch(() => {});
+        setPendingFollowUp(null);
+      }
+      setNotFitPending(false);
+    } finally {
+      setNotFitSubmitting(false);
     }
   }
 
@@ -377,6 +411,37 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             onSelect={selectDisposition}
           />
 
+          {notFitPending && (
+            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
+              <label
+                htmlFor="not-fit-note"
+                className="mb-2 block text-sm font-semibold text-white"
+              >
+                Why isn&rsquo;t this a good fit?
+              </label>
+              <textarea
+                id="not-fit-note"
+                value={notFitNote}
+                onChange={(e) => setNotFitNote(e.target.value.slice(0, 280))}
+                placeholder="Why isn't this a good fit? (optional)"
+                maxLength={280}
+                rows={3}
+                className="w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#22C55E] focus:outline-none"
+              />
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <span className="text-xs text-white/40">{notFitNote.length} / 280</span>
+                <button
+                  type="button"
+                  disabled={notFitSubmitting}
+                  onClick={() => void submitNotFit()}
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#22C55E] px-5 text-sm font-bold text-black hover:bg-[#16A34A] disabled:opacity-50"
+                >
+                  {notFitSubmitting ? 'Submitting…' : 'Submit'}
+                </button>
+              </div>
+            </div>
+          )}
+
           <ActivityLog entries={activity} />
 
           {disposition === 'interested' && (
@@ -446,7 +511,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             </>
           )}
 
-          {disposition === 'not_fit' && (
+          {disposition === 'not_fit' && !notFitPending && (
             <>
               <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6 text-center">
                 <div className="text-base text-white/80">

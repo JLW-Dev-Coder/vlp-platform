@@ -8,6 +8,7 @@ export type ActivityEntry = {
   description: string;
   timestamp: string;
   setter_name: string;
+  note?: string;
 };
 
 const stroke = {
@@ -100,6 +101,9 @@ export function ActivityLog({ entries }: { entries: ActivityEntry[] }) {
                     {e.label}
                   </div>
                   <div className="text-xs text-white/50">{e.description}</div>
+                  {e.note && (
+                    <div className="mt-1 text-sm italic text-white/50">— &ldquo;{e.note}&rdquo;</div>
+                  )}
                   <div className="mt-1 text-xs text-white/40">by {e.setter_name}</div>
                 </div>
                 <div className="shrink-0 text-xs text-white/40 whitespace-nowrap">

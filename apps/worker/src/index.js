@@ -423,7 +423,7 @@ function gsvlpSetterFirstName(session) {
   return first.charAt(0).toUpperCase() + first.slice(1);
 }
 
-async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status, session) {
+async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status, session, note) {
   const batch = await gsvlpGetBatch(env, accountId);
   if (!batch) return null;
   const target = batch.rows.find(r => r.row_number === Number(rowNumber));
@@ -438,13 +438,18 @@ async function gsvlpUpdateCallStatus(env, accountId, rowNumber, status, session)
   const meta = GSVLP_DISPOSITION_META[status];
   if (meta) {
     target.activity = Array.isArray(target.activity) ? target.activity : [];
-    target.activity.push({
+    const entry = {
       disposition: status,
       label: meta.label,
       description: meta.description,
       timestamp: nowIso,
       setter_name: gsvlpSetterFirstName(session),
-    });
+    };
+    if (typeof note === 'string') {
+      const trimmed = note.trim();
+      if (trimmed) entry.note = trimmed.slice(0, 280);
+    }
+    target.activity.push(entry);
     if (target.activity.length > 100) {
       target.activity = target.activity.slice(-100);
     }
@@ -27366,8 +27371,15 @@ Return a JSON array where each element has:
       if (!ALLOWED.includes(status)) {
         return json({ ok: false, error: 'INVALID_STATUS', allowed: ALLOWED }, 400, request);
       }
+      let note;
+      if (body.note !== undefined && body.note !== null && body.note !== '') {
+        if (typeof body.note !== 'string') {
+          return json({ ok: false, error: 'INVALID_NOTE' }, 400, request);
+        }
+        note = body.note.slice(0, 280);
+      }
       try {
-        const updated = await gsvlpUpdateCallStatus(env, session.account_id, params.rowNumber, status, session);
+        const updated = await gsvlpUpdateCallStatus(env, session.account_id, params.rowNumber, status, session, note);
         if (!updated) return json({ ok: false, error: 'ROW_NOT_FOUND' }, 404, request);
         return json({ ok: true, row: updated }, 200, request);
       } catch (e) {
