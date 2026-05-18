@@ -3344,12 +3344,34 @@ async function renderLetterPages(pdfDoc, letterData, fonts) {
 
   drawParagraph(
     `I am writing to request abatement and refund of penalties and interest assessed against my federal tax account for tax year(s) ${letterData.taxYearsStr}. ` +
-    `This claim is filed under the authority of Kwong v. United States, 179 Fed. Cl. 382 (2025), in which the U.S. Court of Federal Claims held that IRC §7508A(d) required mandatory postponement of federal tax deadlines during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). ` +
-    `The IRS lacked authority to assess failure-to-file penalties, failure-to-pay penalties, and underpayment interest on obligations due during this period.`
+    `This claim is filed on IRS Form 843 for penalty and interest abatement only, not for income-tax overpayment (which would require Form 1040-X per 26 C.F.R. § 301.6402-3(a)(2)).`
   );
   blankLines(1);
 
-  drawParagraph('The penalties and interest for which I request abatement are itemized below, drawn directly from my IRS Account Transcript.');
+  drawLine('LEGAL AUTHORITY', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+  blankLines(1);
+
+  drawParagraph(
+    `This claim is grounded in former I.R.C. § 7508A(d) (2019 version; renumbered § 7508A(e) by Pub. L. No. 119-29 (2025)), as interpreted in Kwong v. United States, 179 Fed. Cl. 382 (2025), and Abdo v. Commissioner, 162 T.C. 148 (2024). The Kwong court held that § 7508A(d) required mandatory postponement of the accrual of penalties and interest during the COVID-19 disaster period — January 20, 2020 through July 10, 2023, a span of 1,268 days.`
+  );
+  blankLines(1);
+
+  drawParagraph(
+    `After Loper Bright Enterprises v. Raimondo, 603 U.S. 369 (2024), the Treasury's narrow construction of § 7508A(d) in Treas. Reg. § 301.7508A-1(g)(3)(ii) is no longer entitled to Chevron deference. This regulatory-invalidity issue is expressly preserved for Appeals and refund-suit review.`
+  );
+  blankLines(1);
+
+  drawParagraph(
+    `Kwong is non-final: the March 13, 2026 stipulated $84,000 judgment preserved the government's right to appeal to the Federal Circuit; no appeal has been docketed as of the date of this filing. This claim presents the Kwong reading as the better interpretation currently prevailing, not as settled law.`
+  );
+  blankLines(1);
+
+  drawLine('FACTS', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+  blankLines(1);
+
+  drawParagraph(
+    `The penalties and interest for which I request abatement are itemized below, drawn directly from ${letterData.hasTranscript ? 'my IRS Account Transcript' : 'the penalty data reported by the taxpayer or practitioner'}.`
+  );
   blankLines(1);
 
   if (letterData.hasTranscript && letterData.transactions && letterData.transactions.length > 0) {
@@ -3433,10 +3455,62 @@ async function renderLetterPages(pdfDoc, letterData, fonts) {
   drawLine(`Total Refund Requested: ${formatCurrency(letterData.summary.total)}`, { bold: true });
   blankLines(2);
 
-  drawParagraph(`This claim is timely filed before the July 10, 2026 deadline for Kwong-eligible relief. Form 843 (Rev. December 2024) is enclosed with this statement, signed and completed.`);
+  drawLine('COMPUTATION', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
   blankLines(1);
 
-  drawLine(`Enclosed: IRS Account Transcript for tax year(s) ${letterData.taxYearsStr}.`);
+  const breakdownParts = [];
+  if ((letterData.summary.failureToFile || 0) > 0) {
+    breakdownParts.push(`${formatCurrency(letterData.summary.failureToFile)} in failure-to-file penalties (§ 6651(a)(1))`);
+  }
+  if ((letterData.summary.failureToPay || 0) > 0) {
+    breakdownParts.push(`${formatCurrency(letterData.summary.failureToPay)} in failure-to-pay penalties (§ 6651(a)(2))`);
+  }
+  if ((letterData.summary.interest || 0) > 0) {
+    breakdownParts.push(`${formatCurrency(letterData.summary.interest)} in interest on penalties (§ 6601)`);
+  }
+  let nonZeroBreakdown;
+  if (breakdownParts.length === 0) {
+    nonZeroBreakdown = 'the amounts itemized above';
+  } else if (breakdownParts.length === 1) {
+    nonZeroBreakdown = breakdownParts[0];
+  } else if (breakdownParts.length === 2) {
+    nonZeroBreakdown = `${breakdownParts[0]} and ${breakdownParts[1]}`;
+  } else {
+    nonZeroBreakdown = `${breakdownParts.slice(0, -1).join(', ')}, and ${breakdownParts[breakdownParts.length - 1]}`;
+  }
+
+  drawParagraph(
+    `The total abatement claimed is ${formatCurrency(letterData.summary.total)}, comprising ${nonZeroBreakdown}. Each penalty and interest entry above falls within the 1,268-day disaster window and is subject to the mandatory postponement holding in Kwong and Abdo.`
+  );
+  blankLines(1);
+
+  drawLine('ALTERNATIVE THEORY', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+  blankLines(1);
+
+  drawParagraph(
+    `In the alternative, taxpayer requests penalty abatement under § 6651(a) reasonable cause (IRM 20.1.1.3.2) and discretionary interest abatement under § 6404(e).`
+  );
+  blankLines(1);
+
+  drawLine('PROTECTIVE CLAIM NOTICE', { bold: true, size: FONT_HEADER, lineHeight: LINE_HEIGHT_HEADER });
+  blankLines(1);
+
+  drawParagraph(
+    `To the extent any theory presented in this claim is denied at the administrative level, this filing preserves all grounds for refund-suit review under United States v. Felt & Tarrant Mfg. Co., 283 U.S. 269 (1931), and Commissioner v. Sunnen, 333 U.S. 591 (1948). Taxpayer expressly reserves the right to raise additional grounds consistent with this claim in any subsequent proceeding.`
+  );
+  blankLines(1);
+
+  drawParagraph(`This claim is timely filed before the July 10, 2026 deadline for Kwong-eligible relief. Form 843 (Rev. December 2024) is enclosed with this statement.`);
+  blankLines(1);
+
+  drawParagraph('File via certified mail with return receipt requested.');
+  blankLines(1);
+
+  drawLine(
+    letterData.hasTranscript
+      ? `Enclosed: IRS Account Transcript for tax year(s) ${letterData.taxYearsStr}.`
+      : `Enclosed: Supporting penalty documentation as available.`
+  );
   blankLines(2);
 
   drawLine('Sincerely,');
@@ -20734,22 +20808,31 @@ https://virtuallaunch.pro/payouts
         const paymentDatesStr = (payment_dates && payment_dates.length > 0) ? payment_dates.join(', ') : '';
         const taxYearRange = tax_year || '2020-2023';
 
-        // Build penalty breakdown lines
+        // Build penalty breakdown lines (used by the preparation_guide fallback only)
         const penaltyLines = [];
         if (ftf) penaltyLines.push(`Failure-to-File penalty: ${fmtMoney(ftf)}`);
         if (ftp) penaltyLines.push(`Failure-to-Pay penalty: ${fmtMoney(ftp)}`);
         if (ioa) penaltyLines.push(`Interest on penalties: ${fmtMoney(ioa)}`);
         penaltyLines.push(`Total refund requested: ${fmtMoney(resolvedTotal)}`);
 
-        const kwongText = `Per Kwong v. United States, 179 Fed. Cl. 382 (2025), the U.S. Court `
-          + `of Federal Claims held that IRC \u00A77508A(d) required mandatory `
-          + `postponement of federal tax deadlines during the COVID-19 disaster `
-          + `period (January 20, 2020 through July 10, 2023). The IRS lacked `
-          + `authority to assess failure-to-file penalties, failure-to-pay penalties, `
-          + `and underpayment interest on obligations due during this period. `
-          + `Taxpayer requests abatement and refund of the above penalties and `
-          + `interest assessed during this period. This claim is timely filed `
-          + `before the July 10, 2026 deadline.`;
+        // Item 8 explanation \u2014 Agostino five-part structure (BBQ Edition, June 2026).
+        // Only include the COMPUTATION lines for which the user actually has > 0.
+        const computationLines = [];
+        if (ftf > 0) computationLines.push(`Failure-to-File penalty (\u00A7 6651(a)(1)): ${fmtMoney(ftf)}`);
+        if (ftp > 0) computationLines.push(`Failure-to-Pay penalty (\u00A7 6651(a)(2)): ${fmtMoney(ftp)}`);
+        if (ioa > 0) computationLines.push(`Interest on penalties (\u00A7 6601): ${fmtMoney(ioa)}`);
+        computationLines.push(`Total claimed: ${fmtMoney(resolvedTotal)}`);
+
+        const kwongText = `Claim for refund and abatement of penalties and interest for tax year(s) ${taxYearRange}.
+
+LEGAL AUTHORITY: This claim is filed under former I.R.C. \u00A7 7508A(d) (2019 version; renumbered \u00A7 7508A(e) by Pub. L. No. 119-29 (2025)), as interpreted in Kwong v. United States, 179 Fed. Cl. 382 (2025), and Abdo v. Commissioner, 162 T.C. 148 (2024). The Kwong court held that \u00A7 7508A(d) required mandatory postponement of the accrual of penalties and interest during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). After Loper Bright Enterprises v. Raimondo, 603 U.S. 369 (2024), the Treasury's narrow construction in Treas. Reg. \u00A7 301.7508A-1(g)(3)(ii) is no longer entitled to Chevron deference. Kwong is non-final; the March 13, 2026 stipulated judgment preserved the government's appeal right to the Federal Circuit. This claim presents the Kwong reading as the better interpretation currently prevailing.
+
+COMPUTATION:
+${computationLines.join('\n')}
+
+ALTERNATIVE THEORY: In the alternative, taxpayer requests abatement under \u00A7 6651(a) reasonable cause and \u00A7 6404(e) discretionary interest abatement.
+
+This claim is timely filed before the July 10, 2026 deadline. See attached statement for itemized detail.`;
 
         // --- Try official IRS Form 843 AcroForm fill ---
         let filledPdf;
@@ -20849,13 +20932,8 @@ https://virtuallaunch.pro/payouts
                 interest: ioa,
               }];
 
-          const explanationText = `Claim for refund of penalties and interest assessed for tax year(s) ${taxYearRange}.\n\n`
-            + penaltyLines.join('\n') + '\n\n'
-            + kwongText
-            + '\n\nSee attached statement for itemized detail.';
-
           const item8Field = form.getTextField('topmostSubform[0].Page2[0].ExplainWhy[0].f2_3[0]');
-          item8Field.setText(explanationText);
+          item8Field.setText(kwongText);
           item8Field.setFontSize(10);
 
           // Append checklist + taxpayer letter pages (always)
