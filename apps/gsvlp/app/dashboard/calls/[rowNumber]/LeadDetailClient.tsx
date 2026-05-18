@@ -221,9 +221,9 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
   const [showBookingAfterPitch, setShowBookingAfterPitch] = useState(false);
   const [pendingFollowUp, setPendingFollowUp] = useState<PendingFollowUp | null>(null);
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
-  const [notFitNote, setNotFitNote] = useState('');
-  const [notFitPending, setNotFitPending] = useState(false);
-  const [notFitSubmitting, setNotFitSubmitting] = useState(false);
+  const [dispositionNote, setDispositionNote] = useState('');
+  const [notePending, setNotePending] = useState(false);
+  const [dispositionSubmitting, setDispositionSubmitting] = useState(false);
 
   const setterName = firstName(session);
 
@@ -290,57 +290,48 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
 
   function selectDisposition(d: Disposition) {
     if (disposition === d) {
+      // De-select toggle — close note field without firing a POST.
       setDisposition(null);
       setShowBookingAfterPitch(false);
-      setNotFitPending(false);
-      setNotFitNote('');
-      void postStatus(config.apiBaseUrl, rowNumber, 'not_called');
+      setNotePending(false);
+      setDispositionNote('');
       return;
     }
     setDisposition(d);
     setShowBookingAfterPitch(false);
-    if (d === 'not_fit') {
-      setNotFitPending(true);
-      setNotFitNote('');
-      return;
-    }
-    setNotFitPending(false);
-    setNotFitNote('');
-    const status = DISPOSITION_TO_STATUS[d];
-    void postStatus(config.apiBaseUrl, rowNumber, status).then((row) => {
-      if (row && Array.isArray(row.activity)) {
-        setActivity(row.activity);
-      }
-    });
-    // Auto-complete any pending follow-up — the setter is now acting on this lead.
-    // Don't auto-complete if they're scheduling another follow-up disposition.
-    if (pendingFollowUp && d !== 'voicemail' && d !== 'wants_info') {
-      fetch(`${config.apiBaseUrl}/v1/gsvlp/follow-ups/${pendingFollowUp.id}/complete`, {
-        method: 'POST',
-        credentials: 'include',
-      }).catch(() => {});
-      setPendingFollowUp(null);
-    }
+    setNotePending(true);
+    setDispositionNote('');
   }
 
-  async function submitNotFit() {
-    if (notFitSubmitting) return;
-    setNotFitSubmitting(true);
+  async function submitDisposition() {
+    if (dispositionSubmitting || !disposition) return;
+    setDispositionSubmitting(true);
     try {
-      const row = await postStatus(config.apiBaseUrl, rowNumber, 'not_a_fit', notFitNote);
+      const status = DISPOSITION_TO_STATUS[disposition];
+      const row = await postStatus(config.apiBaseUrl, rowNumber, status, dispositionNote);
       if (row && Array.isArray(row.activity)) setActivity(row.activity);
-      if (pendingFollowUp) {
+      // Auto-complete any pending follow-up — the setter is now acting on this lead.
+      // Don't auto-complete if they're scheduling another follow-up disposition.
+      if (pendingFollowUp && disposition !== 'voicemail' && disposition !== 'wants_info') {
         fetch(`${config.apiBaseUrl}/v1/gsvlp/follow-ups/${pendingFollowUp.id}/complete`, {
           method: 'POST',
           credentials: 'include',
         }).catch(() => {});
         setPendingFollowUp(null);
       }
-      setNotFitPending(false);
+      setNotePending(false);
     } finally {
-      setNotFitSubmitting(false);
+      setDispositionSubmitting(false);
     }
   }
+
+  const NOTE_PLACEHOLDERS: Record<Disposition, string> = {
+    interested: 'Any notes about the booking? (optional)',
+    wants_info: 'What info did they want? (optional)',
+    voicemail: 'Any notes about the voicemail? (optional)',
+    not_fit: "Why isn't this a good fit? (optional)",
+    disconnected: 'Any notes? (optional)',
+  };
 
   const lead = batch?.find((r) => r.id === rowNumber) ?? null;
 
@@ -411,32 +402,32 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             onSelect={selectDisposition}
           />
 
-          {notFitPending && (
+          {notePending && disposition && (
             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
               <label
-                htmlFor="not-fit-note"
+                htmlFor="disposition-note"
                 className="mb-2 block text-sm font-semibold text-white"
               >
-                Why isn&rsquo;t this a good fit?
+                Add a note (optional)
               </label>
               <textarea
-                id="not-fit-note"
-                value={notFitNote}
-                onChange={(e) => setNotFitNote(e.target.value.slice(0, 280))}
-                placeholder="Why isn't this a good fit? (optional)"
+                id="disposition-note"
+                value={dispositionNote}
+                onChange={(e) => setDispositionNote(e.target.value.slice(0, 280))}
+                placeholder={NOTE_PLACEHOLDERS[disposition]}
                 maxLength={280}
                 rows={3}
                 className="w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#22C55E] focus:outline-none"
               />
               <div className="mt-2 flex items-center justify-between gap-3">
-                <span className="text-xs text-white/40">{notFitNote.length} / 280</span>
+                <span className="text-xs text-white/40">{dispositionNote.length} / 280</span>
                 <button
                   type="button"
-                  disabled={notFitSubmitting}
-                  onClick={() => void submitNotFit()}
+                  disabled={dispositionSubmitting}
+                  onClick={() => void submitDisposition()}
                   className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#22C55E] px-5 text-sm font-bold text-black hover:bg-[#16A34A] disabled:opacity-50"
                 >
-                  {notFitSubmitting ? 'Submitting…' : 'Submit'}
+                  {dispositionSubmitting ? 'Submitting…' : 'Submit'}
                 </button>
               </div>
             </div>
@@ -444,7 +435,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
 
           <ActivityLog entries={activity} />
 
-          {disposition === 'interested' && (
+          {disposition === 'interested' && !notePending && (
             <>
               <BookingFlow
                 lead={lead}
@@ -455,11 +446,11 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             </>
           )}
 
-          {disposition === 'wants_info' && !showBookingAfterPitch && (
+          {disposition === 'wants_info' && !notePending && !showBookingAfterPitch && (
             <>
               <ProductPitchTabs
                 onBookIt={() => setShowBookingAfterPitch(true)}
-                onStillNo={() => setDisposition('not_fit')}
+                onStillNo={() => selectDisposition('not_fit')}
               />
               <TaxProNurtureFlow lead={lead} apiBaseUrl={config.apiBaseUrl} />
               <FollowUpScheduler
@@ -474,7 +465,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             </>
           )}
 
-          {disposition === 'wants_info' && showBookingAfterPitch && (
+          {disposition === 'wants_info' && !notePending && showBookingAfterPitch && (
             <>
               <BookingFlow
                 lead={lead}
@@ -485,7 +476,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             </>
           )}
 
-          {disposition === 'voicemail' && (
+          {disposition === 'voicemail' && !notePending && (
             <>
               <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
                 <h2 className="mb-4 text-lg font-semibold text-white">Leave a brief message</h2>
@@ -511,7 +502,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             </>
           )}
 
-          {disposition === 'not_fit' && !notFitPending && (
+          {disposition === 'not_fit' && !notePending && (
             <>
               <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6 text-center">
                 <div className="text-base text-white/80">
@@ -522,7 +513,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
             </>
           )}
 
-          {disposition === 'disconnected' && (
+          {disposition === 'disconnected' && !notePending && (
             <>
               <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
                 <div className="mb-4 text-base text-white/80">What do you want to do?</div>
