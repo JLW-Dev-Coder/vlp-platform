@@ -20595,15 +20595,18 @@ https://virtuallaunch.pro/payouts
         const formData = await request.formData();
         const pdfFile = formData.get('transcript');
         const pro_id = formData.get('pro_id');
+        const isDemo = formData.get('demo') === 'true';
 
-        if (!pdfFile || !pro_id) {
+        if (!pdfFile || (!pro_id && !isDemo)) {
           return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['transcript', 'pro_id'] }, 400, request);
         }
 
-        // Verify pro exists
-        const pro = await env.DB.prepare("SELECT pro_id FROM tcvlp_pros WHERE pro_id = ? AND status = 'active'").bind(pro_id).first();
-        if (!pro) {
-          return json({ ok: false, error: 'INVALID_PRO_ID', message: 'Professional not found' }, 400, request);
+        // Verify pro exists (skipped in demo mode — /demo page on taxclaim.virtuallaunch.pro)
+        if (!isDemo) {
+          const pro = await env.DB.prepare("SELECT pro_id FROM tcvlp_pros WHERE pro_id = ? AND status = 'active'").bind(pro_id).first();
+          if (!pro) {
+            return json({ ok: false, error: 'INVALID_PRO_ID', message: 'Professional not found' }, 400, request);
+          }
         }
 
         // Extract text from PDF
@@ -20702,10 +20705,13 @@ https://virtuallaunch.pro/payouts
         ssn_ein, spouse_name, spouse_ssn, address, apt_suite, city, zip_code,
         ein, phone, irc_section, payment_dates,
         // Optional transcript-derived data for taxpayer letter append
-        transactions, per_year
+        transactions, per_year,
+        // Demo mode — /demo page on taxclaim.virtuallaunch.pro
+        demo
       } = body;
+      const isDemo = demo === true;
 
-      if (!pro_id || !taxpayer_name || !tax_year || !state) {
+      if (!taxpayer_name || !tax_year || !state || (!pro_id && !isDemo)) {
         return json({ ok: false, error: 'MISSING_REQUIRED_FIELDS', required: ['pro_id', 'taxpayer_name', 'tax_year', 'state'] }, 400, request);
       }
 
@@ -20733,10 +20739,12 @@ https://virtuallaunch.pro/payouts
         return json({ ok: false, error: 'INVALID_TAX_YEAR', message: 'Tax year must be between 2019-2023' }, 400, request);
       }
 
-      // Verify pro exists
-      const pro = await env.DB.prepare("SELECT pro_id FROM tcvlp_pros WHERE pro_id = ? AND status = 'active'").bind(pro_id).first();
-      if (!pro) {
-        return json({ ok: false, error: 'INVALID_PRO_ID', message: 'Professional not found' }, 400, request);
+      // Verify pro exists (skipped in demo mode)
+      if (!isDemo) {
+        const pro = await env.DB.prepare("SELECT pro_id FROM tcvlp_pros WHERE pro_id = ? AND status = 'active'").bind(pro_id).first();
+        if (!pro) {
+          return json({ ok: false, error: 'INVALID_PRO_ID', message: 'Professional not found' }, 400, request);
+        }
       }
 
       const timestamp = new Date().toISOString();
@@ -20756,6 +20764,104 @@ https://virtuallaunch.pro/payouts
       };
 
       try {
+        // Demo mode — return preview JSON without writing R2/D1 or generating a PDF.
+        // /demo page on taxclaim.virtuallaunch.pro uses this to show a tax pro what
+        // the Form 843 output would look like for a sample transcript.
+        if (isDemo) {
+          const fmtMoneyDemo = (v) => {
+            const [whole, dec] = (Number(v) || 0).toFixed(2).split('.');
+            return '$' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
+          };
+          const taxYearRange = tax_year || '2020-2023';
+          const computationLines = [];
+          if (ftf > 0) computationLines.push(`Failure-to-File penalty (§ 6651(a)(1)): ${fmtMoneyDemo(ftf)}`);
+          if (ftp > 0) computationLines.push(`Failure-to-Pay penalty (§ 6651(a)(2)): ${fmtMoneyDemo(ftp)}`);
+          if (ioa > 0) computationLines.push(`Interest on penalties (§ 6601): ${fmtMoneyDemo(ioa)}`);
+          computationLines.push(`Total claimed: ${fmtMoneyDemo(resolvedTotal)}`);
+
+          const ircSectionsDemo = [
+            ftf > 0 && '6651(a)(1)',
+            ftp > 0 && '6651(a)(2)',
+            ioa > 0 && '6601',
+          ].filter(Boolean).join(', ');
+
+          const item8Text = `Claim for refund and abatement of penalties and interest for tax year(s) ${taxYearRange}.
+
+LEGAL AUTHORITY: This claim is filed under former I.R.C. § 7508A(d) (2019 version; renumbered § 7508A(e) by Pub. L. No. 119-29 (2025)), as interpreted in Kwong v. United States, 179 Fed. Cl. 382 (2025), and Abdo v. Commissioner, 162 T.C. 148 (2024). The Kwong court held that § 7508A(d) required mandatory postponement of the accrual of penalties and interest during the COVID-19 disaster period (January 20, 2020 through July 10, 2023). After Loper Bright Enterprises v. Raimondo, 603 U.S. 369 (2024), the Treasury's narrow construction in Treas. Reg. § 301.7508A-1(g)(3)(ii) is no longer entitled to Chevron deference. Kwong is non-final; the March 13, 2026 stipulated judgment preserved the government's appeal right to the Federal Circuit. This claim presents the Kwong reading as the better interpretation currently prevailing.
+
+COMPUTATION:
+${computationLines.join('\n')}
+
+ALTERNATIVE THEORY: In the alternative, taxpayer requests abatement under § 6651(a) reasonable cause and § 6404(e) discretionary interest abatement.
+
+This claim is timely filed before the July 10, 2026 deadline. See attached statement for itemized detail.`;
+
+          // Build per-year summary the same way the PDF letter path does
+          const pyList = (Array.isArray(per_year) && per_year.length > 0)
+            ? per_year
+            : [{ tax_year: String(tax_year), failure_to_file: ftf, failure_to_pay: ftp, interest: ioa }];
+          const taxYearsArr = [...new Set(pyList.map(py => String(py.tax_year)))].sort();
+          const taxYearsStr = taxYearsArr.join(', ');
+          const summary = pyList.reduce((acc, py) => ({
+            failureToFile: acc.failureToFile + (py.failure_to_file || 0),
+            failureToPay: acc.failureToPay + (py.failure_to_pay || 0),
+            interest: acc.interest + (py.interest || 0),
+          }), { failureToFile: 0, failureToPay: 0, interest: 0 });
+          summary.total = summary.failureToFile + summary.failureToPay + summary.interest;
+
+          const breakdownParts = [];
+          if (summary.failureToFile > 0) breakdownParts.push(`${fmtMoneyDemo(summary.failureToFile)} in failure-to-file penalties (§ 6651(a)(1))`);
+          if (summary.failureToPay > 0) breakdownParts.push(`${fmtMoneyDemo(summary.failureToPay)} in failure-to-pay penalties (§ 6651(a)(2))`);
+          if (summary.interest > 0) breakdownParts.push(`${fmtMoneyDemo(summary.interest)} in interest on penalties (§ 6601)`);
+          let nonZeroBreakdown;
+          if (breakdownParts.length === 0) nonZeroBreakdown = 'the amounts itemized above';
+          else if (breakdownParts.length === 1) nonZeroBreakdown = breakdownParts[0];
+          else if (breakdownParts.length === 2) nonZeroBreakdown = `${breakdownParts[0]} and ${breakdownParts[1]}`;
+          else nonZeroBreakdown = `${breakdownParts.slice(0, -1).join(', ')}, and ${breakdownParts[breakdownParts.length - 1]}`;
+
+          return json({
+            ok: true,
+            demo: true,
+            preview: {
+              item8_text: item8Text,
+              cover_letter: {
+                intro: `I am writing to request abatement and refund of penalties and interest assessed against my federal tax account for tax year(s) ${taxYearsStr}. This claim is filed on IRS Form 843 for penalty and interest abatement only, not for income-tax overpayment (which would require Form 1040-X per 26 C.F.R. § 301.6402-3(a)(2)).`,
+                legal_authority: `This claim is grounded in former I.R.C. § 7508A(d) (2019 version; renumbered § 7508A(e) by Pub. L. No. 119-29 (2025)), as interpreted in Kwong v. United States, 179 Fed. Cl. 382 (2025), and Abdo v. Commissioner, 162 T.C. 148 (2024). The Kwong court held that § 7508A(d) required mandatory postponement of the accrual of penalties and interest during the COVID-19 disaster period — January 20, 2020 through July 10, 2023, a span of 1,268 days.
+
+After Loper Bright Enterprises v. Raimondo, 603 U.S. 369 (2024), the Treasury's narrow construction of § 7508A(d) in Treas. Reg. § 301.7508A-1(g)(3)(ii) is no longer entitled to Chevron deference. This regulatory-invalidity issue is expressly preserved for Appeals and refund-suit review.
+
+Kwong is non-final: the March 13, 2026 stipulated $84,000 judgment preserved the government's right to appeal to the Federal Circuit; no appeal has been docketed as of the date of this filing. This claim presents the Kwong reading as the better interpretation currently prevailing, not as settled law.`,
+                facts_intro: `The penalties and interest for which I request abatement are itemized below, drawn directly from ${Array.isArray(transactions) && transactions.length > 0 ? 'my IRS Account Transcript' : 'the penalty data reported by the taxpayer or practitioner'}.`,
+                computation: `The total abatement claimed is ${fmtMoneyDemo(summary.total)}, comprising ${nonZeroBreakdown}. Each penalty and interest entry above falls within the 1,268-day disaster window and is subject to the mandatory postponement holding in Kwong and Abdo.`,
+                alternative_theory: `In the alternative, taxpayer requests penalty abatement under § 6651(a) reasonable cause (IRM 20.1.1.3.2) and discretionary interest abatement under § 6404(e).`,
+                protective_claim_notice: `To the extent any theory presented in this claim is denied at the administrative level, this filing preserves all grounds for refund-suit review under United States v. Felt & Tarrant Mfg. Co., 283 U.S. 269 (1931), and Commissioner v. Sunnen, 333 U.S. 591 (1948). Taxpayer expressly reserves the right to raise additional grounds consistent with this claim in any subsequent proceeding.`,
+                closing: `This claim is timely filed before the July 10, 2026 deadline for Kwong-eligible relief. Form 843 (Rev. December 2024) is enclosed with this statement. File via certified mail with return receipt requested.`,
+              },
+              checklist_items: [
+                'Verify form selection. Form 843 is correct for penalty and interest abatement claims. If your claim involves an income-tax overpayment (not just penalties/interest), file Form 1040-X instead — per Nicholson v. United States (N.D. Fla. 2025) and 26 C.F.R. § 301.6402-3(a)(2), using the wrong form can result in dismissal.',
+                'File one Form 843 per tax year, per penalty type. Do not combine multiple years or different penalty types on a single form.',
+                'Write "Protective Refund Claim Pursuant to Kwong v. United States" across the top of the Form 843 if the exact refund amount depends on how courts resolve Kwong. This preserves your grounds under the variance doctrine.',
+                'Include supporting documents: a copy of your IRS account transcript (with relevant penalty entries highlighted), an explanation connecting the penalties to the COVID-19 disaster relief period (January 20, 2020 through July 10, 2023), and copies of any IRS notices.',
+                'For exam-assessed penalties (TC 240 / TC 300 on transcript), consider a parallel challenge under § 6751(b) — request the IRS administrative file to verify supervisory approval was obtained before the initial determination of the penalty.',
+                'Mail via certified mail with return receipt requested to the IRS service center where you would file a current-year Form 1040. Keep a complete copy of everything you submit — the form, attachments, and the certified mail receipt.',
+                'Deadline: July 10, 2026 for three-year refund claims. Each payment also has its own two-year-from-payment deadline (IRC § 6511(a)). Verify both deadlines for each penalty entry.',
+                'Keep your records for at least 3 years after filing the claim.',
+              ],
+              summary: {
+                taxpayer_name,
+                tax_years: taxYearsArr,
+                tax_year_range: taxYearRange,
+                ftf_amount: ftf,
+                ftp_amount: ftp,
+                interest_amount: ioa,
+                total: resolvedTotal,
+                mailing_address,
+                irc_sections: ircSectionsDemo,
+              },
+            },
+          }, 200, request);
+        }
+
         // Write receipt to R2
         const receiptKey = `tcvlp/receipts/form843/${pro_id}/${submission_id}.json`;
         const receiptData = {
