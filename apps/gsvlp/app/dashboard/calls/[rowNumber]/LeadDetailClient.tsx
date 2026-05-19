@@ -12,6 +12,7 @@ import { ProductPitchTabs } from '@/components/dashboard/ProductPitchTabs';
 import { BookingFlow } from '@/components/dashboard/BookingFlow';
 import { NextLeadButton } from '@/components/dashboard/NextLeadButton';
 import { TaxProNurtureFlow } from '@/components/dashboard/TaxProNurtureFlow';
+import { getActiveScript, renderTemplate, type TemplateVars } from '@/lib/scripts';
 
 function firstName(session: { email: string | null }): string {
   if (!session.email) return 'there';
@@ -226,6 +227,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
   const [dispositionSubmitting, setDispositionSubmitting] = useState(false);
 
   const setterName = firstName(session);
+  const activeScript = getActiveScript(session.email);
 
   useEffect(() => {
     let cancelled = false;
@@ -330,6 +332,21 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
 
   const lead = batch?.find((r) => r.id === rowNumber) ?? null;
 
+  const templateVars: TemplateVars = lead
+    ? {
+        full_name: lead.fullName,
+        first_name: lead.fullName.split(' ')[0] || lead.fullName,
+        firm_name: lead.dba || 'your firm',
+        credential:
+          lead.profession === 'EA' ? 'EAs'
+          : lead.profession === 'CPA' ? 'CPAs'
+          : lead.profession === 'ATTY' ? 'tax attorneys'
+          : 'tax professionals',
+        state: lead.state || '',
+        setter_name: setterName,
+      }
+    : { setter_name: setterName };
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Top bar */}
@@ -386,11 +403,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
 
           <LeadDetailCard lead={lead} />
 
-          <CallScript
-            leadName={lead.fullName}
-            firmName={lead.dba || 'your'}
-            setterName={setterName}
-          />
+          <CallScript script={activeScript} vars={templateVars} />
 
           <DispositionButtons
             activeDisposition={disposition}
@@ -476,13 +489,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
               <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
                 <h2 className="mb-4 text-lg font-semibold text-white">Leave a brief message</h2>
                 <div className="space-y-3 text-[15px] leading-relaxed text-white/80">
-                  <p>
-                    &ldquo;Hi {lead.fullName.split(' ')[0]}, this is{' '}
-                    <strong className="text-white">{setterName}</strong> calling on
-                    behalf of Jamie Williams at Virtual Launch Pro. She helps tax
-                    pros like you get more clients. I&apos;ll try you again — or
-                    you can reach her at virtuallaunch.pro. Have a great day.&rdquo;
-                  </p>
+                  <p>&ldquo;{renderTemplate(activeScript.voicemail, templateVars)}&rdquo;</p>
                 </div>
               </div>
               <FollowUpScheduler
