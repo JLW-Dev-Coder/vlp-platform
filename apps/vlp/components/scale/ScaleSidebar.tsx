@@ -78,6 +78,15 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    label: 'Payouts',
+    href: '/scale/payouts',
+    icon: (
+      <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24" aria-hidden>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2 2 0 00-2-2h-3a3 3 0 000 6h3a2 2 0 002-2v-2zM3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+      </svg>
+    ),
+  },
 ]
 
 export default function ScaleSidebar() {

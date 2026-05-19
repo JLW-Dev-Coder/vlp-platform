@@ -28229,6 +28229,100 @@ Unsubscribe: ${unsubUrl}`;
     },
   },
 
+  // GET /v1/admin/gsvlp/commissions — admin: list ALL commissions across all setters
+  {
+    method: 'GET', pattern: '/v1/admin/gsvlp/commissions',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      try {
+        const index = await gsvlpGetBatchIndex(env);
+        const assignments = Array.isArray(index.assignments) ? index.assignments : [];
+        const seen = new Set();
+        const setterIds = [];
+        for (const a of assignments) {
+          if (!a.account_id || seen.has(a.account_id)) continue;
+          seen.add(a.account_id);
+          setterIds.push(a.account_id);
+        }
+
+        const all = [];
+        for (const accountId of setterIds) {
+          const ledger = await gsvlpGetCommissionLedger(env, accountId);
+          if (!ledger.commissions || ledger.commissions.length === 0) continue;
+          let setterName = '', setterEmail = '';
+          try {
+            const acct = await env.DB.prepare(
+              'SELECT email, first_name, last_name FROM accounts WHERE account_id = ?'
+            ).bind(accountId).first();
+            setterEmail = acct?.email || '';
+            setterName = [acct?.first_name, acct?.last_name].filter(Boolean).join(' ').trim() || setterEmail;
+          } catch {}
+          const settings = await gsvlpGetAccountSettings(env, accountId).catch(() => null);
+          for (const c of ledger.commissions) {
+            all.push({
+              ...c,
+              status: c.status || 'pending',
+              account_id: accountId,
+              setter_name: setterName,
+              setter_email: setterEmail,
+              payout_method: settings?.payout_method || null,
+              payoneer_email: settings?.payoneer_email || '',
+              payoneer_account_id: settings?.payoneer_account_id || '',
+            });
+          }
+        }
+        all.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+        return json({ ok: true, commissions: all }, 200, request);
+      } catch (e) {
+        console.error('/v1/admin/gsvlp/commissions error:', e);
+        return json({ ok: false, error: 'ADMIN_COMMISSIONS_FETCH_FAILED' }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/admin/gsvlp/commissions/:commissionId/mark-paid — admin: flip a commission to paid
+  {
+    method: 'POST', pattern: '/v1/admin/gsvlp/commissions/:commissionId/mark-paid',
+    handler: async (_method, _pattern, params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      if (!isAdminEmail(session.email)) {
+        return json({ ok: false, error: 'FORBIDDEN' }, 403, request);
+      }
+      const commissionId = String(params.commissionId || '').trim();
+      if (!commissionId) {
+        return json({ ok: false, error: 'commission_id_required' }, 400, request);
+      }
+      try {
+        const index = await gsvlpGetBatchIndex(env);
+        const assignments = Array.isArray(index.assignments) ? index.assignments : [];
+        const seen = new Set();
+        for (const a of assignments) {
+          if (!a.account_id || seen.has(a.account_id)) continue;
+          seen.add(a.account_id);
+          const ledger = await gsvlpGetCommissionLedger(env, a.account_id);
+          const idx = ledger.commissions.findIndex(c => c.id === commissionId);
+          if (idx === -1) continue;
+          ledger.commissions[idx].status = 'paid';
+          ledger.commissions[idx].paid_at = new Date().toISOString();
+          await gsvlpSaveCommissionLedger(env, a.account_id, ledger);
+          return json({
+            ok: true,
+            commission: { ...ledger.commissions[idx], account_id: a.account_id },
+          }, 200, request);
+        }
+        return json({ ok: false, error: 'COMMISSION_NOT_FOUND' }, 404, request);
+      } catch (e) {
+        console.error('/v1/admin/gsvlp/commissions/mark-paid error:', e);
+        return json({ ok: false, error: 'MARK_PAID_FAILED' }, 500, request);
+      }
+    },
+  },
+
   // POST /v1/gsvlp/stripe-connect/onboard — create Connect Express account + onboarding link
   {
     method: 'POST', pattern: '/v1/gsvlp/stripe-connect/onboard',
