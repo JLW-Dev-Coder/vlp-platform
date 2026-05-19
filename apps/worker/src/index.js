@@ -406,6 +406,77 @@ async function gsvlpGetOrAssignBatch(env, accountId) {
   return batch;
 }
 
+// Append additional prospects to an existing setter's batch by advancing the
+// global sheet-row cursor. Returns { added, total, pool_exhausted, batch }.
+// If no batch exists yet (edge case), creates one via gsvlpGetOrAssignBatch first.
+async function gsvlpLoadMoreProspects(env, accountId, requestedCount) {
+  let batch = await gsvlpGetBatch(env, accountId);
+  if (!batch) {
+    batch = await gsvlpGetOrAssignBatch(env, accountId);
+    return { added: batch.rows.length, total: batch.rows.length, pool_exhausted: false, batch };
+  }
+
+  const maxPerRequest = 100;
+  const defaultSize = parseInt(env.GSVLP_BATCH_SIZE || '50', 10);
+  const want = Math.max(1, Math.min(maxPerRequest, Number(requestedCount) || defaultSize));
+
+  const index = await gsvlpGetBatchIndex(env);
+  const startRow = index.next_available_row || 2;
+
+  // Probe a window slightly larger than `want` to absorb empty/skipped rows.
+  const probeEnd = startRow + want * 2 - 1;
+  const values = await fetchGsvlpSheetRows(env, startRow, probeEnd);
+
+  // Phone-based dedup against existing batch rows (defense in depth — cursor
+  // already prevents global collisions, but the source sheet may contain dupes).
+  const existingPhones = new Set(
+    batch.rows.map(r => String(r.phone || '').replace(/\D/g, '')).filter(Boolean)
+  );
+
+  const newRows = [];
+  let consumed = 0;
+  for (const v of values) {
+    if (newRows.length >= want) break;
+    const sheetRowNumber = startRow + consumed;
+    consumed++;
+    const candidate = sheetRowToCallListRow(v, sheetRowNumber);
+    if (!candidate.full_name && !candidate.phone) continue;
+    const phoneKey = String(candidate.phone || '').replace(/\D/g, '');
+    if (phoneKey && existingPhones.has(phoneKey)) continue;
+    if (phoneKey) existingPhones.add(phoneKey);
+    newRows.push(candidate);
+  }
+
+  // Pool exhausted: the sheet returned fewer raw rows than the window asked for.
+  const poolExhausted = values.length < (probeEnd - startRow + 1) && newRows.length < want;
+
+  if (newRows.length === 0) {
+    return { added: 0, total: batch.rows.length, pool_exhausted: true, batch };
+  }
+
+  batch.rows = batch.rows.concat(newRows);
+  batch.batch_end_row = Math.max(
+    Number(batch.batch_end_row || 0),
+    newRows[newRows.length - 1].row_number
+  );
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/batches/${accountId}.json`, batch);
+
+  // Advance the global cursor past every row we consumed (claimed or skipped).
+  const newCursor = startRow + consumed;
+  index.assignments = Array.isArray(index.assignments) ? index.assignments : [];
+  index.assignments.push({
+    account_id: accountId,
+    start: startRow,
+    end: newCursor - 1,
+    assigned_at: new Date().toISOString(),
+    kind: 'load_more',
+  });
+  index.next_available_row = newCursor;
+  await r2Put(env.R2_VIRTUAL_LAUNCH, 'gsvlp/batch-index.json', index);
+
+  return { added: newRows.length, total: batch.rows.length, pool_exhausted: poolExhausted, batch };
+}
+
 const GSVLP_DISPOSITION_META = {
   interested: { label: 'Interested — Book It', description: 'They want to talk to JLW' },
   wants_info: { label: 'Wants More Info', description: 'Tell them about our products' },
@@ -27518,6 +27589,36 @@ Return a JSON array where each element has:
       } catch (e) {
         console.error('/v1/gsvlp/call-list status error:', e);
         return json({ ok: false, error: 'STATUS_UPDATE_FAILED', message: String(e?.message || e) }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/call-list/load-more — assign additional prospects to setter's batch
+  {
+    method: 'POST', pattern: '/v1/gsvlp/call-list/load-more',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      const body = await parseBody(request).catch(() => ({})) || {};
+      const count = body.count;
+      try {
+        const result = await gsvlpLoadMoreProspects(env, session.account_id, count);
+        if (result.added === 0) {
+          return json({
+            ok: false,
+            error: 'no_prospects_available',
+            message: 'No more prospects available. Contact support.',
+          }, 200, request);
+        }
+        return json({
+          ok: true,
+          added: result.added,
+          total: result.total,
+          pool_exhausted: result.pool_exhausted,
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/call-list/load-more error:', e);
+        return json({ ok: false, error: 'LOAD_MORE_FAILED', message: String(e?.message || e) }, 500, request);
       }
     },
   },
