@@ -12,7 +12,20 @@ import { ProductPitchTabs } from '@/components/dashboard/ProductPitchTabs';
 import { BookingFlow } from '@/components/dashboard/BookingFlow';
 import { NextLeadButton } from '@/components/dashboard/NextLeadButton';
 import { TaxProNurtureFlow } from '@/components/dashboard/TaxProNurtureFlow';
-import { getActiveScript, renderTemplate, type TemplateVars } from '@/lib/scripts';
+import { ProductSelector } from '@/components/dashboard/ProductSelector';
+import {
+  buildProductVars,
+  DEFAULT_PRODUCT_ID,
+  getActiveScript,
+  getProductById,
+  renderTemplate,
+  type TemplateVars,
+} from '@/lib/scripts';
+
+const LAST_PRODUCT_KEY = 'gsvlp:lastProduct';
+function leadProductKey(rowNumber: string) {
+  return `gsvlp:product:${rowNumber}`;
+}
 
 function firstName(session: { email: string | null }): string {
   if (!session.email) return 'there';
@@ -228,6 +241,30 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
 
   const setterName = firstName(session);
   const activeScript = getActiveScript(session.email);
+  const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+
+  useEffect(() => {
+    try {
+      const perLead = window.localStorage.getItem(leadProductKey(rowNumber));
+      const last = window.localStorage.getItem(LAST_PRODUCT_KEY);
+      const initial = perLead || last;
+      if (initial) setProductId(initial);
+    } catch {
+      // ignore
+    }
+  }, [rowNumber]);
+
+  function selectProduct(id: string) {
+    setProductId(id);
+    try {
+      window.localStorage.setItem(leadProductKey(rowNumber), id);
+      window.localStorage.setItem(LAST_PRODUCT_KEY, id);
+    } catch {
+      // ignore
+    }
+  }
+
+  const activeProduct = getProductById(productId);
 
   useEffect(() => {
     let cancelled = false;
@@ -332,7 +369,7 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
 
   const lead = batch?.find((r) => r.id === rowNumber) ?? null;
 
-  const templateVars: TemplateVars = lead
+  const leadVars: TemplateVars = lead
     ? {
         full_name: lead.fullName,
         first_name: lead.fullName.split(' ')[0] || lead.fullName,
@@ -346,6 +383,8 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
         setter_name: setterName,
       }
     : { setter_name: setterName };
+
+  const templateVars: TemplateVars = { ...buildProductVars(activeProduct), ...leadVars };
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -403,7 +442,13 @@ export default function LeadDetailClient({ rowNumber }: { rowNumber: string }) {
 
           <LeadDetailCard lead={lead} />
 
-          <CallScript script={activeScript} vars={templateVars} />
+          <ProductSelector selectedId={productId} onSelect={selectProduct} />
+
+          <CallScript
+            script={activeScript}
+            vars={templateVars}
+            productLabel={activeProduct.shortName}
+          />
 
           <DispositionButtons
             activeDisposition={disposition}

@@ -1,8 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppShell } from '@vlp/member-ui';
-import { getActiveScript, renderTemplate } from '@/lib/scripts';
+import {
+  buildProductVars,
+  DEFAULT_PRODUCT_ID,
+  getActiveScript,
+  getProductById,
+  renderTemplate,
+} from '@/lib/scripts';
+
+const LAST_PRODUCT_KEY = 'gsvlp:lastProduct';
 
 type Outcome = 'yes' | 'maybe' | 'no';
 
@@ -24,6 +32,17 @@ export function ScriptCard() {
   const defaultActive: Outcome = preview.responseOptions.includes('Yes') ? 'yes' : responseKey(preview.responseOptions[0]);
   const [active, setActive] = useState<Outcome>(defaultActive);
 
+  const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(LAST_PRODUCT_KEY);
+      if (saved) setProductId(saved);
+    } catch {
+      // ignore
+    }
+  }, []);
+  const product = getProductById(productId);
+
   const vars = {
     setter_name: setterName,
     full_name: '[Tax Pro Name]',
@@ -31,6 +50,7 @@ export function ScriptCard() {
     credential: 'CPAs / EAs / tax attorneys',
     state: '[State]',
     first_name: '[First Name]',
+    ...buildProductVars(product),
   };
 
   const renderLines = (lines: string[]) =>
@@ -53,9 +73,11 @@ export function ScriptCard() {
     <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">Your Script</h2>
-        <span className="text-xs uppercase tracking-widest text-white/40">
-          {preview.label}
-        </span>
+        <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/40">
+          <span>{preview.label}</span>
+          <span aria-hidden>·</span>
+          <span className="text-[#22C55E]">{product.shortName}</span>
+        </div>
       </div>
 
       <div className="space-y-3 text-[15px] leading-relaxed text-white/80">
