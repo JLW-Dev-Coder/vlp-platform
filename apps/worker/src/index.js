@@ -571,6 +571,16 @@ async function gsvlpSaveStripeConnect(env, accountId, record) {
   await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/stripe-connect/${accountId}.json`, record);
 }
 
+async function gsvlpGetAccountSettings(env, accountId) {
+  const raw = await r2Get(env.R2_VIRTUAL_LAUNCH, `gsvlp/account-settings/${accountId}.json`);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+async function gsvlpSaveAccountSettings(env, accountId, record) {
+  await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/account-settings/${accountId}.json`, record);
+}
+
 // Attempt a Stripe Transfer to the setter's Connect account for a pending
 // commission. On success, mutates the commission entry to status=paid and
 // returns true. On failure, leaves the entry pending and returns false.
@@ -28199,6 +28209,77 @@ Unsubscribe: ${unsubUrl}`;
       } catch (e) {
         console.error('/v1/gsvlp/stripe-connect/status error:', e);
         return json({ ok: false, error: 'CONNECT_STATUS_FAILED' }, 500, request);
+      }
+    },
+  },
+
+  // GET /v1/gsvlp/account/payout-method — current payout preference + Payoneer details
+  {
+    method: 'GET', pattern: '/v1/gsvlp/account/payout-method',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const settings = await gsvlpGetAccountSettings(env, session.account_id);
+        return json({
+          ok: true,
+          payout_method: settings?.payout_method ?? null,
+          payoneer_email: settings?.payoneer_email ?? '',
+          payoneer_account_id: settings?.payoneer_account_id ?? '',
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/account/payout-method GET error:', e);
+        return json({ ok: false, error: 'PAYOUT_METHOD_LOAD_FAILED' }, 500, request);
+      }
+    },
+  },
+
+  // POST /v1/gsvlp/account/payout-method — save payout preference + Payoneer details
+  {
+    method: 'POST', pattern: '/v1/gsvlp/account/payout-method',
+    handler: async (_method, _pattern, _params, request, env) => {
+      const { session, error } = await requireSession(request, env);
+      if (error) return error;
+      try {
+        const body = await request.json().catch(() => ({}));
+        const method = String(body?.payout_method || '').trim().toLowerCase();
+        if (method !== 'stripe' && method !== 'payoneer') {
+          return json({ ok: false, error: 'INVALID_PAYOUT_METHOD' }, 400, request);
+        }
+        let payoneerEmail = '';
+        let payoneerAccountId = '';
+        if (method === 'payoneer') {
+          payoneerEmail = String(body?.payoneer_email || '').trim();
+          payoneerAccountId = String(body?.payoneer_account_id || '').trim();
+          if (!payoneerEmail && !payoneerAccountId) {
+            return json({ ok: false, error: 'PAYONEER_DETAILS_REQUIRED' }, 400, request);
+          }
+          if (payoneerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payoneerEmail)) {
+            return json({ ok: false, error: 'INVALID_PAYONEER_EMAIL' }, 400, request);
+          }
+          if (payoneerAccountId && !/^\d+$/.test(payoneerAccountId)) {
+            return json({ ok: false, error: 'INVALID_PAYONEER_ACCOUNT_ID' }, 400, request);
+          }
+        }
+        const existing = (await gsvlpGetAccountSettings(env, session.account_id)) || {};
+        const record = {
+          ...existing,
+          account_id: session.account_id,
+          payout_method: method,
+          payoneer_email: method === 'payoneer' ? payoneerEmail : (existing.payoneer_email || ''),
+          payoneer_account_id: method === 'payoneer' ? payoneerAccountId : (existing.payoneer_account_id || ''),
+          updated_at: new Date().toISOString(),
+        };
+        await gsvlpSaveAccountSettings(env, session.account_id, record);
+        return json({
+          ok: true,
+          payout_method: record.payout_method,
+          payoneer_email: record.payoneer_email,
+          payoneer_account_id: record.payoneer_account_id,
+        }, 200, request);
+      } catch (e) {
+        console.error('/v1/gsvlp/account/payout-method POST error:', e);
+        return json({ ok: false, error: 'PAYOUT_METHOD_SAVE_FAILED' }, 500, request);
       }
     },
   },
