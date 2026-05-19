@@ -5549,6 +5549,7 @@ const ROUTES = [
             avatar_sample:            'Your AI avatar sample clip is on the way',
             platform_recommendation:  'Your personalized VLP platform recommendation is on the way',
             workflow_assessment:      'Your tax prep workflow assessment is on the way',
+            client_journey_blueprint: 'Your 8-Phase Client Journey Blueprint is ready',
           };
           const subject = subjectByFreebie[freebie_type] || `Thanks from ${platformMeta.name}`;
 
@@ -31798,6 +31799,7 @@ const FREEBIE_PDF_MAP = {
   tmp:   { url: 'https://api.virtuallaunch.pro/freebies/tmp-monitoring-checklist.pdf',   name: 'IRS Account Monitoring Checklist' },
   tcvlp: { url: 'https://api.virtuallaunch.pro/freebies/tcvlp-kwong-checklist.pdf',      name: 'Kwong Eligibility Quick-Check' },
   vlp:   { url: 'https://api.virtuallaunch.pro/freebies/vlp-platform-recommendation.pdf', name: 'Platform Recommendation Guide' },
+  tpp:   { url: 'https://api.virtuallaunch.pro/freebies/tpp-8-phase-client-journey-blueprint.pdf', name: '8-Phase Client Journey Blueprint' },
 };
 
 // Monitoring engagement tier config (TMP Phase 3a)
