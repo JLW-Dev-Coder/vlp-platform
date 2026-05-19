@@ -581,6 +581,66 @@ async function gsvlpSaveAccountSettings(env, accountId, record) {
   await r2Put(env.R2_VIRTUAL_LAUNCH, `gsvlp/account-settings/${accountId}.json`, record);
 }
 
+// Notify JLW via Resend when a Stripe purchase is matched to a setter's
+// booked appointment and a commission is recorded.
+async function sendGsvlpCommissionEmail(env, payload) {
+  if (!env.RESEND_API_KEY) {
+    console.warn('[gsvlp-commission-email] RESEND_API_KEY missing — skipping');
+    return false;
+  }
+  const {
+    setterName, setterEmail,
+    prospectName, prospectEmail,
+    productName, amountPaid, commissionAmount,
+    payoutMethod, payoneerEmail, payoneerAccountId,
+  } = payload;
+  const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const fmt = (n) => `$${(Math.round(Number(n || 0) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const payoutLine = payoutMethod === 'payoneer'
+    ? `Payoneer${payoneerEmail ? ` — ${esc(payoneerEmail)}` : ''}${payoneerAccountId ? ` (acct ${esc(payoneerAccountId)})` : ''}`
+    : payoutMethod === 'stripe'
+      ? 'Stripe Connect'
+      : 'Not set';
+  const subject = `Commission earned — ${setterName || 'Setter'} booked ${prospectName || 'a prospect'}`;
+  const html = `<!doctype html><html><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111;line-height:1.5">
+<h2 style="margin:0 0 12px 0">New commission earned on Growth Setter Pro</h2>
+<table cellpadding="6" style="border-collapse:collapse;font-size:14px">
+  <tr><td style="color:#666">Prospect</td><td><strong>${esc(prospectName) || '—'}</strong></td></tr>
+  <tr><td style="color:#666">Email</td><td>${esc(prospectEmail) || '—'}</td></tr>
+  <tr><td style="color:#666">Purchased</td><td>${esc(productName) || 'Stripe purchase'}</td></tr>
+  <tr><td style="color:#666">Amount</td><td>${fmt(amountPaid)}</td></tr>
+  <tr><td style="color:#666">Commission (20%)</td><td><strong>${fmt(commissionAmount)}</strong></td></tr>
+</table>
+<hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+<table cellpadding="6" style="border-collapse:collapse;font-size:14px">
+  <tr><td style="color:#666">Setter</td><td><strong>${esc(setterName) || '—'}</strong>${setterEmail ? ` &lt;${esc(setterEmail)}&gt;` : ''}</td></tr>
+  <tr><td style="color:#666">Payout method</td><td>${payoutLine}</td></tr>
+</table>
+<p style="margin-top:20px"><a href="https://growthsetters.virtuallaunch.pro/dashboard/payouts" style="color:#22C55E">View in dashboard</a></p>
+</body></html>`;
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Growth Setter Pro <notifications@virtuallaunch.pro>',
+        to: ['jamie.williams@virtuallaunch.pro'],
+        subject,
+        html,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      console.error(`[gsvlp-commission-email] Resend ${res.status}:`, err.slice(0, 300));
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('[gsvlp-commission-email] exception:', e?.message || e);
+    return false;
+  }
+}
+
 // Attempt a Stripe Transfer to the setter's Connect account for a pending
 // commission. On success, mutates the commission entry to status=paid and
 // returns true. On failure, leaves the entry pending and returns false.
@@ -688,6 +748,45 @@ async function gsvlpProcessStripePayment(env, event) {
   }
 
   await gsvlpSaveCommissionLedger(env, setterId, ledger);
+
+  // Fire notification email to JLW (non-blocking — failure does not affect webhook)
+  try {
+    let setterName = '', setterEmail = '';
+    try {
+      const acct = await env.DB.prepare(
+        'SELECT email, first_name, last_name FROM accounts WHERE account_id = ?'
+      ).bind(setterId).first();
+      setterEmail = acct?.email || '';
+      setterName = [acct?.first_name, acct?.last_name].filter(Boolean).join(' ').trim() || setterEmail;
+    } catch {}
+    const settings = await gsvlpGetAccountSettings(env, setterId).catch(() => null);
+    let productName = '';
+    try {
+      if (event.type === 'checkout.session.completed' && obj.id && env.STRIPE_SECRET_KEY) {
+        const items = await stripeGet(`/checkout/sessions/${obj.id}/line_items`, env, env.STRIPE_SECRET_KEY);
+        productName = items?.data?.[0]?.description || '';
+      } else if (event.type === 'invoice.paid') {
+        productName = obj.lines?.data?.[0]?.description || '';
+      }
+    } catch (e) {
+      console.warn('[gsvlp-commission-email] line item fetch failed:', e?.message || e);
+    }
+    await sendGsvlpCommissionEmail(env, {
+      setterName,
+      setterEmail,
+      prospectName: bestMatch.appointment.tax_pro_name || '',
+      prospectEmail: customerEmail,
+      productName,
+      amountPaid: amountDollars,
+      commissionAmount,
+      payoutMethod: settings?.payout_method || '',
+      payoneerEmail: settings?.payoneer_email || '',
+      payoneerAccountId: settings?.payoneer_account_id || '',
+    });
+  } catch (e) {
+    console.error('[gsvlp-commission-email] notification error:', e?.message || e);
+  }
+
   return { matched: true, commission: commissionAmount, setter_account_id: setterId };
 }
 

@@ -109,6 +109,53 @@ export default function PayoutsPage() {
         </p>
       </header>
 
+      <section className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-5">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-white/60">
+          How You Get Paid
+        </h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          {[
+            {
+              n: 1,
+              title: 'You book an appointment',
+              body: 'Call a prospect from your list and book a qualified appointment with JLW.',
+            },
+            {
+              n: 2,
+              title: 'JLW closes the deal',
+              body: 'JLW meets with the prospect. If they purchase, your commission is triggered automatically.',
+            },
+            {
+              n: 3,
+              title: 'Commission is tracked',
+              body: 'When the prospect completes their purchase through Stripe, we automatically match it to your booked appointment and calculate your 20% commission.',
+            },
+            {
+              n: 4,
+              title: 'You get paid',
+              body: 'Payouts are sent to your connected payout method (Stripe or Payoneer). Check your Account page to set up your payout preference.',
+            },
+          ].map((s) => (
+            <div
+              key={s.n}
+              className="relative rounded-md border border-white/[0.06] bg-black/20 p-4"
+            >
+              <div
+                className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-black"
+                style={{ background: '#22C55E' }}
+              >
+                {s.n}
+              </div>
+              <div className="text-sm font-semibold text-white">{s.title}</div>
+              <div className="mt-1 text-xs leading-relaxed text-white/60">{s.body}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-xs text-white/40">
+          Questions? Visit the Support page to book a call with JLW.
+        </p>
+      </section>
+
       {connect &&
         (isConnected ? (
           <div className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/[0.08] px-3 py-1 text-xs font-semibold text-green-300">
